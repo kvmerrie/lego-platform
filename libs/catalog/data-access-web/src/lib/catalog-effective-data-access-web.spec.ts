@@ -29,6 +29,7 @@ import {
   getCatalogThemePageBySlug,
   getCatalogSetBySlug,
   listCanonicalCatalogSets,
+  listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSearchMatches,
@@ -146,6 +147,7 @@ function createCatalogDiscoverySignal(
 function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
   rows: readonly Row[],
   options: {
+    maxInFilterValues?: number;
     onSelect?: (args: unknown[]) => void;
   } = {},
 ) {
@@ -249,11 +251,28 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         | ((value: {
             count: number;
             data: Row[];
-            error: null;
+            error: { message: string } | null;
           }) => TResult1 | PromiseLike<TResult1>)
         | null,
       onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
     ) {
+      const oversizedInFilter = filters.find(
+        (filter) =>
+          filter.type === 'in' &&
+          typeof options.maxInFilterValues === 'number' &&
+          filter.values.length > options.maxInFilterValues,
+      );
+
+      if (oversizedInFilter) {
+        return Promise.resolve({
+          count: 0,
+          data: [],
+          error: {
+            message: `IN filter for ${oversizedInFilter.column} exceeded ${options.maxInFilterValues} values.`,
+          },
+        }).then(onFulfilled, onRejected ?? undefined);
+      }
+
       const countRows = filters.reduce<readonly Row[]>((resultRows, filter) => {
         if (filter.type === 'eq') {
           return resultRows.filter(
@@ -351,6 +370,7 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
 function createCatalogSupabaseClientMock({
   catalogRows = [],
+  maxInFilterValues,
   primaryThemeRows = [],
   latestOfferRows,
   merchantRows,
@@ -362,6 +382,7 @@ function createCatalogSupabaseClientMock({
   themeSummaryRows = [],
 }: {
   catalogRows?: readonly Record<string, unknown>[];
+  maxInFilterValues?: number;
   primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
   merchantRows: readonly Record<string, unknown>[];
@@ -376,12 +397,14 @@ function createCatalogSupabaseClientMock({
     from: vi.fn((table: string) => {
       if (table === 'catalog_sets') {
         return createSupabaseTableBuilder(catalogRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'catalog_source_themes') {
         return createSupabaseTableBuilder(sourceThemeRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
@@ -394,6 +417,7 @@ function createCatalogSupabaseClientMock({
             ...primaryThemeRow,
           })),
           {
+            maxInFilterValues,
             onSelect: (args) => onSelect?.(table, args),
           },
         );
@@ -401,36 +425,42 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'catalog_theme_mappings') {
         return createSupabaseTableBuilder(themeMappingRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'catalog_theme_summaries') {
         return createSupabaseTableBuilder(themeSummaryRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'catalog_set_minifig_summaries') {
         return createSupabaseTableBuilder(minifigSummaryRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'commerce_offer_seeds') {
         return createSupabaseTableBuilder(offerSeedRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'commerce_merchants') {
         return createSupabaseTableBuilder(merchantRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
 
       if (table === 'commerce_offer_latest') {
         return createSupabaseTableBuilder(latestOfferRows, {
+          maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
       }
@@ -7860,6 +7890,57 @@ describe('catalog effective data access web', () => {
     expect(summaries.size).toBe(0);
   });
 
+  test('targeted current offer summaries chunk Supabase lookups for merchandising candidates', async () => {
+    const setIds = Array.from({ length: 150 }, (_, index) =>
+      String(70000 + index),
+    );
+    const latestOfferRows = setIds.map((setId, index) => ({
+      availability: 'in_stock',
+      currency_code: 'EUR',
+      fetch_status: 'success',
+      observed_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+      offer_seed_id: `seed-${setId}`,
+      price_minor: 10000 + index,
+      updated_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+    }));
+    const offerSeedRows = setIds.map((setId) => ({
+      id: `seed-${setId}`,
+      is_active: true,
+      merchant_id: 'merchant-goodbricks',
+      product_url: `https://goodbricks.example/${setId}`,
+      set_id: setId,
+      validation_status: 'valid',
+    }));
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows,
+      maxInFilterValues: 100,
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows,
+    });
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds,
+      supabaseClient,
+    });
+
+    expect(summaries.size).toBe(150);
+    expect(summaries.get('70149')).toMatchObject({
+      bestOffer: {
+        merchantSlug: 'goodbricks',
+        priceCents: 10149,
+      },
+      setId: '70149',
+    });
+  });
+
   test('loads current offer summaries independently from requested homepage set ids', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       catalogRows: [
@@ -8085,6 +8166,7 @@ describe('catalog effective data access web', () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       catalogRows: [],
       latestOfferRows,
+      maxInFilterValues: 100,
       merchantRows: [
         {
           id: 'merchant-goodbricks',
@@ -8107,6 +8189,48 @@ describe('catalog effective data access web', () => {
       },
       setId: '42177',
     });
+  });
+
+  test('current-offer candidate ids return a compact capped list for render paths', async () => {
+    const latestOfferRows = Array.from({ length: 250 }, (_, index) => ({
+      availability: 'in_stock',
+      currency_code: 'EUR',
+      fetch_status: 'success',
+      observed_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+      offer_seed_id: `seed-${index}`,
+      price_minor: 10000 + index,
+      updated_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+    }));
+    const offerSeedRows = latestOfferRows.map((latestOfferRow, index) => ({
+      id: latestOfferRow.offer_seed_id,
+      is_active: true,
+      merchant_id: 'merchant-goodbricks',
+      product_url: `https://goodbricks.example/${index}`,
+      set_id: String(70000 + index),
+      validation_status: 'valid',
+    }));
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows,
+      maxInFilterValues: 100,
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows,
+    });
+
+    const candidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
+      limit: 20,
+      supabaseClient,
+    });
+
+    expect(candidateSetIds).toHaveLength(20);
+    expect(candidateSetIds.every((setId) => /^\d+$/u.test(setId))).toBe(true);
   });
 
   test('returns clear commerce rail diagnostics when runtime Supabase config is missing', async () => {

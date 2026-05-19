@@ -28,6 +28,18 @@ export interface ReliableDealDiscount {
   metricLabel: string;
 }
 
+export interface CurrentOfferRailDiagnostics {
+  current_offer_count: number;
+  deal_candidate_count: number;
+  eligible_offer_count: number;
+  final_card_count: number;
+  rejected_missing_best_offer: number;
+  rejected_no_affiliate_url: number;
+  rejected_no_price: number;
+  rejected_out_of_stock: number;
+  sample_rejected_set_ids: readonly string[];
+}
+
 export function compareReliableDealDiscounts({
   left,
   leftMerchantCount,
@@ -63,6 +75,132 @@ function canBestOfferDriveDealClaims(
   return isCommerceCommercialUnitComparableForDeals(
     bestOffer?.commercialUnitType,
   );
+}
+
+function getCurrentOfferRejectionReason({
+  currentOfferSummary,
+}: {
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+}):
+  | keyof Pick<
+      CurrentOfferRailDiagnostics,
+      | 'rejected_missing_best_offer'
+      | 'rejected_no_affiliate_url'
+      | 'rejected_no_price'
+      | 'rejected_out_of_stock'
+    >
+  | null {
+  const bestOffer = currentOfferSummary?.bestOffer;
+
+  if (!bestOffer) {
+    return 'rejected_missing_best_offer';
+  }
+
+  if (bestOffer.availability === 'out_of_stock') {
+    return 'rejected_out_of_stock';
+  }
+
+  if (bestOffer.priceCents <= 0) {
+    return 'rejected_no_price';
+  }
+
+  if (!bestOffer.url) {
+    return 'rejected_no_affiliate_url';
+  }
+
+  return null;
+}
+
+export function selectCurrentOfferSetCards<
+  SetCard extends {
+    id: string;
+    name: string;
+    pieces: number;
+    releaseYear: number;
+  },
+>({
+  currentOfferSummaryBySetId,
+  excludedSetIds = [],
+  limit,
+  setCards,
+}: {
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  excludedSetIds?: readonly string[];
+  limit: number;
+  setCards: readonly SetCard[];
+}): SetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return [...setCards]
+    .filter(
+      (setCard) =>
+        !excludedSetIdSet.has(setCard.id) &&
+        getCurrentOfferRejectionReason({
+          currentOfferSummary: currentOfferSummaryBySetId.get(setCard.id),
+        }) === null,
+    )
+    .sort((left, right) => {
+      const leftSummary = currentOfferSummaryBySetId.get(left.id);
+      const rightSummary = currentOfferSummaryBySetId.get(right.id);
+
+      return (
+        (rightSummary?.offers.length ?? 0) -
+          (leftSummary?.offers.length ?? 0) ||
+        (rightSummary?.bestOffer?.checkedAt ?? '').localeCompare(
+          leftSummary?.bestOffer?.checkedAt ?? '',
+        ) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    })
+    .slice(0, limit);
+}
+
+export function getCurrentOfferRailDiagnostics<SetCard extends { id: string }>({
+  currentOfferSummaryBySetId,
+  finalSetCards,
+  setCards,
+}: {
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  finalSetCards: readonly SetCard[];
+  setCards: readonly SetCard[];
+}): CurrentOfferRailDiagnostics {
+  const diagnostics: CurrentOfferRailDiagnostics = {
+    current_offer_count: currentOfferSummaryBySetId.size,
+    deal_candidate_count: setCards.length,
+    eligible_offer_count: 0,
+    final_card_count: finalSetCards.length,
+    rejected_missing_best_offer: 0,
+    rejected_no_affiliate_url: 0,
+    rejected_no_price: 0,
+    rejected_out_of_stock: 0,
+    sample_rejected_set_ids: [],
+  };
+  const sampleRejectedSetIds: string[] = [];
+
+  for (const setCard of setCards) {
+    const rejectionReason = getCurrentOfferRejectionReason({
+      currentOfferSummary: currentOfferSummaryBySetId.get(setCard.id),
+    });
+
+    if (!rejectionReason) {
+      diagnostics.eligible_offer_count += 1;
+      continue;
+    }
+
+    diagnostics[rejectionReason] += 1;
+
+    if (sampleRejectedSetIds.length < 10) {
+      sampleRejectedSetIds.push(setCard.id);
+    }
+  }
+
+  return {
+    ...diagnostics,
+    sample_rejected_set_ids: sampleRejectedSetIds,
+  };
 }
 
 export function buildReliableDealDiscount({

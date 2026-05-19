@@ -1,6 +1,10 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
-import { buildCurrentSetCardPriceContextBySetId } from './lib/current-set-card-price-context';
+import {
+  buildCurrentSetCardPriceContextBySetId,
+  getCurrentOfferRailDiagnostics,
+  selectCurrentOfferSetCards,
+} from './lib/current-set-card-price-context';
 import styles from './page.module.css';
 import React from 'react';
 import {
@@ -15,7 +19,7 @@ import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogAllCurrentOfferSummaries,
+  listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
@@ -388,21 +392,31 @@ export default async function HomePage() {
     listHomepageThemeSpotlightItems(),
   ]);
   const commerceRailRotationSeed = 0;
+  const commerceCandidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
+    cacheOptions: {
+      revalidateSeconds: revalidate,
+      tags: [cacheTags.homepage(), cacheTags.prices()],
+    },
+    limit: 240,
+  });
+  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
+    canonicalIds: commerceCandidateSetIds,
+  });
   const currentOfferSummaryBySetId =
-    await listCachedCatalogAllCurrentOfferSummaries({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [cacheTags.homepage(), cacheTags.prices()],
-      },
-    });
+    commerceCandidateSetCards.length > 0
+      ? await listCatalogCurrentOfferSummariesBySetIds({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+            tags: [cacheTags.homepage(), cacheTags.prices()],
+          },
+          setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
+        })
+      : new Map();
   const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
     ? await getCatalogCommerceRailRuntimeDiagnostics({
         limit: 300,
       })
     : undefined;
-  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
-    canonicalIds: [...currentOfferSummaryBySetId.keys()],
-  });
   const catalogDiscoverySignalBySetId =
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
@@ -464,9 +478,35 @@ export default async function HomePage() {
     homepageSoftDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
       ? homepageSoftDealCandidates
       : [];
+  const homepageCurrentOfferCandidateSetCards = selectCurrentOfferSetCards({
+    currentOfferSummaryBySetId,
+    excludedSetIds: getUniqueCatalogSetIds([
+      homepageStrongDealSetCards,
+      homepageSoftDealSetCards,
+    ]),
+    limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+    setCards: commerceCandidateSetCards,
+  });
+  const homepageCurrentOfferCandidates = toFeatureSetListItems(
+    homepageCurrentOfferCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      catalogDiscoverySignalBySetId,
+      sectionId: 'current-offers',
+    },
+  ).filter(hasCommerceAction);
+  const homepageCurrentOfferSetCards =
+    homepageStrongDealSetCards.length === 0 &&
+    homepageSoftDealSetCards.length === 0 &&
+    homepageCurrentOfferCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageCurrentOfferCandidates
+      : [];
   const homepageRenderedDealSetCards = homepageStrongDealSetCards.length
     ? homepageStrongDealSetCards
-    : homepageSoftDealSetCards;
+    : homepageSoftDealSetCards.length
+      ? homepageSoftDealSetCards
+      : homepageCurrentOfferSetCards;
   if (isHomepageCommerceRailsDebugEnabled()) {
     console.info('[homepage-deal-quality]', {
       ...getCatalogHomepageDealQualityDiagnostics({
@@ -475,6 +515,11 @@ export default async function HomePage() {
         selectedSetCards: homepageRenderedDealSetCards,
         softSetCards: homepageSoftDealSetCards,
         strongSetCards: homepageStrongDealSetCards,
+        setCards: commerceCandidateSetCards,
+      }),
+      currentOfferFallback: getCurrentOfferRailDiagnostics({
+        currentOfferSummaryBySetId,
+        finalSetCards: homepageCurrentOfferSetCards,
         setCards: commerceCandidateSetCards,
       }),
     });
@@ -576,6 +621,18 @@ export default async function HomePage() {
               showSignal={false}
               tone="default"
               title="Nu lager geprijsd"
+            />
+          </div>
+        ) : homepageCurrentOfferSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Geen harde kortingclaim, wel actuele prijzen met een werkende winkelroute. Begin hier als je nu wilt vergelijken."
+              eyebrow="Actuele prijzen"
+              sectionId="current-offers"
+              setCards={homepageCurrentOfferSetCards}
+              showSignal={false}
+              tone="default"
+              title="Nu te vergelijken"
             />
           </div>
         ) : (

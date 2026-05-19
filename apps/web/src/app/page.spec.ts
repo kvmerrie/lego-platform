@@ -1,17 +1,20 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const pageMocks = vi.hoisted(() => ({
+  catalogFeatureSetList: vi.fn(),
   getHomepagePage: vi.fn(),
   getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
   getCatalogHomepageDealQualityDiagnostics: vi.fn(),
   getCatalogPartnerOfferRailDiagnostics: vi.fn(),
-  listCachedCatalogAllCurrentOfferSummaries: vi.fn(),
+  listCatalogCurrentOfferCandidateSetIds: vi.fn(),
   listCatalogCurrentOfferSummaries: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
   listCatalogSetCards: vi.fn(),
   listCatalogSetCardsByIds: vi.fn(),
   listDiscoverBestDealSetCards: vi.fn(),
+  listDiscoverNowInterestingSetCards: vi.fn(),
   listHomepageSetCards: vi.fn(),
   listHomepageThemeDirectoryItems: vi.fn(),
   listHomepageThemeSpotlightItems: vi.fn(),
@@ -31,8 +34,8 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
     pageMocks.getCatalogHomepageDealQualityDiagnostics,
   getCatalogPartnerOfferRailDiagnostics:
     pageMocks.getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogAllCurrentOfferSummaries:
-    pageMocks.listCachedCatalogAllCurrentOfferSummaries,
+  listCatalogCurrentOfferCandidateSetIds:
+    pageMocks.listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummaries: pageMocks.listCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummariesBySetIds:
     pageMocks.listCatalogCurrentOfferSummariesBySetIds,
@@ -41,6 +44,8 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listCatalogSetCards: pageMocks.listCatalogSetCards,
   listCatalogSetCardsByIds: pageMocks.listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards: pageMocks.listDiscoverBestDealSetCards,
+  listDiscoverNowInterestingSetCards:
+    pageMocks.listDiscoverNowInterestingSetCards,
   listHomepageSetCards: pageMocks.listHomepageSetCards,
   listHomepageThemeDirectoryItems: pageMocks.listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems: pageMocks.listHomepageThemeSpotlightItems,
@@ -52,7 +57,10 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
-  CatalogFeatureSetList: () => null,
+  CatalogFeatureSetList: (props: unknown) => {
+    pageMocks.catalogFeatureSetList(props);
+    return null;
+  },
 }));
 
 vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
@@ -87,6 +95,98 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 }));
 
 describe('home metadata', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
+    pageMocks.listHomepageSetCards.mockResolvedValue([]);
+    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+  });
+
+  it('renders current offer rail when hard and soft deal gates are empty', async () => {
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [],
+      seo: {
+        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
+        noIndex: false,
+        title: 'Brickhunt',
+      },
+    });
+    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
+    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
+    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
+    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+      '75355',
+    ]);
+    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map([
+        [
+          '42177',
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T08:00:00.000Z',
+              currency: 'EUR',
+              merchantName: 'Goodbricks',
+              priceCents: 19999,
+              url: 'https://example.com/42177',
+            },
+            offers: [{ merchantName: 'Goodbricks' }],
+            setId: '42177',
+          },
+        ],
+        [
+          '75355',
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T09:00:00.000Z',
+              currency: 'EUR',
+              merchantName: 'MisterBricks',
+              priceCents: 23999,
+              url: 'https://example.com/75355',
+            },
+            offers: [{ merchantName: 'MisterBricks' }],
+            setId: '75355',
+          },
+        ],
+      ]),
+    );
+    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '42177',
+        name: 'Mercedes-AMG F1 W14 E Performance',
+        pieces: 1642,
+        releaseYear: 2024,
+        slug: 'mercedes-amg-f1-w14-e-performance-42177',
+        theme: 'Technic',
+      },
+      {
+        id: '75355',
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ]);
+    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
+    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
+    pageMocks.listHomepageSetCards.mockResolvedValue([]);
+    const pageModule = await import('./page');
+    renderToStaticMarkup(await pageModule.default());
+
+    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Nu te vergelijken',
+      }),
+    );
+  });
+
   it('scopes homepage discovery signals to rendered catalog and commerce cards', async () => {
     pageMocks.getHomepagePage.mockResolvedValue({
       sections: [],
@@ -99,9 +199,9 @@ describe('home metadata', () => {
     pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
     pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
     pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCachedCatalogAllCurrentOfferSummaries.mockResolvedValue(
-      new Map([['42177', { setId: '42177', offers: [] }]]),
-    );
+    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+    ]);
     pageMocks.listCatalogSetCardsByIds.mockResolvedValue([{ id: '42177' }]);
     pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
     pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
@@ -136,9 +236,9 @@ describe('home metadata', () => {
     pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
     pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
     pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCachedCatalogAllCurrentOfferSummaries.mockResolvedValue(
-      new Map([['42177', { setId: '42177', offers: [] }]]),
-    );
+    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+    ]);
     pageMocks.listCatalogSetCardsByIds.mockResolvedValue([{ id: '42177' }]);
     pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
     pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);

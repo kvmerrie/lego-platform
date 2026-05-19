@@ -1,10 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const dealsPageMocks = vi.hoisted(() => ({
+  catalogSetCardRailSection: vi.fn(),
   getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
   getCatalogPartnerOfferRailDiagnostics: vi.fn(),
-  listCachedCatalogAllCurrentOfferSummaries: vi.fn(),
+  listCatalogCurrentOfferCandidateSetIds: vi.fn(),
   listCatalogCurrentOfferSummaries: vi.fn(),
+  listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
   listCatalogSetCardsByIds: vi.fn(),
   listDiscoverBestDealSetCards: vi.fn(),
@@ -17,10 +20,12 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
     dealsPageMocks.getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics:
     dealsPageMocks.getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogAllCurrentOfferSummaries:
-    dealsPageMocks.listCachedCatalogAllCurrentOfferSummaries,
+  listCatalogCurrentOfferCandidateSetIds:
+    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummaries:
     dealsPageMocks.listCatalogCurrentOfferSummaries,
+  listCatalogCurrentOfferSummariesBySetIds:
+    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId:
     dealsPageMocks.listCatalogDiscoverySignalsBySetId,
   listCatalogSetCardsByIds: dealsPageMocks.listCatalogSetCardsByIds,
@@ -32,10 +37,19 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/ui', () => ({
-  CatalogSetCardRailSection: () => null,
+  CatalogSetCardRailSection: (props: unknown) => {
+    dealsPageMocks.catalogSetCardRailSection(props);
+    return null;
+  },
 }));
 
 vi.mock('@lego-platform/pricing/data-access', () => ({
+  buildSetDecisionPresentation: () => ({
+    cardLabel: 'Actuele prijzen binnen',
+    verdict: {
+      tone: 'neutral',
+    },
+  }),
   getFeaturedSetPriceContext: () => undefined,
 }));
 
@@ -52,13 +66,69 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 }));
 
 describe('deals page discovery signals', () => {
-  it('scopes discovery signals to current commerce candidate cards', async () => {
-    dealsPageMocks.listCachedCatalogAllCurrentOfferSummaries.mockResolvedValue(
+  beforeEach(() => {
+    vi.clearAllMocks();
+    dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+    dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
+    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+  });
+
+  it('renders current offer cards when reference-discount deal gates are empty', async () => {
+    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+    ]);
+    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map([
-        ['42177', { setId: '42177', offers: [] }],
-        ['75398', { setId: '75398', offers: [] }],
+        [
+          '42177',
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T08:00:00.000Z',
+              currency: 'EUR',
+              merchantName: 'Goodbricks',
+              priceCents: 19999,
+              url: 'https://example.com/42177',
+            },
+            offers: [{ merchantName: 'Goodbricks' }],
+            setId: '42177',
+          },
+        ],
       ]),
     );
+    dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '42177',
+        name: 'Mercedes-AMG F1 W14 E Performance',
+        pieces: 1642,
+        releaseYear: 2024,
+        slug: 'mercedes-amg-f1-w14-e-performance-42177',
+        theme: 'Technic',
+      },
+    ]);
+    dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+    dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(await pageModule.default());
+
+    expect(dealsPageMocks.catalogSetCardRailSection).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Actueel te koop',
+      }),
+    );
+  });
+
+  it('scopes discovery signals to current commerce candidate cards', async () => {
+    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+      '75398',
+    ]);
     dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([
       { id: '42177' },
       { id: '75398' },

@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogAllCurrentOfferSummaries,
+  listCatalogCurrentOfferCandidateSetIds,
+  listCatalogCurrentOfferSummariesBySetIds,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCardsByIds,
@@ -35,6 +36,8 @@ import {
   buildCurrentSetCardPriceContextBySetId,
   compareReliableDealDiscounts,
   buildReliableDealDiscount,
+  getCurrentOfferRailDiagnostics,
+  selectCurrentOfferSetCards,
 } from '../lib/current-set-card-price-context';
 import styles from './deals-page.module.css';
 
@@ -89,6 +92,7 @@ function logDealsCommerceRailDiagnostics({
   displaySetCards,
   goodPricedCandidateSetCards,
   goodPricedSetCards,
+  currentOfferSetCards,
   recentPriceChangeSetCards,
   rotationSeed,
   runtimeDiagnostics,
@@ -104,6 +108,7 @@ function logDealsCommerceRailDiagnostics({
   displaySetCards: readonly DealsRailItem[];
   goodPricedCandidateSetCards: readonly CatalogHomepageSetCard[];
   goodPricedSetCards: readonly DealsRailItem[];
+  currentOfferSetCards: readonly DealsRailItem[];
   recentPriceChangeSetCards: readonly DealsRailItem[];
   rotationSeed: number;
   runtimeDiagnostics?: Awaited<
@@ -126,6 +131,7 @@ function logDealsCommerceRailDiagnostics({
     finalRailCounts: {
       bestDealsNow: bestDealSetCards.length,
       budget: budgetSetCards.length,
+      currentOffers: currentOfferSetCards.length,
       display: displaySetCards.length,
       goodPriced: goodPricedSetCards.length,
       recentPriceDrops: recentPriceChangeSetCards.length,
@@ -138,6 +144,11 @@ function logDealsCommerceRailDiagnostics({
       setCards: commerceCandidateSetCards,
     }),
     offerSignals: {
+      currentOfferFallback: getCurrentOfferRailDiagnostics({
+        currentOfferSummaryBySetId,
+        finalSetCards: currentOfferSetCards,
+        setCards: commerceCandidateSetCards,
+      }),
       firstCommerceCandidateSetIds: commerceCandidateSetCards
         .map((catalogSetCard) => catalogSetCard.id)
         .slice(0, 20),
@@ -457,16 +468,26 @@ function selectDealDisplaySetCards({
 }
 
 export default async function DealsPage() {
-  const currentOfferSummaryBySetId =
-    await listCachedCatalogAllCurrentOfferSummaries({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [cacheTags.deals(), cacheTags.prices()],
-      },
-    });
-  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
-    canonicalIds: [...currentOfferSummaryBySetId.keys()],
+  const commerceCandidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
+    cacheOptions: {
+      revalidateSeconds: revalidate,
+      tags: [cacheTags.deals(), cacheTags.prices()],
+    },
+    limit: 240,
   });
+  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
+    canonicalIds: commerceCandidateSetIds,
+  });
+  const currentOfferSummaryBySetId =
+    commerceCandidateSetCards.length > 0
+      ? await listCatalogCurrentOfferSummariesBySetIds({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+            tags: [cacheTags.deals(), cacheTags.prices()],
+          },
+          setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
+        })
+      : new Map();
   const catalogDiscoverySignalBySetId =
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
@@ -501,9 +522,25 @@ export default async function DealsPage() {
     sectionId: 'deals-good-priced',
     setCards: goodPricedCandidateSetCards,
   });
+  const currentOfferCandidateSetCards = selectCurrentOfferSetCards({
+    currentOfferSummaryBySetId,
+    excludedSetIds: getUniqueSetIds([bestDealSetCards, goodPricedSetCards]),
+    limit: DEALS_RAIL_LIMIT,
+    setCards: commerceCandidateSetCards,
+  });
+  const currentOfferSetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
+    currentOfferSummaryBySetId,
+    sectionId: 'deals-current-offers',
+    setCards: currentOfferCandidateSetCards,
+  });
   const recentPriceChangeCandidateSetCards =
     await listDiscoverRecentPriceChangeSetCards({
-      excludedSetIds: getUniqueSetIds([bestDealSetCards, goodPricedSetCards]),
+      excludedSetIds: getUniqueSetIds([
+        bestDealSetCards,
+        goodPricedSetCards,
+        currentOfferSetCards,
+      ]),
       getCatalogDiscoverySignalFn,
       limit: DEALS_RAIL_LIMIT,
       rotationSeed: commerceRailRotationSeed,
@@ -520,6 +557,7 @@ export default async function DealsPage() {
     excludedSetIds: getUniqueSetIds([
       bestDealSetCards,
       goodPricedSetCards,
+      currentOfferSetCards,
       recentPriceChangeSetCards,
     ]),
     setCards: commerceCandidateSetCards,
@@ -536,6 +574,7 @@ export default async function DealsPage() {
     excludedSetIds: getUniqueSetIds([
       bestDealSetCards,
       goodPricedSetCards,
+      currentOfferSetCards,
       recentPriceChangeSetCards,
       budgetSetCards,
     ]),
@@ -563,6 +602,7 @@ export default async function DealsPage() {
     displaySetCards,
     goodPricedCandidateSetCards,
     goodPricedSetCards,
+    currentOfferSetCards,
     recentPriceChangeSetCards,
     rotationSeed: commerceRailRotationSeed,
     runtimeDiagnostics: commerceRailRuntimeDiagnostics,
@@ -603,6 +643,22 @@ export default async function DealsPage() {
             titleAs="h2"
             tone="default"
             variant="featured"
+          />
+        ) : null}
+
+        {currentOfferSetCards.length ? (
+          <CatalogSetCardRailSection
+            as="section"
+            ariaLabel="Actueel te koop"
+            bodySpacing="relaxed"
+            description="Geen harde kortingclaim nodig: deze sets hebben nu een actuele prijs en een werkende winkelroute."
+            eyebrow="Actuele prijzen"
+            items={toRailItems(currentOfferSetCards)}
+            padding="default"
+            signal={formatSetCount(currentOfferSetCards.length)}
+            title="Actueel te koop"
+            titleAs="h2"
+            tone="default"
           />
         ) : null}
 
