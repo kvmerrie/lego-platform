@@ -9,9 +9,12 @@ import {
   type CatalogPrimaryOfferAvailabilityState,
   type CatalogCurrentOfferSummary,
   type CatalogDiscoverySignal,
+  listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   getCatalogSetBySlug,
+  listCatalogSetCards,
+  listCatalogSetCardsByIds,
   listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
@@ -90,6 +93,7 @@ const SET_DETAIL_CACHE_VERSION = 'v2';
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 20;
 const SET_NEWS_RAIL_LIMIT = 4;
+const SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT = 240;
 const SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS = 350;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
@@ -99,6 +103,34 @@ const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
 const SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const SET_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let setPagePerfLogCount = 0;
+
+function getSetDetailStaticParamsLimit(): number {
+  const value = Number(process.env['SET_DETAIL_STATIC_PARAMS_LIMIT']);
+
+  return Number.isFinite(value) && value > 0
+    ? Math.min(Math.trunc(value), 1_000)
+    : SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT;
+}
+
+function isSetDetailProductionBuild(): boolean {
+  return process.env['NEXT_PHASE'] === 'phase-production-build';
+}
+
+function shouldSkipSetDetailSsgOptionalRails(): boolean {
+  const explicitValue = process.env['SKIP_SET_DETAIL_SSG_OPTIONAL_RAILS']
+    ?.trim()
+    .toLowerCase();
+
+  if (explicitValue === 'false') {
+    return false;
+  }
+
+  if (explicitValue === 'true') {
+    return isSetDetailProductionBuild();
+  }
+
+  return isSetDetailProductionBuild();
+}
 
 function isSetPagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_SET_PAGE_PERF'] === 'true';
@@ -1419,7 +1451,48 @@ export function SetNewsRail({
 }
 
 export async function generateStaticParams() {
-  return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
+  const startedAt = Date.now();
+  const staticParamsLimit = getSetDetailStaticParamsLimit();
+  const [allSetSlugs, commerceCandidateSetIds, recentSetCards] =
+    await Promise.all([
+      listCatalogSetSlugs(),
+      listCatalogCurrentOfferCandidateSetIds({
+        limit: staticParamsLimit,
+      }),
+      listCatalogSetCards({
+        limit: staticParamsLimit,
+      }),
+    ]);
+  const commerceCandidateSetCards = commerceCandidateSetIds.length
+    ? await listCatalogSetCardsByIds({
+        canonicalIds: commerceCandidateSetIds,
+      })
+    : [];
+  const knownSlugSet = new Set(allSetSlugs);
+  const prerenderSlugs = [
+    ...new Set(
+      [...commerceCandidateSetCards, ...recentSetCards]
+        .map((setCard) => setCard.slug)
+        .filter((slug) => knownSlugSet.has(slug)),
+    ),
+  ].slice(0, staticParamsLimit);
+  const fallbackSlugs = prerenderSlugs.length
+    ? prerenderSlugs
+    : allSetSlugs.slice(0, staticParamsLimit);
+
+  console.info('[set-detail-static-params]', {
+    candidate_set_count: commerceCandidateSetIds.length,
+    duration_ms: Date.now() - startedAt,
+    prerendered_set_count: fallbackSlugs.length,
+    recent_set_count: recentSetCards.length,
+    skipped_static_set_count: Math.max(
+      allSetSlugs.length - fallbackSlugs.length,
+      0,
+    ),
+    total_set_count: allSetSlugs.length,
+  });
+
+  return fallbackSlugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -1849,6 +1922,21 @@ async function SetDetailSimilarSetsRailSlot({
   catalogSetDetail: CatalogSetDetail;
   slug: string;
 }) {
+  if (shouldSkipSetDetailSsgOptionalRails()) {
+    logSetPagePerf({
+      details: {
+        build_mode_optional_rail_skipped_count: 1,
+        rail: 'similar-sets',
+      },
+      durationMs: 0,
+      label: 'similar-sets:rail',
+      slug,
+      status: 'timeout',
+    });
+
+    return null;
+  }
+
   return withSetPageOptionalTimeout({
     fallback: null,
     label: 'similar-sets:rail',

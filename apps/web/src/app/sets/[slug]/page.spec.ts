@@ -5,8 +5,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 const setPageMocks = vi.hoisted(() => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId: vi.fn(),
   getCatalogSetBySlug: vi.fn(),
+  listCatalogCurrentOfferCandidateSetIds: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
+  listCatalogSetCards: vi.fn(),
+  listCatalogSetCardsByIds: vi.fn(),
   listCatalogSetLiveOffersBySetId: vi.fn(),
   listCatalogSetSlugs: vi.fn(),
   listCatalogSimilarSetCards: vi.fn(),
@@ -29,10 +32,14 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId:
     setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogSetBySlug: setPageMocks.getCatalogSetBySlug,
+  listCatalogCurrentOfferCandidateSetIds:
+    setPageMocks.listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummariesBySetIds:
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId:
     setPageMocks.listCatalogDiscoverySignalsBySetId,
+  listCatalogSetCards: setPageMocks.listCatalogSetCards,
+  listCatalogSetCardsByIds: setPageMocks.listCatalogSetCardsByIds,
   listCatalogSetLiveOffersBySetId: setPageMocks.listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs: setPageMocks.listCatalogSetSlugs,
   listCatalogSimilarSetCards: setPageMocks.listCatalogSimilarSetCards,
@@ -128,6 +135,9 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  delete process.env['NEXT_PHASE'];
+  delete process.env['SET_DETAIL_STATIC_PARAMS_LIMIT'];
+  delete process.env['SKIP_SET_DETAIL_SSG_OPTIONAL_RAILS'];
 });
 
 function createCurrentOfferSummaryMap({
@@ -156,6 +166,113 @@ function createCurrentOfferSummaryMap({
     ],
   ]);
 }
+
+describe('set detail static generation', () => {
+  it('prerenders a capped hot-set subset and leaves the rest for dynamic ISR', async () => {
+    process.env['SET_DETAIL_STATIC_PARAMS_LIMIT'] = '3';
+    const consoleInfoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    setPageMocks.listCatalogSetSlugs.mockResolvedValue([
+      'millennium-falcon-75192',
+      'rivendell-10316',
+      'x-wing-starfighter-75355',
+      'small-car-60400',
+      'wildflower-bouquet-10313',
+    ]);
+    setPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '75192',
+      '10316',
+    ]);
+    setPageMocks.listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75192',
+        name: 'Millennium Falcon',
+        slug: 'millennium-falcon-75192',
+      },
+      {
+        id: '10316',
+        name: 'Rivendell',
+        slug: 'rivendell-10316',
+      },
+    ]);
+    setPageMocks.listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75355',
+        name: 'X-wing Starfighter',
+        slug: 'x-wing-starfighter-75355',
+      },
+      {
+        id: '60400',
+        name: 'Small Car',
+        slug: 'small-car-60400',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const staticParams = await pageModule.generateStaticParams();
+
+    expect(staticParams).toEqual([
+      { slug: 'millennium-falcon-75192' },
+      { slug: 'rivendell-10316' },
+      { slug: 'x-wing-starfighter-75355' },
+    ]);
+    expect(
+      setPageMocks.listCatalogCurrentOfferCandidateSetIds,
+    ).toHaveBeenCalledWith({
+      limit: 3,
+    });
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[set-detail-static-params]',
+      expect.objectContaining({
+        prerendered_set_count: 3,
+        skipped_static_set_count: 2,
+        total_set_count: 5,
+      }),
+    );
+    consoleInfoSpy.mockRestore();
+  });
+
+  it('skips expensive similar-set rail work during production build SSG', async () => {
+    process.env['NEXT_PHASE'] = 'phase-production-build';
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '75355',
+      imageUrl: 'https://cdn.example.com/75355.jpg',
+      name: 'X-wing Starfighter',
+      pieces: 1949,
+      publicTheme: {
+        name: 'Star Wars',
+        slug: 'star-wars',
+      },
+      releaseYear: 2023,
+      slug: 'x-wing-starfighter-75355',
+      theme: 'Star Wars',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'x-wing-starfighter-75355',
+        }),
+      }),
+    );
+
+    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
+    expect(
+      setPageMocks.listCatalogDiscoverySignalsBySetId,
+    ).not.toHaveBeenCalled();
+  });
+});
 
 describe('set detail live offer loading', () => {
   it('tags live offer reads with price and set cache tags', async () => {
