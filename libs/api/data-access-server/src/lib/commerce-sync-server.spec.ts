@@ -49,6 +49,47 @@ describe('commerce sync server', () => {
     };
   }
 
+  function buildEligibleCommerceSeed() {
+    return {
+      merchant: {
+        id: 'merchant-goodbricks',
+        slug: 'goodbricks',
+        name: 'Goodbricks',
+        isActive: true,
+        sourceType: 'affiliate' as const,
+        notes: '',
+        createdAt: '2026-05-11T10:00:00.000Z',
+        updatedAt: '2026-05-11T10:00:00.000Z',
+      },
+      offerSeed: {
+        id: 'seed-10316-goodbricks',
+        setId: '10316',
+        merchantId: 'merchant-goodbricks',
+        productUrl: 'https://goodbricks.example/lego-10316',
+        isActive: true,
+        validationStatus: 'valid' as const,
+        notes: '',
+        createdAt: '2026-05-11T10:00:00.000Z',
+        updatedAt: '2026-05-11T10:00:00.000Z',
+        latestOffer: {
+          id: 'latest-10316-goodbricks',
+          offerSeedId: 'seed-10316-goodbricks',
+          setId: '10316',
+          merchantId: 'merchant-goodbricks',
+          productUrl: 'https://goodbricks.example/lego-10316',
+          fetchStatus: 'success' as const,
+          availability: 'in_stock' as const,
+          currencyCode: 'EUR',
+          fetchedAt: '2026-05-11T10:00:00.000Z',
+          observedAt: '2026-05-11T10:00:00.000Z',
+          priceMinor: 19995,
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+      },
+    };
+  }
+
   test('revalidates explicit catalog set and theme paths after a scoped write run', async () => {
     const refreshSeed = {
       merchant: {
@@ -129,6 +170,9 @@ describe('commerce sync server', () => {
           staleCount: 0,
         }),
         revalidatePublicCatalogPathsFn,
+        upsertCommerceCurrentOfferSnapshotsFn: vi
+          .fn()
+          .mockResolvedValue({ upsertedCount: 1 }),
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
           .fn()
           .mockResolvedValue({
@@ -490,6 +534,121 @@ describe('commerce sync server', () => {
     ).not.toHaveBeenCalled();
   });
 
+  test('writes current-offer snapshots only during write mode', async () => {
+    const syncSeed = buildEligibleCommerceSeed();
+    const upsertCommerceCurrentOfferSnapshotsFn = vi
+      .fn()
+      .mockResolvedValue({ upsertedCount: 1 });
+
+    const result = await runCommerceSync({
+      dependencies: {
+        listCatalogCurrentOfferSummariesBySetIdsFn: vi.fn().mockResolvedValue([
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-11T10:00:00.000Z',
+              commercialUnitType: 'full_set',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'other',
+              merchantName: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              priceCents: 19995,
+              setId: '10316',
+              url: 'https://goodbricks.example/lego-10316',
+            },
+            offers: [],
+            setId: '10316',
+          },
+        ]),
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue(
+          buildCommerceSyncInputMock({
+            refreshSeeds: [],
+            syncSeeds: [syncSeed],
+          }),
+        ),
+        upsertCommerceCurrentOfferSnapshotsFn,
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue({
+            points: [],
+            summary: {
+              latestOfferRowsSeen: 1,
+              eligibleLatestOfferRows: 0,
+              dailyHistoryPointsBuilt: 0,
+              maxObservedAgeHours: 48,
+              skipped: {
+                inactiveSeedOrMerchant: 0,
+                invalidSeed: 0,
+                missingLatest: 0,
+                missingOrInvalidPrice: 0,
+                nonEur: 0,
+                staleOrError: 0,
+                untrustedMerchant: 0,
+                unavailableForHeadline: 0,
+              },
+            },
+          }),
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(upsertCommerceCurrentOfferSnapshotsFn).toHaveBeenCalledWith({
+      snapshots: [
+        expect.objectContaining({
+          bestMerchantSlug: 'goodbricks',
+          bestPriceMinor: 19995,
+          setId: '10316',
+        }),
+      ],
+    });
+    expect(result.currentOfferSnapshotsUpsertedCount).toBe(1);
+    expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
+  });
+
+  test('keeps current-offer snapshot check mode read-only', async () => {
+    const upsertCommerceCurrentOfferSnapshotsFn = vi.fn();
+
+    await runCommerceSync({
+      dependencies: {
+        checkAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        checkPricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        listCatalogCurrentOfferSummariesBySetIdsFn: vi
+          .fn()
+          .mockResolvedValue([]),
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue(
+          buildCommerceSyncInputMock({
+            refreshSeeds: [],
+            syncSeeds: [buildEligibleCommerceSeed()],
+          }),
+        ),
+        upsertCommerceCurrentOfferSnapshotsFn,
+      },
+      mode: 'check',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(upsertCommerceCurrentOfferSnapshotsFn).not.toHaveBeenCalled();
+  });
+
   test('lifts latest offer data from sync seeds for daily history input', async () => {
     const syncSeeds = [
       {
@@ -655,6 +814,9 @@ describe('commerce sync server', () => {
             ],
           },
         }),
+        upsertCommerceCurrentOfferSnapshotsFn: vi
+          .fn()
+          .mockResolvedValue({ upsertedCount: 1 }),
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
         writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
           isClean: true,

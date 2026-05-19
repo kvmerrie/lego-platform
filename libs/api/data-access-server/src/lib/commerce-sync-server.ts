@@ -4,6 +4,7 @@ import {
   writeAffiliateGeneratedArtifacts,
 } from '@lego-platform/affiliate/data-access-server';
 import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
+import { listCatalogCurrentOfferSummariesBySetIds } from '@lego-platform/catalog/data-access-server';
 import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
   buildDailyPriceHistoryPointsFromCommerceLatestOffers,
@@ -27,6 +28,10 @@ import {
   refreshCommerceOfferSeeds,
   type CommerceSyncInputs,
 } from './commerce-refresh-server';
+import {
+  buildCommerceCurrentOfferSnapshots,
+  upsertCommerceCurrentOfferSnapshots,
+} from './commerce-current-offer-snapshot-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface CommerceGeneratedArtifactCheckResult {
@@ -37,6 +42,12 @@ export interface CommerceGeneratedArtifactCheckResult {
 export interface CommerceSyncRunResult {
   affiliateArtifactCheck: CommerceGeneratedArtifactCheckResult;
   affiliateOfferCount: number;
+  currentOfferSnapshotCount: number;
+  currentOfferSnapshotLiveSummaryCount: number;
+  currentOfferSnapshotMissingBestOfferCount: number;
+  currentOfferSnapshotOfferCount: number;
+  currentOfferSnapshotBestOfferMismatchCount: number;
+  currentOfferSnapshotsUpsertedCount: number;
   dailyHistorySummary: CommerceLatestOfferHistorySummary;
   dailyHistoryPointCount: number;
   enabledSetCount: number;
@@ -65,10 +76,12 @@ export interface CommerceCheckInputGuardContext {
 export interface CommerceSyncDependencies {
   checkAffiliateGeneratedArtifactsFn?: typeof checkAffiliateGeneratedArtifacts;
   checkPricingGeneratedArtifactsFn?: typeof checkPricingGeneratedArtifacts;
+  listCatalogCurrentOfferSummariesBySetIdsFn?: typeof listCatalogCurrentOfferSummariesBySetIds;
   listCatalogSetSummariesFn?: typeof listCatalogSetSummariesWithOverlay;
   loadCommerceSyncInputsFn?: typeof loadCommerceSyncInputs;
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
+  upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
@@ -299,6 +312,55 @@ function formatDailyHistorySummaryLog({
     .join(' ');
 }
 
+function formatCurrentOfferSnapshotSummaryLog({
+  builtCount,
+  liveSummaryCount,
+  missingBestOfferCount,
+  mode,
+  offerCount,
+  upsertedCount,
+  bestOfferMismatchCount,
+}: {
+  bestOfferMismatchCount: number;
+  builtCount: number;
+  liveSummaryCount: number;
+  missingBestOfferCount: number;
+  mode: 'check' | 'write';
+  offerCount: number;
+  upsertedCount: number;
+}): string {
+  return [
+    '[commerce-sync] current_offer_snapshots',
+    `mode=${mode}`,
+    `current_offer_snapshots_built=${builtCount}`,
+    `current_offer_snapshots_upserted=${upsertedCount}`,
+    `snapshot_offer_count=${offerCount}`,
+    `snapshot_missing_best_offer_count=${missingBestOfferCount}`,
+    `live_summary_count=${liveSummaryCount}`,
+    `snapshot_best_offer_mismatch_count=${bestOfferMismatchCount}`,
+  ].join(' ');
+}
+
+async function loadCurrentOfferSnapshotParitySummaries({
+  listCatalogCurrentOfferSummariesBySetIdsFn,
+  setIds,
+}: {
+  listCatalogCurrentOfferSummariesBySetIdsFn: typeof listCatalogCurrentOfferSummariesBySetIds;
+  setIds: readonly string[];
+}) {
+  if (!setIds.length) {
+    return [];
+  }
+
+  try {
+    return await listCatalogCurrentOfferSummariesBySetIdsFn({
+      setIds,
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function resolveCommerceCatalogSetSummaries({
   listCatalogSetSummariesFn = listCatalogSetSummariesWithOverlay,
   setIds,
@@ -350,10 +412,12 @@ export async function runCommerceSync({
   const {
     checkAffiliateGeneratedArtifactsFn = checkAffiliateGeneratedArtifacts,
     checkPricingGeneratedArtifactsFn = checkPricingGeneratedArtifacts,
+    listCatalogCurrentOfferSummariesBySetIdsFn = listCatalogCurrentOfferSummariesBySetIds,
     listCatalogSetSummariesFn = listCatalogSetSummariesWithOverlay,
     loadCommerceSyncInputsFn = loadCommerceSyncInputs,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
+    upsertCommerceCurrentOfferSnapshotsFn = upsertCommerceCurrentOfferSnapshots,
     upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
     writePricingGeneratedArtifactsFn = writePricingGeneratedArtifacts,
@@ -433,11 +497,13 @@ export async function runCommerceSync({
     setIds: scopedSetIds,
   });
   const { syncInputs } = refreshedCommerceSyncInputs;
-  const dailyHistoryInputs =
+  const syncSeeds =
     'syncSeeds' in refreshedCommerceSyncInputs
-      ? buildDailyHistoryInputsFromCommerceSyncSeeds(
-          refreshedCommerceSyncInputs.syncSeeds,
-        )
+      ? refreshedCommerceSyncInputs.syncSeeds
+      : [];
+  const dailyHistoryInputs =
+    syncSeeds.length > 0
+      ? buildDailyHistoryInputsFromCommerceSyncSeeds(syncSeeds)
       : [];
 
   if (!scoped && mode === 'check') {
@@ -515,6 +581,42 @@ export async function runCommerceSync({
     }),
   );
 
+  const currentOfferSnapshotSetIds = [
+    ...new Set(syncSeeds.map((syncSeed) => syncSeed.offerSeed.setId)),
+  ];
+  const currentOfferSnapshotLiveSummaries =
+    await loadCurrentOfferSnapshotParitySummaries({
+      listCatalogCurrentOfferSummariesBySetIdsFn,
+      setIds: currentOfferSnapshotSetIds,
+    });
+  const currentOfferSnapshotResult = buildCommerceCurrentOfferSnapshots({
+    liveSummaries: currentOfferSnapshotLiveSummaries,
+    now,
+    syncSeeds,
+  });
+  const currentOfferSnapshotUpsertResult =
+    mode === 'write'
+      ? await upsertCommerceCurrentOfferSnapshotsFn({
+          snapshots: currentOfferSnapshotResult.snapshots.filter(
+            (snapshot) => snapshot.offerCount > 0,
+          ),
+        })
+      : { upsertedCount: 0 };
+
+  console.info(
+    formatCurrentOfferSnapshotSummaryLog({
+      bestOfferMismatchCount:
+        currentOfferSnapshotResult.summary.snapshotBestOfferMismatchCount,
+      builtCount: currentOfferSnapshotResult.summary.currentOfferSnapshotsBuilt,
+      liveSummaryCount: currentOfferSnapshotResult.summary.liveSummaryCount,
+      missingBestOfferCount:
+        currentOfferSnapshotResult.summary.snapshotMissingBestOfferCount,
+      mode,
+      offerCount: currentOfferSnapshotResult.summary.snapshotOfferCount,
+      upsertedCount: currentOfferSnapshotUpsertResult.upsertedCount,
+    }),
+  );
+
   const aggregateArtifactsChanged =
     !scoped &&
     mode === 'write' &&
@@ -578,6 +680,18 @@ export async function runCommerceSync({
   return {
     affiliateArtifactCheck,
     affiliateOfferCount: affiliateArtifacts.affiliateOfferSnapshots.length,
+    currentOfferSnapshotBestOfferMismatchCount:
+      currentOfferSnapshotResult.summary.snapshotBestOfferMismatchCount,
+    currentOfferSnapshotCount:
+      currentOfferSnapshotResult.summary.currentOfferSnapshotsBuilt,
+    currentOfferSnapshotLiveSummaryCount:
+      currentOfferSnapshotResult.summary.liveSummaryCount,
+    currentOfferSnapshotMissingBestOfferCount:
+      currentOfferSnapshotResult.summary.snapshotMissingBestOfferCount,
+    currentOfferSnapshotOfferCount:
+      currentOfferSnapshotResult.summary.snapshotOfferCount,
+    currentOfferSnapshotsUpsertedCount:
+      currentOfferSnapshotUpsertResult.upsertedCount,
     dailyHistoryPointCount:
       mode === 'write'
         ? dailyPriceHistoryResult.points.length
