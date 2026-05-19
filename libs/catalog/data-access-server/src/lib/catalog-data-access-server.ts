@@ -3074,6 +3074,14 @@ export async function probeCatalogCurrentOfferSnapshotHitRateBySetIds({
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<{
   hitCount: number;
+  missingSample: Array<{
+    reason:
+      | 'invalid_scope'
+      | 'missing_best_offer'
+      | 'missing_snapshot'
+      | 'stale_snapshot';
+    setId: string;
+  }>;
   missCount: number;
   requestedCount: number;
 }> {
@@ -3088,6 +3096,7 @@ export async function probeCatalogCurrentOfferSnapshotHitRateBySetIds({
   if (!uniqueSetIds.length) {
     return {
       hitCount: 0,
+      missingSample: [],
       missCount: 0,
       requestedCount: 0,
     };
@@ -3096,6 +3105,10 @@ export async function probeCatalogCurrentOfferSnapshotHitRateBySetIds({
   if (!supabaseClient && !hasServerSupabaseConfig()) {
     return {
       hitCount: 0,
+      missingSample: uniqueSetIds.slice(0, 5).map((setId) => ({
+        reason: 'missing_snapshot',
+        setId,
+      })),
       missCount: uniqueSetIds.length,
       requestedCount: uniqueSetIds.length,
     };
@@ -3106,9 +3119,26 @@ export async function probeCatalogCurrentOfferSnapshotHitRateBySetIds({
     setIds: uniqueSetIds,
     supabaseClient: activeSupabaseClient,
   });
+  const invalidReasonBySetId = new Map(
+    snapshotResult.invalidSample.flatMap((sample) => {
+      const setId = typeof sample['setId'] === 'string' ? sample['setId'] : '';
+      const reason =
+        sample['reason'] === 'invalid_scope' ||
+        sample['reason'] === 'missing_best_offer' ||
+        sample['reason'] === 'stale_snapshot'
+          ? sample['reason']
+          : undefined;
+
+      return setId && reason ? [[setId, reason] as const] : [];
+    }),
+  );
 
   return {
     hitCount: snapshotResult.summaryBySetId.size,
+    missingSample: snapshotResult.fallbackSetIds.slice(0, 5).map((setId) => ({
+      reason: invalidReasonBySetId.get(setId) ?? 'missing_snapshot',
+      setId,
+    })),
     missCount: uniqueSetIds.length - snapshotResult.summaryBySetId.size,
     requestedCount: uniqueSetIds.length,
   };

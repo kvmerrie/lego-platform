@@ -696,7 +696,12 @@ export async function runCommerceSync({
         `snapshot_post_write_probe_requested=${snapshotPostWriteProbe.requestedCount}`,
         `snapshot_post_write_probe_hit_count=${snapshotPostWriteProbe.hitCount}`,
         `snapshot_post_write_probe_miss_count=${snapshotPostWriteProbe.missCount}`,
-      ].join(' '),
+        snapshotPostWriteProbe.missingSample.length
+          ? `snapshot_post_write_probe_missing_sample=${JSON.stringify(snapshotPostWriteProbe.missingSample)}`
+          : undefined,
+      ]
+        .filter((part): part is string => Boolean(part))
+        .join(' '),
     );
   }
 

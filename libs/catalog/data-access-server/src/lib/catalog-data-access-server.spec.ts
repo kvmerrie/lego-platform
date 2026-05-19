@@ -1338,8 +1338,62 @@ describe('catalog data access server', () => {
 
     expect(result).toEqual({
       hitCount: 1,
+      missingSample: [
+        {
+          reason: 'missing_snapshot',
+          setId: '10316',
+        },
+      ],
       missCount: 1,
       requestedCount: 2,
+    });
+  });
+
+  test('probes current-offer snapshot miss reasons without live fallback', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      snapshotRows: [
+        createCurrentOfferSnapshotRow({
+          best_price_minor: null,
+          set_id: '10316',
+        }),
+        createCurrentOfferSnapshotRow({
+          computed_at: '2020-01-01T00:00:00.000Z',
+          set_id: '42177',
+        }),
+        createCurrentOfferSnapshotRow({
+          region_code: 'BE',
+          set_id: '75355',
+        }),
+      ],
+    });
+
+    const result = await probeCatalogCurrentOfferSnapshotHitRateBySetIds({
+      setIds: ['10316', '42177', '75355', '43300'],
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      hitCount: 0,
+      missingSample: [
+        {
+          reason: 'missing_best_offer',
+          setId: '10316',
+        },
+        {
+          reason: 'stale_snapshot',
+          setId: '42177',
+        },
+        {
+          reason: 'invalid_scope',
+          setId: '75355',
+        },
+        {
+          reason: 'missing_snapshot',
+          setId: '43300',
+        },
+      ],
+      missCount: 4,
+      requestedCount: 4,
     });
   });
 
