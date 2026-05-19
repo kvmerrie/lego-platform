@@ -716,6 +716,10 @@ describe('commerce sync server', () => {
       listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[0]?.[0].setIds,
     ).toHaveLength(25);
     expect(
+      listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[0]?.[0]
+        .preferSnapshots,
+    ).toBe(false);
+    expect(
       listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[1]?.[0].setIds,
     ).toHaveLength(25);
     expect(

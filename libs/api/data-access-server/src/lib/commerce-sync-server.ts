@@ -4,7 +4,10 @@ import {
   writeAffiliateGeneratedArtifacts,
 } from '@lego-platform/affiliate/data-access-server';
 import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
-import { listCatalogCurrentOfferSummariesBySetIds } from '@lego-platform/catalog/data-access-server';
+import {
+  listCatalogCurrentOfferSummariesBySetIds,
+  probeCatalogCurrentOfferSnapshotHitRateBySetIds,
+} from '@lego-platform/catalog/data-access-server';
 import type { CatalogCurrentOfferSummaryRecord } from '@lego-platform/catalog/data-access-server';
 import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
@@ -88,6 +91,7 @@ export interface CommerceSyncDependencies {
   listCatalogCurrentOfferSummariesBySetIdsFn?: typeof listCatalogCurrentOfferSummariesBySetIds;
   listCatalogSetSummariesFn?: typeof listCatalogSetSummariesWithOverlay;
   loadCommerceSyncInputsFn?: typeof loadCommerceSyncInputs;
+  probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn?: typeof probeCatalogCurrentOfferSnapshotHitRateBySetIds;
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
@@ -413,6 +417,7 @@ async function loadCurrentOfferSnapshotParitySummaries({
     try {
       liveSummaries.push(
         ...(await listCatalogCurrentOfferSummariesBySetIdsFn({
+          preferSnapshots: false,
           setIds: chunkSetIds,
         })),
       );
@@ -485,6 +490,7 @@ export async function runCommerceSync({
     listCatalogCurrentOfferSummariesBySetIdsFn = listCatalogCurrentOfferSummariesBySetIds,
     listCatalogSetSummariesFn = listCatalogSetSummariesWithOverlay,
     loadCommerceSyncInputsFn = loadCommerceSyncInputs,
+    probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn = probeCatalogCurrentOfferSnapshotHitRateBySetIds,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
     upsertCommerceCurrentOfferSnapshotsFn = upsertCommerceCurrentOfferSnapshots,
@@ -673,6 +679,26 @@ export async function runCommerceSync({
           ),
         })
       : { upsertedCount: 0 };
+
+  if (mode === 'write' && inputSource === 'supabase') {
+    const probeSetIds = currentOfferSnapshotResult.snapshots
+      .filter((snapshot) => snapshot.offerCount > 0)
+      .slice(0, CURRENT_OFFER_SNAPSHOT_PARITY_SET_ID_CHUNK_SIZE)
+      .map((snapshot) => snapshot.setId);
+    const snapshotPostWriteProbe =
+      await probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn({
+        setIds: probeSetIds,
+      });
+
+    console.info(
+      [
+        '[commerce-sync] current_offer_snapshot_post_write_probe',
+        `snapshot_post_write_probe_requested=${snapshotPostWriteProbe.requestedCount}`,
+        `snapshot_post_write_probe_hit_count=${snapshotPostWriteProbe.hitCount}`,
+        `snapshot_post_write_probe_miss_count=${snapshotPostWriteProbe.missCount}`,
+      ].join(' '),
+    );
+  }
 
   console.info(
     formatCurrentOfferSnapshotSummaryLog({

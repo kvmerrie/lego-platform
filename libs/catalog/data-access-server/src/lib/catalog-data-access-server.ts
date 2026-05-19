@@ -2950,9 +2950,11 @@ export async function listCatalogSetLiveOffersBySetId({
 }
 
 export async function listCatalogCurrentOfferSummariesBySetIds({
+  preferSnapshots = true,
   setIds,
   supabaseClient,
 }: {
+  preferSnapshots?: boolean;
   setIds: readonly string[];
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCurrentOfferSummaryRecord[]> {
@@ -2975,6 +2977,28 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   try {
     const activeSupabaseClient =
       supabaseClient ?? getServerSupabaseAdminClient();
+
+    if (!preferSnapshots) {
+      const liveOffersBySetId = await listCatalogLiveOffersBySetIdsInternal({
+        setIds: uniqueSetIds,
+        supabaseClient: activeSupabaseClient,
+      });
+
+      return [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+        if (!offers.length) {
+          return [];
+        }
+
+        return [
+          {
+            bestOffer: selectBestLiveCatalogOffer(offers),
+            offers,
+            setId,
+          },
+        ];
+      });
+    }
+
     const snapshotStartedAt = Date.now();
     const snapshotResult = await listCatalogCurrentOfferSnapshotsBySetIds({
       setIds: uniqueSetIds,
@@ -3040,6 +3064,54 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 
     throw error;
   }
+}
+
+export async function probeCatalogCurrentOfferSnapshotHitRateBySetIds({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<{
+  hitCount: number;
+  missCount: number;
+  requestedCount: number;
+}> {
+  const uniqueSetIds = [
+    ...new Set(
+      setIds
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
+
+  if (!uniqueSetIds.length) {
+    return {
+      hitCount: 0,
+      missCount: 0,
+      requestedCount: 0,
+    };
+  }
+
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return {
+      hitCount: 0,
+      missCount: uniqueSetIds.length,
+      requestedCount: uniqueSetIds.length,
+    };
+  }
+
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const snapshotResult = await listCatalogCurrentOfferSnapshotsBySetIds({
+    setIds: uniqueSetIds,
+    supabaseClient: activeSupabaseClient,
+  });
+
+  return {
+    hitCount: snapshotResult.summaryBySetId.size,
+    missCount: uniqueSetIds.length - snapshotResult.summaryBySetId.size,
+    requestedCount: uniqueSetIds.length,
+  };
 }
 
 export async function getCatalogSetBySlugWithOverlay({

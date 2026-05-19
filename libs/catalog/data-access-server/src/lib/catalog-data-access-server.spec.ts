@@ -10,6 +10,7 @@ import {
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
+  probeCatalogCurrentOfferSnapshotHitRateBySetIds,
   refreshZeroPieceSets,
   searchCatalogMissingSets,
 } from './catalog-data-access-server';
@@ -1276,6 +1277,70 @@ describe('catalog data access server', () => {
     });
     expect(from).toHaveBeenCalledWith('commerce_current_offer_snapshots');
     expect(from).not.toHaveBeenCalledWith('commerce_offer_seeds');
+  });
+
+  test('can force current-offer summaries to use live reconstruction for internal parity', async () => {
+    const { from, supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [createCurrentOfferSnapshotRow()],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      preferSnapshots: false,
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'misterbricks',
+      priceCents: 24995,
+    });
+    expect(from).not.toHaveBeenCalledWith('commerce_current_offer_snapshots');
+  });
+
+  test('probes current-offer snapshot hit rate without live fallback', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      snapshotRows: [createCurrentOfferSnapshotRow()],
+    });
+
+    const result = await probeCatalogCurrentOfferSnapshotHitRateBySetIds({
+      setIds: ['43300', '10316'],
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      hitCount: 1,
+      missCount: 1,
+      requestedCount: 2,
+    });
   });
 
   test('falls back to live reconstruction when a snapshot is missing', async () => {
