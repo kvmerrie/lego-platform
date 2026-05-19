@@ -163,6 +163,11 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         values: readonly unknown[];
       }
     | {
+        type: 'gt';
+        column: keyof Row & string;
+        value: number;
+      }
+    | {
         type: 'order';
         column: keyof Row & string;
         ascending: boolean;
@@ -197,6 +202,15 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         column,
         type: 'in',
         values,
+      });
+
+      return builder;
+    },
+    gt(column: keyof Row & string, value: number) {
+      filters.push({
+        column,
+        type: 'gt',
+        value,
       });
 
       return builder;
@@ -286,6 +300,14 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
           );
         }
 
+        if (filter.type === 'gt') {
+          return resultRows.filter((row) => {
+            const rowValue = row[filter.column];
+
+            return typeof rowValue === 'number' && rowValue > filter.value;
+          });
+        }
+
         return resultRows;
       }, rows);
       const filteredRows = filters.reduce<readonly Row[]>(
@@ -300,6 +322,14 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
             return resultRows.filter((row) =>
               filter.values.includes(row[filter.column]),
             );
+          }
+
+          if (filter.type === 'gt') {
+            return resultRows.filter((row) => {
+              const rowValue = row[filter.column];
+
+              return typeof rowValue === 'number' && rowValue > filter.value;
+            });
           }
 
           if (filter.type === 'limit') {
@@ -377,6 +407,7 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows = [],
   offerSeedRows,
   onSelect,
+  rpcHandlers = {},
   sourceThemeRows = [],
   themeMappingRows = [],
   themeSummaryRows = [],
@@ -389,6 +420,13 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
+  rpcHandlers?: Record<
+    string,
+    (args?: Record<string, unknown>) => {
+      data: unknown;
+      error: { message?: string } | null;
+    }
+  >;
   sourceThemeRows?: readonly Record<string, unknown>[];
   themeMappingRows?: readonly Record<string, unknown>[];
   themeSummaryRows?: readonly Record<string, unknown>[];
@@ -466,6 +504,20 @@ function createCatalogSupabaseClientMock({
       }
 
       throw new Error(`Unexpected table requested in test: ${table}`);
+    }),
+    rpc: vi.fn((fn: string, args?: Record<string, unknown>) => {
+      const handler = rpcHandlers[fn];
+
+      if (!handler) {
+        return Promise.resolve({
+          data: null,
+          error: {
+            message: `Unexpected RPC requested in test: ${fn}`,
+          },
+        });
+      }
+
+      return Promise.resolve(handler(args));
     }),
   };
 }
@@ -8231,6 +8283,39 @@ describe('catalog effective data access web', () => {
 
     expect(candidateSetIds).toHaveLength(20);
     expect(candidateSetIds.every((setId) => /^\d+$/u.test(setId))).toBe(true);
+  });
+
+  test('current-offer candidate ids prefer compact database RPC over all-offer scan', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      rpcHandlers: {
+        list_catalog_current_offer_candidate_set_ids: () => ({
+          data: [
+            { set_id: '77244' },
+            { set_id: '77245-1' },
+            { set_id: '77244' },
+          ],
+          error: null,
+        }),
+      },
+    });
+
+    const candidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
+      limit: 20,
+      supabaseClient,
+    });
+
+    expect(candidateSetIds).toEqual(['77244', '77245']);
+    expect(supabaseClient.rpc).toHaveBeenCalledWith(
+      'list_catalog_current_offer_candidate_set_ids',
+      {
+        candidate_limit: 20,
+      },
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalled();
   });
 
   test('returns clear commerce rail diagnostics when runtime Supabase config is missing', async () => {

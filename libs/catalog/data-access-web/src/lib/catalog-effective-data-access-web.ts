@@ -69,6 +69,8 @@ const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
 const CATALOG_CURRENT_OFFER_PAGE_SIZE = 1000;
 const CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE = 100;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LIMIT = 240;
+const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_MULTIPLIER = 8;
+const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_LIMIT = 2_000;
 
 function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
@@ -5903,6 +5905,240 @@ export async function listCatalogAllCurrentOfferSummaries({
   }
 }
 
+function getSafeCatalogCurrentOfferCandidateLimit(limit: number): number {
+  return Math.min(Math.max(Math.trunc(limit), 1), 500);
+}
+
+function normalizeCatalogCurrentOfferCandidateSetIdRecords(
+  value: unknown,
+): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return [
+    ...new Set(
+      value.flatMap((record) => {
+        if (typeof record === 'string') {
+          return [getCanonicalCatalogSetId(record)];
+        }
+
+        if (!record || typeof record !== 'object') {
+          return [];
+        }
+
+        const setId = (record as { set_id?: unknown; setId?: unknown }).set_id;
+        const fallbackSetId = (record as { set_id?: unknown; setId?: unknown })
+          .setId;
+        const normalizedSetId = getCanonicalCatalogSetId(
+          typeof setId === 'string'
+            ? setId
+            : typeof fallbackSetId === 'string'
+              ? fallbackSetId
+              : '',
+        );
+
+        return normalizedSetId ? [normalizedSetId] : [];
+      }),
+    ),
+  ];
+}
+
+async function listCatalogCurrentOfferCandidateSetIdsFromRpc({
+  limit,
+  supabaseClient,
+}: {
+  limit: number;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<string[] | undefined> {
+  const rpcClient = supabaseClient as CatalogSupabaseClient & {
+    rpc?: (
+      fn: string,
+      args?: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message?: string } | null }>;
+  };
+
+  if (typeof rpcClient.rpc !== 'function') {
+    return undefined;
+  }
+
+  const { data, error } = await rpcClient.rpc(
+    'list_catalog_current_offer_candidate_set_ids',
+    {
+      candidate_limit: limit,
+    },
+  );
+
+  if (error) {
+    return undefined;
+  }
+
+  return normalizeCatalogCurrentOfferCandidateSetIdRecords(data).slice(
+    0,
+    limit,
+  );
+}
+
+async function listCatalogCurrentOfferCandidateSetIdsFromCompactQueries({
+  limit,
+  supabaseClient,
+}: {
+  limit: number;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<string[]> {
+  const latestLookupLimit = Math.min(
+    Math.max(
+      limit * CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_MULTIPLIER,
+      limit,
+    ),
+    CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_LIMIT,
+  );
+  const { data: latestOfferData, error: latestOfferError } =
+    await supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
+      )
+      .eq('fetch_status', 'success')
+      .eq('currency_code', 'EUR')
+      .gt('price_minor', 0)
+      .in('availability', ['in_stock', 'limited'])
+      .order('updated_at', {
+        ascending: false,
+      })
+      .limit(latestLookupLimit);
+
+  if (latestOfferError) {
+    throw new Error('Unable to load current offer candidate set ids.');
+  }
+
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (const latestOffer of (latestOfferData as
+    | CatalogCommerceOfferLatestRow[]
+    | null) ?? []) {
+    if (!latestOfferBySeedId.has(latestOffer.offer_seed_id)) {
+      latestOfferBySeedId.set(latestOffer.offer_seed_id, latestOffer);
+    }
+  }
+
+  if (!latestOfferBySeedId.size) {
+    return [];
+  }
+
+  const offerSeeds: CatalogCommerceOfferSeedRow[] = [];
+
+  for (const seedIdChunk of chunkCatalogValues(
+    [...latestOfferBySeedId.keys()],
+    CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE,
+  )) {
+    const { data: seedData, error: seedError } = await supabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .select(
+        'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
+      )
+      .in('id', seedIdChunk)
+      .eq('is_active', true)
+      .eq('validation_status', 'valid');
+
+    if (seedError) {
+      throw new Error('Unable to load current offer candidate set ids.');
+    }
+
+    offerSeeds.push(
+      ...((seedData as CatalogCommerceOfferSeedRow[] | null) ?? []),
+    );
+  }
+
+  if (!offerSeeds.length) {
+    return [];
+  }
+
+  const merchantIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+  ];
+  const { data: merchantData, error: merchantError } = await supabaseClient
+    .from(COMMERCE_MERCHANTS_TABLE)
+    .select('id, slug, name, is_active')
+    .in('id', merchantIds)
+    .eq('is_active', true);
+
+  if (merchantError) {
+    throw new Error('Unable to load current offer candidate set ids.');
+  }
+
+  const merchantById = new Map(
+    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+      (merchantRow) => [merchantRow.id, merchantRow],
+    ),
+  );
+  const candidateBySetId = new Map<
+    string,
+    {
+      bestPriceCents: number;
+      latestCheckedAt: string;
+      offerCount: number;
+    }
+  >();
+
+  for (const offerSeed of offerSeeds) {
+    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+    const merchant = merchantById.get(offerSeed.merchant_id);
+
+    if (
+      !latestOffer ||
+      !merchant ||
+      !isCommerceMerchantProductionFeed(merchant.slug)
+    ) {
+      continue;
+    }
+
+    const catalogRuntimeOffer = toCatalogRuntimeOffer({
+      latestOffer,
+      merchant,
+      offerSeed,
+    });
+
+    if (
+      !catalogRuntimeOffer ||
+      catalogRuntimeOffer.availability !== 'in_stock' ||
+      catalogRuntimeOffer.priceCents <= 0 ||
+      catalogRuntimeOffer.url.length === 0 ||
+      !isCommerceCommercialUnitComparableForDeals(
+        catalogRuntimeOffer.commercialUnitType,
+      )
+    ) {
+      continue;
+    }
+
+    const existingCandidate = candidateBySetId.get(catalogRuntimeOffer.setId);
+
+    candidateBySetId.set(catalogRuntimeOffer.setId, {
+      bestPriceCents: Math.min(
+        existingCandidate?.bestPriceCents ?? Number.MAX_SAFE_INTEGER,
+        catalogRuntimeOffer.priceCents,
+      ),
+      latestCheckedAt:
+        existingCandidate &&
+        existingCandidate.latestCheckedAt > catalogRuntimeOffer.checkedAt
+          ? existingCandidate.latestCheckedAt
+          : catalogRuntimeOffer.checkedAt,
+      offerCount: (existingCandidate?.offerCount ?? 0) + 1,
+    });
+  }
+
+  return [...candidateBySetId.entries()]
+    .sort(
+      ([leftSetId, left], [rightSetId, right]) =>
+        right.offerCount - left.offerCount ||
+        right.latestCheckedAt.localeCompare(left.latestCheckedAt) ||
+        left.bestPriceCents - right.bestPriceCents ||
+        leftSetId.localeCompare(rightSetId),
+    )
+    .map(([setId]) => setId)
+    .slice(0, limit);
+}
+
 export async function listCatalogCurrentOfferCandidateSetIds({
   cacheOptions,
   limit = CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LIMIT,
@@ -5914,32 +6150,28 @@ export async function listCatalogCurrentOfferCandidateSetIds({
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<string[]> {
   const loadCandidateSetIds = async () => {
-    const currentOfferSummaryBySetId =
-      await listCatalogAllCurrentOfferSummaries({
-        supabaseClient,
-      });
-    const candidateLimit = Math.min(Math.max(Math.trunc(limit), 1), 500);
+    const activeSupabaseClient =
+      supabaseClient ?? getWebCatalogSupabaseReadClient();
+    const candidateLimit = getSafeCatalogCurrentOfferCandidateLimit(limit);
 
-    return [...currentOfferSummaryBySetId.values()]
-      .filter(
-        (currentOfferSummary) =>
-          currentOfferSummary.bestOffer &&
-          currentOfferSummary.bestOffer.availability !== 'out_of_stock' &&
-          currentOfferSummary.bestOffer.priceCents > 0 &&
-          currentOfferSummary.bestOffer.url.length > 0,
-      )
-      .sort(
-        (left, right) =>
-          right.offers.length - left.offers.length ||
-          (right.bestOffer?.checkedAt ?? '').localeCompare(
-            left.bestOffer?.checkedAt ?? '',
-          ) ||
-          (left.bestOffer?.priceCents ?? Number.MAX_SAFE_INTEGER) -
-            (right.bestOffer?.priceCents ?? Number.MAX_SAFE_INTEGER) ||
-          left.setId.localeCompare(right.setId),
-      )
-      .map((currentOfferSummary) => currentOfferSummary.setId)
-      .slice(0, candidateLimit);
+    if (!activeSupabaseClient) {
+      return [];
+    }
+
+    const rpcCandidateSetIds =
+      await listCatalogCurrentOfferCandidateSetIdsFromRpc({
+        limit: candidateLimit,
+        supabaseClient: activeSupabaseClient,
+      });
+
+    if (rpcCandidateSetIds) {
+      return rpcCandidateSetIds;
+    }
+
+    return listCatalogCurrentOfferCandidateSetIdsFromCompactQueries({
+      limit: candidateLimit,
+      supabaseClient: activeSupabaseClient,
+    });
   };
 
   if (!cacheOptions || supabaseClient) {
