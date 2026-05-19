@@ -103,6 +103,18 @@ const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
 const SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const SET_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let setPagePerfLogCount = 0;
+let similarRailCompletedCount = 0;
+let similarRailDurationTotalMs = 0;
+let similarRailTimeoutCount = 0;
+let similarRailCancelledQueryCount = 0;
+let similarRailSkippedAfterTimeoutCount = 0;
+
+class SetPageOptionalRailAbortError extends Error {
+  constructor(message = 'Set detail optional rail aborted.') {
+    super(message);
+    this.name = 'SetPageOptionalRailAbortError';
+  }
+}
 
 function getSetDetailStaticParamsLimit(): number {
   const value = Number(process.env['SET_DETAIL_STATIC_PARAMS_LIMIT']);
@@ -220,6 +232,47 @@ function logSetPagePerf({
   });
 }
 
+function isSetPageAbortError(error: unknown): boolean {
+  return (
+    error instanceof SetPageOptionalRailAbortError ||
+    (error instanceof Error && error.name === 'AbortError')
+  );
+}
+
+function getSimilarRailDiagnostics({
+  durationMs,
+}: {
+  durationMs?: number;
+} = {}) {
+  return {
+    average_similar_rail_duration_ms: similarRailCompletedCount
+      ? Math.round(similarRailDurationTotalMs / similarRailCompletedCount)
+      : durationMs,
+    cancelled_query_count: similarRailCancelledQueryCount,
+    similar_rail_timeout_count: similarRailTimeoutCount,
+    skipped_after_timeout_count: similarRailSkippedAfterTimeoutCount,
+  };
+}
+
+function recordSimilarRailCompletion(durationMs: number) {
+  similarRailCompletedCount += 1;
+  similarRailDurationTotalMs += durationMs;
+}
+
+function recordSimilarRailTimeout() {
+  similarRailTimeoutCount += 1;
+  similarRailCancelledQueryCount += 1;
+}
+
+function throwIfSimilarRailAborted(signal: AbortSignal) {
+  if (!signal.aborted) {
+    return;
+  }
+
+  similarRailSkippedAfterTimeoutCount += 1;
+  throw new SetPageOptionalRailAbortError();
+}
+
 async function measureSetPageFetch<T>({
   label,
   load,
@@ -310,20 +363,60 @@ async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
 async function withSetPageOptionalTimeout<T>({
   fallback,
   label,
-  promise,
+  load,
   slug,
   timeoutMs = SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS,
 }: {
   fallback: T;
   label: string;
-  promise: Promise<T>;
+  load: (signal: AbortSignal) => Promise<T>;
   slug: string;
   timeoutMs?: number;
 }): Promise<T> {
+  const abortController = new AbortController();
   let timeout: ReturnType<typeof setTimeout> | undefined;
+  let didTimeout = false;
+  const startedAt = Date.now();
+  const workPromise = load(abortController.signal)
+    .then((result) => {
+      if (abortController.signal.aborted) {
+        return fallback;
+      }
+
+      if (label === 'similar-sets:rail') {
+        recordSimilarRailCompletion(Date.now() - startedAt);
+      }
+
+      return result;
+    })
+    .catch((error) => {
+      if (isSetPageAbortError(error) || abortController.signal.aborted) {
+        return fallback;
+      }
+
+      logSetPagePerf({
+        durationMs: Date.now() - startedAt,
+        label,
+        slug,
+        status: 'error',
+      });
+
+      return fallback;
+    });
   const timeoutPromise = new Promise<T>((resolve) => {
     timeout = setTimeout(() => {
+      didTimeout = true;
+      abortController.abort();
+
+      if (label === 'similar-sets:rail') {
+        recordSimilarRailTimeout();
+      }
+
       logSetPagePerf({
+        details:
+          label === 'similar-sets:rail'
+            ? getSimilarRailDiagnostics({ durationMs: timeoutMs })
+            : undefined,
         durationMs: timeoutMs,
         label,
         slug,
@@ -335,10 +428,14 @@ async function withSetPageOptionalTimeout<T>({
   });
 
   try {
-    return await Promise.race([promise.catch(() => fallback), timeoutPromise]);
+    return await Promise.race([workPromise, timeoutPromise]);
   } finally {
     if (timeout) {
       clearTimeout(timeout);
+    }
+
+    if (didTimeout) {
+      workPromise.catch(() => undefined);
     }
   }
 }
@@ -1940,11 +2037,13 @@ async function SetDetailSimilarSetsRailSlot({
   return withSetPageOptionalTimeout({
     fallback: null,
     label: 'similar-sets:rail',
-    promise: loadSetDetailSimilarSetsRail({
-      bestPriceMinor,
-      catalogSetDetail,
-      slug,
-    }),
+    load: (signal) =>
+      loadSetDetailSimilarSetsRail({
+        bestPriceMinor,
+        catalogSetDetail,
+        signal,
+        slug,
+      }),
     slug,
   });
 }
@@ -1952,12 +2051,16 @@ async function SetDetailSimilarSetsRailSlot({
 async function loadSetDetailSimilarSetsRail({
   bestPriceMinor,
   catalogSetDetail,
+  signal,
   slug,
 }: {
   bestPriceMinor?: number;
   catalogSetDetail: CatalogSetDetail;
+  signal: AbortSignal;
   slug: string;
 }) {
+  throwIfSimilarRailAborted(signal);
+
   const currentSetCard = {
     id: catalogSetDetail.id,
     name: catalogSetDetail.name,
@@ -1973,8 +2076,12 @@ async function loadSetDetailSimilarSetsRail({
         currentSetCard,
         limit: SIMILAR_SETS_RAIL_LIMIT * 4,
         referenceBestPriceMinor: bestPriceMinor,
+        signal,
       }),
   });
+
+  throwIfSimilarRailAborted(signal);
+
   const catalogDiscoverySignalBySetId = await measureSetPageFetch({
     label: 'discovery-signals',
     slug,
@@ -1994,8 +2101,12 @@ async function loadSetDetailSimilarSetsRail({
           catalogSetDetail.id,
           ...similarSetCandidateCards.map((setCard) => setCard.id),
         ],
+        signal,
       }),
   });
+
+  throwIfSimilarRailAborted(signal);
+
   const similarSetCards = measureSetPageSync({
     label: 'similar-sets:rank',
     slug,
@@ -2009,6 +2120,9 @@ async function loadSetDetailSimilarSetsRail({
         setCards: similarSetCandidateCards,
       }),
   });
+
+  throwIfSimilarRailAborted(signal);
+
   const similarSetCurrentOfferSummaryBySetId =
     similarSetCards.length > 0
       ? await measureSetPageFetch({
@@ -2026,9 +2140,13 @@ async function loadSetDetailSimilarSetsRail({
                 ],
               },
               setIds: similarSetCards.map((setCard) => setCard.id),
+              signal,
             }),
         })
       : new Map();
+
+  throwIfSimilarRailAborted(signal);
+
   const similarSetRailItems = toSimilarSetRailItems({
     currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
     setCards: similarSetCards,
@@ -2061,10 +2179,11 @@ async function SetDetailNewsRailSlot({
   return withSetPageOptionalTimeout({
     fallback: null,
     label: 'articles:rail',
-    promise: loadSetDetailNewsRail({
-      setId,
-      slug,
-    }),
+    load: () =>
+      loadSetDetailNewsRail({
+        setId,
+        slug,
+      }),
     slug,
   });
 }

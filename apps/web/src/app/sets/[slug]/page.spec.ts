@@ -987,6 +987,8 @@ describe('set detail page JSON-LD', () => {
   });
 
   it('does not block initial render when optional similar and article rails are slow', async () => {
+    let similarRailAbortSignal: AbortSignal | undefined;
+
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '75355',
       imageUrl: 'https://cdn.example.com/75355.jpg',
@@ -1008,9 +1010,11 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockImplementation(
-      () => new Promise(() => undefined),
-    );
+    setPageMocks.listCatalogSimilarSetCards.mockImplementation(({ signal }) => {
+      similarRailAbortSignal = signal;
+
+      return new Promise(() => undefined);
+    });
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockImplementation(
       () => new Promise(() => undefined),
     );
@@ -1027,6 +1031,10 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('data-testid="set-detail"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('href="/deals"');
+
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
+    expect(similarRailAbortSignal?.aborted).toBe(true);
   });
 
   it('links set breadcrumbs to a public curated parent theme when available', async () => {

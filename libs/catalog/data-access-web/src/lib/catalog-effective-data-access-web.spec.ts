@@ -7724,6 +7724,31 @@ describe('catalog effective data access web', () => {
     expect(summaries.has('75398')).toBe(false);
   });
 
+  test('passes abort signals to targeted current offer summary API reads', async () => {
+    const abortController = new AbortController();
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['42172'],
+      signal: abortController.signal,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/current-offer-summaries?setIds=42172',
+      expect.objectContaining({
+        signal: abortController.signal,
+      }),
+    );
+  });
+
   test('normalizes real-shaped current offer summary fields from the public API', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
@@ -8635,6 +8660,31 @@ describe('catalog effective data access web', () => {
           revalidate: 21_600,
           tags: ['prices'],
         },
+      }),
+    );
+  });
+
+  test('passes abort signals to runtime discovery signal API reads', async () => {
+    const abortController = new AbortController();
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await listCatalogDiscoverySignalsBySetId({
+      fetchImpl,
+      setIds: ['75355'],
+      signal: abortController.signal,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/discovery-signals?setIds=75355',
+      expect.objectContaining({
+        signal: abortController.signal,
       }),
     );
   });

@@ -100,6 +100,9 @@ const catalogSetOverlayByCanonicalId = new Map(
 );
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
+type CatalogAbortableQuery<T> = T & {
+  abortSignal?: (signal: AbortSignal) => T;
+};
 
 const CATALOG_THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const CATALOG_THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
@@ -107,6 +110,24 @@ let catalogThemePagePerfLogCount = 0;
 
 function isCatalogThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
+}
+
+function applyCatalogAbortSignal<T>(query: T, signal?: AbortSignal): T {
+  if (!signal) {
+    return query;
+  }
+
+  const abortableQuery = query as CatalogAbortableQuery<T>;
+
+  return typeof abortableQuery.abortSignal === 'function'
+    ? abortableQuery.abortSignal(signal)
+    : query;
+}
+
+function throwIfCatalogReadAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new DOMException('Catalog read aborted.', 'AbortError');
+  }
 }
 
 function isCatalogThemePagePerfVerboseEnabled(): boolean {
@@ -1721,12 +1742,14 @@ async function listCatalogSetCardsFromSupabase({
   offset = 0,
   orderBy = 'created_at',
   ascending = false,
+  signal,
   supabaseClient,
 }: {
   ascending?: boolean;
   limit?: number;
   offset?: number;
   orderBy?: 'created_at' | 'name' | 'release_year' | 'updated_at';
+  signal?: AbortSignal;
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   const activeSupabaseClient =
@@ -1743,16 +1766,23 @@ async function listCatalogSetCardsFromSupabase({
   const safeOffset = normalizeCatalogReadOffset(offset);
 
   try {
-    const { data, error } = await activeSupabaseClient
-      .from(CATALOG_SETS_TABLE)
-      .select(CATALOG_SET_SELECT_COLUMNS)
-      .eq('status', 'active')
-      .order(orderBy, { ascending })
-      .range(safeOffset, safeOffset + safeLimit - 1);
+    throwIfCatalogReadAborted(signal);
+
+    const { data, error } = await applyCatalogAbortSignal(
+      activeSupabaseClient
+        .from(CATALOG_SETS_TABLE)
+        .select(CATALOG_SET_SELECT_COLUMNS)
+        .eq('status', 'active')
+        .order(orderBy, { ascending })
+        .range(safeOffset, safeOffset + safeLimit - 1),
+      signal,
+    );
 
     if (error) {
       throw new Error('Unable to load catalog set cards.');
     }
+
+    throwIfCatalogReadAborted(signal);
 
     const catalogRows = (data as CatalogSetRow[] | null) ?? [];
     const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
@@ -1782,12 +1812,14 @@ async function listAllCatalogSetCards({
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   limit = CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT,
   offset = 0,
+  signal,
   supabaseClient,
 }: {
   allowFullCatalogRead?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   limit?: number;
   offset?: number;
+  signal?: AbortSignal;
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   if (
@@ -1797,9 +1829,12 @@ async function listAllCatalogSetCards({
     return listCatalogSetCardsFromSupabase({
       limit,
       offset,
+      signal,
       supabaseClient,
     });
   }
+
+  throwIfCatalogReadAborted(signal);
 
   return (await listCanonicalCatalogSetsFn()).map(
     toCatalogSetCardFromCanonicalSet,
@@ -4833,9 +4868,11 @@ export async function listCatalogSetCardsByIds({
 
 async function listCatalogRuntimeOffersBySetIdsFromSupabase({
   setIds,
+  signal,
   supabaseClient,
 }: {
   setIds: readonly string[];
+  signal?: AbortSignal;
   supabaseClient: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogRuntimeOffer[]>> {
   const uniqueSetIds = [
@@ -4861,14 +4898,19 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
     setIdLookupVariants,
     CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE,
   )) {
-    const { data: seedData, error: seedError } = await supabaseClient
-      .from(COMMERCE_OFFER_SEEDS_TABLE)
-      .select(
-        'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
-      )
-      .in('set_id', setIdLookupVariantChunk)
-      .eq('is_active', true)
-      .eq('validation_status', 'valid');
+    throwIfCatalogReadAborted(signal);
+
+    const { data: seedData, error: seedError } = await applyCatalogAbortSignal(
+      supabaseClient
+        .from(COMMERCE_OFFER_SEEDS_TABLE)
+        .select(
+          'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
+        )
+        .in('set_id', setIdLookupVariantChunk)
+        .eq('is_active', true)
+        .eq('validation_status', 'valid'),
+      signal,
+    );
 
     if (seedError) {
       throw new Error('Unable to load live catalog offers.');
@@ -4889,27 +4931,38 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
   const offerSeedIds = [
     ...new Set(offerSeeds.map((offerSeed) => offerSeed.id)),
   ];
-  const { data: merchantData, error: merchantError } = await supabaseClient
-    .from(COMMERCE_MERCHANTS_TABLE)
-    .select('id, slug, name, is_active')
-    .in('id', merchantIds)
-    .eq('is_active', true);
+  throwIfCatalogReadAborted(signal);
+
+  const { data: merchantData, error: merchantError } =
+    await applyCatalogAbortSignal(
+      supabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select('id, slug, name, is_active')
+        .in('id', merchantIds)
+        .eq('is_active', true),
+      signal,
+    );
   const latestOfferRows: CatalogCommerceOfferLatestRow[] = [];
 
   for (const offerSeedIdChunk of chunkCatalogValues(
     offerSeedIds,
     CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE,
   )) {
+    throwIfCatalogReadAborted(signal);
+
     const { data: latestOfferData, error: latestOfferError } =
-      await supabaseClient
-        .from(COMMERCE_OFFER_LATEST_TABLE)
-        .select(
-          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
-        )
-        .in('offer_seed_id', offerSeedIdChunk)
-        .order('updated_at', {
-          ascending: false,
-        });
+      await applyCatalogAbortSignal(
+        supabaseClient
+          .from(COMMERCE_OFFER_LATEST_TABLE)
+          .select(
+            'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
+          )
+          .in('offer_seed_id', offerSeedIdChunk)
+          .order('updated_at', {
+            ascending: false,
+          }),
+        signal,
+      );
 
     if (latestOfferError) {
       throw new Error('Unable to load live catalog offers.');
@@ -4923,6 +4976,8 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
   if (merchantError) {
     throw new Error('Unable to load live catalog offers.');
   }
+
+  throwIfCatalogReadAborted(signal);
 
   const merchantById = new Map(
     ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
@@ -5451,11 +5506,13 @@ export async function listCatalogDiscoverySignalsBySetId({
   cacheOptions,
   fetchImpl,
   setIds,
+  signal,
 }: {
   apiBaseUrl?: string;
   cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
   setIds?: readonly string[];
+  signal?: AbortSignal;
 } = {}): Promise<Map<string, CatalogDiscoverySignal>> {
   const scopedSetIds = [
     ...new Set(
@@ -5470,12 +5527,15 @@ export async function listCatalogDiscoverySignalsBySetId({
   }
 
   try {
+    throwIfCatalogReadAborted(signal);
+
     const response = await (fetchImpl ?? fetch)(
       `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogDiscoverySignalsApiPath(scopedSetIds)}`,
       {
         headers: {
           accept: 'application/json',
         },
+        signal,
         ...(typeof cacheOptions?.revalidateSeconds === 'number'
           ? {
               next: {
@@ -5495,6 +5555,8 @@ export async function listCatalogDiscoverySignalsBySetId({
     if (!response.ok) {
       throw new Error('Unable to load catalog discovery signals.');
     }
+
+    throwIfCatalogReadAborted(signal);
 
     const payload = await response.json();
 
@@ -5697,12 +5759,14 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   cacheOptions,
   fetchImpl,
   setIds,
+  signal,
   supabaseClient,
 }: {
   apiBaseUrl?: string;
   cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
   setIds: readonly string[];
+  signal?: AbortSignal;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogCurrentOfferSummary>> {
   const uniqueSetIds = [
@@ -5719,12 +5783,15 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 
   try {
     if (!supabaseClient) {
+      throwIfCatalogReadAborted(signal);
+
       const response = await (fetchImpl ?? fetch)(
         `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogCurrentOfferSummariesApiPath(uniqueSetIds)}`,
         {
           headers: {
             accept: 'application/json',
           },
+          signal,
           ...(typeof cacheOptions?.revalidateSeconds === 'number'
             ? {
                 next: {
@@ -5747,6 +5814,8 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
       if (!response.ok) {
         throw new Error('Unable to load current catalog offer summaries.');
       }
+
+      throwIfCatalogReadAborted(signal);
 
       const payload = await response.json();
       const summaryBySetId = new Map(
@@ -5776,6 +5845,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
         );
         const liveOffersBySetId =
           await listCatalogRuntimeOffersBySetIdsFromSupabase({
+            signal,
             setIds: missingSetIds,
             supabaseClient: getWebCatalogSupabaseAdminClient(),
           });
@@ -5790,6 +5860,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 
     const liveOffersBySetId =
       await listCatalogRuntimeOffersBySetIdsFromSupabase({
+        signal,
         setIds: uniqueSetIds,
         supabaseClient,
       });
@@ -5800,6 +5871,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
       try {
         const liveOffersBySetId =
           await listCatalogRuntimeOffersBySetIdsFromSupabase({
+            signal,
             setIds: uniqueSetIds,
             supabaseClient: getWebCatalogSupabaseAdminClient(),
           });
@@ -6331,6 +6403,7 @@ export async function listCatalogSimilarSetCards({
   limit = 20,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   referenceBestPriceMinor,
+  signal,
 }: {
   currentSetCard: Pick<
     CatalogHomepageSetCard,
@@ -6342,10 +6415,15 @@ export async function listCatalogSimilarSetCards({
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   referenceBestPriceMinor?: number;
+  signal?: AbortSignal;
 }): Promise<CatalogHomepageSetCard[]> {
   const setCards = await listAllCatalogSetCards({
     listCanonicalCatalogSetsFn,
+    signal,
   });
+
+  throwIfCatalogReadAborted(signal);
+
   const resolvedCurrentSetCard = currentSetCard.secondaryLabels?.length
     ? currentSetCard
     : {
