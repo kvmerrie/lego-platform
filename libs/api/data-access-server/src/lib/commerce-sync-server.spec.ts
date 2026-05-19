@@ -49,11 +49,19 @@ describe('commerce sync server', () => {
     };
   }
 
-  function buildEligibleCommerceSeed() {
+  function buildEligibleCommerceSeed({
+    merchantSlug = 'goodbricks',
+    priceMinor = 19995,
+    setId = '10316',
+  }: {
+    merchantSlug?: string;
+    priceMinor?: number;
+    setId?: string;
+  } = {}) {
     return {
       merchant: {
-        id: 'merchant-goodbricks',
-        slug: 'goodbricks',
+        id: `merchant-${merchantSlug}`,
+        slug: merchantSlug,
         name: 'Goodbricks',
         isActive: true,
         sourceType: 'affiliate' as const,
@@ -62,27 +70,27 @@ describe('commerce sync server', () => {
         updatedAt: '2026-05-11T10:00:00.000Z',
       },
       offerSeed: {
-        id: 'seed-10316-goodbricks',
-        setId: '10316',
-        merchantId: 'merchant-goodbricks',
-        productUrl: 'https://goodbricks.example/lego-10316',
+        id: `seed-${setId}-${merchantSlug}`,
+        setId,
+        merchantId: `merchant-${merchantSlug}`,
+        productUrl: `https://goodbricks.example/lego-${setId}`,
         isActive: true,
         validationStatus: 'valid' as const,
         notes: '',
         createdAt: '2026-05-11T10:00:00.000Z',
         updatedAt: '2026-05-11T10:00:00.000Z',
         latestOffer: {
-          id: 'latest-10316-goodbricks',
-          offerSeedId: 'seed-10316-goodbricks',
-          setId: '10316',
-          merchantId: 'merchant-goodbricks',
-          productUrl: 'https://goodbricks.example/lego-10316',
+          id: `latest-${setId}-${merchantSlug}`,
+          offerSeedId: `seed-${setId}-${merchantSlug}`,
+          setId,
+          merchantId: `merchant-${merchantSlug}`,
+          productUrl: `https://goodbricks.example/lego-${setId}`,
           fetchStatus: 'success' as const,
           availability: 'in_stock' as const,
           currencyCode: 'EUR',
           fetchedAt: '2026-05-11T10:00:00.000Z',
           observedAt: '2026-05-11T10:00:00.000Z',
-          priceMinor: 19995,
+          priceMinor,
           createdAt: '2026-05-11T10:00:00.000Z',
           updatedAt: '2026-05-11T10:00:00.000Z',
         },
@@ -647,6 +655,80 @@ describe('commerce sync server', () => {
     });
 
     expect(upsertCommerceCurrentOfferSnapshotsFn).not.toHaveBeenCalled();
+  });
+
+  test('loads current-offer snapshot parity summaries in chunks and reports missing live separately', async () => {
+    const syncSeeds = Array.from({ length: 101 }, (_, index) =>
+      buildEligibleCommerceSeed({
+        setId: String(10_000 + index),
+      }),
+    );
+    const listCatalogCurrentOfferSummariesBySetIdsFn = vi
+      .fn()
+      .mockImplementation(({ setIds }: { setIds: string[] }) =>
+        Promise.resolve(
+          setIds.slice(0, 1).map((setId) => ({
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-11T10:00:00.000Z',
+              commercialUnitType: 'full_set',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'other',
+              merchantName: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              priceCents: 19995,
+              setId,
+              url: `https://goodbricks.example/lego-${setId}`,
+            },
+            offers: [],
+            setId,
+          })),
+        ),
+      );
+
+    const result = await runCommerceSync({
+      dependencies: {
+        checkAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        checkPricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        listCatalogCurrentOfferSummariesBySetIdsFn,
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue(
+          buildCommerceSyncInputMock({
+            refreshSeeds: [],
+            syncSeeds,
+          }),
+        ),
+      },
+      mode: 'check',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(listCatalogCurrentOfferSummariesBySetIdsFn).toHaveBeenCalledTimes(5);
+    expect(
+      listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[0]?.[0].setIds,
+    ).toHaveLength(25);
+    expect(
+      listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[1]?.[0].setIds,
+    ).toHaveLength(25);
+    expect(
+      listCatalogCurrentOfferSummariesBySetIdsFn.mock.calls[4]?.[0].setIds,
+    ).toHaveLength(1);
+    expect(result.currentOfferSnapshotLiveSummaryCount).toBe(5);
+    expect(result.currentOfferSnapshotMissingLiveSummaryCount).toBe(96);
+    expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
+    expect(result.currentOfferSnapshotMissingLiveSummarySample[0]).toEqual(
+      expect.objectContaining({
+        reason: 'missing_live_due_to_set_scope',
+      }),
+    );
   });
 
   test('lifts latest offer data from sync seeds for daily history input', async () => {

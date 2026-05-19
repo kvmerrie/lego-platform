@@ -1,5 +1,6 @@
 import type { CatalogCurrentOfferSummaryRecord } from '@lego-platform/catalog/data-access-server';
 import type { CommerceRefreshSeed } from '@lego-platform/commerce/data-access-server';
+import { DEFAULT_COMMERCE_STALE_DAYS } from '@lego-platform/commerce/util';
 import {
   canStrategicManualOfferBeatProductionFeed,
   classifyCommerceCommercialUnitType,
@@ -69,8 +70,15 @@ export interface CommerceCurrentOfferSnapshot {
 
 export interface CommerceCurrentOfferSnapshotSummary {
   currentOfferSnapshotsBuilt: number;
+  bestOfferMismatchSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   liveSummaryCount: number;
+  missingLiveSummarySample: readonly CommerceCurrentOfferSnapshotParitySample[];
+  missingLiveSummaryReasonCounts: Record<string, number>;
+  missingSnapshotSample: readonly CommerceCurrentOfferSnapshotParitySample[];
+  snapshotMissingLiveSummaryCount: number;
+  liveSummaryMissingSnapshotCount: number;
   snapshotBestOfferMismatchCount: number;
+  snapshotMissingBestOfferSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   snapshotMissingBestOfferCount: number;
   snapshotOfferCount: number;
 }
@@ -109,6 +117,41 @@ interface CommerceCurrentOfferSnapshotRow {
   strategic_manual_offer_count: number;
   trusted_offer_count: number;
 }
+
+export interface CommerceCurrentOfferSnapshotParitySample {
+  liveAvailability?: string;
+  liveMerchantSlug?: string;
+  livePriceMinor?: number;
+  liveProductUrl?: string;
+  reason: string;
+  setId: string;
+  snapshotAvailability?: string;
+  snapshotMerchantSlug?: string;
+  snapshotOfferCount?: number;
+  snapshotPriceMinor?: number;
+  snapshotProductUrl?: string;
+}
+
+interface CommerceCurrentOfferSnapshotParityResult {
+  bestOfferMismatchCount: number;
+  bestOfferMismatchSample: CommerceCurrentOfferSnapshotParitySample[];
+  liveSummaryMissingSnapshotCount: number;
+  missingLiveSummarySample: CommerceCurrentOfferSnapshotParitySample[];
+  missingLiveSummaryReasonCounts: Record<string, number>;
+  missingSnapshotSample: CommerceCurrentOfferSnapshotParitySample[];
+  snapshotMissingBestOfferSample: CommerceCurrentOfferSnapshotParitySample[];
+  snapshotMissingLiveSummaryCount: number;
+}
+
+const SNAPSHOT_PARITY_SAMPLE_LIMIT = 5;
+
+type CommerceCurrentOfferSnapshotMissingLiveReason =
+  | 'missing_live_due_to_set_scope'
+  | 'missing_live_due_to_stale'
+  | 'missing_live_due_to_unit'
+  | 'missing_live_due_to_untrusted_merchant'
+  | 'missing_live_due_to_url'
+  | 'missing_live_due_to_unknown';
 
 function normalizeSnapshotAvailability(
   availability?: string,
@@ -339,46 +382,234 @@ function buildSnapshotForSet({
   };
 }
 
-function countSnapshotBestOfferMismatches({
+function addParitySample(
+  samples: CommerceCurrentOfferSnapshotParitySample[],
+  sample: CommerceCurrentOfferSnapshotParitySample,
+): void {
+  if (samples.length < SNAPSHOT_PARITY_SAMPLE_LIMIT) {
+    samples.push(sample);
+  }
+}
+
+function incrementReasonCount(
+  counts: Record<string, number>,
+  reason: CommerceCurrentOfferSnapshotMissingLiveReason,
+): void {
+  counts[reason] = (counts[reason] ?? 0) + 1;
+}
+
+function isSnapshotBestOfferStale({
+  now,
+  snapshot,
+}: {
+  now: Date;
+  snapshot: CommerceCurrentOfferSnapshot;
+}): boolean {
+  if (!snapshot.bestCheckedAt) {
+    return false;
+  }
+
+  const checkedAt = new Date(snapshot.bestCheckedAt);
+
+  if (Number.isNaN(checkedAt.getTime())) {
+    return false;
+  }
+
+  const staleAfterMs = DEFAULT_COMMERCE_STALE_DAYS * 24 * 60 * 60 * 1000;
+
+  return now.getTime() - checkedAt.getTime() > staleAfterMs;
+}
+
+function classifyMissingLiveSummaryReason({
+  now,
+  publicSetIds,
+  snapshot,
+}: {
+  now: Date;
+  publicSetIds?: ReadonlySet<string>;
+  snapshot: CommerceCurrentOfferSnapshot;
+}): CommerceCurrentOfferSnapshotMissingLiveReason {
+  if (publicSetIds && !publicSetIds.has(snapshot.setId)) {
+    return 'missing_live_due_to_set_scope';
+  }
+
+  if (!snapshot.bestProductUrl?.trim()) {
+    return 'missing_live_due_to_url';
+  }
+
+  if (isSnapshotBestOfferStale({ now, snapshot })) {
+    return 'missing_live_due_to_stale';
+  }
+
+  if (
+    !snapshot.bestCommercialUnitType ||
+    !isCommerceCommercialUnitComparableForDeals(
+      snapshot.bestCommercialUnitType,
+    ) ||
+    getCommerceCommercialUnitComparisonGroup(
+      snapshot.bestCommercialUnitType,
+    ) !== 'set_package'
+  ) {
+    return 'missing_live_due_to_unit';
+  }
+
+  if (
+    snapshot.bestMerchantSlug &&
+    getCommerceMerchantReliabilityTier(snapshot.bestMerchantSlug) !==
+      'production_feed'
+  ) {
+    return 'missing_live_due_to_untrusted_merchant';
+  }
+
+  return 'missing_live_due_to_unknown';
+}
+
+function analyzeSnapshotParity({
   liveSummaries,
+  now,
+  publicSetIds,
   snapshots,
 }: {
   liveSummaries?: readonly CatalogCurrentOfferSummaryRecord[];
+  now: Date;
+  publicSetIds?: ReadonlySet<string>;
   snapshots: readonly CommerceCurrentOfferSnapshot[];
-}): number {
+}): CommerceCurrentOfferSnapshotParityResult {
+  const emptyResult: CommerceCurrentOfferSnapshotParityResult = {
+    bestOfferMismatchCount: 0,
+    bestOfferMismatchSample: [],
+    liveSummaryMissingSnapshotCount: 0,
+    missingLiveSummarySample: [],
+    missingLiveSummaryReasonCounts: {},
+    missingSnapshotSample: [],
+    snapshotMissingBestOfferSample: [],
+    snapshotMissingLiveSummaryCount: 0,
+  };
+
   if (!liveSummaries) {
-    return 0;
+    return emptyResult;
   }
 
   const liveSummaryBySetId = new Map(
     liveSummaries.map((liveSummary) => [liveSummary.setId, liveSummary]),
   );
+  const snapshotBySetId = new Map(
+    snapshots.map((snapshot) => [snapshot.setId, snapshot]),
+  );
+  const bestOfferMismatchSample: CommerceCurrentOfferSnapshotParitySample[] =
+    [];
+  const missingLiveSummarySample: CommerceCurrentOfferSnapshotParitySample[] =
+    [];
+  const missingLiveSummaryReasonCounts: Record<string, number> = {};
+  const missingSnapshotSample: CommerceCurrentOfferSnapshotParitySample[] = [];
+  const snapshotMissingBestOfferSample: CommerceCurrentOfferSnapshotParitySample[] =
+    [];
+  let bestOfferMismatchCount = 0;
+  let snapshotMissingLiveSummaryCount = 0;
+  let liveSummaryMissingSnapshotCount = 0;
 
-  return snapshots.filter((snapshot) => {
+  for (const snapshot of snapshots) {
     const liveBestOffer = liveSummaryBySetId.get(snapshot.setId)?.bestOffer;
 
-    if (!snapshot.bestPriceMinor && !liveBestOffer) {
-      return false;
+    if (!snapshot.bestPriceMinor) {
+      addParitySample(snapshotMissingBestOfferSample, {
+        liveAvailability: liveBestOffer?.availability,
+        liveMerchantSlug: liveBestOffer?.merchantSlug,
+        livePriceMinor: liveBestOffer?.priceCents,
+        reason: liveBestOffer
+          ? 'snapshot_missing_best_offer_but_live_has_best'
+          : 'snapshot_missing_best_offer',
+        setId: snapshot.setId,
+        snapshotOfferCount: snapshot.offerCount,
+      });
+      continue;
     }
 
-    return (
+    if (!liveBestOffer) {
+      const reason = classifyMissingLiveSummaryReason({
+        now,
+        publicSetIds,
+        snapshot,
+      });
+
+      snapshotMissingLiveSummaryCount += 1;
+      incrementReasonCount(missingLiveSummaryReasonCounts, reason);
+      addParitySample(missingLiveSummarySample, {
+        reason,
+        setId: snapshot.setId,
+        snapshotAvailability: snapshot.bestAvailability,
+        snapshotMerchantSlug: snapshot.bestMerchantSlug,
+        snapshotOfferCount: snapshot.offerCount,
+        snapshotPriceMinor: snapshot.bestPriceMinor,
+        snapshotProductUrl: snapshot.bestProductUrl,
+      });
+      continue;
+    }
+
+    const mismatched =
       snapshot.bestPriceMinor !== liveBestOffer?.priceCents ||
       snapshot.bestMerchantSlug !== liveBestOffer?.merchantSlug ||
-      snapshot.bestProductUrl !== liveBestOffer?.url
-    );
-  }).length;
+      snapshot.bestAvailability !== liveBestOffer?.availability ||
+      snapshot.bestProductUrl !== liveBestOffer?.url;
+
+    if (mismatched) {
+      bestOfferMismatchCount += 1;
+      addParitySample(bestOfferMismatchSample, {
+        liveAvailability: liveBestOffer.availability,
+        liveMerchantSlug: liveBestOffer.merchantSlug,
+        livePriceMinor: liveBestOffer.priceCents,
+        liveProductUrl: liveBestOffer.url,
+        reason: 'best_offer_mismatch',
+        setId: snapshot.setId,
+        snapshotAvailability: snapshot.bestAvailability,
+        snapshotMerchantSlug: snapshot.bestMerchantSlug,
+        snapshotOfferCount: snapshot.offerCount,
+        snapshotPriceMinor: snapshot.bestPriceMinor,
+        snapshotProductUrl: snapshot.bestProductUrl,
+      });
+    }
+  }
+
+  for (const liveSummary of liveSummaries) {
+    if (!snapshotBySetId.has(liveSummary.setId)) {
+      liveSummaryMissingSnapshotCount += 1;
+      addParitySample(missingSnapshotSample, {
+        liveAvailability: liveSummary.bestOffer?.availability,
+        liveMerchantSlug: liveSummary.bestOffer?.merchantSlug,
+        livePriceMinor: liveSummary.bestOffer?.priceCents,
+        reason: 'missing_snapshot',
+        setId: liveSummary.setId,
+      });
+    }
+  }
+
+  return {
+    bestOfferMismatchCount,
+    bestOfferMismatchSample,
+    liveSummaryMissingSnapshotCount,
+    missingLiveSummarySample,
+    missingLiveSummaryReasonCounts,
+    missingSnapshotSample,
+    snapshotMissingBestOfferSample,
+    snapshotMissingLiveSummaryCount,
+  };
 }
 
 export function buildCommerceCurrentOfferSnapshots({
   liveSummaries,
   now = new Date(),
+  publicSetIds,
   syncSeeds,
 }: {
   liveSummaries?: readonly CatalogCurrentOfferSummaryRecord[];
   now?: Date;
+  publicSetIds?: readonly string[];
   syncSeeds: readonly CommerceRefreshSeed[];
 }): CommerceCurrentOfferSnapshotBuildResult {
   const computedAt = now.toISOString();
+  const publicSetIdSet = publicSetIds
+    ? new Set(publicSetIds.map(normalizeCatalogSetId).filter(Boolean))
+    : undefined;
   const offersBySetId = new Map<string, CommerceCurrentOfferSnapshotOffer[]>();
   const seenSetIds = new Set<string>();
 
@@ -409,19 +640,33 @@ export function buildCommerceCurrentOfferSnapshots({
         setId,
       }),
     );
+  const parityResult = analyzeSnapshotParity({
+    liveSummaries,
+    now,
+    publicSetIds: publicSetIdSet,
+    snapshots,
+  });
 
   return {
     snapshots,
     summary: {
+      bestOfferMismatchSample: parityResult.bestOfferMismatchSample,
       currentOfferSnapshotsBuilt: snapshots.length,
+      liveSummaryMissingSnapshotCount:
+        parityResult.liveSummaryMissingSnapshotCount,
       liveSummaryCount: liveSummaries?.length ?? 0,
-      snapshotBestOfferMismatchCount: countSnapshotBestOfferMismatches({
-        liveSummaries,
-        snapshots,
-      }),
+      missingLiveSummarySample: parityResult.missingLiveSummarySample,
+      missingLiveSummaryReasonCounts:
+        parityResult.missingLiveSummaryReasonCounts,
+      missingSnapshotSample: parityResult.missingSnapshotSample,
+      snapshotBestOfferMismatchCount: parityResult.bestOfferMismatchCount,
       snapshotMissingBestOfferCount: snapshots.filter(
         (snapshot) => !snapshot.bestPriceMinor,
       ).length,
+      snapshotMissingBestOfferSample:
+        parityResult.snapshotMissingBestOfferSample,
+      snapshotMissingLiveSummaryCount:
+        parityResult.snapshotMissingLiveSummaryCount,
       snapshotOfferCount: snapshots.reduce(
         (total, snapshot) => total + snapshot.offerCount,
         0,

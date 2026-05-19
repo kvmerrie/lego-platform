@@ -299,6 +299,138 @@ describe('commerce current-offer snapshots', () => {
 
     expect(result.summary.liveSummaryCount).toBe(1);
     expect(result.summary.snapshotBestOfferMismatchCount).toBe(1);
+    expect(result.summary.bestOfferMismatchSample).toEqual([
+      expect.objectContaining({
+        liveMerchantSlug: 'misterbricks',
+        reason: 'best_offer_mismatch',
+        setId: '76454',
+        snapshotMerchantSlug: 'goodbricks',
+      }),
+    ]);
+  });
+
+  test('does not count missing live summaries or missing snapshot best offers as best-offer mismatches', () => {
+    const liveSummaries: CatalogCurrentOfferSummaryRecord[] = [
+      {
+        bestOffer: {
+          availability: 'in_stock',
+          checkedAt: '2026-05-19T08:00:00.000Z',
+          commercialUnitType: 'full_set',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'Goodbricks',
+          merchantSlug: 'goodbricks',
+          priceCents: 19995,
+          setId: '76455',
+          url: 'https://example.com/lego-76455-goodbricks',
+        },
+        offers: [],
+        setId: '76455',
+      },
+    ];
+
+    const result = buildCommerceCurrentOfferSnapshots({
+      liveSummaries,
+      now,
+      syncSeeds: [
+        buildSeed({
+          merchantName: 'Goodbricks',
+          merchantSlug: 'goodbricks',
+          priceMinor: 19995,
+          productUrl: 'https://example.com/lego-76454-goodbricks',
+          seedId: 'seed-goodbricks-76454',
+          setId: '76454',
+        }),
+        buildSeed({
+          availability: 'out_of_stock',
+          merchantName: 'MisterBricks',
+          merchantSlug: 'misterbricks',
+          priceMinor: 20900,
+          productUrl: 'https://example.com/lego-76455-misterbricks',
+          seedId: 'seed-misterbricks-76455',
+          setId: '76455',
+        }),
+      ],
+    });
+
+    expect(result.summary.snapshotBestOfferMismatchCount).toBe(0);
+    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(1);
+    expect(result.summary.missingLiveSummarySample).toEqual([
+      expect.objectContaining({
+        reason: 'missing_live_due_to_unknown',
+        setId: '76454',
+        snapshotMerchantSlug: 'goodbricks',
+      }),
+    ]);
+    expect(result.summary.missingLiveSummaryReasonCounts).toEqual({
+      missing_live_due_to_unknown: 1,
+    });
+    expect(result.summary.snapshotMissingBestOfferCount).toBe(1);
+    expect(result.summary.snapshotMissingBestOfferSample).toEqual([
+      expect.objectContaining({
+        liveMerchantSlug: 'goodbricks',
+        reason: 'snapshot_missing_best_offer_but_live_has_best',
+        setId: '76455',
+      }),
+    ]);
+  });
+
+  test('labels missing live summaries by likely scope reason', () => {
+    const result = buildCommerceCurrentOfferSnapshots({
+      liveSummaries: [],
+      now,
+      publicSetIds: ['76454'],
+      syncSeeds: [
+        buildSeed({
+          merchantName: 'Top1Toys',
+          merchantSlug: 'top1toys',
+          priceMinor: 19995,
+          productUrl: 'https://example.com/lego-10280-top1toys',
+          seedId: 'seed-top1toys-10280',
+          setId: '10280',
+        }),
+        buildSeed({
+          merchantName: 'Goodbricks',
+          merchantSlug: 'goodbricks',
+          notes: 'LEGO Minifigures single blind bag',
+          priceMinor: 359,
+          productUrl: 'https://example.com/lego-76454-blind-bag',
+          seedId: 'seed-goodbricks-76454',
+          setId: '76454',
+        }),
+        buildSeed({
+          merchantName: 'MisterBricks',
+          merchantSlug: 'misterbricks',
+          observedAt: '2026-04-01T08:00:00.000Z',
+          priceMinor: 20900,
+          productUrl: 'https://example.com/lego-76455-misterbricks',
+          seedId: 'seed-misterbricks-76455',
+          setId: '76455',
+        }),
+      ],
+    });
+
+    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(3);
+    expect(result.summary.missingLiveSummaryReasonCounts).toEqual({
+      missing_live_due_to_set_scope: 2,
+      missing_live_due_to_unit: 1,
+    });
+    expect(result.summary.missingLiveSummarySample).toEqual([
+      expect.objectContaining({
+        reason: 'missing_live_due_to_set_scope',
+        setId: '10280',
+      }),
+      expect.objectContaining({
+        reason: 'missing_live_due_to_unit',
+        setId: '76454',
+      }),
+      expect.objectContaining({
+        reason: 'missing_live_due_to_set_scope',
+        setId: '76455',
+      }),
+    ]);
   });
 
   test('upserts snapshots using the composite snapshot key', async () => {

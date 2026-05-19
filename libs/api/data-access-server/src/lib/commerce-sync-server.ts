@@ -5,6 +5,7 @@ import {
 } from '@lego-platform/affiliate/data-access-server';
 import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
 import { listCatalogCurrentOfferSummariesBySetIds } from '@lego-platform/catalog/data-access-server';
+import type { CatalogCurrentOfferSummaryRecord } from '@lego-platform/catalog/data-access-server';
 import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
   buildDailyPriceHistoryPointsFromCommerceLatestOffers,
@@ -30,6 +31,7 @@ import {
 } from './commerce-refresh-server';
 import {
   buildCommerceCurrentOfferSnapshots,
+  type CommerceCurrentOfferSnapshotParitySample,
   upsertCommerceCurrentOfferSnapshots,
 } from './commerce-current-offer-snapshot-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
@@ -43,8 +45,15 @@ export interface CommerceSyncRunResult {
   affiliateArtifactCheck: CommerceGeneratedArtifactCheckResult;
   affiliateOfferCount: number;
   currentOfferSnapshotCount: number;
+  currentOfferSnapshotBestOfferMismatchSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   currentOfferSnapshotLiveSummaryCount: number;
+  currentOfferSnapshotLiveSummaryMissingSnapshotCount: number;
+  currentOfferSnapshotMissingBestOfferSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   currentOfferSnapshotMissingBestOfferCount: number;
+  currentOfferSnapshotMissingLiveSummaryCount: number;
+  currentOfferSnapshotMissingLiveSummaryReasonCounts: Record<string, number>;
+  currentOfferSnapshotMissingLiveSummarySample: readonly CommerceCurrentOfferSnapshotParitySample[];
+  currentOfferSnapshotMissingSnapshotSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   currentOfferSnapshotOfferCount: number;
   currentOfferSnapshotBestOfferMismatchCount: number;
   currentOfferSnapshotsUpsertedCount: number;
@@ -314,17 +323,31 @@ function formatDailyHistorySummaryLog({
 
 function formatCurrentOfferSnapshotSummaryLog({
   builtCount,
+  bestOfferMismatchSample,
+  liveSummaryMissingSnapshotCount,
   liveSummaryCount,
+  missingBestOfferSample,
   missingBestOfferCount,
+  missingLiveSummaryCount,
+  missingLiveSummaryReasonCounts,
+  missingLiveSummarySample,
+  missingSnapshotSample,
   mode,
   offerCount,
   upsertedCount,
   bestOfferMismatchCount,
 }: {
   bestOfferMismatchCount: number;
+  bestOfferMismatchSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   builtCount: number;
+  liveSummaryMissingSnapshotCount: number;
   liveSummaryCount: number;
+  missingBestOfferSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   missingBestOfferCount: number;
+  missingLiveSummaryCount: number;
+  missingLiveSummaryReasonCounts: Record<string, number>;
+  missingLiveSummarySample: readonly CommerceCurrentOfferSnapshotParitySample[];
+  missingSnapshotSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   mode: 'check' | 'write';
   offerCount: number;
   upsertedCount: number;
@@ -337,9 +360,28 @@ function formatCurrentOfferSnapshotSummaryLog({
     `snapshot_offer_count=${offerCount}`,
     `snapshot_missing_best_offer_count=${missingBestOfferCount}`,
     `live_summary_count=${liveSummaryCount}`,
+    `snapshot_missing_live_summary_count=${missingLiveSummaryCount}`,
+    `missing_live_summary_reason_counts=${JSON.stringify(missingLiveSummaryReasonCounts)}`,
+    `live_summary_missing_snapshot_count=${liveSummaryMissingSnapshotCount}`,
     `snapshot_best_offer_mismatch_count=${bestOfferMismatchCount}`,
-  ].join(' ');
+    missingLiveSummarySample.length
+      ? `missing_live_summary_sample=${JSON.stringify(missingLiveSummarySample)}`
+      : undefined,
+    missingSnapshotSample.length
+      ? `missing_snapshot_sample=${JSON.stringify(missingSnapshotSample)}`
+      : undefined,
+    bestOfferMismatchSample.length
+      ? `best_offer_mismatch_sample=${JSON.stringify(bestOfferMismatchSample)}`
+      : undefined,
+    missingBestOfferSample.length
+      ? `missing_best_offer_sample=${JSON.stringify(missingBestOfferSample)}`
+      : undefined,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(' ');
 }
+
+const CURRENT_OFFER_SNAPSHOT_PARITY_SET_ID_CHUNK_SIZE = 25;
 
 async function loadCurrentOfferSnapshotParitySummaries({
   listCatalogCurrentOfferSummariesBySetIdsFn,
@@ -348,17 +390,45 @@ async function loadCurrentOfferSnapshotParitySummaries({
   listCatalogCurrentOfferSummariesBySetIdsFn: typeof listCatalogCurrentOfferSummariesBySetIds;
   setIds: readonly string[];
 }) {
-  if (!setIds.length) {
+  const uniqueSetIds = [...new Set(setIds.map(normalizeCatalogSetId))].filter(
+    Boolean,
+  );
+
+  if (!uniqueSetIds.length) {
     return [];
   }
 
-  try {
-    return await listCatalogCurrentOfferSummariesBySetIdsFn({
-      setIds,
-    });
-  } catch {
-    return [];
+  const liveSummaries: CatalogCurrentOfferSummaryRecord[] = [];
+
+  for (
+    let offset = 0;
+    offset < uniqueSetIds.length;
+    offset += CURRENT_OFFER_SNAPSHOT_PARITY_SET_ID_CHUNK_SIZE
+  ) {
+    const chunkSetIds = uniqueSetIds.slice(
+      offset,
+      offset + CURRENT_OFFER_SNAPSHOT_PARITY_SET_ID_CHUNK_SIZE,
+    );
+
+    try {
+      liveSummaries.push(
+        ...(await listCatalogCurrentOfferSummariesBySetIdsFn({
+          setIds: chunkSetIds,
+        })),
+      );
+    } catch (error) {
+      console.warn(
+        [
+          '[commerce-sync] current_offer_snapshot_parity_load_failed',
+          `set_id_count=${chunkSetIds.length}`,
+          `sample_set_ids=${chunkSetIds.slice(0, 5).join(',')}`,
+          `error=${error instanceof Error ? error.message : 'unknown'}`,
+        ].join(' '),
+      );
+    }
   }
+
+  return liveSummaries;
 }
 
 export async function resolveCommerceCatalogSetSummaries({
@@ -592,6 +662,7 @@ export async function runCommerceSync({
   const currentOfferSnapshotResult = buildCommerceCurrentOfferSnapshots({
     liveSummaries: currentOfferSnapshotLiveSummaries,
     now,
+    publicSetIds: syncInputs.enabledSetIds,
     syncSeeds,
   });
   const currentOfferSnapshotUpsertResult =
@@ -607,10 +678,24 @@ export async function runCommerceSync({
     formatCurrentOfferSnapshotSummaryLog({
       bestOfferMismatchCount:
         currentOfferSnapshotResult.summary.snapshotBestOfferMismatchCount,
+      bestOfferMismatchSample:
+        currentOfferSnapshotResult.summary.bestOfferMismatchSample,
       builtCount: currentOfferSnapshotResult.summary.currentOfferSnapshotsBuilt,
+      liveSummaryMissingSnapshotCount:
+        currentOfferSnapshotResult.summary.liveSummaryMissingSnapshotCount,
       liveSummaryCount: currentOfferSnapshotResult.summary.liveSummaryCount,
+      missingBestOfferSample:
+        currentOfferSnapshotResult.summary.snapshotMissingBestOfferSample,
       missingBestOfferCount:
         currentOfferSnapshotResult.summary.snapshotMissingBestOfferCount,
+      missingLiveSummaryCount:
+        currentOfferSnapshotResult.summary.snapshotMissingLiveSummaryCount,
+      missingLiveSummaryReasonCounts:
+        currentOfferSnapshotResult.summary.missingLiveSummaryReasonCounts,
+      missingLiveSummarySample:
+        currentOfferSnapshotResult.summary.missingLiveSummarySample,
+      missingSnapshotSample:
+        currentOfferSnapshotResult.summary.missingSnapshotSample,
       mode,
       offerCount: currentOfferSnapshotResult.summary.snapshotOfferCount,
       upsertedCount: currentOfferSnapshotUpsertResult.upsertedCount,
@@ -680,14 +765,28 @@ export async function runCommerceSync({
   return {
     affiliateArtifactCheck,
     affiliateOfferCount: affiliateArtifacts.affiliateOfferSnapshots.length,
+    currentOfferSnapshotBestOfferMismatchSample:
+      currentOfferSnapshotResult.summary.bestOfferMismatchSample,
     currentOfferSnapshotBestOfferMismatchCount:
       currentOfferSnapshotResult.summary.snapshotBestOfferMismatchCount,
     currentOfferSnapshotCount:
       currentOfferSnapshotResult.summary.currentOfferSnapshotsBuilt,
+    currentOfferSnapshotLiveSummaryMissingSnapshotCount:
+      currentOfferSnapshotResult.summary.liveSummaryMissingSnapshotCount,
     currentOfferSnapshotLiveSummaryCount:
       currentOfferSnapshotResult.summary.liveSummaryCount,
+    currentOfferSnapshotMissingBestOfferSample:
+      currentOfferSnapshotResult.summary.snapshotMissingBestOfferSample,
     currentOfferSnapshotMissingBestOfferCount:
       currentOfferSnapshotResult.summary.snapshotMissingBestOfferCount,
+    currentOfferSnapshotMissingLiveSummaryCount:
+      currentOfferSnapshotResult.summary.snapshotMissingLiveSummaryCount,
+    currentOfferSnapshotMissingLiveSummaryReasonCounts:
+      currentOfferSnapshotResult.summary.missingLiveSummaryReasonCounts,
+    currentOfferSnapshotMissingLiveSummarySample:
+      currentOfferSnapshotResult.summary.missingLiveSummarySample,
+    currentOfferSnapshotMissingSnapshotSample:
+      currentOfferSnapshotResult.summary.missingSnapshotSample,
     currentOfferSnapshotOfferCount:
       currentOfferSnapshotResult.summary.snapshotOfferCount,
     currentOfferSnapshotsUpsertedCount:
