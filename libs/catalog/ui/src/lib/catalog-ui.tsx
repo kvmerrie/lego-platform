@@ -248,8 +248,11 @@ function CatalogSetVisual({
             alt={altLabel ?? `${name} LEGO-set`}
             className={styles.setImage}
             decoding="async"
+            fetchPriority={variant === 'hero' ? 'high' : 'auto'}
+            height={variant === 'hero' ? 900 : 420}
             loading={imageLoading ?? (variant === 'hero' ? 'eager' : 'lazy')}
             src={imageUrl}
+            width={variant === 'hero' ? 1200 : 420}
           />
         </div>
       </div>
@@ -657,8 +660,10 @@ function buildCatalogSetDetailHeroFacts({
       alt={`${themeName} logo`}
       className={styles.heroThemeLogo}
       decoding="async"
+      height={96}
       loading="lazy"
       src={catalogSetDetail.publicTheme.logoUrl}
+      width={296}
     />
   );
   const validThemeHref = isCatalogThemeHref(themeHref) ? themeHref : undefined;
@@ -1515,8 +1520,10 @@ export function CatalogThemeHighlight({
               alt={`${themeSnapshot.signatureSet} LEGO-set`}
               className={styles.themePortraitImage}
               decoding="async"
+              height={420}
               loading="lazy"
               src={portraitImageUrl}
+              width={420}
             />
           </div>
         ) : null}
@@ -1570,8 +1577,10 @@ export function CatalogThemeHighlight({
               alt={`${themeSnapshot.signatureSet} LEGO-set`}
               className={styles.themeFeatureImage}
               decoding="async"
+              height={420}
               loading="lazy"
               src={featureImageUrl}
+              width={420}
             />
           </div>
         ) : null}

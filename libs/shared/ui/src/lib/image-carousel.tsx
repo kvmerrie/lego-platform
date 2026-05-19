@@ -116,9 +116,12 @@ function GalleryImageMedia({
             : styles.galleryImageDetail,
       )}
       decoding="async"
+      fetchPriority={kind === 'detail' && imageIndex === 0 ? 'high' : 'auto'}
+      height={kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1000}
       loading={imageIndex === 0 ? 'eager' : 'lazy'}
       onError={() => onImageError(imageIndex)}
       src={image.src}
+      width={kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1600}
     />
   );
 }

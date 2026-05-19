@@ -66,6 +66,9 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('width="420"');
+    expect(markup).toContain('height="420"');
+    expect(markup).toContain('loading="lazy"');
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
@@ -1695,6 +1698,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain(
       'src="https://images.example/curated-avengers-tower.jpg"',
     );
+    expect(markup).toContain('width="420"');
+    expect(markup).toContain('height="420"');
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
     expect(markup).toContain('Bekijk sets');
