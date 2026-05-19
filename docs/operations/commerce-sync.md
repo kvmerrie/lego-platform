@@ -4,6 +4,7 @@ This repository keeps the first pricing and affiliate slice snapshot-backed. The
 
 See also:
 
+- `docs/architecture/commerce-current-offer-snapshot.md`
 - `docs/operations/pricing-history.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 
@@ -187,6 +188,9 @@ artifact drift is still caught when operator Supabase env is available.
 - The current snapshot-backed price panel remains unchanged for the public app.
 - Feed jobs refresh `commerce_offer_latest`; `commerce-sync` aggregates those latest offers by default.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
+- Future current-offer snapshot work should keep `commerce-sync` as the writer
+  and preserve live latest-offer reconstruction as the read-side fallback until
+  snapshot parity is proven.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
 - `pnpm sync:commerce` is aggregate-only by default and never runs scraper refresh implicitly in production.
 - `pnpm nx run commerce-sync:run -- --set-ids ...` is the fast operator path for batch coverage work. It scopes daily-history metrics to the requested sets while keeping generated files consistent after the run.
