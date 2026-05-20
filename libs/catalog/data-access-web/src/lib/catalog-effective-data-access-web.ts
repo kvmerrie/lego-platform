@@ -68,6 +68,7 @@ const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
 const CATALOG_CURRENT_OFFER_PAGE_SIZE = 1000;
 const CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE = 100;
+const CATALOG_CURRENT_OFFER_HTTP_BATCH_SIZE = 50;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LIMIT = 240;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_MULTIPLIER = 8;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_LIMIT = 2_000;
@@ -507,6 +508,23 @@ function getWebCatalogSupabaseReadClient(): CatalogSupabaseClient | undefined {
   }
 
   return undefined;
+}
+
+function isCurrentOfferSummaryReadDebugEnabled(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    process.env['DEBUG_CURRENT_OFFER_SUMMARY_READ'] === 'true'
+  );
+}
+
+function logCurrentOfferSummaryReadDiagnostic(
+  diagnostic: Readonly<Record<string, unknown>>,
+): void {
+  if (!isCurrentOfferSummaryReadDebugEnabled()) {
+    return;
+  }
+
+  console.info('[catalog-current-offer-summaries]', diagnostic);
 }
 
 function getCatalogApiBaseUrl(): string {
@@ -5754,6 +5772,84 @@ export async function getCatalogCurrentOfferSummaryBySetId({
   });
 }
 
+async function listCatalogCurrentOfferSummariesViaApi({
+  apiBaseUrl,
+  cacheOptions,
+  fetchImpl,
+  setIds,
+  signal,
+}: {
+  apiBaseUrl?: string;
+  cacheOptions?: CatalogApiReadCacheOptions;
+  fetchImpl?: typeof fetch;
+  setIds: readonly string[];
+  signal?: AbortSignal;
+}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const summaryBySetId = new Map<string, CatalogCurrentOfferSummary>();
+  const startedAt = Date.now();
+
+  for (const setIdChunk of chunkCatalogValues(
+    setIds,
+    CATALOG_CURRENT_OFFER_HTTP_BATCH_SIZE,
+  )) {
+    throwIfCatalogReadAborted(signal);
+
+    const response = await (fetchImpl ?? fetch)(
+      `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogCurrentOfferSummariesApiPath(setIdChunk)}`,
+      {
+        headers: {
+          accept: 'application/json',
+        },
+        signal,
+        ...(typeof cacheOptions?.revalidateSeconds === 'number'
+          ? {
+              next: {
+                revalidate: cacheOptions.revalidateSeconds,
+                tags: cacheOptions.tags ? [...cacheOptions.tags] : undefined,
+              },
+            }
+          : {
+              next: {
+                revalidate: 21_600,
+                tags: [
+                  cacheTags.prices(),
+                  ...setIdChunk.map((setId) => cacheTags.set(setId)),
+                ],
+              },
+            }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error('Unable to load current catalog offer summaries.');
+    }
+
+    throwIfCatalogReadAborted(signal);
+
+    const payload = await response.json();
+
+    for (const summaryRecord of Array.isArray(payload) ? payload : []) {
+      const normalizedSummary =
+        normalizeCatalogCurrentOfferSummaryRecord(summaryRecord);
+
+      if (!normalizedSummary || normalizedSummary.offers.length === 0) {
+        continue;
+      }
+
+      summaryBySetId.set(normalizedSummary.setId, normalizedSummary);
+    }
+  }
+
+  logCurrentOfferSummaryReadDiagnostic({
+    request_duration_ms: Date.now() - startedAt,
+    set_id_count: setIds.length,
+    source: 'api',
+    summary_count: summaryBySetId.size,
+  });
+
+  return summaryBySetId;
+}
+
 export async function listCatalogCurrentOfferSummariesBySetIds({
   apiBaseUrl,
   cacheOptions,
@@ -5782,106 +5878,38 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   }
 
   try {
-    if (!supabaseClient) {
-      throwIfCatalogReadAborted(signal);
+    const activeSupabaseClient =
+      supabaseClient ??
+      (fetchImpl || apiBaseUrl ? undefined : getWebCatalogSupabaseReadClient());
 
-      const response = await (fetchImpl ?? fetch)(
-        `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogCurrentOfferSummariesApiPath(uniqueSetIds)}`,
-        {
-          headers: {
-            accept: 'application/json',
-          },
-          signal,
-          ...(typeof cacheOptions?.revalidateSeconds === 'number'
-            ? {
-                next: {
-                  revalidate: cacheOptions.revalidateSeconds,
-                  tags: cacheOptions.tags ? [...cacheOptions.tags] : undefined,
-                },
-              }
-            : {
-                next: {
-                  revalidate: 21_600,
-                  tags: [
-                    cacheTags.prices(),
-                    ...uniqueSetIds.map((setId) => cacheTags.set(setId)),
-                  ],
-                },
-              }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Unable to load current catalog offer summaries.');
-      }
-
-      throwIfCatalogReadAborted(signal);
-
-      const payload = await response.json();
-      const summaryBySetId = new Map(
-        (Array.isArray(payload) ? payload : []).flatMap((summaryRecord) => {
-          const normalizedSummary =
-            normalizeCatalogCurrentOfferSummaryRecord(summaryRecord);
-
-          if (!normalizedSummary || normalizedSummary.offers.length === 0) {
-            return [];
-          }
-
-          return [[normalizedSummary.setId, normalizedSummary] as const];
-        }),
-      );
-
-      if (summaryBySetId.size === uniqueSetIds.length) {
-        return summaryBySetId;
-      }
-
-      if (!hasServerSupabaseConfig()) {
-        return summaryBySetId;
-      }
-
-      try {
-        const missingSetIds = uniqueSetIds.filter(
-          (setId) => !summaryBySetId.has(setId),
-        );
-        const liveOffersBySetId =
-          await listCatalogRuntimeOffersBySetIdsFromSupabase({
-            signal,
-            setIds: missingSetIds,
-            supabaseClient: getWebCatalogSupabaseAdminClient(),
-          });
-        const liveSummaryBySetId =
-          toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
-
-        return new Map([...summaryBySetId, ...liveSummaryBySetId]);
-      } catch {
-        return summaryBySetId;
-      }
+    if (!activeSupabaseClient) {
+      return listCatalogCurrentOfferSummariesViaApi({
+        apiBaseUrl,
+        cacheOptions,
+        fetchImpl,
+        setIds: uniqueSetIds,
+        signal,
+      });
     }
 
+    const startedAt = Date.now();
     const liveOffersBySetId =
       await listCatalogRuntimeOffersBySetIdsFromSupabase({
         signal,
         setIds: uniqueSetIds,
-        supabaseClient,
+        supabaseClient: activeSupabaseClient,
       });
+    const summaryBySetId = toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
 
-    return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
+    logCurrentOfferSummaryReadDiagnostic({
+      request_duration_ms: Date.now() - startedAt,
+      set_id_count: uniqueSetIds.length,
+      source: 'direct_supabase',
+      summary_count: summaryBySetId.size,
+    });
+
+    return summaryBySetId;
   } catch (error) {
-    if (!supabaseClient && hasServerSupabaseConfig()) {
-      try {
-        const liveOffersBySetId =
-          await listCatalogRuntimeOffersBySetIdsFromSupabase({
-            signal,
-            setIds: uniqueSetIds,
-            supabaseClient: getWebCatalogSupabaseAdminClient(),
-          });
-
-        return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
-      } catch {
-        return new Map();
-      }
-    }
-
     if (!supabaseClient) {
       return new Map();
     }

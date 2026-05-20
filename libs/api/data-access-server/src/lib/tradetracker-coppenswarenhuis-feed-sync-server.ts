@@ -39,6 +39,7 @@ export interface TradeTrackerCoppenswarenhuisFeedSyncDependencies {
 }
 
 export interface TradeTrackerCoppenswarenhuisFeedSyncOptions {
+  collectStaleLatestDiagnostics?: boolean;
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
   discoverMissingSets?: boolean;
@@ -803,6 +804,12 @@ export async function syncTradeTrackerCoppenswarenhuisFeed({
       persistDiscoveredSets:
         options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
+      ...(options?.collectStaleLatestDiagnostics === undefined
+        ? {}
+        : {
+            collectStaleLatestDiagnostics:
+              options.collectStaleLatestDiagnostics,
+          }),
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,
   });

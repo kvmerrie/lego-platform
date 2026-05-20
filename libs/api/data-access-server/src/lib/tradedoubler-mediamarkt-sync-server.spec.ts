@@ -433,6 +433,7 @@ describe('TradeDoubler MediaMarkt sync server', () => {
         importAffiliateFeedRowsForMerchantFn,
       },
       options: {
+        collectStaleLatestDiagnostics: true,
         collectUnmatchedDebug: true,
         debugSamples: 2,
         unmatchedSampleLimit: 20,
@@ -448,6 +449,7 @@ describe('TradeDoubler MediaMarkt sync server', () => {
         slug: 'mediamarkt',
       },
       options: {
+        collectStaleLatestDiagnostics: true,
         collectUnmatchedDebug: true,
         dryRun: undefined,
         persistDiscoveredSets: false,

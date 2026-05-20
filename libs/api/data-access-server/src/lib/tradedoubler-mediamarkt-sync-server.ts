@@ -28,6 +28,7 @@ export interface TradeDoublerMediaMarktFeedSyncDependencies {
 }
 
 export interface TradeDoublerMediaMarktFeedSyncOptions {
+  collectStaleLatestDiagnostics?: boolean;
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
   discoverMissingSets?: boolean;
@@ -878,6 +879,12 @@ export async function syncTradeDoublerMediaMarktFeed({
       persistDiscoveredSets:
         options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
+      ...(options?.collectStaleLatestDiagnostics === undefined
+        ? {}
+        : {
+            collectStaleLatestDiagnostics:
+              options.collectStaleLatestDiagnostics,
+          }),
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,
   });

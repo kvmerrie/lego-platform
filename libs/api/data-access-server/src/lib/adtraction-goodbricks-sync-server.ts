@@ -25,6 +25,7 @@ export interface AdtractionGoodbricksFeedSyncDependencies {
 }
 
 export interface AdtractionGoodbricksFeedSyncOptions {
+  collectStaleLatestDiagnostics?: boolean;
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
   discoverMissingSets?: boolean;
@@ -585,6 +586,12 @@ export async function syncAdtractionGoodbricksFeed({
       persistDiscoveredSets:
         options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
+      ...(options?.collectStaleLatestDiagnostics === undefined
+        ? {}
+        : {
+            collectStaleLatestDiagnostics:
+              options.collectStaleLatestDiagnostics,
+          }),
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,
   });

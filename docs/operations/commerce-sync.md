@@ -487,6 +487,35 @@ Current production freshness read, based on the May 2026 commerce-sync sample:
 | lego-nl / bol / Intertoys | high stale/error legacy/manual | No reliable production feed refresh owner yet.          | Operator queue cleanup; do not change trust/ranking without a feed owner.           |
 
 Feed job end logs include `remaining_stale_success_latest` and a compact
-`remaining_stale_success_sample`. A high value means the feed run succeeded but
-existing success rows for that merchant were not seen in the current feed and
-were not retired because the importer is non-authoritative by default.
+`remaining_stale_success_sample`. The sample classifies each row with reasons
+such as `missing_from_current_feed`, `duplicate_seed_same_set_merchant`,
+`product_id_mismatch_possible`, `seed_url_missing_or_invalid`,
+`seed_url_still_same_domain`, and `old_manual_seed`. A high value means the feed
+run succeeded but existing success rows for that merchant were not seen in the
+current feed and were not retired because the importer is non-authoritative by
+default.
+
+For feed-owned merchant cleanup review, write a dry-run report before enabling
+any authoritative retirement:
+
+```bash
+pnpm nx run alternate-feed-sync:run -- --report-stale-latest-path tmp/alternate-stale-latest.json
+pnpm nx run awin-feed-sync:run -- --report-stale-latest-path tmp/coolblue-stale-latest.json
+pnpm nx run conrad-feed-sync:run -- --dry-run --report-stale-latest-path tmp/conrad-stale-latest.json
+pnpm nx run goodbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/goodbricks-stale-latest.json
+pnpm nx run lidl-feed-sync:run -- --report-stale-latest-path tmp/lidl-stale-latest.json
+pnpm nx run mediamarkt-feed-sync:run -- --dry-run --report-stale-latest-path tmp/mediamarkt-stale-latest.json
+pnpm nx run misterbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/misterbricks-stale-latest.json
+pnpm nx run coppenswarenhuis-feed-sync:run -- --dry-run --report-stale-latest-path tmp/coppenswarenhuis-stale-latest.json
+```
+
+Treat feed-owned stale success rows as cleanup candidates, not automatic
+public-unavailable candidates. Review the report rows first for changed feed
+scope, old product URLs, duplicate seeds, and manual seeds. Legacy/manual
+merchants such as `lego-nl`, `bol`, `intertoys`, and `top1toys` do not use this
+feed report path; review their seeds manually.
+
+Feed crons that can report `changed_sets` must have both `WEB_BASE_URL` and
+`WEB_REVALIDATE_SECRET`. Coppenswarenhuis previously missed
+`WEB_REVALIDATE_SECRET`; add it to the Render cron environment before relying on
+automatic set-page revalidation.

@@ -7726,13 +7726,14 @@ describe('catalog effective data access web', () => {
 
   test('passes abort signals to targeted current offer summary API reads', async () => {
     const abortController = new AbortController();
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify([]), {
-        headers: {
-          'content-type': 'application/json',
-        },
-        status: 200,
-      }),
+    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(JSON.stringify([]), {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        }),
     );
 
     await listCatalogCurrentOfferSummariesBySetIds({
@@ -7746,6 +7747,40 @@ describe('catalog effective data access web', () => {
       expect.objectContaining({
         signal: abortController.signal,
       }),
+    );
+  });
+
+  test('chunks targeted current offer summary API reads to avoid huge query strings', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(JSON.stringify([]), {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        }),
+    );
+    const setIds = Array.from(
+      {
+        length: 125,
+      },
+      (_, index) => String(10_000 + index),
+    );
+
+    await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain(
+      `setIds=${setIds.slice(0, 50).join('%2C')}`,
+    );
+    expect(String(fetchImpl.mock.calls[1]?.[0])).toContain(
+      `setIds=${setIds.slice(50, 100).join('%2C')}`,
+    );
+    expect(String(fetchImpl.mock.calls[2]?.[0])).toContain(
+      `setIds=${setIds.slice(100).join('%2C')}`,
     );
   });
 

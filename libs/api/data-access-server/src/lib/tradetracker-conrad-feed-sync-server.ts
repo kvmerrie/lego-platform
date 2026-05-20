@@ -29,6 +29,7 @@ export interface TradeTrackerConradFeedSyncDependencies {
 }
 
 export interface TradeTrackerConradFeedSyncOptions {
+  collectStaleLatestDiagnostics?: boolean;
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
   dryRun?: boolean;
@@ -914,6 +915,12 @@ export async function syncTradeTrackerConradFeed({
       dryRun: options?.dryRun,
       persistDiscoveredSets: options?.persistDiscoveredSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
+      ...(options?.collectStaleLatestDiagnostics === undefined
+        ? {}
+        : {
+            collectStaleLatestDiagnostics:
+              options.collectStaleLatestDiagnostics,
+          }),
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,
   });

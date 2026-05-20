@@ -57,11 +57,24 @@ export interface AlternateAffiliateFeedImportResult {
   changedSetIds: readonly string[];
   changedSetSlugs: readonly string[];
   changedLatestOfferCount: number;
+  existingStaleSuccessLatestByAgeBucket?: Readonly<
+    Record<'2_7_days' | '8_30_days' | 'over_30_days' | 'unknown', number>
+  >;
   existingStaleSuccessLatestCount: number;
+  existingStaleSuccessLatestDuplicateSeedCount?: number;
+  existingStaleSuccessLatestMissingFromFeedCount?: number;
+  existingStaleSuccessLatestReportRows?: readonly ExistingStaleSuccessLatestDiagnosticRow[];
   existingStaleSuccessLatestSample: readonly {
+    ageBucket?:
+      | ExistingStaleSuccessLatestDiagnosticRow['ageBucket']
+      | undefined;
     fetchedAt?: string;
+    likelyReason?: ExistingStaleSuccessLatestDiagnosticRow['likelyReason'];
+    likelyReasons?: readonly ExistingStaleSuccessLatestReason[];
     offerSeedId: string;
     observedAt?: string;
+    productUrl?: string;
+    seedUrlHost?: string;
     setId: string;
   }[];
   importedOfferCount: number;
@@ -96,6 +109,26 @@ export interface AlternateAffiliateFeedImportResult {
   ignoredOrNonSetMissingSetCount: number;
 }
 
+export type ExistingStaleSuccessLatestReason =
+  | 'missing_from_current_feed'
+  | 'product_id_mismatch_possible'
+  | 'seed_url_still_same_domain'
+  | 'seed_url_missing_or_invalid'
+  | 'duplicate_seed_same_set_merchant'
+  | 'old_manual_seed';
+
+export interface ExistingStaleSuccessLatestDiagnosticRow {
+  ageBucket: '2_7_days' | '8_30_days' | 'over_30_days' | 'unknown';
+  fetchedAt?: string;
+  likelyReason: ExistingStaleSuccessLatestReason;
+  likelyReasons: readonly ExistingStaleSuccessLatestReason[];
+  offerSeedId: string;
+  observedAt?: string;
+  productUrl?: string;
+  seedUrlHost?: string;
+  setId: string;
+}
+
 export interface AlternateAffiliateFeedImportDependencies {
   createCommerceMerchantFn?: typeof createCommerceMerchant;
   getNow?: () => Date;
@@ -112,6 +145,7 @@ export interface AlternateAffiliateFeedImportDependencies {
 
 export interface AlternateAffiliateFeedImportOptions {
   collectUnmatchedDebug?: boolean;
+  collectStaleLatestDiagnostics?: boolean;
   discoverMissingSets?: boolean;
   dryRun?: boolean;
   markUnseenLatestOffersUnavailableAuthoritative?: boolean;
@@ -281,23 +315,156 @@ function getLatestOfferObservedTime(offerSeed: CommerceOfferSeed): number {
   return new Date(timestamp).getTime();
 }
 
+function getUrlHost(value?: string): string | undefined {
+  if (!value?.trim()) {
+    return undefined;
+  }
+
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+function getStaleLatestAgeBucket({
+  latestObservedTime,
+  observedAtTime,
+}: {
+  latestObservedTime: number;
+  observedAtTime: number;
+}): ExistingStaleSuccessLatestDiagnosticRow['ageBucket'] {
+  if (!Number.isFinite(latestObservedTime)) {
+    return 'unknown';
+  }
+
+  const ageMs = observedAtTime - latestObservedTime;
+  const ageDays = ageMs / (24 * 60 * 60 * 1000);
+
+  if (ageDays <= 7) {
+    return '2_7_days';
+  }
+
+  if (ageDays <= 30) {
+    return '8_30_days';
+  }
+
+  return 'over_30_days';
+}
+
+function buildStaleLatestReason({
+  currentFeedHosts,
+  currentFeedMatchedSetIds,
+  duplicateSeedKeys,
+  merchantId,
+  offerSeed,
+}: {
+  currentFeedHosts: ReadonlySet<string>;
+  currentFeedMatchedSetIds: ReadonlySet<string>;
+  duplicateSeedKeys: ReadonlySet<string>;
+  merchantId: string;
+  offerSeed: CommerceOfferSeed;
+}): readonly ExistingStaleSuccessLatestReason[] {
+  const reasons: ExistingStaleSuccessLatestReason[] = [];
+  const duplicateSeedKey = buildCommerceOfferSeedKey({
+    merchantId,
+    setId: offerSeed.setId,
+  });
+  const seedUrlHost = getUrlHost(offerSeed.productUrl);
+
+  if (!seedUrlHost) {
+    reasons.push('seed_url_missing_or_invalid');
+  } else if (currentFeedHosts.has(seedUrlHost)) {
+    reasons.push('seed_url_still_same_domain');
+  }
+
+  if (duplicateSeedKeys.has(duplicateSeedKey)) {
+    reasons.push('duplicate_seed_same_set_merchant');
+  }
+
+  if (!currentFeedMatchedSetIds.has(offerSeed.setId)) {
+    reasons.push('missing_from_current_feed');
+  } else if (!duplicateSeedKeys.has(duplicateSeedKey)) {
+    reasons.push('product_id_mismatch_possible');
+  }
+
+  if (!offerSeed.notes.toLowerCase().includes('feed-driven')) {
+    reasons.push('old_manual_seed');
+  }
+
+  return reasons.length > 0 ? reasons : ['missing_from_current_feed'];
+}
+
+function getPrimaryStaleLatestReason(
+  reasons: readonly ExistingStaleSuccessLatestReason[],
+): ExistingStaleSuccessLatestReason {
+  const priority: readonly ExistingStaleSuccessLatestReason[] = [
+    'seed_url_missing_or_invalid',
+    'duplicate_seed_same_set_merchant',
+    'old_manual_seed',
+    'product_id_mismatch_possible',
+    'missing_from_current_feed',
+    'seed_url_still_same_domain',
+  ];
+
+  return (
+    priority.find((reason) => reasons.includes(reason)) ??
+    'missing_from_current_feed'
+  );
+}
+
 function buildExistingStaleSuccessLatestDiagnostics({
+  currentFeedHosts,
+  currentFeedMatchedSetIds,
   existingOfferSeeds,
   matchedOfferSeedIds,
   merchantId,
   observedAt,
 }: {
+  currentFeedHosts: ReadonlySet<string>;
+  currentFeedMatchedSetIds: ReadonlySet<string>;
   existingOfferSeeds: readonly CommerceOfferSeed[];
   matchedOfferSeedIds: ReadonlySet<string>;
   merchantId: string;
   observedAt: string;
 }): {
+  ageBuckets: NonNullable<
+    AlternateAffiliateFeedImportResult['existingStaleSuccessLatestByAgeBucket']
+  >;
   count: number;
+  duplicateSeedCount: number;
+  missingFromFeedCount: number;
+  reportRows: readonly ExistingStaleSuccessLatestDiagnosticRow[];
   sample: AlternateAffiliateFeedImportResult['existingStaleSuccessLatestSample'];
 } {
+  const observedAtTime = new Date(observedAt).getTime();
   const staleCutoffTime =
-    new Date(observedAt).getTime() -
-    FEED_IMPORT_STALE_SUCCESS_LATEST_MAX_AGE_MS;
+    observedAtTime - FEED_IMPORT_STALE_SUCCESS_LATEST_MAX_AGE_MS;
+  const activeValidSeedCountBySetAndMerchantId = existingOfferSeeds.reduce<
+    Map<string, number>
+  >((counts, offerSeed) => {
+    if (
+      offerSeed.merchantId !== merchantId ||
+      !offerSeed.isActive ||
+      offerSeed.validationStatus !== 'valid'
+    ) {
+      return counts;
+    }
+
+    const seedKey = buildCommerceOfferSeedKey({
+      merchantId,
+      setId: offerSeed.setId,
+    });
+
+    counts.set(seedKey, (counts.get(seedKey) ?? 0) + 1);
+
+    return counts;
+  }, new Map());
+  const duplicateSeedKeys = new Set(
+    [...activeValidSeedCountBySetAndMerchantId.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([seedKey]) => seedKey),
+  );
   const staleExistingOfferSeeds = existingOfferSeeds
     .filter((offerSeed) => {
       if (
@@ -322,17 +489,64 @@ function buildExistingStaleSuccessLatestDiagnostics({
         getLatestOfferObservedTime(left) - getLatestOfferObservedTime(right) ||
         left.setId.localeCompare(right.setId),
     );
+  const reportRows = staleExistingOfferSeeds.map((offerSeed) => {
+    const latestObservedTime = getLatestOfferObservedTime(offerSeed);
+    const ageBucket = getStaleLatestAgeBucket({
+      latestObservedTime,
+      observedAtTime,
+    });
+    const likelyReasons = buildStaleLatestReason({
+      currentFeedHosts,
+      currentFeedMatchedSetIds,
+      duplicateSeedKeys,
+      merchantId,
+      offerSeed,
+    });
+
+    const fetchedAt = offerSeed.latestOffer?.fetchedAt;
+    const observedLatestAt = offerSeed.latestOffer?.observedAt;
+    const seedUrlHost = getUrlHost(offerSeed.productUrl);
+
+    return {
+      ageBucket,
+      likelyReason: getPrimaryStaleLatestReason(likelyReasons),
+      likelyReasons,
+      offerSeedId: offerSeed.id,
+      productUrl: offerSeed.productUrl,
+      setId: offerSeed.setId,
+      ...(fetchedAt ? { fetchedAt } : {}),
+      ...(observedLatestAt ? { observedAt: observedLatestAt } : {}),
+      ...(seedUrlHost ? { seedUrlHost } : {}),
+    };
+  });
+  const ageBuckets = reportRows.reduce<
+    NonNullable<
+      AlternateAffiliateFeedImportResult['existingStaleSuccessLatestByAgeBucket']
+    >
+  >(
+    (counts, reportRow) => ({
+      ...counts,
+      [reportRow.ageBucket]: counts[reportRow.ageBucket] + 1,
+    }),
+    {
+      '2_7_days': 0,
+      '8_30_days': 0,
+      over_30_days: 0,
+      unknown: 0,
+    },
+  );
 
   return {
     count: staleExistingOfferSeeds.length,
-    sample: staleExistingOfferSeeds
-      .slice(0, FEED_IMPORT_STALE_SUCCESS_LATEST_SAMPLE_LIMIT)
-      .map((offerSeed) => ({
-        fetchedAt: offerSeed.latestOffer?.fetchedAt,
-        offerSeedId: offerSeed.id,
-        observedAt: offerSeed.latestOffer?.observedAt,
-        setId: offerSeed.setId,
-      })),
+    ageBuckets,
+    duplicateSeedCount: reportRows.filter((reportRow) =>
+      reportRow.likelyReasons.includes('duplicate_seed_same_set_merchant'),
+    ).length,
+    missingFromFeedCount: reportRows.filter((reportRow) =>
+      reportRow.likelyReasons.includes('missing_from_current_feed'),
+    ).length,
+    reportRows,
+    sample: reportRows.slice(0, FEED_IMPORT_STALE_SUCCESS_LATEST_SAMPLE_LIMIT),
   };
 }
 
@@ -671,7 +885,8 @@ export async function importAffiliateFeedRowsForMerchant({
     });
   const [canonicalCatalogSets, existingOfferSeeds] = await Promise.all([
     listCanonicalCatalogSetsFn(),
-    options?.dryRun || merchantCreated
+    (options?.dryRun && !options.collectStaleLatestDiagnostics) ||
+    merchantCreated
       ? Promise.resolve([])
       : listCommerceOfferSeedsFn(),
   ]);
@@ -694,6 +909,13 @@ export async function importAffiliateFeedRowsForMerchant({
   const observedAt = getNow().toISOString();
   const matchedCatalogSetIds = new Set<string>();
   const matchedOfferSeedIds = new Set<string>();
+  const currentFeedHosts = new Set(
+    rows.flatMap((row) => {
+      const host = getUrlHost(row.affiliateDeeplink);
+
+      return host ? [host] : [];
+    }),
+  );
   const upsertedSeedIds = new Set<string>();
   const upsertedLatestSeedIds = new Set<string>();
   const timestampRefreshedLatestSeedIds = new Set<string>();
@@ -867,7 +1089,17 @@ export async function importAffiliateFeedRowsForMerchant({
     }
 
     if (options?.dryRun) {
+      const existingOfferSeed = existingOfferSeedBySetAndMerchantId.get(
+        buildCommerceOfferSeedKey({
+          merchantId: resolvedMerchant.id,
+          setId: matchedCatalogSetId,
+        }),
+      );
+
       matchedCatalogSetIds.add(matchedCatalogSetId);
+      if (existingOfferSeed) {
+        matchedOfferSeedIds.add(existingOfferSeed.id);
+      }
       continue;
     }
 
@@ -985,15 +1217,27 @@ export async function importAffiliateFeedRowsForMerchant({
   }
 
   const existingStaleSuccessLatestDiagnostics =
-    !options?.dryRun && !merchantCreated
+    (!options?.dryRun || options.collectStaleLatestDiagnostics) &&
+    !merchantCreated
       ? buildExistingStaleSuccessLatestDiagnostics({
+          currentFeedHosts,
+          currentFeedMatchedSetIds: matchedCatalogSetIds,
           existingOfferSeeds,
           matchedOfferSeedIds,
           merchantId: resolvedMerchant.id,
           observedAt,
         })
       : {
+          ageBuckets: {
+            '2_7_days': 0,
+            '8_30_days': 0,
+            over_30_days: 0,
+            unknown: 0,
+          },
           count: 0,
+          duplicateSeedCount: 0,
+          missingFromFeedCount: 0,
+          reportRows: [],
           sample: [],
         };
 
@@ -1022,6 +1266,14 @@ export async function importAffiliateFeedRowsForMerchant({
     totalRowCount: rows.length,
     existingStaleSuccessLatestCount:
       existingStaleSuccessLatestDiagnostics.count,
+    existingStaleSuccessLatestByAgeBucket:
+      existingStaleSuccessLatestDiagnostics.ageBuckets,
+    existingStaleSuccessLatestDuplicateSeedCount:
+      existingStaleSuccessLatestDiagnostics.duplicateSeedCount,
+    existingStaleSuccessLatestMissingFromFeedCount:
+      existingStaleSuccessLatestDiagnostics.missingFromFeedCount,
+    existingStaleSuccessLatestReportRows:
+      existingStaleSuccessLatestDiagnostics.reportRows,
     existingStaleSuccessLatestSample:
       existingStaleSuccessLatestDiagnostics.sample,
     latestRowsMarkedStaleCount,

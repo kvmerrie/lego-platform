@@ -198,6 +198,53 @@ describe('api v1 auth and set-status routes', () => {
     await server.close();
   });
 
+  test('rejects oversized GET current offer summary batches', async () => {
+    const { listCatalogCurrentOfferSummariesBySetIds, server } =
+      await createApiServer();
+    const setIds = Array.from(
+      {
+        length: 101,
+      },
+      (_, index) => String(10_000 + index),
+    );
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogCurrentOfferSummariesApiPath(setIds),
+    });
+
+    expect(response.statusCode).toBe(413);
+    expect(response.json()).toMatchObject({
+      maxSetIds: 100,
+    });
+    expect(listCatalogCurrentOfferSummariesBySetIds).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('accepts POST current offer summary batches without query strings', async () => {
+    const { listCatalogCurrentOfferSummariesBySetIds, server } =
+      await createApiServer({
+        listCatalogCurrentOfferSummariesBySetIds: vi.fn().mockResolvedValue([]),
+      });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: buildCatalogCurrentOfferSummariesApiPath(),
+      payload: {
+        setIds: ['42172', '75398', '42172'],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(listCatalogCurrentOfferSummariesBySetIds).toHaveBeenCalledWith([
+      '42172',
+      '75398',
+    ]);
+
+    await server.close();
+  });
+
   test('returns public catalog discovery signals', async () => {
     const discoverySignals = [
       {

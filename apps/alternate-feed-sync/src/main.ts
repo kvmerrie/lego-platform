@@ -89,6 +89,10 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const reportStaleLatestPath = parseOptionalStringFlag({
+    argv,
+    flag: '--report-stale-latest-path',
+  });
   const onboardingBatchSize =
     parseOptionalPositiveIntegerFlag({
       argv,
@@ -111,13 +115,14 @@ async function main() {
   }
 
   console.log(
-    `[alternate-feed-sync] start source=tradetracker merchant=alternate mode=write discovery_enabled=${discoveryEnabled} debug_lego_samples=${debugLegoSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} onboarding_batch_size=${onboardingBatchSize} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[alternate-feed-sync] start source=tradetracker merchant=alternate mode=write discovery_enabled=${discoveryEnabled} debug_lego_samples=${debugLegoSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} onboarding_batch_size=${onboardingBatchSize} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
   );
 
   const result = await syncAlternateTradeTrackerFeed({
     options: {
       collectUnmatchedDebug:
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
+      collectStaleLatestDiagnostics: Boolean(reportStaleLatestPath),
       debugLegoSamples,
       persistDiscoveredSets: discoveryEnabled,
       unmatchedSampleLimit: debugUnmatchedSamples,
@@ -196,6 +201,34 @@ async function main() {
     }
   }
 
+  if (reportStaleLatestPath) {
+    await mkdir(dirname(reportStaleLatestPath), {
+      recursive: true,
+    });
+    await writeFile(
+      reportStaleLatestPath,
+      JSON.stringify(
+        {
+          ageBuckets: result.existingStaleSuccessLatestByAgeBucket,
+          duplicateSeedCount:
+            result.existingStaleSuccessLatestDuplicateSeedCount,
+          missingFromFeedCount:
+            result.existingStaleSuccessLatestMissingFromFeedCount,
+          remainingStaleSuccessLatestCount:
+            result.existingStaleSuccessLatestCount,
+          rows: result.existingStaleSuccessLatestReportRows ?? [],
+          merchantName: 'Alternate',
+          merchantSlug: result.merchantSlug,
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(
+      `[alternate-feed-sync] stale_latest_report_written path=${JSON.stringify(reportStaleLatestPath)} rows=${result.existingStaleSuccessLatestCount} duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0}`,
+    );
+  }
+
   console.log(
     `[alternate-feed-sync] missing_sets discovered=${result.discoveredMissingSetCount} auto_importable=${result.autoImportableMissingSetCount} review_needed=${result.reviewNeededMissingSetCount} ignored_or_non_set=${result.ignoredOrNonSetMissingSetCount}`,
   );
@@ -219,7 +252,7 @@ async function main() {
   }
 
   console.log(
-    `[alternate-feed-sync] end status=imported source=tradetracker merchant=alternate affiliate_site_id=${result.affiliateSiteId} affiliate_site_name=${JSON.stringify(result.affiliateSiteName)} feed_id=${result.feedId} feed_name=${JSON.stringify(result.feedName)} campaign_id=${result.campaignId} campaign_name=${JSON.stringify(result.campaignName)} selection=${result.selectionStrategy} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} pages=${result.pageCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[alternate-feed-sync] end status=imported source=tradetracker merchant=alternate affiliate_site_id=${result.affiliateSiteId} affiliate_site_name=${JSON.stringify(result.affiliateSiteName)} feed_id=${result.feedId} feed_name=${JSON.stringify(result.feedName)} campaign_id=${result.campaignId} campaign_name=${JSON.stringify(result.campaignName)} selection=${result.selectionStrategy} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} pages=${result.pageCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

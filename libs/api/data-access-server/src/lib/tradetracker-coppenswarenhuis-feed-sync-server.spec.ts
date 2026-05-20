@@ -232,6 +232,7 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
         importAffiliateFeedRowsForMerchantFn,
       },
       options: {
+        collectStaleLatestDiagnostics: true,
         collectUnmatchedDebug: true,
         debugSamples: 3,
         dryRun: true,
@@ -249,6 +250,7 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
         slug: 'coppenswarenhuis',
       },
       options: {
+        collectStaleLatestDiagnostics: true,
         collectUnmatchedDebug: true,
         dryRun: true,
         persistDiscoveredSets: false,

@@ -106,6 +106,10 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const reportStaleLatestPath = parseOptionalStringFlag({
+    argv,
+    flag: '--report-stale-latest-path',
+  });
   const discoveryEnabled = resolveAffiliateFeedDiscoveryEnabled({
     argv,
   });
@@ -116,6 +120,12 @@ async function main() {
     );
   }
 
+  if (!hasServerSupabaseConfig() && reportStaleLatestPath) {
+    throw new Error(
+      `Conrad stale latest report requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
+    );
+  }
+
   if (!hasTradeTrackerConradFeedConfig()) {
     throw new Error(
       `Conrad feed sync requires a TradeTracker feed URL. Missing: ${getMissingTradeTrackerConradEnvKeys().join(', ')}.`,
@@ -123,13 +133,14 @@ async function main() {
   }
 
   console.log(
-    `[conrad-feed-sync] start source=tradetracker merchant=conrad mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[conrad-feed-sync] start source=tradetracker merchant=conrad mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
   );
 
   const result = await syncTradeTrackerConradFeed({
     options: {
       collectUnmatchedDebug:
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
+      collectStaleLatestDiagnostics: Boolean(reportStaleLatestPath),
       debugSamples,
       dryRun,
       maxProducts,
@@ -198,6 +209,34 @@ async function main() {
     }
   }
 
+  if (reportStaleLatestPath) {
+    await mkdir(dirname(reportStaleLatestPath), {
+      recursive: true,
+    });
+    await writeFile(
+      reportStaleLatestPath,
+      JSON.stringify(
+        {
+          ageBuckets: result.existingStaleSuccessLatestByAgeBucket,
+          duplicateSeedCount:
+            result.existingStaleSuccessLatestDuplicateSeedCount,
+          missingFromFeedCount:
+            result.existingStaleSuccessLatestMissingFromFeedCount,
+          remainingStaleSuccessLatestCount:
+            result.existingStaleSuccessLatestCount,
+          rows: result.existingStaleSuccessLatestReportRows ?? [],
+          merchantName: result.merchantName,
+          merchantSlug: result.merchantSlug,
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(
+      `[conrad-feed-sync] stale_latest_report_written path=${JSON.stringify(reportStaleLatestPath)} rows=${result.existingStaleSuccessLatestCount} duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0}`,
+    );
+  }
+
   if (!dryRun && result.changedSetIds.length > 0) {
     try {
       const revalidationResult = await revalidatePublicCatalogPriceChanges({
@@ -217,7 +256,7 @@ async function main() {
   }
 
   console.log(
-    `[conrad-feed-sync] end status=imported source=tradetracker merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} availability_raw_counts=${JSON.stringify(result.availabilityRawCounts)} normalized_availability_counts=${JSON.stringify(result.normalizedAvailabilityCounts)} unknown_after_mapping_count=${result.unknownAfterMappingCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[conrad-feed-sync] end status=imported source=tradetracker merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} availability_raw_counts=${JSON.stringify(result.availabilityRawCounts)} normalized_availability_counts=${JSON.stringify(result.normalizedAvailabilityCounts)} unknown_after_mapping_count=${result.unknownAfterMappingCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

@@ -29,6 +29,8 @@ import {
 } from '@lego-platform/user/util';
 import type { FastifyInstance } from 'fastify';
 
+const CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT = 100;
+
 export interface ApiV1RouteDependencies {
   listCatalogCurrentOfferSummariesBySetIds?: (
     setIds: readonly string[],
@@ -164,10 +166,40 @@ export function createApiV1Routes({
 
     fastify.get<{ Querystring: { setIds?: string } }>(
       buildCatalogCurrentOfferSummariesApiPath(),
-      async function (request) {
-        return listCatalogCurrentOfferSummariesBySetIdsDependency(
-          parseCatalogSetIds(request.query.setIds),
-        );
+      async function (request, reply) {
+        const setIds = parseCatalogSetIds(request.query.setIds);
+
+        if (setIds.length > CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT) {
+          return reply.status(413).send({
+            message:
+              'Too many setIds for GET current-offer-summaries; use POST body or chunk requests.',
+            maxSetIds: CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT,
+          });
+        }
+
+        return listCatalogCurrentOfferSummariesBySetIdsDependency(setIds);
+      },
+    );
+
+    fastify.post<{ Body: { setIds?: readonly string[] | string } }>(
+      buildCatalogCurrentOfferSummariesApiPath(),
+      async function (request, reply) {
+        const rawBodySetIds = request.body?.setIds;
+        const rawSetIds =
+          typeof rawBodySetIds === 'string'
+            ? rawBodySetIds
+            : Array.isArray(rawBodySetIds)
+              ? rawBodySetIds.join(',')
+              : undefined;
+        const setIds = parseCatalogSetIds(rawSetIds);
+
+        if (!setIds.length) {
+          return reply.status(400).send({
+            message: 'current offer summaries require setIds.',
+          });
+        }
+
+        return listCatalogCurrentOfferSummariesBySetIdsDependency(setIds);
       },
     );
 

@@ -17,6 +17,7 @@ export interface AwinCoolblueFeedSyncDependencies {
 }
 
 export interface AwinCoolblueFeedSyncOptions {
+  collectStaleLatestDiagnostics?: boolean;
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
   discoverMissingSets?: boolean;
@@ -329,6 +330,12 @@ export async function syncAwinCoolblueFeed({
       persistDiscoveredSets:
         options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
+      ...(options?.collectStaleLatestDiagnostics === undefined
+        ? {}
+        : {
+            collectStaleLatestDiagnostics:
+              options.collectStaleLatestDiagnostics,
+          }),
     } satisfies AlternateAffiliateFeedImportOptions,
     rows: normalizedRows,
   });
