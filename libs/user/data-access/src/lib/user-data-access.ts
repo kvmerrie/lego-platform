@@ -462,9 +462,7 @@ export async function updateCurrentUserProfile(
 }
 
 export async function markWishlistAlertsViewed(): Promise<string | undefined> {
-  const headers = await buildSupabaseAuthorizationHeaders({
-    'Content-Type': 'application/json',
-  });
+  const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(apiPaths.wishlistAlertsViewed, {
     method: 'POST',
     headers,

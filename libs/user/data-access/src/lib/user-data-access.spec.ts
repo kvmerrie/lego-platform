@@ -405,7 +405,6 @@ describe('user data access', () => {
     vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
       new Headers({
         Authorization: 'Bearer browser-token',
-        'Content-Type': 'application/json',
       }),
     );
     fetchMock.mockResolvedValue(
@@ -448,7 +447,6 @@ describe('user data access', () => {
     vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
       new Headers({
         Authorization: 'Bearer browser-token',
-        'Content-Type': 'application/json',
       }),
     );
     fetchMock.mockResolvedValue(
@@ -484,7 +482,6 @@ describe('user data access', () => {
     vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
       new Headers({
         Authorization: 'Bearer browser-token',
-        'Content-Type': 'application/json',
       }),
     );
     fetchMock.mockResolvedValue(
@@ -511,6 +508,10 @@ describe('user data access', () => {
         method: 'POST',
       }),
     );
+    expect(buildSupabaseAuthorizationHeaders).toHaveBeenCalledWith();
+    const [, requestInit] = fetchMock.mock.calls[0];
+    expect((requestInit?.headers as Headers).get('Content-Type')).toBeNull();
+    expect(requestInit).not.toHaveProperty('body');
     expect(notifyBrowserAccountDataChanged).not.toHaveBeenCalled();
   });
 
