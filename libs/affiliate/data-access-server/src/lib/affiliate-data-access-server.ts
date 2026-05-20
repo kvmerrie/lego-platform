@@ -67,6 +67,77 @@ function getGeneratedAt({
   );
 }
 
+const tradeTrackerTrackingHosts = new Set([
+  'pf.tradetracker.net',
+  'tc.tradetracker.net',
+]);
+const tradeTrackerDestinationQueryParams = ['u', 'r'] as const;
+
+function getTradeTrackerDestinationUrl(outboundUrl: URL): string | undefined {
+  for (const [queryParam, value] of outboundUrl.searchParams.entries()) {
+    const normalizedQueryParam = queryParam.replace(/^amp;/i, '');
+
+    if (
+      tradeTrackerDestinationQueryParams.includes(
+        normalizedQueryParam as (typeof tradeTrackerDestinationQueryParams)[number],
+      ) &&
+      value.trim()
+    ) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
+function getUrlHost(value: string): string | undefined {
+  try {
+    return new URL(value).host;
+  } catch {
+    try {
+      return new URL(decodeURIComponent(value)).host;
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+export function getAffiliateUrlMerchantDestinationHost(
+  outboundUrl: URL,
+): string | undefined {
+  const normalizedOutboundHost = normalizeAffiliateUrlHost(outboundUrl.host);
+
+  if (!tradeTrackerTrackingHosts.has(normalizedOutboundHost)) {
+    return undefined;
+  }
+
+  const destinationUrl = getTradeTrackerDestinationUrl(outboundUrl);
+
+  return destinationUrl ? getUrlHost(destinationUrl) : undefined;
+}
+
+export function isExpectedAffiliateOutboundUrl({
+  expectedMerchantHost,
+  outboundUrl,
+}: {
+  expectedMerchantHost: string;
+  outboundUrl: URL;
+}): boolean {
+  if (
+    normalizeAffiliateUrlHost(outboundUrl.host) ===
+    normalizeAffiliateUrlHost(expectedMerchantHost)
+  ) {
+    return true;
+  }
+
+  const destinationHost = getAffiliateUrlMerchantDestinationHost(outboundUrl);
+
+  return destinationHost
+    ? normalizeAffiliateUrlHost(destinationHost) ===
+        normalizeAffiliateUrlHost(expectedMerchantHost)
+    : false;
+}
+
 export function validateAffiliateMerchantConfigs(
   affiliateMerchantConfigs: readonly AffiliateMerchantConfig[],
 ): void {
@@ -227,11 +298,16 @@ export function buildAffiliateSyncArtifacts({
       const outboundUrl = new URL(offerCandidateInput.merchantProductUrl);
 
       if (
-        normalizeAffiliateUrlHost(outboundUrl.host) !==
-        normalizeAffiliateUrlHost(affiliateMerchantConfig.urlHost)
+        !isExpectedAffiliateOutboundUrl({
+          expectedMerchantHost: affiliateMerchantConfig.urlHost,
+          outboundUrl,
+        })
       ) {
+        const destinationHost =
+          getAffiliateUrlMerchantDestinationHost(outboundUrl);
+
         throw new Error(
-          `Offer candidate ${offerCandidateInput.setId}/${offerCandidateInput.merchantId} has an unexpected outbound host.`,
+          `Offer candidate ${offerCandidateInput.setId}/${offerCandidateInput.merchantId} has an unexpected outbound host. expected_host=${affiliateMerchantConfig.urlHost} outbound_host=${outboundUrl.host} destination_host=${destinationHost ?? 'none'}`,
         );
       }
 

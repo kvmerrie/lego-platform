@@ -3,8 +3,107 @@ import {
   assertCommerceCheckInputSourceReady,
   runCommerceSync,
 } from './commerce-sync-server';
+import { buildCommerceSyncInputs } from './commerce-refresh-server';
 
 describe('commerce sync server', () => {
+  test('derives fallback affiliate merchant hosts from TradeTracker destination URLs', () => {
+    const syncInputs = buildCommerceSyncInputs({
+      refreshSeeds: [
+        {
+          merchant: {
+            id: 'merchant-coppens',
+            slug: 'coppenswarenhuis',
+            name: 'Coppenswarenhuis',
+            isActive: true,
+            sourceType: 'affiliate',
+            notes: '',
+            createdAt: '2026-05-20T08:00:00.000Z',
+            updatedAt: '2026-05-20T08:00:00.000Z',
+          },
+          offerSeed: {
+            id: 'seed-10280-coppens',
+            setId: '10280',
+            merchantId: 'merchant-coppens',
+            productUrl:
+              'https://tc.tradetracker.net/?c=21626&m=1768113&a=508318&r=&u=https%3A%2F%2Fwww.coppenswarenhuis.nl%2Flego-lego-10280-creator-expert-459128%2F%3Fvariant%3D459129',
+            isActive: true,
+            validationStatus: 'valid',
+            notes: '',
+            createdAt: '2026-05-20T08:00:00.000Z',
+            updatedAt: '2026-05-20T08:00:00.000Z',
+            latestOffer: {
+              id: 'latest-10280-coppens',
+              offerSeedId: 'seed-10280-coppens',
+              setId: '10280',
+              merchantId: 'merchant-coppens',
+              productUrl:
+                'https://tc.tradetracker.net/?c=21626&m=1768113&a=508318&r=&u=https%3A%2F%2Fwww.coppenswarenhuis.nl%2Flego-lego-10280-creator-expert-459128%2F%3Fvariant%3D459129',
+              fetchStatus: 'success',
+              availability: 'in_stock',
+              currencyCode: 'EUR',
+              fetchedAt: '2026-05-20T08:00:00.000Z',
+              observedAt: '2026-05-20T08:00:00.000Z',
+              priceMinor: 4999,
+              createdAt: '2026-05-20T08:00:00.000Z',
+              updatedAt: '2026-05-20T08:00:00.000Z',
+            },
+          },
+        },
+        {
+          merchant: {
+            id: 'merchant-coppens',
+            slug: 'coppenswarenhuis',
+            name: 'Coppenswarenhuis',
+            isActive: true,
+            sourceType: 'affiliate',
+            notes: '',
+            createdAt: '2026-05-20T08:00:00.000Z',
+            updatedAt: '2026-05-20T08:00:00.000Z',
+          },
+          offerSeed: {
+            id: 'seed-10280-coppens-old',
+            setId: '10280',
+            merchantId: 'merchant-coppens',
+            productUrl: 'https://partner.conrad.nl/click?p=920&id=10280',
+            isActive: true,
+            validationStatus: 'valid',
+            notes: '',
+            createdAt: '2026-05-20T08:00:00.000Z',
+            updatedAt: '2026-05-20T08:00:00.000Z',
+            latestOffer: {
+              id: 'latest-10281-coppens-old',
+              offerSeedId: 'seed-10280-coppens-old',
+              setId: '10281',
+              merchantId: 'merchant-coppens',
+              productUrl: 'https://partner.conrad.nl/click?p=920&id=10281',
+              fetchStatus: 'success',
+              availability: 'in_stock',
+              currencyCode: 'EUR',
+              fetchedAt: '2026-05-20T08:00:00.000Z',
+              observedAt: '2026-05-20T08:00:00.000Z',
+              priceMinor: 5999,
+              createdAt: '2026-05-20T08:00:00.000Z',
+              updatedAt: '2026-05-20T08:00:00.000Z',
+            },
+          },
+        },
+      ],
+    });
+
+    expect(
+      syncInputs.affiliateMerchantConfigs.find(
+        (merchantConfig) => merchantConfig.merchantId === 'coppenswarenhuis',
+      )?.urlHost,
+    ).toBe('www.coppenswarenhuis.nl');
+    expect(syncInputs.pricingObservationSeeds).toHaveLength(1);
+    expect(syncInputs.pricingObservationSeeds[0]).toMatchObject({
+      merchantId: 'coppenswarenhuis',
+      merchantProductUrl:
+        'https://tc.tradetracker.net/?c=21626&m=1768113&a=508318&r=&u=https%3A%2F%2Fwww.coppenswarenhuis.nl%2Flego-lego-10280-creator-expert-459128%2F%3Fvariant%3D459129',
+      setId: '10280',
+    });
+  });
+
   function buildCommerceSyncInputMock({
     refreshSeeds = [
       {

@@ -1,4 +1,8 @@
-import { dutchAffiliateMerchantConfigs } from '@lego-platform/affiliate/data-access-server';
+import {
+  dutchAffiliateMerchantConfigs,
+  getAffiliateUrlMerchantDestinationHost,
+  isExpectedAffiliateOutboundUrl,
+} from '@lego-platform/affiliate/data-access-server';
 import {
   normalizeAffiliateUrlHost,
   type AffiliateMerchantConfig,
@@ -82,6 +86,9 @@ const amazonPrimaryActionMarkers = [
   'id="submit.buy-now"',
   "id='submit.buy-now'",
 ] as const;
+const knownCommerceMerchantUrlHostBySlug = new Map<string, string>([
+  ['coppenswarenhuis', 'www.coppenswarenhuis.nl'],
+]);
 const bolMainOfferMarkers = [
   'Prijsinformatie en bestellen',
   'price information and ordering',
@@ -2006,6 +2013,38 @@ function createFallbackAffiliateMerchantConfig({
   };
 }
 
+function getFallbackAffiliateMerchantUrlHost({
+  discoveredUrlHost,
+  merchantSlug,
+}: {
+  discoveredUrlHost?: string;
+  merchantSlug: string;
+}): string {
+  return (
+    knownCommerceMerchantUrlHostBySlug.get(merchantSlug) ??
+    discoveredUrlHost ??
+    ''
+  );
+}
+
+function getExpectedMerchantUrlHost({
+  discoveredUrlHost,
+  merchantSlug,
+}: {
+  discoveredUrlHost?: string;
+  merchantSlug: string;
+}): string {
+  const staticMerchantConfig = getMerchantConfigBySlug(merchantSlug);
+
+  return (
+    staticMerchantConfig?.urlHost ??
+    getFallbackAffiliateMerchantUrlHost({
+      discoveredUrlHost,
+      merchantSlug,
+    })
+  );
+}
+
 export function buildCommerceSyncInputs({
   refreshSeeds,
 }: {
@@ -2026,7 +2065,9 @@ export function buildCommerceSyncInputs({
       hostByMerchantSlug.set(
         merchantSlug,
         normalizeAffiliateUrlHost(
-          new URL(refreshSeed.offerSeed.productUrl).host,
+          getAffiliateUrlMerchantDestinationHost(
+            new URL(refreshSeed.offerSeed.productUrl),
+          ) ?? new URL(refreshSeed.offerSeed.productUrl).host,
         ),
       );
     }
@@ -2054,7 +2095,10 @@ export function buildCommerceSyncInputs({
       return createFallbackAffiliateMerchantConfig({
         merchantSlug: merchant.slug,
         merchantName: merchant.name,
-        urlHost: hostByMerchantSlug.get(merchant.slug) ?? '',
+        urlHost: getFallbackAffiliateMerchantUrlHost({
+          discoveredUrlHost: hostByMerchantSlug.get(merchant.slug),
+          merchantSlug: merchant.slug,
+        }),
         displayRank: dynamicDisplayRank++,
         isAffiliate: merchant.sourceType === 'affiliate',
       });
@@ -2079,6 +2123,22 @@ export function buildCommerceSyncInputs({
       latestOffer.priceMinor <= 0 ||
       normalizeCurrencyCode(latestOffer.currencyCode) !== EURO_CURRENCY_CODE ||
       !latestOffer.observedAt
+    ) {
+      continue;
+    }
+
+    const merchantProductUrl = new URL(refreshSeed.offerSeed.productUrl);
+    const expectedMerchantHost = getExpectedMerchantUrlHost({
+      discoveredUrlHost: hostByMerchantSlug.get(refreshSeed.merchant.slug),
+      merchantSlug: refreshSeed.merchant.slug,
+    });
+
+    if (
+      expectedMerchantHost &&
+      !isExpectedAffiliateOutboundUrl({
+        expectedMerchantHost,
+        outboundUrl: merchantProductUrl,
+      })
     ) {
       continue;
     }
