@@ -618,6 +618,46 @@ function logCatalogThemeIsPublicNormalization({
   });
 }
 
+function logCatalogThemeRequiredFieldNormalization({
+  rowsAfter,
+  rowsBefore,
+}: {
+  rowsAfter: readonly Readonly<Record<string, unknown>>[];
+  rowsBefore: readonly Readonly<Record<string, unknown>>[];
+}): void {
+  const nullOrMissingDisplayNameBefore = countRowsWithInvalidPromotionString({
+    column: 'display_name',
+    rows: rowsBefore,
+  });
+  const nullOrMissingSlugBefore = countRowsWithInvalidPromotionString({
+    column: 'slug',
+    rows: rowsBefore,
+  });
+
+  if (nullOrMissingDisplayNameBefore === 0 && nullOrMissingSlugBefore === 0) {
+    return;
+  }
+
+  console.info(
+    '[catalog-promotion] catalog theme required payload normalized',
+    {
+      inputRows: rowsBefore.length,
+      nullOrMissingDisplayNameAfterNormalize:
+        countRowsWithInvalidPromotionString({
+          column: 'display_name',
+          rows: rowsAfter,
+        }),
+      nullOrMissingDisplayNameBeforeNormalize: nullOrMissingDisplayNameBefore,
+      nullOrMissingSlugAfterNormalize: countRowsWithInvalidPromotionString({
+        column: 'slug',
+        rows: rowsAfter,
+      }),
+      nullOrMissingSlugBeforeNormalize: nullOrMissingSlugBefore,
+      table: CATALOG_THEMES_TABLE,
+    },
+  );
+}
+
 function logCatalogSetStatusNormalization({
   rowsAfter,
   rowsBefore,
@@ -680,6 +720,14 @@ function logPromotionUpsertTimestampSanitization({
   });
 }
 
+function humanizeCatalogThemeFallbackName(value: string): string {
+  return value
+    .replace(/^theme:/u, '')
+    .replace(/[-_]+/gu, ' ')
+    .trim()
+    .replace(/\b\p{L}/gu, (character) => character.toLocaleUpperCase('nl-NL'));
+}
+
 function normalizeCatalogThemeRow({
   nowIso,
   theme,
@@ -687,24 +735,24 @@ function normalizeCatalogThemeRow({
   nowIso: string;
   theme: CatalogThemeRow;
 }): CatalogThemeRow {
-  const displayName = readRequiredPromotionString({
-    column: 'display_name',
-    row: theme as unknown as Readonly<Record<string, unknown>>,
-    table: CATALOG_THEMES_TABLE,
-  });
   const id = readRequiredPromotionString({
     column: 'id',
     row: theme as unknown as Readonly<Record<string, unknown>>,
     table: CATALOG_THEMES_TABLE,
   });
+  const fallbackDisplayName = humanizeCatalogThemeFallbackName(id);
+  const displayName =
+    readOptionalPromotionString(theme.display_name) ??
+    readOptionalPromotionString(theme.public_display_name) ??
+    fallbackDisplayName;
   const normalizedSlug =
     typeof theme.slug === 'string' && theme.slug.trim()
       ? theme.slug.trim()
       : buildCatalogThemeSlug(displayName || id.replace(/^theme:/u, ''));
 
-  if (!normalizedSlug) {
+  if (!displayName || !normalizedSlug) {
     throw new Error(
-      `Unable to promote ${CATALOG_THEMES_TABLE}. Required column slug is missing for row ${JSON.stringify(theme)}.`,
+      `Unable to promote ${CATALOG_THEMES_TABLE}. Required display_name/slug could not be derived for row ${JSON.stringify(theme)}.`,
     );
   }
 
@@ -1776,6 +1824,14 @@ export async function promoteCatalogFromStagingToProduction({
       }),
     );
     logCatalogThemeIsPublicNormalization({
+      rowsAfter: normalizedCatalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      rowsBefore: catalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+    });
+    logCatalogThemeRequiredFieldNormalization({
       rowsAfter: normalizedCatalogThemes as unknown as Readonly<
         Record<string, unknown>
       >[],

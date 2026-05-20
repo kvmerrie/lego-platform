@@ -1690,9 +1690,9 @@ describe('catalog promotion server', () => {
         catalog_themes: [
           {
             created_at: '2026-04-21T08:00:00.000Z',
-            display_name: 'Advent',
+            display_name: null,
             id: 'theme:advent',
-            is_public: true,
+            is_public: false,
             public_order: 10,
             slug: null,
             status: 'active',
@@ -1735,6 +1735,62 @@ describe('catalog promotion server', () => {
           id: 'theme:advent',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('derives missing catalog theme display names and slugs for new theme rows', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: null,
+            id: 'theme:advent',
+            is_public: false,
+            public_order: null,
+            slug: null,
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          display_name: 'Advent',
+          id: 'theme:advent',
+          is_public: false,
+          slug: 'advent',
+          status: 'active',
+        }),
       ],
       {
         onConflict: 'id',
@@ -2191,6 +2247,7 @@ describe('catalog promotion server', () => {
           display_name: 'City',
           id: 'theme:city',
           is_public: true,
+          public_homepage_order: null,
           public_order: 20,
           slug: 'city',
           status: 'active',
