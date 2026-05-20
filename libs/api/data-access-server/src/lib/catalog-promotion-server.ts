@@ -1037,6 +1037,33 @@ function finalizePromotionUpsertRow({
     return row;
   }
 
+  const displayName =
+    readOptionalPromotionString(existingRow?.['display_name']) ??
+    readOptionalPromotionString(row['display_name']) ??
+    readOptionalPromotionString(sourceRow['display_name']) ??
+    readOptionalPromotionString(sourceRow['public_display_name']) ??
+    humanizeCatalogThemeFallbackName(
+      readOptionalPromotionString(sourceRow['id']) ??
+        readOptionalPromotionString(row['id']) ??
+        '',
+    );
+  const slug =
+    readOptionalPromotionString(existingRow?.['slug']) ??
+    readOptionalPromotionString(row['slug']) ??
+    readOptionalPromotionString(sourceRow['slug']) ??
+    buildCatalogThemeSlug(
+      displayName ||
+        readOptionalPromotionString(sourceRow['id'])?.replace(/^theme:/u, '') ||
+        readOptionalPromotionString(row['id'])?.replace(/^theme:/u, '') ||
+        '',
+    );
+
+  if (!displayName || !slug) {
+    throw new Error(
+      `Unable to promote ${CATALOG_THEMES_TABLE}. Final upsert payload is missing required display_name/slug for id ${readOptionalPromotionString(sourceRow['id']) ?? readOptionalPromotionString(row['id']) ?? 'unknown'}.`,
+    );
+  }
+
   return {
     ...row,
     created_at:
@@ -1044,20 +1071,53 @@ function finalizePromotionUpsertRow({
       readOptionalPromotionString(sourceRow['created_at']) ??
       readOptionalPromotionString(row['created_at']) ??
       nowIso,
+    display_name: displayName,
+    is_public:
+      readOptionalPromotionBoolean(existingRow?.['is_public']) ??
+      readOptionalPromotionBoolean(row['is_public']) ??
+      readOptionalPromotionBoolean(sourceRow['is_public']) ??
+      false,
+    slug,
+    status:
+      readOptionalPromotionString(existingRow?.['status']) ??
+      readOptionalPromotionString(row['status']) ??
+      readOptionalPromotionString(sourceRow['status']) ??
+      'active',
     updated_at:
       readOptionalPromotionString(existingRow?.['updated_at']) ??
       readOptionalPromotionString(sourceRow['updated_at']) ??
       readOptionalPromotionString(row['updated_at']) ??
       nowIso,
-    ...(existingRow
-      ? {}
-      : {
-          status:
-            readOptionalPromotionString(row['status']) ??
-            readOptionalPromotionString(sourceRow['status']) ??
-            'active',
-        }),
   };
+}
+
+function assertCatalogThemeUpsertPayloadHasRequiredIdentity({
+  rows,
+  table,
+}: {
+  rows: readonly Record<string, unknown>[];
+  table: string;
+}): void {
+  if (table !== CATALOG_THEMES_TABLE) {
+    return;
+  }
+
+  const invalidIds = rows
+    .filter(
+      (row) =>
+        !readOptionalPromotionString(row['display_name']) ||
+        !readOptionalPromotionString(row['slug']),
+    )
+    .map((row) => readOptionalPromotionString(row['id']) ?? 'unknown')
+    .slice(0, 20);
+
+  if (invalidIds.length === 0) {
+    return;
+  }
+
+  throw new Error(
+    `Unable to promote ${CATALOG_THEMES_TABLE}. Final upsert payload is missing required display_name/slug for ids: ${invalidIds.join(', ')}`,
+  );
 }
 
 function createPromotionClients(): {
@@ -1369,6 +1429,11 @@ async function upsertRows<TRow>({
   const rowsForUpsert = sanitizePromotionUpsertTimestamps({
     nowIso,
     rows: projectedRowsForUpsert,
+    table,
+  });
+
+  assertCatalogThemeUpsertPayloadHasRequiredIdentity({
+    rows: rowsForUpsert,
     table,
   });
 

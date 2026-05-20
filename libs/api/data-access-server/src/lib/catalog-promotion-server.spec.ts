@@ -1673,7 +1673,11 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-20T08:00:00.000Z',
+          display_name: 'Advent',
           id: 'theme:advent',
+          is_public: false,
+          slug: 'advent',
+          status: 'active',
           updated_at: '2026-04-20T09:00:00.000Z',
         },
       ],
@@ -1710,8 +1714,11 @@ describe('catalog promotion server', () => {
       rowsByTable: {
         catalog_themes: [
           {
+            display_name: null,
             id: 'theme:advent',
-            slug: 'advent',
+            is_public: null,
+            slug: null,
+            status: null,
           },
         ],
       },
@@ -1732,7 +1739,11 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
+          display_name: 'Advent',
           id: 'theme:advent',
+          is_public: false,
+          slug: 'advent',
+          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
@@ -1885,7 +1896,11 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
+          display_name: 'Icons',
           id: 'theme:icons',
+          is_public: true,
+          slug: 'icons',
+          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
@@ -1994,7 +2009,11 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-20T08:00:00.000Z',
+          display_name: 'Super Mario',
           id: 'theme:super-mario',
+          is_public: true,
+          slug: 'super-mario',
+          status: 'active',
           updated_at: '2026-04-20T09:00:00.000Z',
         },
       ],
@@ -2239,7 +2258,11 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
+          display_name: 'Advent',
           id: 'theme:advent',
+          is_public: false,
+          slug: 'advent',
+          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
@@ -2364,15 +2387,19 @@ describe('catalog promotion server', () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: 'theme:public',
+          is_public: false,
         }),
         expect.objectContaining({
           id: 'theme:private',
+          is_public: true,
         }),
         expect.objectContaining({
           id: 'theme:null-visibility',
+          is_public: true,
         }),
         expect.objectContaining({
           id: 'theme:missing-visibility',
+          is_public: true,
         }),
         expect.objectContaining({
           id: 'theme:new',
@@ -2380,18 +2407,6 @@ describe('catalog promotion server', () => {
         }),
       ]),
     );
-    expect(
-      payload.find((row) => row['id'] === 'theme:public'),
-    ).not.toHaveProperty('is_public');
-    expect(
-      payload.find((row) => row['id'] === 'theme:private'),
-    ).not.toHaveProperty('is_public');
-    expect(
-      payload.find((row) => row['id'] === 'theme:null-visibility'),
-    ).not.toHaveProperty('is_public');
-    expect(
-      payload.find((row) => row['id'] === 'theme:missing-visibility'),
-    ).not.toHaveProperty('is_public');
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       '[catalog-promotion] catalog theme boolean payload normalized',
       expect.objectContaining({
