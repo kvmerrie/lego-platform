@@ -406,6 +406,7 @@ function createCatalogSupabaseClientMock({
   merchantRows,
   minifigSummaryRows = [],
   offerSeedRows,
+  priceHistoryRows = [],
   onSelect,
   rpcHandlers = {},
   sourceThemeRows = [],
@@ -419,6 +420,7 @@ function createCatalogSupabaseClientMock({
   merchantRows: readonly Record<string, unknown>[];
   minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
+  priceHistoryRows?: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
   rpcHandlers?: Record<
     string,
@@ -498,6 +500,13 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'commerce_offer_latest') {
         return createSupabaseTableBuilder(latestOfferRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'pricing_daily_set_history') {
+        return createSupabaseTableBuilder(priceHistoryRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
@@ -8653,6 +8662,100 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('reads runtime catalog discovery signals directly from Supabase when no API override is provided', async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T10:00:00.000Z',
+          offer_seed_id: 'seed-goodbricks',
+          price_minor: 19995,
+          updated_at: '2026-04-20T10:00:05.000Z',
+        },
+        {
+          availability: 'limited',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T09:30:00.000Z',
+          offer_seed_id: 'seed-misterbricks',
+          price_minor: 20900,
+          updated_at: '2026-04-20T09:30:05.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+        {
+          id: 'merchant-misterbricks',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-goodbricks',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          notes: 'full set',
+          product_url: 'https://goodbricks.nl/lego-76454',
+          set_id: '76454',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-misterbricks',
+          is_active: true,
+          merchant_id: 'merchant-misterbricks',
+          notes: 'full set',
+          product_url: 'https://misterbricks.nl/lego-76454',
+          set_id: '76454',
+          validation_status: 'valid',
+        },
+      ],
+      priceHistoryRows: [
+        {
+          condition: 'new',
+          currency_code: 'EUR',
+          recorded_on: '2026-04-20',
+          reference_price_minor: 22995,
+          region_code: 'NL',
+          set_id: '76454',
+        },
+      ],
+    });
+    vi.spyOn(sharedConfig, 'hasServerSupabaseConfig').mockReturnValue(true);
+    vi.spyOn(sharedConfig, 'hasBrowserSupabaseConfig').mockReturnValue(false);
+    vi.spyOn(sharedConfig, 'getServerSupabaseConfig').mockReturnValue({
+      serviceRoleKey: 'service-role',
+      url: 'https://brickhunt.supabase.test',
+    });
+    vi.mocked(supabaseSdk.createClient).mockReturnValue(
+      supabaseClient as never,
+    );
+
+    const result = await listCatalogDiscoverySignalsBySetId({
+      setIds: ['76454'],
+    });
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(supabaseClient.from).toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(result.get('76454')).toEqual({
+      bestPriceMinor: 19995,
+      merchantCount: 2,
+      nextBestPriceMinor: 20900,
+      observedAt: '2026-04-20T10:00:00.000Z',
+      priceSpreadMinor: 905,
+      referenceDeltaMinor: -3000,
+    });
+  });
+
   test('skips runtime discovery signal API reads when no set ids are provided', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify([]), {
@@ -8697,6 +8800,64 @@ describe('catalog effective data access web', () => {
         },
       }),
     );
+  });
+
+  test('chunks runtime discovery signal API reads to avoid huge query strings', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(
+      async () =>
+        new Response(JSON.stringify([]), {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        }),
+    );
+    const setIds = Array.from(
+      {
+        length: 125,
+      },
+      (_, index) => String(20_000 + index),
+    );
+
+    await listCatalogDiscoverySignalsBySetId({
+      fetchImpl,
+      setIds,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain(
+      `setIds=${setIds.slice(0, 50).join('%2C')}`,
+    );
+    expect(String(fetchImpl.mock.calls[1]?.[0])).toContain(
+      `setIds=${setIds.slice(50, 100).join('%2C')}`,
+    );
+    expect(String(fetchImpl.mock.calls[2]?.[0])).toContain(
+      `setIds=${setIds.slice(100).join('%2C')}`,
+    );
+  });
+
+  test('returns an empty discovery signal map when direct Supabase reads fail softly', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      maxInFilterValues: 1,
+      merchantRows: [],
+      offerSeedRows: [],
+    });
+    vi.spyOn(sharedConfig, 'hasServerSupabaseConfig').mockReturnValue(true);
+    vi.spyOn(sharedConfig, 'hasBrowserSupabaseConfig').mockReturnValue(false);
+    vi.spyOn(sharedConfig, 'getServerSupabaseConfig').mockReturnValue({
+      serviceRoleKey: 'service-role',
+      url: 'https://brickhunt.supabase.test',
+    });
+    vi.mocked(supabaseSdk.createClient).mockReturnValue(
+      supabaseClient as never,
+    );
+
+    const result = await listCatalogDiscoverySignalsBySetId({
+      setIds: ['42172', '75398'],
+    });
+
+    expect(result.size).toBe(0);
   });
 
   test('passes abort signals to runtime discovery signal API reads', async () => {

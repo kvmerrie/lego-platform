@@ -275,6 +275,51 @@ describe('api v1 auth and set-status routes', () => {
     await server.close();
   });
 
+  test('rejects oversized GET catalog discovery signal batches', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer();
+    const setIds = Array.from(
+      {
+        length: 101,
+      },
+      (_, index) => String(30_000 + index),
+    );
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogDiscoverySignalsApiPath(setIds),
+    });
+
+    expect(response.statusCode).toBe(413);
+    expect(response.json()).toMatchObject({
+      maxSetIds: 100,
+    });
+    expect(listCatalogDiscoverySignals).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('accepts POST catalog discovery signal batches without query strings', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer({
+      listCatalogDiscoverySignals: vi.fn().mockResolvedValue([]),
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: buildCatalogDiscoverySignalsApiPath(),
+      payload: {
+        setIds: ['42172', '75398', '42172'],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(listCatalogDiscoverySignals).toHaveBeenCalledWith([
+      '42172',
+      '75398',
+    ]);
+
+    await server.close();
+  });
+
   test('rejects unscoped public catalog discovery signal reads', async () => {
     const { listCatalogDiscoverySignals, server } = await createApiServer();
 
