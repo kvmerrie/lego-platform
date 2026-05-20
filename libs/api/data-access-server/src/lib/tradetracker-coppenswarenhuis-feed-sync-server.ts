@@ -494,7 +494,7 @@ function normalizeCoppensAvailabilityText(
   if (
     ['1', 'true', 'yes', 'ja', 'y'].includes(normalizedValue) ||
     (Number.isFinite(stockNumber) && stockNumber > 0) ||
-    /\b(op voorraad|in stock|direct leverbaar|voorraad|voorradig|beschikbaar)\b/iu.test(
+    /\b(leverbaar|op voorraad|in stock|direct leverbaar|voorraad|voorradig|beschikbaar)\b/iu.test(
       normalizedValue,
     )
   ) {

@@ -41,6 +41,8 @@ const broadRevalidationTags = new Set([
   'sitemap',
 ]);
 const loggedValueLimit = 12;
+const largePriceChangeSetCountThreshold = 100;
+const largePriceChangeExplicitSetPathLimit = 23;
 const responseBodyExcerptLimit = 500;
 const productionEnvironmentNames = new Set(['production', 'prod']);
 
@@ -714,21 +716,39 @@ export async function revalidatePublicCatalogPriceChanges({
   fetchImpl?: typeof fetch;
   reason: string;
 }): Promise<PublicWebRevalidationResult> {
-  const setPaths = changedSetSlugs
+  const isLargePriceChangeBatch =
+    changedSetIds.length > largePriceChangeSetCountThreshold;
+  const allSetPaths = changedSetSlugs
     .map((slug) => normalizeRevalidationPath(buildSetDetailPath(slug)))
     .filter((path): path is string => Boolean(path));
+  const setPaths = isLargePriceChangeBatch
+    ? allSetPaths.slice(0, largePriceChangeExplicitSetPathLimit)
+    : allSetPaths;
   const paths = [webPathnames.home, webPathnames.deals, ...setPaths];
-  const tags = [
+  const broadTags = [
     cacheTags.homepage(),
     cacheTags.deals(),
     cacheTags.prices(),
     cacheTags.catalog(),
-    ...changedSetIds.map((setId) => cacheTags.set(setId)),
-    ...changedSetSlugs.map((slug) => cacheTags.set(slug)),
   ];
+  const tags = isLargePriceChangeBatch
+    ? broadTags
+    : [
+        ...broadTags,
+        ...changedSetIds.map((setId) => cacheTags.set(setId)),
+        ...changedSetSlugs.map((slug) => cacheTags.set(slug)),
+      ];
 
   console.info('[public-web-revalidation] price changes', {
     changed_set_count: changedSetIds.length,
+    explicit_set_path_limit: isLargePriceChangeBatch
+      ? largePriceChangeExplicitSetPathLimit
+      : undefined,
+    large_batch_guard: isLargePriceChangeBatch,
+    omitted_set_path_count: Math.max(0, allSetPaths.length - setPaths.length),
+    omitted_set_tag_count: isLargePriceChangeBatch
+      ? changedSetIds.length + changedSetSlugs.length
+      : 0,
     reason,
     revalidated_set_path_count: setPaths.length,
     set_slug_sample: changedSetSlugs.slice(0, loggedValueLimit),

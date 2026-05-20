@@ -436,4 +436,47 @@ describe('public web revalidation server', () => {
       tagCount: 64,
     });
   });
+
+  test('uses broad price tags and caps explicit set paths for large feed runs', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ revalidated: true }), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+    const changedSetIds = Array.from({ length: 150 }, (_, index) =>
+      String(20_000 + index),
+    );
+    const changedSetSlugs = changedSetIds.map((setId) => `set-${setId}`);
+
+    const result = await revalidatePublicCatalogPriceChanges({
+      changedSetIds,
+      changedSetSlugs,
+      fetchImpl,
+      reason: 'large_feed_sync_test',
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const request = JSON.parse(
+      (fetchImpl.mock.calls[0]?.[1] as RequestInit).body as string,
+    ) as { paths: string[]; tags: string[] };
+
+    expect(request.paths).toHaveLength(25);
+    expect(request.paths).toEqual([
+      '/',
+      '/deals',
+      ...changedSetSlugs.slice(0, 23).map((slug) => `/sets/${slug}`),
+    ]);
+    expect(request.tags).toEqual(['homepage', 'deals', 'prices', 'catalog']);
+    expect(result).toMatchObject({
+      attempted: true,
+      pathCount: 25,
+      skipped: false,
+      tagCount: 4,
+    });
+  });
 });

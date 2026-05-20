@@ -112,6 +112,8 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
   test.each([
     ['availability', 'Op voorraad', 'In stock'],
     ['stockStatus', 'Direct leverbaar', 'In stock'],
+    ['deliveryTime', 'Leverbaar in 1 - 2 werkdagen', 'In stock'],
+    ['deliveryTime', 'Leverbaar in 3 - 4 werkdagen', 'In stock'],
     ['availabilityText', 'Tijdelijk niet leverbaar', 'Out of stock'],
     ['availability', 'Uitverkocht', 'Out of stock'],
     ['levertijd', 'Pre-order verwacht in juni', 'Preorder'],
