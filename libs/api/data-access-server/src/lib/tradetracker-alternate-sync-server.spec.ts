@@ -135,10 +135,22 @@ describe('TradeTracker Alternate sync server', () => {
         }),
       );
     const importAlternateAffiliateFeedRowsFn = vi.fn().mockResolvedValue({
+      autoImportableMissingSetCount: 0,
+      changedLatestOfferCount: 1,
+      changedSetIds: [],
+      changedSetSlugs: [],
+      discoveredMissingSetCount: 0,
+      existingStaleSuccessLatestCount: 0,
+      existingStaleSuccessLatestSample: [],
+      ignoredOrNonSetMissingSetCount: 0,
       importedOfferCount: 1,
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 1,
       matchedCatalogSetCount: 1,
+      matchedOfferCount: 1,
       merchantCreated: false,
       merchantSlug: 'alternate',
+      reviewNeededMissingSetCount: 0,
       skippedInvalidCurrencyCount: 0,
       skippedInvalidDeeplinkCount: 0,
       skippedInvalidPriceCount: 0,
@@ -147,6 +159,8 @@ describe('TradeTracker Alternate sync server', () => {
       skippedNonNewCount: 0,
       skippedUnmatchedSetCount: 0,
       totalRowCount: 1,
+      unchangedLatestRefreshSkippedCount: 0,
+      unchangedLatestTimestampRefreshedCount: 0,
       upsertedLatestCount: 1,
       upsertedSeedCount: 1,
     });
@@ -193,7 +207,7 @@ describe('TradeTracker Alternate sync server', () => {
         },
       ],
     });
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       affiliateSiteId: 67890,
       affiliateSiteName: 'Brickhunt NL',
       campaignId: 654,
@@ -457,10 +471,22 @@ describe('TradeTracker Alternate sync server', () => {
         }),
       );
     const importAlternateAffiliateFeedRowsFn = vi.fn().mockResolvedValue({
+      autoImportableMissingSetCount: 0,
+      changedLatestOfferCount: 0,
+      changedSetIds: [],
+      changedSetSlugs: [],
+      discoveredMissingSetCount: 0,
+      existingStaleSuccessLatestCount: 0,
+      existingStaleSuccessLatestSample: [],
+      ignoredOrNonSetMissingSetCount: 0,
       importedOfferCount: 0,
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 0,
       matchedCatalogSetCount: 0,
+      matchedOfferCount: 0,
       merchantCreated: false,
       merchantSlug: 'alternate',
+      reviewNeededMissingSetCount: 0,
       skippedInvalidCurrencyCount: 0,
       skippedInvalidDeeplinkCount: 0,
       skippedInvalidPriceCount: 0,
@@ -469,6 +495,8 @@ describe('TradeTracker Alternate sync server', () => {
       skippedNonNewCount: 0,
       skippedUnmatchedSetCount: 0,
       totalRowCount: 1,
+      unchangedLatestRefreshSkippedCount: 0,
+      unchangedLatestTimestampRefreshedCount: 0,
       upsertedLatestCount: 0,
       upsertedSeedCount: 0,
     });

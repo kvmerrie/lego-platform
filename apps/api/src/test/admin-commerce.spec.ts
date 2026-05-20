@@ -51,6 +51,8 @@ function createMockAlternateFeedImportResult(
     changedSetIds: ['10316'],
     changedSetSlugs: ['rivendell-10316'],
     discoveredMissingSetCount: 0,
+    existingStaleSuccessLatestCount: 0,
+    existingStaleSuccessLatestSample: [],
     ignoredOrNonSetMissingSetCount: 0,
     importedOfferCount: 1,
     latestRowsMarkedStaleCount: 0,

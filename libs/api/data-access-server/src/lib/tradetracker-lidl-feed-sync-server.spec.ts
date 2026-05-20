@@ -179,10 +179,22 @@ describe('TradeTracker Lidl feed sync server', () => {
       text: async () => sampleLidlFeedXml,
     } as Response);
     const importAffiliateFeedRowsForMerchantFn = vi.fn().mockResolvedValue({
+      autoImportableMissingSetCount: 0,
+      changedLatestOfferCount: 1,
+      changedSetIds: [],
+      changedSetSlugs: [],
+      discoveredMissingSetCount: 0,
+      existingStaleSuccessLatestCount: 0,
+      existingStaleSuccessLatestSample: [],
+      ignoredOrNonSetMissingSetCount: 0,
       importedOfferCount: 1,
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 1,
       matchedCatalogSetCount: 1,
+      matchedOfferCount: 1,
       merchantCreated: true,
       merchantSlug: 'lidl',
+      reviewNeededMissingSetCount: 0,
       skippedInvalidCurrencyCount: 0,
       skippedInvalidDeeplinkCount: 0,
       skippedInvalidPriceCount: 0,
@@ -191,6 +203,8 @@ describe('TradeTracker Lidl feed sync server', () => {
       skippedNonNewCount: 0,
       skippedUnmatchedSetCount: 1,
       totalRowCount: 2,
+      unchangedLatestRefreshSkippedCount: 0,
+      unchangedLatestTimestampRefreshedCount: 0,
       unmatchedDebug: {
         byCategory: [
           {

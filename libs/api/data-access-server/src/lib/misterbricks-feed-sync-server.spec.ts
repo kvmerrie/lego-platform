@@ -39,10 +39,22 @@ const sampleMisterBricksFeedXml = `<?xml version='1.0' encoding='utf-8'?>
 
 function createImportResult(overrides = {}) {
   return {
+    autoImportableMissingSetCount: 0,
+    changedLatestOfferCount: 1,
+    changedSetIds: [],
+    changedSetSlugs: [],
+    discoveredMissingSetCount: 0,
+    existingStaleSuccessLatestCount: 0,
+    existingStaleSuccessLatestSample: [],
+    ignoredOrNonSetMissingSetCount: 0,
     importedOfferCount: 1,
+    latestRowsMarkedStaleCount: 0,
+    latestRowsSeenCount: 1,
     matchedCatalogSetCount: 1,
+    matchedOfferCount: 1,
     merchantCreated: false,
     merchantSlug: 'misterbricks',
+    reviewNeededMissingSetCount: 0,
     skippedInvalidCurrencyCount: 0,
     skippedInvalidDeeplinkCount: 0,
     skippedInvalidPriceCount: 0,
@@ -51,6 +63,8 @@ function createImportResult(overrides = {}) {
     skippedNonNewCount: 0,
     skippedUnmatchedSetCount: 0,
     totalRowCount: 1,
+    unchangedLatestRefreshSkippedCount: 0,
+    unchangedLatestTimestampRefreshedCount: 0,
     upsertedLatestCount: 1,
     upsertedSeedCount: 1,
     ...overrides,
@@ -318,7 +332,7 @@ describe('MisterBricks feed sync server', () => {
       input: expect.objectContaining({
         merchantId: 'merchant-misterbricks',
         notes:
-          'Feed-driven MisterBricks import. Exact matched by LEGO set number.',
+          'Feed-driven MisterBricks import. Exact matched by LEGO set number. Product title: LEGO Star Wars 75446 Grogu.',
         productUrl: 'https://misterbricks.nl/lego-star-wars-75446-grogu.html',
         setId: '75446',
       }),

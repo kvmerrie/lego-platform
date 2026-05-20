@@ -471,3 +471,22 @@ Operator triage:
 2. If one merchant dominates `stale_observed_at_too_old_merchant_counts` but its feed job reports healthy `matched_offers_seen`, check timestamp refresh and source identity matching.
 3. If one merchant dominates `unavailable_for_headline_merchant_counts`, inspect raw availability mapping before changing merchant reliability or deal logic.
 4. If stale rows belong to strategic/manual merchants, prefer queue cleanup or seed validation review over changing public ranking.
+
+Current production freshness read, based on the May 2026 commerce-sync sample:
+
+| Merchant                  | Current signal                 | Likely cause                                            | Recommended action                                                                  |
+| ------------------------- | ------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| MediaMarkt                | `observed_at_too_old`          | Daily feed cadence or products no longer matched.       | Inspect next feed log: `matched_offers_seen` vs `remaining_stale_success_latest`.   |
+| Coppenswarenhuis          | `observed_at_too_old`          | Strategic/manual feed quality and availability mapping. | Keep strategic/manual; review raw availability and unmatched/stale samples.         |
+| Lidl                      | `observed_at_too_old`          | Seasonal campaign feed or product absence.              | Treat low stale counts as expected outside active campaigns.                        |
+| Alternate                 | stale/error count              | Feed-owned; needs status split from next diagnostics.   | If `remaining_stale_success_latest` is high, review identity/missing-from-feed.     |
+| Goodbricks                | stale/error count              | Feed-owned; needs status split from next diagnostics.   | If timestamp refresh is low while matches are high, investigate source identity.    |
+| MisterBricks              | stale/error count              | Direct feed; likely old rows not seen in current feed.  | Compare `matched_offers_seen` with `remaining_stale_success_latest` after next run. |
+| Coolblue                  | stale/error count              | Awin feed-owned; needs status split from next run.      | Watch gzip/CSV fetch failures and missing-from-feed samples.                        |
+| Conrad                    | not in stale top sample        | Feed appears healthy or low coverage in current sample. | Keep every-6-hours cadence and monitor parse failures.                              |
+| lego-nl / bol / Intertoys | high stale/error legacy/manual | No reliable production feed refresh owner yet.          | Operator queue cleanup; do not change trust/ranking without a feed owner.           |
+
+Feed job end logs include `remaining_stale_success_latest` and a compact
+`remaining_stale_success_sample`. A high value means the feed run succeeded but
+existing success rows for that merchant were not seen in the current feed and
+were not retired because the importer is non-authoritative by default.

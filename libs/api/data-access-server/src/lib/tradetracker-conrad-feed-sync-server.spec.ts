@@ -59,6 +59,8 @@ function createImportResult(overrides = {}) {
     changedSetIds: [],
     changedSetSlugs: [],
     discoveredMissingSetCount: 0,
+    existingStaleSuccessLatestCount: 0,
+    existingStaleSuccessLatestSample: [],
     ignoredOrNonSetMissingSetCount: 0,
     importedOfferCount: 1,
     latestRowsMarkedStaleCount: 0,

@@ -378,7 +378,7 @@ describe('alternate affiliate feed server', () => {
     const result = await importAffiliateFeedRowsForMerchant({
       dependencies: {
         createCommerceMerchantFn: vi.fn(),
-        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        getNow: () => new Date('2026-05-11T09:15:00.000Z'),
         listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
           {
             setId: '10316',
@@ -485,6 +485,15 @@ describe('alternate affiliate feed server', () => {
     expect(markCommerceOfferLatestUnavailableFn).not.toHaveBeenCalled();
     expect(result).toMatchObject({
       changedSetIds: [],
+      existingStaleSuccessLatestCount: 1,
+      existingStaleSuccessLatestSample: [
+        {
+          fetchedAt: '2026-05-08T18:01:37.786Z',
+          offerSeedId: 'seed-43300-alternate',
+          observedAt: '2026-05-08T18:01:37.786Z',
+          setId: '43300',
+        },
+      ],
       latestRowsMarkedStaleCount: 0,
       latestRowsSeenCount: 1,
       staleMarkSkippedReason: 'non_authoritative_feed',
