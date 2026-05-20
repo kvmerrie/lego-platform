@@ -20,7 +20,35 @@ import {
 } from './user-set-status-repository';
 
 export interface UserSessionService {
-  getUserSession(requestPrincipal: RequestPrincipal): Promise<UserSession>;
+  getUserSession(
+    requestPrincipal: RequestPrincipal,
+    options?: {
+      onTiming?: (timing: UserSessionServiceTiming) => void;
+    },
+  ): Promise<UserSession>;
+}
+
+export interface UserSessionServiceTiming {
+  profile_lookup_ms?: number;
+  response_build_ms: number;
+  set_status_lookup_ms?: number;
+}
+
+function nowMs(): number {
+  return performance.now();
+}
+
+async function measureUserSessionStep<T>(
+  callback: () => Promise<T>,
+  onDuration: (durationMs: number) => void,
+): Promise<T> {
+  const startedAt = nowMs();
+
+  try {
+    return await callback();
+  } finally {
+    onDuration(Math.round(nowMs() - startedAt));
+  }
 }
 
 function toCollectorIdentity(
@@ -55,21 +83,37 @@ function toWantedSetIds(
 }
 
 export async function buildAuthenticatedUserSession({
+  onTiming,
   requestPrincipal,
   userProfileRepository,
   userSetStatusRepository,
 }: {
+  onTiming?: (timing: UserSessionServiceTiming) => void;
   requestPrincipal: AuthenticatedRequestPrincipal;
   userProfileRepository: UserProfileRepository;
   userSetStatusRepository: UserSetStatusRepository;
 }): Promise<UserSession> {
+  let profileLookupMs = 0;
+  let setStatusLookupMs = 0;
   const [userProfileRecord, userSetStatusRecords] = await Promise.all([
-    userProfileRepository.ensureProfile({
-      email: requestPrincipal.email,
-      userId: requestPrincipal.userId,
-    }),
-    userSetStatusRepository.listByUserId(requestPrincipal.userId),
+    measureUserSessionStep(
+      () =>
+        userProfileRepository.ensureProfile({
+          email: requestPrincipal.email,
+          userId: requestPrincipal.userId,
+        }),
+      (durationMs) => {
+        profileLookupMs = durationMs;
+      },
+    ),
+    measureUserSessionStep(
+      () => userSetStatusRepository.listByUserId(requestPrincipal.userId),
+      (durationMs) => {
+        setStatusLookupMs = durationMs;
+      },
+    ),
   ]);
+  const responseBuildStartedAt = nowMs();
   const ownedSetIds = toOwnedSetIds(userSetStatusRecords);
   const wantedSetIds = toWantedSetIds(userSetStatusRecords);
   const setStateTimingBySetId = Object.fromEntries(
@@ -82,7 +126,7 @@ export async function buildAuthenticatedUserSession({
     ]),
   );
 
-  return {
+  const authenticatedSession: UserSession = {
     state: 'authenticated',
     account: {
       userId: requestPrincipal.userId,
@@ -101,6 +145,14 @@ export async function buildAuthenticatedUserSession({
     }),
     wantedSetIds,
   };
+
+  onTiming?.({
+    profile_lookup_ms: profileLookupMs,
+    response_build_ms: Math.round(nowMs() - responseBuildStartedAt),
+    set_status_lookup_ms: setStatusLookupMs,
+  });
+
+  return authenticatedSession;
 }
 
 export function createUserSessionService({
@@ -111,12 +163,25 @@ export function createUserSessionService({
   userSetStatusRepository?: UserSetStatusRepository;
 } = {}): UserSessionService {
   return {
-    async getUserSession(requestPrincipal: RequestPrincipal) {
+    async getUserSession(
+      requestPrincipal: RequestPrincipal,
+      options?: {
+        onTiming?: (timing: UserSessionServiceTiming) => void;
+      },
+    ) {
       if (requestPrincipal.state === 'anonymous') {
-        return createAnonymousUserSession();
+        const responseBuildStartedAt = nowMs();
+        const anonymousSession = createAnonymousUserSession();
+
+        options?.onTiming?.({
+          response_build_ms: Math.round(nowMs() - responseBuildStartedAt),
+        });
+
+        return anonymousSession;
       }
 
       return buildAuthenticatedUserSession({
+        onTiming: options?.onTiming,
         requestPrincipal,
         userProfileRepository,
         userSetStatusRepository,

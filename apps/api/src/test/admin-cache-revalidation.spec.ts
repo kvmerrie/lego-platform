@@ -262,6 +262,9 @@ describe('admin cache revalidation routes', () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/admin/cache/revalidate',
+      headers: {
+        authorization: 'Bearer admin-token',
+      },
       payload: {
         paths: Array.from({ length: 26 }, (_, index) => `/sets/${index}`),
         reason: 'manual_batch_fix',
@@ -290,6 +293,9 @@ describe('admin cache revalidation routes', () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/admin/cache/revalidate',
+      headers: {
+        authorization: 'Bearer admin-token',
+      },
       payload: {
         paths: ['https://www.brickhunt.nl/deals'],
         reason: 'manual_fix',

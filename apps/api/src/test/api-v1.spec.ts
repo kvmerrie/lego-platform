@@ -378,9 +378,15 @@ describe('api v1 auth and set-status routes', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(userSessionService.getUserSession).toHaveBeenCalledWith({
-      state: 'anonymous',
-    });
+    expect(userSessionService.getUserSession).toHaveBeenCalledWith(
+      {
+        state: 'anonymous',
+      },
+      expect.objectContaining({
+        onTiming: expect.any(Function),
+      }),
+    );
+    expect(response.headers['cache-control']).toBe('private, no-store');
     expect(response.json()).toEqual({
       state: 'anonymous',
       ownedSetIds: [],
@@ -442,6 +448,9 @@ describe('api v1 auth and set-status routes', () => {
     expect(response.statusCode).toBe(200);
     expect(userSessionService.getUserSession).toHaveBeenCalledWith(
       requestPrincipal,
+      expect.objectContaining({
+        onTiming: expect.any(Function),
+      }),
     );
     expect(response.json()).toEqual(authenticatedSession);
 

@@ -93,6 +93,17 @@ function toCollectorProfile({
   };
 }
 
+function isSessionPerfDebugEnabled(): boolean {
+  return (
+    typeof process !== 'undefined' &&
+    process.env['DEBUG_SESSION_PERF'] === 'true'
+  );
+}
+
+function nowMs(): number {
+  return performance.now();
+}
+
 export function createApiV1Routes({
   listCatalogCurrentOfferSummariesBySetIds:
     listCatalogCurrentOfferSummariesBySetIdsDependency = (setIds) =>
@@ -243,10 +254,44 @@ export function createApiV1Routes({
       },
     );
 
-    fastify.get(apiPaths.session, async function (request) {
-      return userSessionService.getUserSession(
+    fastify.get(apiPaths.session, async function (request, reply) {
+      const startedAt = nowMs();
+      let sessionServiceTiming: {
+        profile_lookup_ms?: number;
+        response_build_ms: number;
+        set_status_lookup_ms?: number;
+      } = {
+        response_build_ms: 0,
+      };
+      const session = await userSessionService.getUserSession(
         getRequestPrincipal(request.requestPrincipal),
+        {
+          onTiming: (timing) => {
+            sessionServiceTiming = timing;
+          },
+        },
       );
+      const totalMs = Math.round(nowMs() - startedAt);
+
+      reply.header('cache-control', 'private, no-store');
+
+      if (isSessionPerfDebugEnabled()) {
+        console.info('[api-session-perf]', {
+          auth_header_present:
+            request.requestPrincipalTiming?.auth_header_present ?? false,
+          parse_cookies_ms:
+            request.requestPrincipalTiming?.parse_cookies_ms ?? 0,
+          profile_lookup_ms: sessionServiceTiming.profile_lookup_ms ?? 0,
+          response_build_ms: sessionServiceTiming.response_build_ms,
+          set_status_lookup_ms: sessionServiceTiming.set_status_lookup_ms ?? 0,
+          state: session.state,
+          supabase_auth_ms:
+            request.requestPrincipalTiming?.supabase_auth_ms ?? 0,
+          total_ms: totalMs + (request.requestPrincipalTiming?.total_ms ?? 0),
+        });
+      }
+
+      return session;
     });
 
     fastify.get(apiPaths.profile, async function (request, reply) {
