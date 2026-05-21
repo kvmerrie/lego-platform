@@ -20,6 +20,7 @@ import {
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
   getMisterBricksFeedConfig,
+  getWebNavigation,
   getMissingBrowserSupabaseEnvKeys,
   getMissingMisterBricksEnvKeys,
   getMissingPublicWebRevalidationEnvKeys,
@@ -205,6 +206,18 @@ describe('shared config locale and market foundations', () => {
 
   test('exposes primary public navigation in Brickhunt order', () => {
     expect(webNavigation).toEqual([
+      {
+        href: '/deals',
+        label: 'Deals',
+      },
+      {
+        href: '/themes',
+        label: "Thema's",
+      },
+    ]);
+
+    expect(getWebNavigation(4)).toEqual(webNavigation);
+    expect(getWebNavigation(5)).toEqual([
       {
         href: '/artikelen',
         label: 'Nieuws',

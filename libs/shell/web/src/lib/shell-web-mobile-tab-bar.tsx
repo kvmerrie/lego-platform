@@ -10,7 +10,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
+import {
+  buildWebPath,
+  hasPublicArticleContent,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import styles from './shell-web.module.css';
 import { dispatchOpenMobileSearchOverlayEvent } from './shell-web-search-overlay-events';
 
@@ -71,6 +75,28 @@ const mobileTabItems: readonly ShellWebMobileTabItem[] = [
   },
 ] as const;
 
+function getMobileTabListColumnClass(itemCount: number): string {
+  if (itemCount <= 3) {
+    return styles.mobileTabListColumns3;
+  }
+
+  if (itemCount === 4) {
+    return styles.mobileTabListColumns4;
+  }
+
+  return styles.mobileTabListColumns5;
+}
+
+function getVisibleMobileTabItems(
+  publishedArticleCount = 0,
+): readonly ShellWebMobileTabItem[] {
+  const showArticles = hasPublicArticleContent(publishedArticleCount);
+
+  return mobileTabItems.filter(
+    (mobileTabItem) => mobileTabItem.id !== 'articles' || showArticles,
+  );
+}
+
 export function getActiveMobileTabId({
   pathname,
 }: {
@@ -103,11 +129,22 @@ export function getActiveMobileTabId({
   return undefined;
 }
 
-function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
+function renderMobileTabBar({
+  activeTabId,
+  publishedArticleCount,
+}: {
+  activeTabId?: ShellWebMobileTabId;
+  publishedArticleCount?: number;
+}) {
+  const visibleMobileTabItems = getVisibleMobileTabItems(publishedArticleCount);
+  const listClassName = `${styles.mobileTabList} ${getMobileTabListColumnClass(
+    visibleMobileTabItems.length,
+  )}`;
+
   return (
     <nav aria-label="Mobiele tabnavigatie" className={styles.mobileTabBar}>
-      <ul className={styles.mobileTabList}>
-        {mobileTabItems.map((mobileTabItem) => {
+      <ul className={listClassName}>
+        {visibleMobileTabItems.map((mobileTabItem) => {
           const TabIcon = mobileTabItem.icon;
           const isActive = mobileTabItem.id === activeTabId;
 
@@ -161,14 +198,19 @@ function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
   );
 }
 
-export function ShellWebMobileTabBar() {
+export function ShellWebMobileTabBar({
+  publishedArticleCount = 0,
+}: {
+  publishedArticleCount?: number;
+}) {
   const pathname = usePathname() ?? buildWebPath(webPathnames.home);
 
-  return renderMobileTabBar(
-    getActiveMobileTabId({
+  return renderMobileTabBar({
+    activeTabId: getActiveMobileTabId({
       pathname,
     }),
-  );
+    publishedArticleCount,
+  });
 }
 
 export default ShellWebMobileTabBar;

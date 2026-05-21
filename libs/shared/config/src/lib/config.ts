@@ -350,6 +350,15 @@ export const webPathnames = {
   pages: '/pages',
 } as const;
 
+export const PUBLIC_ARTICLE_CONTENT_MINIMUM = 5;
+export const HAS_PUBLIC_ARTICLE_CONTENT = false;
+
+export function hasPublicArticleContent(articleCount: number): boolean {
+  return (
+    HAS_PUBLIC_ARTICLE_CONTENT || articleCount >= PUBLIC_ARTICLE_CONTENT_MINIMUM
+  );
+}
+
 const webNavigationItems = [
   {
     label: 'Nieuws',
@@ -878,13 +887,27 @@ export function buildPublicSetDetailUrl({
   return `${getPublicWebBaseUrl({ currentOrigin })}${buildSetDetailPath(slug)}`;
 }
 
-export const webNavigation = webNavigationItems.map((navigationItem) => ({
-  label: navigationItem.label,
-  href:
-    'href' in navigationItem
-      ? navigationItem.href
-      : buildWebPath(navigationItem.pathname),
-})) as ReadonlyArray<{ href: string; label: string }>;
+export function getWebNavigation(
+  articleCount = 0,
+): ReadonlyArray<{ href: string; label: string }> {
+  const showArticles = hasPublicArticleContent(articleCount);
+
+  return webNavigationItems
+    .map((navigationItem) => ({
+      label: navigationItem.label,
+      href:
+        'href' in navigationItem
+          ? navigationItem.href
+          : buildWebPath(navigationItem.pathname),
+    }))
+    .filter(
+      (navigationItem) =>
+        navigationItem.href !== buildWebPath(webPathnames.articles) ||
+        showArticles,
+    );
+}
+
+export const webNavigation = getWebNavigation(0);
 
 function getDefaultBrowserSupabaseUrl(): string | undefined {
   return process.env['NEXT_PUBLIC_SUPABASE_URL'];

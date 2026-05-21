@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import {
   buildWebPath,
+  getWebNavigation,
   platformConfig,
-  webNavigation,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { Container, Icon } from '@lego-platform/shared/ui';
@@ -19,9 +19,9 @@ import { ShellWebSearchForm } from './shell-web-search-form';
 
 const shellDesktopAccountActionId = 'shell-desktop-account-action';
 
-function renderDesktopNavigationLinks() {
+function renderDesktopNavigationLinks(publishedArticleCount: number) {
   return [
-    ...webNavigation.map((navigationItem) => (
+    ...getWebNavigation(publishedArticleCount).map((navigationItem) => (
       <ShellWebNavLink
         href={navigationItem.href}
         key={navigationItem.href}
@@ -67,10 +67,12 @@ function renderDesktopActionLinks() {
 
 export function ShellWeb({
   children,
+  publishedArticleCount = 0,
   searchQuery,
   showMobileSearchOverlay = true,
 }: {
   children: ReactNode;
+  publishedArticleCount?: number;
   searchQuery?: string;
   showMobileSearchOverlay?: boolean;
 }) {
@@ -100,7 +102,7 @@ export function ShellWeb({
                 </span>
               </a>
               <nav aria-label="Hoofdnavigatie" className={styles.desktopNav}>
-                {renderDesktopNavigationLinks()}
+                {renderDesktopNavigationLinks(publishedArticleCount)}
               </nav>
             </div>
             <div className={styles.headerSecondary}>
@@ -143,7 +145,7 @@ export function ShellWeb({
           variant="mobile-overlay"
         />
       ) : null}
-      <ShellWebMobileTabBar />
+      <ShellWebMobileTabBar publishedArticleCount={publishedArticleCount} />
     </div>
   );
 }

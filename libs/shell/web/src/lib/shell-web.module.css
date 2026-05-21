@@ -739,10 +739,21 @@
 .mobileTabList {
   display: grid;
   gap: var(--lego-space-1);
-  grid-template-columns: repeat(5, minmax(0, 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.mobileTabListColumns3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mobileTabListColumns4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mobileTabListColumns5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .mobileTabItem {

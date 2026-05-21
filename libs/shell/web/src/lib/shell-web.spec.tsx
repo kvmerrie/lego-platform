@@ -115,10 +115,8 @@ describe('ShellWeb', () => {
 
     expect(markup).toContain('Brickhunt');
     expect(markup).toContain('Deals');
-    expect(markup).toContain('Nieuws');
     expect(markup).toContain('Thema&#x27;s');
     expect(markup).toContain('Volgt');
-    expect(markup.indexOf('Nieuws')).toBeLessThan(markup.indexOf('Deals'));
     expect(markup.indexOf('Deals')).toBeLessThan(
       markup.indexOf('Thema&#x27;s'),
     );
@@ -139,14 +137,13 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Zoek op set of setnummer');
     expect(markup).toContain('href="/account"');
     expect(markup).toContain('href="/volgt"');
-    expect(markup).toContain('href="/artikelen"');
+    expect(markup).not.toContain('href="/artikelen"');
     expect(markup).toContain('href="/search?overlay=1"');
     expect(markup).toContain('href="/deals"');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/account/wishlist"');
     expect(markup).toContain('Mobiele tabnavigatie');
     expect(markup).toContain('Deals');
-    expect(markup).toContain('Nieuws');
     expect(markup).toContain('Zoeken');
     expect(markup).toContain('Thema&#x27;s');
     const mobileTabbarMarkup = markup.slice(
@@ -156,17 +153,16 @@ describe('ShellWeb', () => {
       ...mobileTabbarMarkup.matchAll(/href="([^"]+)"/g),
     ].map((match) => match[1]);
 
-    expect(mobileTabbarHrefs.slice(0, 5)).toEqual([
-      '/artikelen',
+    expect(mobileTabbarHrefs).toHaveLength(4);
+    expect(mobileTabbarHrefs.slice(0, 4)).toEqual([
       '/deals',
       '/search?overlay=1',
       '/themes',
       '/volgt',
     ]);
-    expect(mobileTabbarHrefs.indexOf('/search?overlay=1')).toBe(2);
-    expect(mobileTabbarMarkup.indexOf('Nieuws')).toBeLessThan(
-      mobileTabbarMarkup.indexOf('Deals'),
-    );
+    expect(mobileTabbarMarkup).toContain('mobileTabListColumns4');
+    expect(mobileTabbarMarkup).not.toContain('mobileTabListColumns5');
+    expect(mobileTabbarHrefs.indexOf('/search?overlay=1')).toBe(1);
     expect(mobileTabbarMarkup.indexOf('Deals')).toBeLessThan(
       mobileTabbarMarkup.indexOf('Zoeken'),
     );
@@ -186,6 +182,33 @@ describe('ShellWeb', () => {
     expect(markup).not.toContain('Checking');
     expect(markup).not.toContain('Sign in');
     expect(markup).not.toContain('Sign out');
+  });
+
+  it('restores Nieuws in desktop and mobile navigation when article content reaches the threshold', () => {
+    const markup = renderToStaticMarkup(
+      <ShellWeb publishedArticleCount={5}>
+        <div>Collector page content</div>
+      </ShellWeb>,
+    );
+    const mobileTabbarMarkup = markup.slice(
+      markup.indexOf('Mobiele tabnavigatie'),
+    );
+    const mobileTabbarHrefs = [
+      ...mobileTabbarMarkup.matchAll(/href="([^"]+)"/g),
+    ].map((match) => match[1]);
+
+    expect(markup).toContain('href="/artikelen"');
+    expect(markup.indexOf('Nieuws')).toBeLessThan(markup.indexOf('Deals'));
+    expect(mobileTabbarHrefs).toHaveLength(5);
+    expect(mobileTabbarHrefs.slice(0, 5)).toEqual([
+      '/artikelen',
+      '/deals',
+      '/search?overlay=1',
+      '/themes',
+      '/volgt',
+    ]);
+    expect(mobileTabbarMarkup).toContain('mobileTabListColumns5');
+    expect(mobileTabbarMarkup).not.toContain('mobileTabListColumns4');
   });
 });
 

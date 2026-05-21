@@ -21,6 +21,7 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildArticleThemePath,
   buildWebPath,
+  hasPublicArticleContent,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { Surface } from '@lego-platform/shared/ui';
@@ -40,16 +41,27 @@ type ArticleListItemWithThemePresentation = ContentArticleListItem & {
   themePresentation?: ContentArticleThemePresentation;
 };
 
-export const metadata: Metadata = getMetadataFromSeoFields(
-  {
-    description:
-      'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
-    title: 'LEGO nieuws & updates',
-  },
-  {
-    canonicalPath: buildWebPath(webPathnames.articles),
-  },
-);
+export async function generateMetadata(): Promise<Metadata> {
+  const publishedArticles = await listPublishedArticles({
+    limit: 5,
+  });
+
+  return getMetadataFromSeoFields(
+    {
+      description:
+        'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
+      noIndex: !hasPublicArticleContent(
+        publishedArticles.filter(
+          (contentArticle) => contentArticle.status === 'published',
+        ).length,
+      ),
+      title: 'LEGO nieuws & updates',
+    },
+    {
+      canonicalPath: buildWebPath(webPathnames.articles),
+    },
+  );
+}
 
 export const revalidate = 21_600;
 
@@ -148,7 +160,7 @@ export default async function ArticlesIndexPage() {
   );
 
   return (
-    <ShellWeb>
+    <ShellWeb publishedArticleCount={contentArticles.length}>
       <main className={styles.articlesPage}>
         <EditorialHeroPanel editorialSection={articlesHero} />
 

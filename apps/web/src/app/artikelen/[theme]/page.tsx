@@ -13,7 +13,10 @@ import {
 } from '@lego-platform/content/ui';
 import type { ContentArticleListItem } from '@lego-platform/content/util';
 import { ShellWeb } from '@lego-platform/shell/web';
-import { buildArticleThemePath } from '@lego-platform/shared/config';
+import {
+  buildArticleThemePath,
+  hasPublicArticleContent,
+} from '@lego-platform/shared/config';
 import { Surface } from '@lego-platform/shared/ui';
 import React from 'react';
 import type { Metadata } from 'next';
@@ -127,6 +130,9 @@ export async function generateMetadata({
   return getMetadataFromSeoFields(
     {
       description: `Lees het nieuwste LEGO nieuws over ${themeLabel}.`,
+      noIndex: !hasPublicArticleContent(
+        articles.filter((article) => article.status === 'published').length,
+      ),
       title: `${themeLabel} nieuws`,
     },
     {
@@ -164,7 +170,7 @@ export default async function ArticleThemePage({
   ).map(normalizeArticleThemeDisplay);
 
   return (
-    <ShellWeb>
+    <ShellWeb publishedArticleCount={articles.length}>
       <main className={styles.articlesPage}>
         <EditorialHeroPanel
           editorialSection={{

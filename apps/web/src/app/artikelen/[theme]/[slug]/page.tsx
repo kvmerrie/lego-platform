@@ -178,7 +178,7 @@ export default async function ArticleDetailPage({
   ];
 
   return (
-    <ShellWeb>
+    <ShellWeb publishedArticleCount={publishedArticles.length}>
       <JsonLdScript data={jsonLd} />
       <ContentArticlePage
         breadcrumbs={breadcrumbs}

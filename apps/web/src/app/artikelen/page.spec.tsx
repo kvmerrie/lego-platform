@@ -168,8 +168,8 @@ describe('articles index route', () => {
     expect(markup).toContain('/artikelen/marvel/lego-marvel-herbie');
     expect(markup).toContain('/artikelen/star-wars/middle-update');
     expect(markup).toContain('/artikelen/icons/older-update');
-    expect(markup).toContain('--catalog-theme-badge-surface:#5573b5');
-    expect(markup).toContain('--catalog-theme-badge-text:#ffffff');
+    expect(markup).toContain('Star Wars');
+    expect(markup).toContain('Icons');
     expect(markup).not.toContain('Concept update');
     expect(markup).toContain('featuredArticle');
     expect(markup).toContain('cardGrid');
@@ -277,6 +277,19 @@ describe('articles index route', () => {
 
     expect(markup).toContain('Nog geen artikelen beschikbaar');
     expect(markup).not.toContain('cardGrid');
+  });
+
+  it('marks the article index noindex while public article content is thin', async () => {
+    listPublishedArticles.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+
+    await expect(pageModule.generateMetadata()).resolves.toMatchObject({
+      robots: {
+        follow: false,
+        index: false,
+      },
+    });
   });
 
   it('uses the same resolved catalog image fallback for article cards', async () => {

@@ -30,7 +30,6 @@ describe('sitemap generation', () => {
 
     expect(entries.map((entry) => entry.url)).toEqual([
       'https://www.brickhunt.nl/sitemaps/sets.xml',
-      'https://www.brickhunt.nl/sitemaps/articles.xml',
       'https://www.brickhunt.nl/sitemaps/themes.xml',
       'https://www.brickhunt.nl/sitemaps/deals.xml',
     ]);
@@ -72,7 +71,7 @@ describe('sitemap generation', () => {
     );
   });
 
-  it('includes published canonical article URLs with lastModified values', async () => {
+  it('keeps thin article index pages out of the article sitemap while preserving article detail URLs', async () => {
     const entries = await collectArticleSitemapEntries({
       allowIndexing: true,
       dataAccess: {
@@ -101,16 +100,36 @@ describe('sitemap generation', () => {
 
     expect(entries).toEqual([
       {
-        url: 'https://www.brickhunt.nl/artikelen',
-      },
-      {
-        url: 'https://www.brickhunt.nl/artikelen/star-wars',
-      },
-      {
         lastModified: '2026-05-02T10:00:00.000Z',
         url: 'https://www.brickhunt.nl/artikelen/star-wars/star-wars-day-2026',
       },
     ]);
+  });
+
+  it('includes article index pages once enough public article content exists', async () => {
+    const entries = await collectArticleSitemapEntries({
+      allowIndexing: true,
+      dataAccess: {
+        listPublishedArticles: vi.fn().mockResolvedValue(
+          Array.from({ length: 5 }, (_, index) => ({
+            date: `2026-05-0${index + 1}`,
+            description: 'Star Wars artikel',
+            heroImageAlt: 'Grogu',
+            slug: `star-wars-day-2026-${index + 1}`,
+            status: 'published',
+            theme: 'Star Wars',
+            title: `Star Wars Day 2026 ${index + 1}`,
+          })),
+        ),
+      },
+    });
+
+    expect(entries.map((entry) => entry.url)).toContain(
+      'https://www.brickhunt.nl/artikelen',
+    );
+    expect(entries.map((entry) => entry.url)).toContain(
+      'https://www.brickhunt.nl/artikelen/star-wars',
+    );
   });
 
   it('excludes noindex CMS pages from the public static sitemap segment', async () => {

@@ -16,6 +16,8 @@ import {
   buildSetDetailPath,
   buildThemePath,
   buildWebPath,
+  HAS_PUBLIC_ARTICLE_CONTENT,
+  hasPublicArticleContent,
   isIndexableSetDetailPage,
   isIndexablePage,
   publicSiteRobotsPolicy,
@@ -60,7 +62,7 @@ const sitemapDataAccess: SitemapDataAccess = {
 
 export const sitemapSegmentPaths = [
   '/sitemaps/sets.xml',
-  '/sitemaps/articles.xml',
+  ...(HAS_PUBLIC_ARTICLE_CONTENT ? ['/sitemaps/articles.xml'] : []),
   '/sitemaps/themes.xml',
   '/sitemaps/deals.xml',
 ] as const;
@@ -216,6 +218,9 @@ export async function collectArticleSitemapEntries({
   }
 
   const articles = await dataAccess.listPublishedArticles();
+  const hasEnoughArticlesForIndexPages = hasPublicArticleContent(
+    articles.length,
+  );
   const themeSlugs = new Set(
     articles.flatMap((article) => {
       const themeSlug = normalizeTheme(article.theme)?.key;
@@ -225,16 +230,20 @@ export async function collectArticleSitemapEntries({
   );
 
   return uniqueSitemapEntries([
-    createSitemapUrlEntry({
-      allowIndexing,
-      pathname: buildWebPath(webPathnames.articles),
-    }),
-    ...[...themeSlugs].map((themeSlug) =>
-      createSitemapUrlEntry({
-        allowIndexing,
-        pathname: buildArticleThemePath(themeSlug),
-      }),
-    ),
+    ...(hasEnoughArticlesForIndexPages
+      ? [
+          createSitemapUrlEntry({
+            allowIndexing,
+            pathname: buildWebPath(webPathnames.articles),
+          }),
+          ...[...themeSlugs].map((themeSlug) =>
+            createSitemapUrlEntry({
+              allowIndexing,
+              pathname: buildArticleThemePath(themeSlug),
+            }),
+          ),
+        ]
+      : []),
     ...articles.map((article) => {
       const themeSlug = normalizeTheme(article.theme)?.key;
 
