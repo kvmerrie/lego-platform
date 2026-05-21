@@ -141,6 +141,36 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('Buyable set 20');
   });
 
+  it('preserves theme badge colors from set-card public theme presentation', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        sectionId="similar-sets"
+        setCards={[
+          {
+            id: '75461',
+            slug: 'up-scaled-darth-vader-minifigure-75461',
+            name: 'Up-Scaled Darth Vader Minifigure',
+            theme: 'Star Wars',
+            publicTheme: {
+              name: 'Star Wars',
+              slug: 'star-wars',
+              surfaceColor: '#171717',
+              surfaceTextColor: '#ffffff',
+            },
+            releaseYear: 2026,
+            pieces: 0,
+            imageUrl: 'https://images.example/darth-vader.jpg',
+          },
+        ]}
+        title="Vergelijkbare LEGO sets"
+      />,
+    );
+
+    expect(markup).toContain('--card-theme-badge-bg:#171717');
+    expect(markup).toContain('--card-theme-badge-text:#ffffff');
+    expect(markup).toContain('>Star Wars<');
+  });
+
   it('keeps the commerce rail calm when no tertiary action is provided', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSetList

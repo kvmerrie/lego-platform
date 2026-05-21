@@ -176,6 +176,13 @@ describe('ShellWeb', () => {
       'Brickhunt laat snel zien welke doos je wilt hebben',
     );
     expect(markup).toContain('waar de prijs nu goed zit');
+    expect(markup).toContain('href="/over-brickhunt"');
+    expect(markup).toContain('href="/hoe-werkt-het"');
+    expect(markup).toContain('href="/contact"');
+    expect(markup).toContain('href="/privacy"');
+    expect(markup).toContain('href="/cookiebeleid"');
+    expect(markup).toContain('href="/affiliate-disclosure"');
+    expect(markup).toContain('Affiliate disclosure');
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Ontdekken');
     expect(markup).not.toContain('Featured shortlist');

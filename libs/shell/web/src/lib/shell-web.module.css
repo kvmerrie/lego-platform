@@ -710,12 +710,43 @@
   padding-top: var(--lego-space-5);
 }
 
+.footerContent {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
 .footerCopy {
   color: var(--lego-shell-footer-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
   max-width: 56ch;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2) var(--lego-space-4);
+}
+
+.footerLink {
+  color: var(--lego-shell-footer-text);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: var(--lego-line-height-body);
+  text-decoration: none;
+  text-underline-offset: 0.18em;
+}
+
+.footerLink:hover,
+.footerLink:focus-visible {
+  color: var(--lego-shell-footer-text);
+  outline: none;
+  text-decoration: underline;
+}
+
+.footerLink:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
 }
 
 .mobileTabBar {

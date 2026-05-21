@@ -9,6 +9,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.comparableSetsRail {
+  overflow: hidden;
+}
+
 .setNewsRail {
   display: grid;
   gap: var(--lego-space-4);

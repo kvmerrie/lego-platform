@@ -47,6 +47,33 @@ const shellActionLinks = [
   },
 ] as const;
 
+const footerLinks = [
+  {
+    href: buildWebPath('/over-brickhunt'),
+    label: 'Over Brickhunt',
+  },
+  {
+    href: buildWebPath('/hoe-werkt-het'),
+    label: 'Hoe werkt het',
+  },
+  {
+    href: buildWebPath(webPathnames.contact),
+    label: 'Contact',
+  },
+  {
+    href: buildWebPath(webPathnames.privacy),
+    label: 'Privacybeleid',
+  },
+  {
+    href: buildWebPath(webPathnames.cookiePolicy),
+    label: 'Cookiebeleid',
+  },
+  {
+    href: buildWebPath(webPathnames.affiliateDisclosure),
+    label: 'Affiliate disclosure',
+  },
+] as const;
+
 function renderDesktopActionLinks() {
   return shellActionLinks.map((actionLink) => (
     <a
@@ -131,10 +158,23 @@ export function ShellWeb({
       </main>
       <footer className={styles.footer}>
         <Container className={styles.footerInner}>
-          <p className={styles.footerCopy}>
-            Brickhunt laat snel zien welke doos je wilt hebben en waar de prijs
-            nu goed zit.
-          </p>
+          <div className={styles.footerContent}>
+            <p className={styles.footerCopy}>
+              Brickhunt laat snel zien welke doos je wilt hebben en waar de
+              prijs nu goed zit.
+            </p>
+            <nav aria-label="Footer" className={styles.footerNav}>
+              {footerLinks.map((footerLink) => (
+                <a
+                  className={styles.footerLink}
+                  href={footerLink.href}
+                  key={footerLink.href}
+                >
+                  {footerLink.label}
+                </a>
+              ))}
+            </nav>
+          </div>
         </Container>
       </footer>
       {showMobileSearchOverlay ? (

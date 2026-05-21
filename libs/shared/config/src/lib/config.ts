@@ -46,7 +46,7 @@ export const platformConfig = {
   productName: 'Brickhunt',
   tagline: 'LEGO sets vergelijken, ontdekken en slimmer kopen.',
   defaultThemeMode: 'light',
-  supportEmail: 'platform@example.test',
+  supportEmail: 'hello@brickhunt.nl',
   experience: {
     defaultLanguageCode: DEFAULT_APP_LANGUAGE_CODE,
     defaultMarketCode: DEFAULT_APP_MARKET_CODE,
@@ -344,8 +344,12 @@ export const webPathnames = {
   search: '/search',
   following: '/volgt',
   account: '/account',
+  affiliateDisclosure: '/affiliate-disclosure',
   collection: '/account/collection',
+  contact: '/contact',
+  cookiePolicy: '/cookiebeleid',
   wishlist: '/account/wishlist',
+  privacy: '/privacy',
   sets: '/sets',
   pages: '/pages',
 } as const;

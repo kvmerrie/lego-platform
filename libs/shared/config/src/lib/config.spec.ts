@@ -69,7 +69,14 @@ import {
   tradeTrackerCoppenswarenhuisEnvKeys,
   tradeTrackerConradEnvKeys,
   webNavigation,
+  platformConfig,
 } from './config';
+
+describe('platform config', () => {
+  test('uses the public Brickhunt support email', () => {
+    expect(platformConfig.supportEmail).toBe('hello@brickhunt.nl');
+  });
+});
 
 describe('shared config article preview helper', () => {
   afterEach(() => {

@@ -152,6 +152,60 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('--card-theme-badge-text:#ffffff');
   });
 
+  it('uses Supabase theme presentation colors for compact set-card theme badges', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/darth-vader-bust-75439"
+        setSummary={{
+          id: '75439',
+          slug: 'darth-vader-bust-75439',
+          name: 'Darth Vader Bust',
+          theme: 'Star Wars',
+          publicTheme: {
+            name: 'Star Wars',
+            slug: 'star-wars',
+            surfaceColor: '#171717',
+            surfaceTextColor: '#ffffff',
+          },
+          releaseYear: 2025,
+          pieces: 327,
+          imageUrl: 'https://images.example/darth-vader.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('--card-theme-badge-bg:#171717');
+    expect(markup).toContain('--card-theme-badge-text:#ffffff');
+    expect(markup).toContain('>Star Wars<');
+  });
+
+  it('keeps neutral badge colors when theme presentation colors are missing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/snackbartruck-60488"
+        setSummary={{
+          id: '60488',
+          slug: 'snackbartruck-60488',
+          name: 'Snackbartruck',
+          theme: 'City',
+          publicTheme: {
+            name: 'City',
+            slug: 'city',
+          },
+          releaseYear: 2025,
+          pieces: 345,
+          imageUrl: 'https://images.example/snackbartruck.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).not.toContain('--card-theme-badge-bg:');
+    expect(markup).not.toContain('--card-theme-badge-text:');
+    expect(markup).toContain('>City<');
+  });
+
   it('renders optional list actions below the default set-card metadata', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
@@ -1177,6 +1231,38 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Release');
     expect(markup).not.toContain('_logo.png');
     expect(markup).not.toContain('heroThemeLogo');
+  });
+
+  it('uses public theme colors for set-detail theme badges', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '75439',
+          slug: 'darth-vader-bust-75439',
+          name: 'Darth Vader Bust',
+          theme: 'Star Wars',
+          publicTheme: {
+            name: 'Star Wars',
+            slug: 'star-wars',
+            surfaceColor: '#171717',
+            surfaceTextColor: '#ffffff',
+          },
+          releaseYear: 2025,
+          pieces: 327,
+          imageUrl: 'https://images.example/darth-vader.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+        themeHref="/themes/star-wars"
+      />,
+    );
+
+    expect(markup).toContain('--catalog-theme-badge-surface:#171717');
+    expect(markup).toContain('--catalog-theme-badge-text:#ffffff');
+    expect(markup).toContain('>Star Wars<');
   });
 
   it('renders only valid compact hero specs and never shows zero values', () => {

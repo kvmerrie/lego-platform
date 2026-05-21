@@ -7,6 +7,7 @@ import {
 } from 'react';
 import type {
   CatalogHomepageSetCard,
+  CatalogPublicThemeReference,
   CatalogSetDetail,
   CatalogSetSummary,
   CatalogThemeSnapshot,
@@ -713,12 +714,14 @@ function getCatalogThemeStyleVariables({
   return {
     ...(resolvedVisual.backgroundColor
       ? ({
+          '--catalog-theme-badge-surface': resolvedVisual.backgroundColor,
           '--card-theme-badge-bg': resolvedVisual.backgroundColor,
           '--theme-surface': resolvedVisual.backgroundColor,
         } as CSSProperties)
       : {}),
     ...(resolvedVisual.textColor
       ? ({
+          '--catalog-theme-badge-text': resolvedVisual.textColor,
           '--card-theme-badge-text': resolvedVisual.textColor,
           '--theme-text': resolvedVisual.textColor,
           '--theme-muted': getCatalogThemeMutedTextColor(
@@ -726,6 +729,22 @@ function getCatalogThemeStyleVariables({
           ),
         } as CSSProperties)
       : {}),
+  };
+}
+
+function getCatalogPublicThemeVisual(
+  publicTheme?: CatalogPublicThemeReference,
+): CatalogThemeVisual | undefined {
+  const backgroundColor = publicTheme?.surfaceColor ?? publicTheme?.accentColor;
+  const textColor = publicTheme?.surfaceTextColor ?? publicTheme?.heroTextColor;
+
+  if (!backgroundColor && !textColor) {
+    return undefined;
+  }
+
+  return {
+    backgroundColor,
+    textColor,
   };
 }
 
@@ -769,7 +788,9 @@ export function CatalogSetCard({
   });
   const PrimaryActionIcon = primaryAction.icon;
   const setThemeSlug = buildCatalogThemeSlug(setSummary.theme);
-  const setThemeStyle = undefined;
+  const setThemeStyle = getCatalogThemeStyleVariables({
+    visual: getCatalogPublicThemeVisual(setSummary.publicTheme),
+  });
   const hasSupportingContext = Boolean(
     (priceContext && priceDisplay === 'subtle') || supportingNote,
   );
@@ -1315,7 +1336,9 @@ export function CatalogSetDetailPanel({
     themeHref,
   });
   const offerComparisonSectionId = 'set-offers';
-  const themeBadgeStyle = undefined;
+  const themeBadgeStyle = getCatalogThemeStyleVariables({
+    visual: getCatalogPublicThemeVisual(catalogSetDetail.publicTheme),
+  });
   const hasFollowModule = Boolean(
     priceAlertAction || followCopy || followTitle || followEyebrow,
   );

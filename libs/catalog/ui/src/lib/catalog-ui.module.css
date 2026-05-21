@@ -842,7 +842,7 @@
   }
 
   .sectionShellInverse {
-    background: #242424;
+    background: var(--lego-surface-band-dark);
     border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
   }
 
@@ -1055,6 +1055,7 @@
   .detailPage {
     display: grid;
     gap: var(--lego-page-section-gap, 0px);
+    padding-block-end: var(--lego-space-8);
   }
 
   .detailPageIntro {

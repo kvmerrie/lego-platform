@@ -60,6 +60,10 @@ const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT = 20;
 const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 21_600;
 const HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS = 2;
+const HOMEPAGE_PRIMARY_DEAL_SECTION_ID = 'best-current-deals';
+const HOMEPAGE_SOFT_DEAL_SECTION_ID = 'soft-price-opportunities';
+const HOMEPAGE_CURRENT_OFFERS_SECTION_ID = 'current-offers';
+const HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID = 'popular-to-follow';
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -177,6 +181,40 @@ function toFeatureSetListItems(
 
 function hasCommerceAction(catalogSetCard: CatalogFeatureSetListItem): boolean {
   return Boolean(catalogSetCard.priceContext?.primaryActionHref);
+}
+
+function buildHomepageAnchorHref(sectionId: string): string {
+  return `/#${sectionId}`;
+}
+
+function shouldRetargetHomepageHeroCta(ctaHref?: string): boolean {
+  return (
+    ctaHref === '#best-current-deals' || ctaHref === '/#best-current-deals'
+  );
+}
+
+function getHomepageHeroCtaSectionId({
+  currentOfferSetCards,
+  softDealSetCards,
+  strongDealSetCards,
+}: {
+  currentOfferSetCards: readonly CatalogFeatureSetListItem[];
+  softDealSetCards: readonly CatalogFeatureSetListItem[];
+  strongDealSetCards: readonly CatalogFeatureSetListItem[];
+}): string {
+  if (strongDealSetCards.length) {
+    return HOMEPAGE_PRIMARY_DEAL_SECTION_ID;
+  }
+
+  if (softDealSetCards.length) {
+    return HOMEPAGE_SOFT_DEAL_SECTION_ID;
+  }
+
+  if (currentOfferSetCards.length) {
+    return HOMEPAGE_CURRENT_OFFERS_SECTION_ID;
+  }
+
+  return HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID;
 }
 
 function getUniqueCatalogSetIds(
@@ -457,7 +495,7 @@ export default async function HomePage() {
     {
       cardSurface: 'deal',
       catalogDiscoverySignalBySetId,
-      sectionId: 'best-current-deals',
+      sectionId: HOMEPAGE_PRIMARY_DEAL_SECTION_ID,
     },
   ).filter(hasCommerceAction);
   const homepageStrongDealSetCards =
@@ -470,7 +508,7 @@ export default async function HomePage() {
     {
       cardSurface: 'deal',
       catalogDiscoverySignalBySetId,
-      sectionId: 'soft-price-opportunities',
+      sectionId: HOMEPAGE_SOFT_DEAL_SECTION_ID,
     },
   ).filter(hasCommerceAction);
   const homepageSoftDealSetCards =
@@ -493,7 +531,7 @@ export default async function HomePage() {
     {
       cardSurface: 'deal',
       catalogDiscoverySignalBySetId,
-      sectionId: 'current-offers',
+      sectionId: HOMEPAGE_CURRENT_OFFERS_SECTION_ID,
     },
   ).filter(hasCommerceAction);
   const homepageCurrentOfferSetCards =
@@ -567,7 +605,7 @@ export default async function HomePage() {
     {
       cardSurface: 'featured',
       catalogDiscoverySignalBySetId,
-      sectionId: 'popular-to-follow',
+      sectionId: HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID,
     },
   );
 
@@ -589,7 +627,20 @@ export default async function HomePage() {
   const homepageHeroPage = homepageHeroSection
     ? {
         ...homepagePage,
-        sections: [homepageHeroSection],
+        sections: [
+          {
+            ...homepageHeroSection,
+            ctaHref: shouldRetargetHomepageHeroCta(homepageHeroSection.ctaHref)
+              ? buildHomepageAnchorHref(
+                  getHomepageHeroCtaSectionId({
+                    currentOfferSetCards: homepageCurrentOfferSetCards,
+                    softDealSetCards: homepageSoftDealSetCards,
+                    strongDealSetCards: homepageStrongDealSetCards,
+                  }),
+                )
+              : homepageHeroSection.ctaHref,
+          },
+        ],
       }
     : homepagePage;
 
@@ -604,7 +655,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
               eyebrow="Deals"
-              sectionId="best-current-deals"
+              sectionId={HOMEPAGE_PRIMARY_DEAL_SECTION_ID}
               setCards={homepageStrongDealSetCards}
               showSignal={false}
               tone="default"
@@ -616,7 +667,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Sets die nu lager staan dan recent. Geen hard deal-label, wel een goed moment om te kijken."
               eyebrow="Prijsbeweging"
-              sectionId="soft-price-opportunities"
+              sectionId={HOMEPAGE_SOFT_DEAL_SECTION_ID}
               setCards={homepageSoftDealSetCards}
               showSignal={false}
               tone="default"
@@ -628,7 +679,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Geen harde kortingclaim, wel actuele prijzen met een werkende winkelroute. Begin hier als je nu wilt vergelijken."
               eyebrow="Actuele prijzen"
-              sectionId="current-offers"
+              sectionId={HOMEPAGE_CURRENT_OFFERS_SECTION_ID}
               setCards={homepageCurrentOfferSetCards}
               showSignal={false}
               tone="default"
@@ -711,6 +762,7 @@ export default async function HomePage() {
             description="Geen deal-label, wel sets die je collectie richting geven. Volg ze en pak het moment zodra prijs of voorraad goed wordt."
             eyebrow="Volgen"
             setCards={homepageSetCards}
+            sectionId={HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID}
             title="Populair om te volgen"
             tone="muted"
           />

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
+import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToReadableStream } from 'react-dom/server.browser';
 
 const setPageMocks = vi.hoisted(() => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId: vi.fn(),
@@ -50,6 +52,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
     bestDeal,
     dealsHref,
+    recentlyViewedRail,
     setNewsRail,
     similarSetsRail,
     themeDirectoryHref,
@@ -61,6 +64,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       rankingLabel?: string;
     };
     dealsHref?: string;
+    recentlyViewedRail?: unknown;
     setNewsRail?: unknown;
     similarSetsRail?: unknown;
     themeDirectoryHref?: string;
@@ -85,20 +89,57 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             bestDeal.rankingLabel,
           )
         : null,
-      similarSetsRail,
+      similarSetsRail
+        ? createElement(
+            'section',
+            { 'data-testid': 'similar-slot' },
+            'Similar slot',
+            similarSetsRail,
+          )
+        : null,
+      recentlyViewedRail
+        ? createElement(
+            'section',
+            { 'data-testid': 'recently-slot' },
+            'Recently viewed slot',
+            recentlyViewedRail,
+          )
+        : null,
       setNewsRail,
     ),
 }));
 
+async function renderToStreamedMarkup(element: ReactElement) {
+  const stream = await renderToReadableStream(element);
+
+  await stream.allReady;
+
+  return new Response(stream).text();
+}
+
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: ({
+    className,
     setCards,
+    style,
+    surfaceVariant,
+    title,
   }: {
+    className?: string;
     setCards: readonly { slug: string; name: string }[];
+    style?: Record<string, string>;
+    surfaceVariant?: string;
+    title?: string;
   }) =>
     createElement(
-      'div',
-      { 'data-testid': 'set-list' },
+      'section',
+      {
+        className,
+        'data-surface-variant': surfaceVariant,
+        'data-testid': 'set-list',
+        style,
+      },
+      title ? createElement('h2', null, title) : null,
       ...setCards.map((setCard) =>
         createElement(
           'a',
@@ -107,6 +148,19 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
         ),
       ),
     ),
+}));
+
+vi.mock('@lego-platform/catalog/feature-recently-viewed', () => ({
+  CatalogFeatureRecentlyViewed: () =>
+    createElement(
+      'section',
+      {
+        'data-testid': 'recently-viewed',
+        'data-tone': 'inverse',
+      },
+      'Recent bekeken LEGO sets',
+    ),
+  CatalogRecentlyViewedSetTracker: () => null,
 }));
 
 vi.mock('@lego-platform/collection/feature-owned-toggle', () => ({
@@ -233,7 +287,7 @@ describe('set detail static generation', () => {
     consoleInfoSpy.mockRestore();
   });
 
-  it('skips expensive similar-set rail work during production build SSG', async () => {
+  it('renders comparable sets during production build SSG when data is available', async () => {
     process.env['NEXT_PHASE'] = 'phase-production-build';
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '75355',
@@ -241,8 +295,11 @@ describe('set detail static generation', () => {
       name: 'X-wing Starfighter',
       pieces: 1949,
       publicTheme: {
+        accentColor: '#123456',
         name: 'Star Wars',
         slug: 'star-wars',
+        surfaceColor: '#112244',
+        surfaceTextColor: '#ffffff',
       },
       releaseYear: 2023,
       slug: 'x-wing-starfighter-75355',
@@ -256,10 +313,40 @@ describe('set detail static generation', () => {
         validPrimaryOfferCount: 0,
       },
     );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([
+      {
+        id: '75446',
+        imageUrl: 'https://cdn.example.com/75446.jpg',
+        name: 'Grogu with Hover Pram',
+        pieces: 1048,
+        releaseYear: 2026,
+        slug: 'grogu-mandalorian-apprentice-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-05T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'other',
+            merchantName: 'Goodbricks',
+            priceCents: 9999,
+            url: 'https://partner.example/75446',
+          },
+        ],
+        setId: '75446',
+      }),
+    );
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
 
     const pageModule = await import('./page');
-    renderToStaticMarkup(
+    const html = renderToStaticMarkup(
       await pageModule.default({
         params: Promise.resolve({
           slug: 'x-wing-starfighter-75355',
@@ -267,10 +354,41 @@ describe('set detail static generation', () => {
       }),
     );
 
-    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
-    expect(
-      setPageMocks.listCatalogDiscoverySignalsBySetId,
-    ).not.toHaveBeenCalled();
+    expect(html).toContain('data-testid="similar-slot"');
+    expect(html).toContain('data-testid="recently-slot"');
+    expect(html.indexOf('data-testid="similar-slot"')).toBeLessThan(
+      html.indexOf('data-testid="recently-slot"'),
+    );
+
+    const railHtml = renderToStaticMarkup(
+      await pageModule.loadSetDetailSimilarSetsRail({
+        catalogSetDetail: {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          publicTheme: {
+            accentColor: '#123456',
+            name: 'Star Wars',
+            slug: 'star-wars',
+            surfaceColor: '#112244',
+            surfaceTextColor: '#ffffff',
+          },
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+        signal: new AbortController().signal,
+        slug: 'x-wing-starfighter-75355',
+      }),
+    );
+
+    expect(railHtml).toContain('Vergelijkbare LEGO sets');
+    expect(railHtml).toContain('Grogu with Hover Pram');
+    expect(railHtml).toContain('data-surface-variant="themed"');
+    expect(railHtml).toContain('--article-theme-surface:#112244');
+    expect(railHtml).toContain('--article-theme-surface-text:#ffffff');
+    expect(setPageMocks.listCatalogSimilarSetCards).toHaveBeenCalled();
   });
 });
 
@@ -975,9 +1093,11 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/themes"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('href="/deals"');
-    expect(
-      setPageMocks.listCatalogDiscoverySignalsBySetId,
-    ).not.toHaveBeenCalled();
+    expect(html).toContain('data-testid="similar-slot"');
+    expect(html).toContain('data-testid="recently-slot"');
+    expect(html.indexOf('data-testid="similar-slot"')).toBeLessThan(
+      html.indexOf('data-testid="recently-slot"'),
+    );
     expect(
       setPageMocks.listPublishedArticlesByPrimarySetNumber,
     ).toHaveBeenCalledWith({
@@ -986,7 +1106,78 @@ describe('set detail page JSON-LD', () => {
     });
   });
 
-  it('does not block initial render when optional similar and article rails are slow', async () => {
+  it('streams a real comparable rail above recently viewed for a Darth Vader-style set page', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '75439',
+      imageUrl: 'https://cdn.example.com/75439.jpg',
+      name: 'Darth Vader Bust',
+      pieces: 349,
+      publicTheme: {
+        name: 'Star Wars',
+        slug: 'star-wars',
+        surfaceColor: '#171717',
+        surfaceTextColor: '#ffffff',
+      },
+      releaseYear: 2026,
+      slug: 'darth-vader-bust-75439',
+      theme: 'Star Wars',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([
+      {
+        id: '75461',
+        imageUrl: 'https://cdn.example.com/75461.jpg',
+        name: 'Up-Scaled Darth Vader Minifigure',
+        pieces: 0,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-minifigure-75461',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75280',
+        imageUrl: 'https://cdn.example.com/75280.jpg',
+        name: '501st Legion Clone Troopers',
+        pieces: 285,
+        releaseYear: 2020,
+        slug: '501st-legion-clone-troopers-75280',
+        theme: 'Star Wars',
+      },
+    ]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = await renderToStreamedMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'darth-vader-bust-75439',
+        }),
+      }),
+    );
+
+    expect(html).toContain('Vergelijkbare LEGO sets');
+    expect(html).toContain('Up-Scaled Darth Vader Minifigure');
+    expect(html).toContain('Recent bekeken LEGO sets');
+    expect(html.indexOf('Vergelijkbare LEGO sets')).toBeLessThan(
+      html.indexOf('Recent bekeken LEGO sets'),
+    );
+    expect(html).toContain('--article-theme-surface:#171717');
+    expect(html).toContain('--article-theme-surface-text:#ffffff');
+  });
+
+  it('keeps optional similar and article rail slots from blocking the initial render', async () => {
     let similarRailAbortSignal: AbortSignal | undefined;
 
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
@@ -1032,9 +1223,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('href="/deals"');
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    expect(similarRailAbortSignal?.aborted).toBe(true);
+    expect(similarRailAbortSignal?.aborted).toBe(false);
   });
 
   it('links set breadcrumbs to a public curated parent theme when available', async () => {

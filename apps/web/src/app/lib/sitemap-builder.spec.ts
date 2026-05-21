@@ -159,6 +159,10 @@ describe('sitemap generation', () => {
       'https://www.brickhunt.nl/deals',
       'https://www.brickhunt.nl/hoe-werkt-het',
       'https://www.brickhunt.nl/over-brickhunt',
+      'https://www.brickhunt.nl/contact',
+      'https://www.brickhunt.nl/privacy',
+      'https://www.brickhunt.nl/cookiebeleid',
+      'https://www.brickhunt.nl/affiliate-disclosure',
       'https://www.brickhunt.nl/pages/about',
     ]);
   });

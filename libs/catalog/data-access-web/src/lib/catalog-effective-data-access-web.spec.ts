@@ -6977,6 +6977,125 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('loads similar candidates from the current Supabase theme instead of a global catalog slice', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        ...Array.from({ length: 240 }, (_, index) => ({
+          created_at: `2026-05-${String(20 - (index % 20)).padStart(2, '0')}T08:00:00.000Z`,
+          image_url: `https://cdn.example.com/icons-${index}.jpg`,
+          name: `Icons filler ${index}`,
+          piece_count: 500 + index,
+          primary_theme_id: 'theme:icons',
+          release_year: 2026,
+          set_id: `icons-${index}`,
+          slug: `icons-filler-${index}`,
+          source: 'rebrickable',
+          source_set_number: `icons-${index}-1`,
+          source_theme_id: 'rebrickable:icons',
+          status: 'active',
+          updated_at: '2026-05-20T08:00:00.000Z',
+        })),
+        {
+          created_at: '2026-01-01T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/77244.jpg',
+          name: 'Mercedes-AMG F1 W15 Race Car',
+          piece_count: 267,
+          primary_theme_id: 'theme:speed-champions',
+          release_year: 2025,
+          set_id: '77244',
+          slug: 'mercedes-amg-f1-w15-race-car-77244',
+          source: 'rebrickable',
+          source_set_number: '77244-1',
+          source_theme_id: 'rebrickable:speed-champions',
+          status: 'active',
+          updated_at: '2026-01-01T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-01-01T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/76924.jpg',
+          name: 'Mercedes-AMG G 63 and Mercedes-AMG SL 63',
+          piece_count: 806,
+          primary_theme_id: 'theme:speed-champions',
+          release_year: 2024,
+          set_id: '76924',
+          slug: 'mercedes-amg-g-63-mercedes-amg-sl-63-76924',
+          source: 'rebrickable',
+          source_set_number: '76924-1',
+          source_theme_id: 'rebrickable:speed-champions',
+          status: 'active',
+          updated_at: '2026-01-01T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-01-01T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/76919.jpg',
+          name: 'McLaren Formula 1 Race Car',
+          piece_count: 245,
+          primary_theme_id: 'theme:speed-champions',
+          release_year: 2023,
+          set_id: '76919',
+          slug: 'mclaren-formula-1-race-car-76919',
+          source: 'rebrickable',
+          source_set_number: '76919-1',
+          source_theme_id: 'rebrickable:speed-champions',
+          status: 'active',
+          updated_at: '2026-01-01T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+        },
+        {
+          display_name: 'Speed Champions',
+          id: 'theme:speed-champions',
+          slug: 'speed-champions',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:icons',
+          source_theme_name: 'Icons',
+        },
+        {
+          id: 'rebrickable:speed-champions',
+          source_theme_name: 'Speed Champions',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:icons',
+        },
+        {
+          primary_theme_id: 'theme:speed-champions',
+          source_theme_id: 'rebrickable:speed-champions',
+        },
+      ],
+    });
+
+    const result = await listCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '77244',
+        name: 'Mercedes-AMG F1 W15 Race Car',
+        pieces: 267,
+        releaseYear: 2025,
+        theme: 'Speed Champions',
+      },
+      limit: 6,
+      supabaseClient,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76919',
+      '76924',
+    ]);
+  });
+
   test('reuses canonical secondary labels for the current set when the caller omits them', async () => {
     const result = await listCatalogSimilarSetCards({
       currentSetCard: {

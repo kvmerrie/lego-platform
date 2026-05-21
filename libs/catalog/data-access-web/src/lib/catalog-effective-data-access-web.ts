@@ -94,6 +94,7 @@ const CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT = 120;
 const CATALOG_PUBLIC_SEARCH_MATCH_LIMIT = 500;
 const CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT = 100;
 const CATALOG_THEME_REPRESENTATIVE_SET_LIMIT = 8;
+const CATALOG_SIMILAR_SET_CANDIDATE_CACHE_TTL_MS = 5 * 60 * 1_000;
 const CATALOG_SET_SELECT_COLUMNS =
   'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at';
 const PRIMARY_CATALOG_MERCHANT_SLUGS = commerceProductionFeedMerchantSlugs;
@@ -110,6 +111,13 @@ type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 type CatalogAbortableQuery<T> = T & {
   abortSignal?: (signal: AbortSignal) => T;
 };
+const catalogSimilarSetCandidatesByThemeSlug = new Map<
+  string,
+  {
+    expiresAt: number;
+    promise: Promise<CatalogHomepageSetCard[]>;
+  }
+>();
 
 const CATALOG_THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const CATALOG_THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
@@ -1183,7 +1191,7 @@ async function listCatalogThemeIdentityBySetId({
       ? await supabaseClient
           .from(CATALOG_THEMES_TABLE)
           .select(
-            'id, slug, display_name, public_display_name, public_logo_url, status, is_public',
+            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public',
           )
           .in('id', primaryThemeIdsToLoad)
       : { data: [], error: null };
@@ -1258,6 +1266,18 @@ async function listCatalogThemeIdentityBySetId({
         const publicThemeLogoUrl = normalizeCatalogThemePublicLogoUrl(
           publicPrimaryTheme?.public_logo_url,
         );
+        const publicAccentColor = normalizeCatalogThemePublicAccentColor(
+          publicPrimaryTheme?.public_accent_color,
+        );
+        const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
+          publicPrimaryTheme?.public_surface_color,
+        );
+        const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
+          publicPrimaryTheme?.public_surface_text_color,
+        );
+        const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
+          publicPrimaryTheme?.public_hero_text_color,
+        );
 
         return [
           catalogRow.set_id,
@@ -1266,6 +1286,16 @@ async function listCatalogThemeIdentityBySetId({
               ? {
                   primaryTheme: publicThemeName,
                   publicTheme: {
+                    ...(publicAccentColor
+                      ? {
+                          accentColor: publicAccentColor,
+                        }
+                      : {}),
+                    ...(publicHeroTextColor
+                      ? {
+                          heroTextColor: publicHeroTextColor,
+                        }
+                      : {}),
                     ...(publicThemeLogoUrl
                       ? {
                           logoUrl: publicThemeLogoUrl,
@@ -1273,6 +1303,16 @@ async function listCatalogThemeIdentityBySetId({
                       : {}),
                     name: publicThemeName,
                     slug: publicPrimaryTheme.slug,
+                    ...(publicSurfaceColor
+                      ? {
+                          surfaceColor: publicSurfaceColor,
+                        }
+                      : {}),
+                    ...(publicSurfaceTextColor
+                      ? {
+                          surfaceTextColor: publicSurfaceTextColor,
+                        }
+                      : {}),
                   },
                   secondaryThemes: [
                     ...new Set([
@@ -1937,6 +1977,196 @@ async function listAllCatalogSetCards({
   return (await listCanonicalCatalogSetsFn()).map(
     toCatalogSetCardFromCanonicalSet,
   );
+}
+
+async function listCatalogSimilarSetCandidateCardsFromSupabase({
+  currentSetCard,
+  signal,
+  supabaseClient,
+}: {
+  currentSetCard: Pick<CatalogHomepageSetCard, 'theme'>;
+  signal?: AbortSignal;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogHomepageSetCard[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const themeSlug = buildCatalogThemeSlug(currentSetCard.theme);
+
+  if (!supabaseClient) {
+    const cachedCandidates =
+      catalogSimilarSetCandidatesByThemeSlug.get(themeSlug);
+
+    if (cachedCandidates && cachedCandidates.expiresAt > Date.now()) {
+      throwIfCatalogReadAborted(signal);
+
+      const candidates = await cachedCandidates.promise;
+
+      throwIfCatalogReadAborted(signal);
+
+      return candidates;
+    }
+
+    if (cachedCandidates) {
+      catalogSimilarSetCandidatesByThemeSlug.delete(themeSlug);
+    }
+
+    const candidatesPromise = listCatalogSimilarSetCandidateCardsFromSupabase({
+      currentSetCard,
+      supabaseClient: activeSupabaseClient,
+    }).catch((error) => {
+      catalogSimilarSetCandidatesByThemeSlug.delete(themeSlug);
+      throw error;
+    });
+
+    catalogSimilarSetCandidatesByThemeSlug.set(themeSlug, {
+      expiresAt: Date.now() + CATALOG_SIMILAR_SET_CANDIDATE_CACHE_TTL_MS,
+      promise: candidatesPromise,
+    });
+
+    throwIfCatalogReadAborted(signal);
+
+    const candidates = await candidatesPromise;
+
+    throwIfCatalogReadAborted(signal);
+
+    return candidates;
+  }
+
+  try {
+    throwIfCatalogReadAborted(signal);
+
+    const { data: themeData, error: themeError } =
+      await applyCatalogAbortSignal(
+        activeSupabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select(
+            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public',
+          )
+          .eq('slug', themeSlug)
+          .eq('status', 'active')
+          .eq('is_public', true)
+          .limit(1),
+        signal,
+      );
+
+    if (themeError) {
+      throw new Error('Unable to load similar set theme.');
+    }
+
+    throwIfCatalogReadAborted(signal);
+
+    const [themeRow] = (themeData as CatalogThemeRow[] | null) ?? [];
+
+    if (!themeRow?.id) {
+      return [];
+    }
+
+    const { data: setData, error: setError } = await applyCatalogAbortSignal(
+      activeSupabaseClient
+        .from(CATALOG_SETS_TABLE)
+        .select(CATALOG_SET_SELECT_COLUMNS)
+        .eq('status', 'active')
+        .eq('primary_theme_id', themeRow.id)
+        .order('release_year', { ascending: false })
+        .order('name', { ascending: true })
+        .order('set_id', { ascending: true })
+        .range(0, 499),
+      signal,
+    );
+
+    if (setError) {
+      throw new Error('Unable to load similar set candidates.');
+    }
+
+    throwIfCatalogReadAborted(signal);
+
+    const catalogRows = (setData as CatalogSetRow[] | null) ?? [];
+    const publicThemeName =
+      normalizeCatalogThemePublicText(themeRow.public_display_name) ??
+      themeRow.display_name;
+    const publicThemeLogoUrl = normalizeCatalogThemePublicLogoUrl(
+      themeRow.public_logo_url,
+    );
+    const publicAccentColor = normalizeCatalogThemePublicAccentColor(
+      themeRow.public_accent_color,
+    );
+    const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
+      themeRow.public_surface_color,
+    );
+    const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
+      themeRow.public_surface_text_color,
+    );
+    const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
+      themeRow.public_hero_text_color,
+    );
+    const themeIdentity = resolveCatalogThemeIdentityFromPersistence({
+      primaryThemeName: publicThemeName,
+      sourceThemeName: undefined,
+    });
+    const publicTheme = publicThemeName
+      ? {
+          ...(publicAccentColor
+            ? {
+                accentColor: publicAccentColor,
+              }
+            : {}),
+          ...(publicHeroTextColor
+            ? {
+                heroTextColor: publicHeroTextColor,
+              }
+            : {}),
+          ...(publicThemeLogoUrl
+            ? {
+                logoUrl: publicThemeLogoUrl,
+              }
+            : {}),
+          name: publicThemeName,
+          slug: themeRow.slug ?? themeSlug,
+          ...(publicSurfaceColor
+            ? {
+                surfaceColor: publicSurfaceColor,
+              }
+            : {}),
+          ...(publicSurfaceTextColor
+            ? {
+                surfaceTextColor: publicSurfaceTextColor,
+              }
+            : {}),
+        }
+      : undefined;
+
+    return catalogRows.map((row) =>
+      toCatalogSetCardFromCanonicalSet(
+        toCanonicalCatalogSetFromRow({
+          row,
+          themeIdentity: {
+            ...themeIdentity,
+            ...(publicThemeName
+              ? {
+                  primaryTheme: publicThemeName,
+                }
+              : {}),
+            ...(publicTheme
+              ? {
+                  publicTheme,
+                }
+              : {}),
+          },
+        }),
+      ),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 export async function listCatalogSetCards({
@@ -6826,6 +7056,7 @@ export async function listCatalogSimilarSetCards({
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   referenceBestPriceMinor,
   signal,
+  supabaseClient,
 }: {
   currentSetCard: Pick<
     CatalogHomepageSetCard,
@@ -6838,11 +7069,19 @@ export async function listCatalogSimilarSetCards({
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   referenceBestPriceMinor?: number;
   signal?: AbortSignal;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogHomepageSetCard[]> {
-  const setCards = await listAllCatalogSetCards({
-    listCanonicalCatalogSetsFn,
-    signal,
-  });
+  const setCards =
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await listCatalogSimilarSetCandidateCardsFromSupabase({
+          currentSetCard,
+          signal,
+          supabaseClient,
+        })
+      : await listAllCatalogSetCards({
+          listCanonicalCatalogSetsFn,
+          signal,
+        });
 
   throwIfCatalogReadAborted(signal);
 

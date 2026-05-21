@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const pageMocks = vi.hoisted(() => ({
@@ -73,7 +74,30 @@ vi.mock('@lego-platform/content/data-access', () => ({
 }));
 
 vi.mock('@lego-platform/content/feature-page-renderer', () => ({
-  ContentFeaturePageRenderer: () => null,
+  ContentFeaturePageRenderer: ({
+    editorialPage,
+  }: {
+    editorialPage: {
+      sections?: readonly {
+        ctaHref?: string;
+        ctaLabel?: string;
+        id: string;
+      }[];
+    };
+  }) => {
+    const heroSection = editorialPage.sections?.[0];
+
+    return heroSection?.ctaHref && heroSection.ctaLabel
+      ? React.createElement(
+          'a',
+          {
+            'data-testid': 'homepage-hero-cta',
+            href: heroSection.ctaHref,
+          },
+          heroSection.ctaLabel,
+        )
+      : null;
+  },
 }));
 
 vi.mock('@lego-platform/pricing/data-access', () => ({
@@ -183,6 +207,176 @@ describe('home metadata', () => {
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',
+      }),
+    );
+  });
+
+  it('points the hero CTA to the hard deal rail when it is rendered', async () => {
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: 'Ontdek welke sets nu opvallen.',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Ontdek sets',
+          eyebrow: 'Brickhunt',
+          id: 'home-hero',
+          title: 'Welke set wil je?',
+          type: 'hero',
+        },
+      ],
+      seo: {
+        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
+        noIndex: false,
+        title: 'Brickhunt',
+      },
+    });
+    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
+    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
+    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
+    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
+      '42177',
+      '75355',
+    ]);
+    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map([
+        [
+          '42177',
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T08:00:00.000Z',
+              currency: 'EUR',
+              merchantName: 'Goodbricks',
+              priceCents: 19999,
+              url: 'https://example.com/42177',
+            },
+            offers: [{ merchantName: 'Goodbricks' }],
+            setId: '42177',
+          },
+        ],
+        [
+          '75355',
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T09:00:00.000Z',
+              currency: 'EUR',
+              merchantName: 'MisterBricks',
+              priceCents: 23999,
+              url: 'https://example.com/75355',
+            },
+            offers: [{ merchantName: 'MisterBricks' }],
+            setId: '75355',
+          },
+        ],
+      ]),
+    );
+    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '42177',
+        name: 'Mercedes-AMG F1 W14 E Performance',
+        pieces: 1642,
+        releaseYear: 2024,
+        slug: 'mercedes-amg-f1-w14-e-performance-42177',
+        theme: 'Technic',
+      },
+      {
+        id: '75355',
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ]);
+    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map([
+        ['42177', { setId: '42177' }],
+        ['75355', { setId: '75355' }],
+      ]),
+    );
+    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([
+      {
+        id: '42177',
+        name: 'Mercedes-AMG F1 W14 E Performance',
+        pieces: 1642,
+        releaseYear: 2024,
+        slug: 'mercedes-amg-f1-w14-e-performance-42177',
+        theme: 'Technic',
+      },
+      {
+        id: '75355',
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ]);
+    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
+    pageMocks.listHomepageSetCards.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('href="/#best-current-deals"');
+    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sectionId: 'best-current-deals',
+        title: 'Beste deals nu',
+      }),
+    );
+  });
+
+  it('points the hero CTA to an existing fallback rail when hard deals are not rendered', async () => {
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: 'Ontdek welke sets nu opvallen.',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Ontdek sets',
+          eyebrow: 'Brickhunt',
+          id: 'home-hero',
+          title: 'Welke set wil je?',
+          type: 'hero',
+        },
+      ],
+      seo: {
+        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
+        noIndex: false,
+        title: 'Brickhunt',
+      },
+    });
+    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
+    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
+    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
+    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
+    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
+    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
+    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
+    pageMocks.listHomepageSetCards.mockResolvedValue([
+      {
+        id: '10316',
+        name: 'The Lord of the Rings: Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'lord-of-the-rings-rivendell-10316',
+        theme: 'Icons',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('href="/#popular-to-follow"');
+    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sectionId: 'popular-to-follow',
+        title: 'Populair om te volgen',
       }),
     );
   });

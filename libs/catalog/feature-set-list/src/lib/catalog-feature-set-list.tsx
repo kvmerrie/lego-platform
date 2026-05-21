@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
@@ -23,6 +23,7 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 export function CatalogFeatureSetList({
   actionHref,
   actionLabel,
+  className,
   description = 'Grote sets die je plank én budget bepalen.',
 
   eyebrow = 'Pronkstukken',
@@ -31,11 +32,14 @@ export function CatalogFeatureSetList({
   setCards,
   showSignal = true,
   signalText,
+  style,
+  surfaceVariant = 'default',
   tone = 'muted',
   title = 'Torens, walkers, supercars',
 }: {
   actionHref?: string;
   actionLabel?: string;
+  className?: string;
   description?: string;
   eyebrow?: string;
   layout?: 'grid' | 'rail';
@@ -43,6 +47,8 @@ export function CatalogFeatureSetList({
   setCards?: readonly CatalogFeatureSetListItem[];
   showSignal?: boolean;
   signalText?: string;
+  style?: CSSProperties;
+  surfaceVariant?: 'default' | 'themed';
   tone?: 'default' | 'muted';
   title?: string;
 }) {
@@ -59,7 +65,7 @@ export function CatalogFeatureSetList({
   const sectionShellProps = {
     as: 'section' as const,
     bodySpacing: 'relaxed' as const,
-    className: styles.section,
+    className: [styles.section, className].filter(Boolean).join(' '),
     description,
     eyebrow,
     headingClassName: styles.header,
@@ -75,6 +81,7 @@ export function CatalogFeatureSetList({
     title,
     tone,
     action: actionLink,
+    style,
   };
 
   return layout === 'grid' ? (
@@ -111,6 +118,7 @@ export function CatalogFeatureSetList({
         setSummary: catalogSetSummary,
         trackingEvent: catalogSetSummary.trackingEvent,
       }))}
+      surfaceVariant={surfaceVariant}
       variant="featured"
     />
   );

@@ -95,6 +95,7 @@ const SIMILAR_SETS_RAIL_LIMIT = 20;
 const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT = 240;
 const SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS = 350;
+const SET_DETAIL_SIMILAR_RAIL_TIMEOUT_MS = 1_500;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
@@ -124,24 +125,31 @@ function getSetDetailStaticParamsLimit(): number {
     : SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT;
 }
 
-function isSetDetailProductionBuild(): boolean {
-  return process.env['NEXT_PHASE'] === 'phase-production-build';
-}
+export function buildSetDetailComparableRailStyle(
+  catalogSetDetail: CatalogSetDetail,
+): React.CSSProperties | undefined {
+  const backgroundColor =
+    catalogSetDetail.publicTheme?.surfaceColor ??
+    catalogSetDetail.publicTheme?.accentColor;
+  const textColor =
+    catalogSetDetail.publicTheme?.surfaceTextColor ??
+    catalogSetDetail.publicTheme?.heroTextColor;
 
-function shouldSkipSetDetailSsgOptionalRails(): boolean {
-  const explicitValue = process.env['SKIP_SET_DETAIL_SSG_OPTIONAL_RAILS']
-    ?.trim()
-    .toLowerCase();
-
-  if (explicitValue === 'false') {
-    return false;
+  if (!backgroundColor && !textColor) {
+    return undefined;
   }
 
-  if (explicitValue === 'true') {
-    return isSetDetailProductionBuild();
+  const railStyle: React.CSSProperties & Record<string, string> = {};
+
+  if (backgroundColor) {
+    railStyle['--article-theme-surface'] = backgroundColor;
   }
 
-  return isSetDetailProductionBuild();
+  if (textColor) {
+    railStyle['--article-theme-surface-text'] = textColor;
+  }
+
+  return railStyle;
 }
 
 function isSetPagePerfDebugEnabled(): boolean {
@@ -150,6 +158,10 @@ function isSetPagePerfDebugEnabled(): boolean {
 
 function isSetPagePerfVerboseEnabled(): boolean {
   return process.env['DEBUG_SET_PAGE_PERF_VERBOSE'] === 'true';
+}
+
+function isSetPageSimilarRailDebugEnabled(): boolean {
+  return process.env['DEBUG_SET_PAGE_SIMILAR_RAIL'] === 'true';
 }
 
 function getSetPagePerfNumber({
@@ -230,6 +242,16 @@ function logSetPagePerf({
     slug,
     status,
   });
+}
+
+function logSimilarSetRailDebug(
+  details: Readonly<Record<string, unknown>>,
+): void {
+  if (!isSetPageSimilarRailDebugEnabled()) {
+    return;
+  }
+
+  console.info('[set-page-similar-rail]', details);
 }
 
 function isSetPageAbortError(error: unknown): boolean {
@@ -2019,21 +2041,6 @@ async function SetDetailSimilarSetsRailSlot({
   catalogSetDetail: CatalogSetDetail;
   slug: string;
 }) {
-  if (shouldSkipSetDetailSsgOptionalRails()) {
-    logSetPagePerf({
-      details: {
-        build_mode_optional_rail_skipped_count: 1,
-        rail: 'similar-sets',
-      },
-      durationMs: 0,
-      label: 'similar-sets:rail',
-      slug,
-      status: 'timeout',
-    });
-
-    return null;
-  }
-
   return withSetPageOptionalTimeout({
     fallback: null,
     label: 'similar-sets:rail',
@@ -2045,10 +2052,11 @@ async function SetDetailSimilarSetsRailSlot({
         slug,
       }),
     slug,
+    timeoutMs: SET_DETAIL_SIMILAR_RAIL_TIMEOUT_MS,
   });
 }
 
-async function loadSetDetailSimilarSetsRail({
+export async function loadSetDetailSimilarSetsRail({
   bestPriceMinor,
   catalogSetDetail,
   signal,
@@ -2068,6 +2076,16 @@ async function loadSetDetailSimilarSetsRail({
     releaseYear: catalogSetDetail.releaseYear,
     theme: catalogSetDetail.theme,
   };
+
+  logSimilarSetRailDebug({
+    current_set_id: catalogSetDetail.id,
+    current_set_slug: catalogSetDetail.slug,
+    current_set_theme: catalogSetDetail.theme,
+    label: 'input',
+    page_slug: slug,
+    reference_best_price_minor: bestPriceMinor,
+  });
+
   const similarSetCandidateCards = await measureSetPageFetch({
     label: 'similar-sets:candidates',
     slug,
@@ -2080,29 +2098,13 @@ async function loadSetDetailSimilarSetsRail({
       }),
   });
 
-  throwIfSimilarRailAborted(signal);
-
-  const catalogDiscoverySignalBySetId = await measureSetPageFetch({
-    label: 'discovery-signals',
-    slug,
-    load: () =>
-      listCatalogDiscoverySignalsBySetId({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [
-            cacheTags.set(catalogSetDetail.id),
-            cacheTags.set(catalogSetDetail.slug),
-            ...similarSetCandidateCards.map((setCard) =>
-              cacheTags.set(setCard.id),
-            ),
-          ],
-        },
-        setIds: [
-          catalogSetDetail.id,
-          ...similarSetCandidateCards.map((setCard) => setCard.id),
-        ],
-        signal,
-      }),
+  logSimilarSetRailDebug({
+    candidate_count: similarSetCandidateCards.length,
+    candidate_sample: similarSetCandidateCards
+      .slice(0, 5)
+      .map((setCard) => setCard.id),
+    label: 'candidates',
+    page_slug: slug,
   });
 
   throwIfSimilarRailAborted(signal);
@@ -2113,43 +2115,33 @@ async function loadSetDetailSimilarSetsRail({
     load: () =>
       rankCatalogSimilarSetCards({
         currentSetCard,
-        getCatalogDiscoverySignalFn: (setId) =>
-          catalogDiscoverySignalBySetId.get(setId),
         limit: SIMILAR_SETS_RAIL_LIMIT,
         referenceBestPriceMinor: bestPriceMinor,
         setCards: similarSetCandidateCards,
       }),
   });
 
-  throwIfSimilarRailAborted(signal);
-
-  const similarSetCurrentOfferSummaryBySetId =
-    similarSetCards.length > 0
-      ? await measureSetPageFetch({
-          label: 'similar-sets:offers',
-          slug,
-          load: () =>
-            listCatalogCurrentOfferSummariesBySetIds({
-              cacheOptions: {
-                revalidateSeconds: revalidate,
-                tags: [
-                  cacheTags.prices(),
-                  ...similarSetCards.map((setCard) =>
-                    cacheTags.set(setCard.id),
-                  ),
-                ],
-              },
-              setIds: similarSetCards.map((setCard) => setCard.id),
-              signal,
-            }),
-        })
-      : new Map();
+  logSimilarSetRailDebug({
+    label: 'ranked',
+    page_slug: slug,
+    ranked_count: similarSetCards.length,
+    ranked_sample: similarSetCards.slice(0, 5).map((setCard) => setCard.id),
+  });
 
   throwIfSimilarRailAborted(signal);
 
   const similarSetRailItems = toSimilarSetRailItems({
-    currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
+    currentOfferSummaryBySetId: new Map(),
     setCards: similarSetCards,
+  });
+
+  logSimilarSetRailDebug({
+    final_rendered_count: similarSetRailItems.length,
+    final_rendered_sample: similarSetRailItems
+      .slice(0, 5)
+      .map((setCard) => setCard.id),
+    label: 'rendered',
+    page_slug: slug,
   });
 
   if (!similarSetRailItems.length) {
@@ -2158,13 +2150,16 @@ async function loadSetDetailSimilarSetsRail({
 
   return (
     <CatalogFeatureSetList
+      className={styles.comparableSetsRail}
       description={buildSimilarSetsRailDescription(catalogSetDetail.name)}
       eyebrow="Hierna kijken"
       sectionId="similar-sets"
       setCards={similarSetRailItems}
       signalText={`${similarSetRailItems.length} sets in ${catalogSetDetail.theme} met een vergelijkbare schaal of prijszone`}
-      tone="muted"
-      title="Vergelijkbare sets"
+      style={buildSetDetailComparableRailStyle(catalogSetDetail)}
+      surfaceVariant="themed"
+      tone="default"
+      title="Vergelijkbare LEGO sets"
     />
   );
 }

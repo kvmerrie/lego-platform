@@ -102,7 +102,7 @@ export function CatalogFeatureRecentlyViewed({
       padding="default"
       spacing="relaxed"
       title="Recent bekeken LEGO sets"
-      tone="plain"
+      tone="inverse"
       variant="featured"
     />
   );

@@ -335,6 +335,22 @@ export async function collectDealsSitemapEntries({
       allowIndexing,
       pathname: '/over-brickhunt',
     }),
+    createSitemapUrlEntry({
+      allowIndexing,
+      pathname: buildWebPath(webPathnames.contact),
+    }),
+    createSitemapUrlEntry({
+      allowIndexing,
+      pathname: buildWebPath(webPathnames.privacy),
+    }),
+    createSitemapUrlEntry({
+      allowIndexing,
+      pathname: buildWebPath(webPathnames.cookiePolicy),
+    }),
+    createSitemapUrlEntry({
+      allowIndexing,
+      pathname: buildWebPath(webPathnames.affiliateDisclosure),
+    }),
     ...editorialPages.map((editorialPage) =>
       editorialPage?.slug
         ? createSitemapUrlEntry({

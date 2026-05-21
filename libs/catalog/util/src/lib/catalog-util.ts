@@ -107,9 +107,13 @@ export interface CatalogThemeIdentity {
 }
 
 export interface CatalogPublicThemeReference {
+  accentColor?: string;
+  heroTextColor?: string;
   logoUrl?: string;
   name: string;
   slug: string;
+  surfaceColor?: string;
+  surfaceTextColor?: string;
 }
 
 export interface CatalogSetDetail extends CatalogSetSummary {
