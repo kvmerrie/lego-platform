@@ -276,6 +276,7 @@ Available feed commands:
 - `pnpm sync:lidl-feed`
 - `pnpm sync:alternate-feed`
 - `pnpm sync:awin-feed`
+- `pnpm sync:joybuy-feed`
 - `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:conrad-feed`
 - `pnpm sync:goodbricks-feed`
@@ -290,6 +291,7 @@ Recommended feed cadence:
 | Goodbricks       | Adtraction   | every 6 hours, offset from other jobs     | Trusted feed merchant; timestamp refreshes should keep rows current.  |
 | Alternate        | TradeTracker | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
 | Coolblue         | Awin         | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
+| Joybuy           | Awin         | every 6 hours, offset from other jobs     | Broad affiliate feed; strict LEGO filtering and unmatched reports.    |
 | Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
 | MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
 | MisterBricks     | Channable    | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
@@ -321,6 +323,30 @@ MediaMarkt job notes:
 - use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses EAN, MediaMarkt SKU, advertiser IDs, source product IDs, or TradeDoubler product IDs as LEGO set numbers
+
+Joybuy uses the Awin CSV feed with gzip compression and writes through the same
+strict affiliate importer as Coolblue. The sync streams CSV rows, keeps only
+strict LEGO construction-set candidates, filters videogames, software, books and
+accessories, and extracts set numbers only from human product fields.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:joybuy-feed
+```
+
+Recommended cadence:
+
+- every 6 hours, offset from the other Awin/feed jobs, for example `20 */6 * * *`
+
+Joybuy job notes:
+
+- keep `AWIN_JOYBUY_FEED_URL`, `AWIN_JOYBUY_MERCHANT_SLUG`, `AWIN_JOYBUY_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `pnpm sync:joybuy-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:joybuy-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/joybuy-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses `aw_product_id`, `merchant_product_id`, feed IDs, deeplink IDs, URLs or EAN-like identifiers as LEGO set numbers
 
 Coppenswarenhuis uses a TradeTracker XML feed and writes through the same strict
 affiliate importer. It keeps only LEGO construction-set candidates with a set

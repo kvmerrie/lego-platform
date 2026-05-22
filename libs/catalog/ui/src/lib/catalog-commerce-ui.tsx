@@ -345,7 +345,7 @@ export function CatalogKeyFacts({
   return (
     <LabelValueList
       appearance="hero"
-      className={styles.heroSpecsGrid}
+      className={styles.detailHeroMetaStrip}
       items={items}
       spacing="compact"
     />

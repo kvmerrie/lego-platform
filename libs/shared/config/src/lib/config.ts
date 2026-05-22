@@ -538,6 +538,12 @@ export const awinCoolblueEnvKeys = {
   merchantName: 'AWIN_COOLBLUE_MERCHANT_NAME',
 } as const;
 
+export const awinJoybuyEnvKeys = {
+  feedUrl: 'AWIN_JOYBUY_FEED_URL',
+  merchantSlug: 'AWIN_JOYBUY_MERCHANT_SLUG',
+  merchantName: 'AWIN_JOYBUY_MERCHANT_NAME',
+} as const;
+
 export const adtractionGoodbricksEnvKeys = {
   feedUrl: 'ADTRACTION_GOODBRICKS_FEED_URL',
   merchantSlug: 'ADTRACTION_GOODBRICKS_MERCHANT_SLUG',
@@ -624,6 +630,12 @@ export interface TradeTrackerConradFeedConfig {
 }
 
 export interface AwinCoolblueFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface AwinJoybuyFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -1551,6 +1563,21 @@ export function getAwinCoolblueFeedConfig(
   };
 }
 
+export function getAwinJoybuyFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AwinJoybuyFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: awinJoybuyEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[awinJoybuyEnvKeys.merchantSlug]?.trim() || 'joybuy',
+    merchantName:
+      environment[awinJoybuyEnvKeys.merchantName]?.trim() || 'Joybuy',
+  };
+}
+
 export function getAdtractionGoodbricksFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): AdtractionGoodbricksFeedConfig {
@@ -1612,6 +1639,20 @@ export function getMissingAwinCoolblueEnvKeys(
   return environment[awinCoolblueEnvKeys.feedUrl]
     ? []
     : [awinCoolblueEnvKeys.feedUrl];
+}
+
+export function hasAwinJoybuyFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[awinJoybuyEnvKeys.feedUrl]);
+}
+
+export function getMissingAwinJoybuyEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[awinJoybuyEnvKeys.feedUrl]
+    ? []
+    : [awinJoybuyEnvKeys.feedUrl];
 }
 
 export function hasAdtractionGoodbricksFeedConfig(

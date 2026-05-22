@@ -1324,9 +1324,64 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/themes/harry-potter"');
     expect(markup).toContain('aria-label="Bekijk Harry Potter"');
     expect(markup).toContain('alt="Harry Potter logo"');
+    expect(markup).toContain('detailHeroMetaStrip');
+    expect(markup.indexOf('data-label-value-id="theme-logo"')).toBeLessThan(
+      markup.indexOf('data-label-value-id="piece-count"'),
+    );
     expect(
       markup.indexOf('src="/themes/logos/harry-potter_logo.png"'),
     ).toBeLessThan(markup.indexOf('4.803'));
+  });
+
+  it('keeps set-detail logo and specs in one compact metadata strip', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const metadataStripRule =
+      css.match(/\.detailHeroMetaStrip \{[^}]+\}/u)?.[0] ?? '';
+    const railWrapperRule =
+      css.match(
+        /\.detailHeroRail,\n\s+\.detailHeroRailInner \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailHeroContentRule =
+      css.match(/\.detailHeroContent \{[^}]+\}/u)?.[0] ?? '';
+    const detailHeroSpecsRule =
+      css.match(/\.detailHeroSpecs \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(css).toContain('.detailHeroMetaStrip {');
+    expect(css).toContain('.heroThemeLogo {');
+    expect(css).toContain('object-fit: contain;');
+    expect(railWrapperRule).toContain('display: contents;');
+    expect(detailHeroContentRule).toContain('order: 2;');
+    expect(detailHeroSpecsRule).toContain('order: 3;');
+    expect(metadataStripRule).toContain('display: grid;');
+    expect(metadataStripRule).toContain(
+      'grid-template-columns: minmax(4.5rem, min(8rem, 34vw)) repeat(',
+    );
+    expect(metadataStripRule).toContain('minmax(0, 1fr)');
+    expect(metadataStripRule).toContain('justify-content: stretch;');
+    expect(css).toContain(
+      ".detailHeroMetaStrip > [data-label-value-id='theme-logo'] {",
+    );
+    expect(css).toContain('flex: 0 0 auto;');
+    expect(css).toContain('min-inline-size: 0;');
+    expect(css).toContain(
+      ".detailHeroMetaStrip > [data-label-value-id='release'] {",
+    );
+    expect(css).toContain('display: none;');
+    expect(css).toContain(
+      '--hero-theme-logo-max-inline-size: min(8rem, 34vw);',
+    );
+    expect(css).toContain('max-width: 128px;');
+    expect(css).toContain('@media (min-width: 48rem)');
+    expect(css).toContain('grid-template-columns: repeat(5, max-content);');
+    expect(css).toContain('justify-content: center;');
+    expect(css).toContain('@media (min-width: 64rem)');
+    expect(css).toContain('grid-template-columns: repeat(5, max-content);');
+    expect(css).toContain('@media (min-width: 72rem)');
+    expect(css).toContain('justify-content: flex-start;');
+    expect(css).toContain('display: grid;');
   });
 
   it('keeps the theme logo non-clickable when the theme href is not valid', () => {

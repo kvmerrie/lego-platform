@@ -4,6 +4,7 @@ import {
   articlePreviewEnvKeys,
   getAdtractionGoodbricksFeedConfig,
   getAwinCoolblueFeedConfig,
+  getAwinJoybuyFeedConfig,
   getAdminPromotionConfig,
   buildArticlePath,
   buildCanonicalUrl,
@@ -16,6 +17,7 @@ import {
   getMissingAdtractionGoodbricksEnvKeys,
   getMissingAdminPromotionEnvKeys,
   getMissingAwinCoolblueEnvKeys,
+  getMissingAwinJoybuyEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
@@ -49,6 +51,7 @@ import {
   hasAdtractionGoodbricksFeedConfig,
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
+  hasAwinJoybuyFeedConfig,
   hasBrowserSupabaseConfig,
   hasMisterBricksFeedConfig,
   hasPublicWebRevalidationConfig,
@@ -675,6 +678,47 @@ describe('shared config Awin Coolblue feed helpers', () => {
 
     expect(hasAwinCoolblueFeedConfig()).toBe(false);
     expect(getMissingAwinCoolblueEnvKeys()).toEqual(['AWIN_COOLBLUE_FEED_URL']);
+  });
+});
+
+describe('shared config Awin Joybuy feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Awin Joybuy feed config with sensible merchant defaults', () => {
+    process.env.AWIN_JOYBUY_FEED_URL =
+      'https://feeds.awin.example/joybuy.csv.gz';
+
+    expect(hasAwinJoybuyFeedConfig()).toBe(true);
+    expect(getMissingAwinJoybuyEnvKeys()).toEqual([]);
+    expect(getAwinJoybuyFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/joybuy.csv.gz',
+      merchantSlug: 'joybuy',
+      merchantName: 'Joybuy',
+    });
+  });
+
+  test('allows explicit Joybuy merchant overrides for the Awin feed config', () => {
+    process.env.AWIN_JOYBUY_FEED_URL =
+      'https://feeds.awin.example/joybuy.csv.gz';
+    process.env.AWIN_JOYBUY_MERCHANT_SLUG = 'joybuy-nl';
+    process.env.AWIN_JOYBUY_MERCHANT_NAME = 'Joybuy Nederland';
+
+    expect(getAwinJoybuyFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/joybuy.csv.gz',
+      merchantSlug: 'joybuy-nl',
+      merchantName: 'Joybuy Nederland',
+    });
+  });
+
+  test('reports the missing Awin Joybuy feed URL', () => {
+    delete process.env.AWIN_JOYBUY_FEED_URL;
+
+    expect(hasAwinJoybuyFeedConfig()).toBe(false);
+    expect(getMissingAwinJoybuyEnvKeys()).toEqual(['AWIN_JOYBUY_FEED_URL']);
   });
 });
 

@@ -8,9 +8,9 @@ import {
 } from './awin-coolblue-sync-server';
 
 describe('Awin Coolblue sync server', () => {
-  test('parses CSV rows safely, including quoted commas and escaped quotes', () => {
+  test('parses CSV rows safely, including quoted commas and escaped quotes', async () => {
     const rows =
-      parseAwinCoolblueProductFeedCsv(`product_name,description,mpn,search_price,currency,aw_deep_link
+      await parseAwinCoolblueProductFeedCsv(`product_name,description,mpn,search_price,currency,aw_deep_link
 "LEGO City, Arctic Explorer Ship","Display set with ""quoted"" text",60368,114.99,EUR,https://awin.example/60368
 `);
 
