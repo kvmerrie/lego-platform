@@ -29,6 +29,40 @@
     row-gap: 0;
   }
 
+  .setCardMobileLayoutToggle {
+    align-items: center;
+    display: flex;
+    gap: var(--lego-space-1);
+    justify-content: flex-end;
+    margin-block-end: var(--lego-space-2);
+    padding-inline: var(--catalog-section-inline-padding, 0px);
+  }
+
+  .setCardMobileLayoutButton {
+    background: var(--lego-surface-default);
+    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border-radius: var(--lego-radius-pill);
+    color: var(--lego-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-semibold);
+    line-height: 1;
+    min-height: 2.2rem;
+    padding: 0 var(--lego-space-3);
+  }
+
+  .setCardMobileLayoutButton[aria-pressed='true'] {
+    background: var(--lego-accent);
+    border-color: transparent;
+    color: var(--lego-accent-contrast);
+  }
+
+  .setCardMobileLayoutButton:focus-visible {
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: 2px;
+  }
+
   .setCardCollectionRail {
     gap: var(--lego-space-2);
   }
@@ -2848,6 +2882,61 @@
     display: none;
   }
 
+  .setCardRailSkeletonSection {
+    min-block-size: clamp(21rem, 52vw, 28rem);
+  }
+
+  .setCardRailSkeletonTrack {
+    display: grid;
+    gap: var(--catalog-rail-card-gap);
+    grid-auto-columns: calc(
+      (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5
+    );
+    grid-auto-flow: column;
+    margin: 0;
+    overflow: hidden;
+    padding-inline: var(--catalog-rail-inline-padding);
+  }
+
+  .setCardRailSkeletonCard {
+    background: color-mix(
+      in srgb,
+      var(--lego-surface-muted) 74%,
+      var(--lego-surface-default) 26%
+    );
+    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border-radius: var(--lego-radius-sm);
+    display: grid;
+    gap: var(--lego-space-2);
+    min-block-size: 16.75rem;
+    padding: var(--lego-space-3);
+  }
+
+  .setCardRailSkeletonImage,
+  .setCardRailSkeletonLine,
+  .setCardRailSkeletonLineShort {
+    background: color-mix(
+      in srgb,
+      var(--lego-border-subtle) 74%,
+      transparent 26%
+    );
+    border-radius: var(--lego-radius-xs);
+  }
+
+  .setCardRailSkeletonImage {
+    aspect-ratio: 1 / 1;
+  }
+
+  .setCardRailSkeletonLine {
+    block-size: 0.82rem;
+    inline-size: 88%;
+  }
+
+  .setCardRailSkeletonLineShort {
+    block-size: 0.82rem;
+    inline-size: 58%;
+  }
+
   .setCardRailScrollbar {
     background: color-mix(
       in srgb,
@@ -3238,9 +3327,19 @@
         (100% - (var(--catalog-rail-card-gap) * 1.85)) / 2.25
       );
     }
+
+    .setCardRailSkeletonTrack {
+      grid-auto-columns: calc(
+        (100% - (var(--catalog-rail-card-gap) * 1.85)) / 2.25
+      );
+    }
   }
 
   @media (min-width: 48rem) {
+    .setCardMobileLayoutToggle {
+      display: none;
+    }
+
     .setCardCollectionBrowse {
       border-left: var(--catalog-browse-grid-inline-border-size) solid
         var(--catalog-browse-grid-divider-color);
@@ -3256,10 +3355,20 @@
         (100% - (var(--catalog-rail-card-gap) * 1.85)) / 3.25
       );
     }
+
+    .setCardRailSkeletonTrack {
+      grid-auto-columns: calc(
+        (100% - (var(--catalog-rail-card-gap) * 1.85)) / 3.25
+      );
+    }
   }
 
   @media (min-width: 72rem) {
     .setCardRailTrack {
+      grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 4)) / 5);
+    }
+
+    .setCardRailSkeletonTrack {
       grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 4)) / 5);
     }
   }
@@ -3471,6 +3580,69 @@
   }
 
   @media (max-width: 47.999rem) {
+    .setCardCollectionBrowse.setCardCollectionMobileOneColumn {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileOneColumn > .setCard {
+      grid-column: 1 / -1;
+      inline-size: 100%;
+      max-inline-size: none;
+      min-inline-size: 0;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileOneColumn
+      > .setCardCompact
+      > .setCardLink {
+      gap: 0.65rem;
+      padding: 0.82rem;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileOneColumn
+      > .setCardCompact
+      > .setCardLink
+      > .setVisual {
+      min-height: clamp(12rem, 64vw, 18rem);
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn > .setCard {
+      grid-column: auto;
+      inline-size: 100%;
+      min-inline-size: 0;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCardCompact
+      > .setCardLink {
+      gap: 0.48rem;
+      padding: 0.62rem;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCardCompact
+      > .setCardLink
+      > .setVisual {
+      min-height: clamp(7.1rem, 34vw, 9rem);
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn .cardBadgeRow,
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn .cardMetaRow {
+      gap: 0.32rem;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn .cardTitle {
+      font-size: clamp(0.86rem, 3.45vw, 0.98rem);
+      line-height: 1.14;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn .cardMetaText {
+      font-size: clamp(0.68rem, 2.9vw, 0.76rem);
+    }
+
     .heroVisual {
       border-radius: 0;
       margin-inline: calc(50% - 50vw);

@@ -8,6 +8,7 @@ import {
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
+  CatalogSetCardRailSkeletonSection,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -41,33 +42,59 @@ export function CatalogFeatureRecentlyViewed({
 }: {
   currentSetNum?: string;
 }) {
+  const [hasCheckedRecentlyViewed, setHasCheckedRecentlyViewed] =
+    useState(false);
   const [setCards, setSetCards] = useState<readonly CatalogHomepageSetCard[]>(
     [],
   );
 
   useEffect(() => {
     let isMounted = true;
+    setHasCheckedRecentlyViewed(false);
     const recentlyViewedSetNums = getRecentlyViewedSetNums()
       .filter((setNum) => setNum !== currentSetNum)
       .slice(0, RECENTLY_VIEWED_RAIL_LIMIT);
 
     if (recentlyViewedSetNums.length < RECENTLY_VIEWED_RAIL_MIN_ITEMS) {
       setSetCards([]);
+      setHasCheckedRecentlyViewed(true);
       return;
     }
 
     void listCatalogSetCardsByIdsForBrowser({
       canonicalIds: recentlyViewedSetNums,
-    }).then((catalogSetCards) => {
-      if (isMounted) {
-        setSetCards(catalogSetCards);
-      }
-    });
+    }).then(
+      (catalogSetCards) => {
+        if (isMounted) {
+          setSetCards(catalogSetCards);
+          setHasCheckedRecentlyViewed(true);
+        }
+      },
+      () => {
+        if (isMounted) {
+          setSetCards([]);
+          setHasCheckedRecentlyViewed(true);
+        }
+      },
+    );
 
     return () => {
       isMounted = false;
     };
   }, [currentSetNum]);
+
+  if (!hasCheckedRecentlyViewed) {
+    return (
+      <CatalogSetCardRailSkeletonSection
+        ariaLabel="Recent bekeken LEGO sets laden"
+        description="Sets waar je net naar keek verschijnen hier zodra je browserlijst is geladen."
+        eyebrow="Verder vergelijken"
+        itemCount={4}
+        title="Recent bekeken LEGO sets"
+        tone="inverse"
+      />
+    );
+  }
 
   if (setCards.length < RECENTLY_VIEWED_RAIL_MIN_ITEMS) {
     return null;

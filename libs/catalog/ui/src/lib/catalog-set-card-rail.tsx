@@ -679,3 +679,81 @@ export function CatalogSetCardRailSection({
     />
   );
 }
+
+export function CatalogSetCardRailSkeletonSection({
+  ariaLabel,
+  className,
+  description,
+  eyebrow,
+  itemCount = 4,
+  mobileOverflowBleed = false,
+  mobileOverflowBleedUntil = 'mobile',
+  signal,
+  surfaceVariant = 'default',
+  title,
+  tone = surfaceVariant === 'themed' ? 'default' : 'plain',
+}: Pick<
+  ComponentProps<typeof CatalogSectionShell>,
+  'description' | 'eyebrow' | 'signal' | 'title' | 'tone'
+> & {
+  ariaLabel: string;
+  className?: string;
+  itemCount?: number;
+  mobileOverflowBleed?: boolean;
+  mobileOverflowBleedUntil?: 'mobile' | 'page' | 'tablet';
+  surfaceVariant?: 'default' | 'themed';
+}) {
+  const skeletonItems = Array.from(
+    { length: Math.max(1, itemCount) },
+    (_, index) => index,
+  );
+
+  return (
+    <CatalogSectionShell
+      aria-label={ariaLabel}
+      className={[
+        className,
+        styles.setCardRailSkeletonSection,
+        mobileOverflowBleed && mobileOverflowBleedUntil === 'tablet'
+          ? styles.setCardRailSectionTabletBleed
+          : mobileOverflowBleed && mobileOverflowBleedUntil === 'page'
+            ? styles.setCardRailSectionPageBleed
+            : '',
+        surfaceVariant === 'themed' ? styles.setCardRailSectionThemed : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      description={description}
+      eyebrow={eyebrow}
+      signal={signal}
+      title={title}
+      tone={tone}
+    >
+      <div
+        aria-hidden="true"
+        className={[
+          styles.setCardRail,
+          mobileOverflowBleed
+            ? mobileOverflowBleedUntil === 'page'
+              ? styles.setCardRailPageBleed
+              : mobileOverflowBleedUntil === 'tablet'
+                ? styles.setCardRailTabletBleed
+                : styles.setCardRailMobileBleed
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <div className={styles.setCardRailSkeletonTrack}>
+          {skeletonItems.map((index) => (
+            <div className={styles.setCardRailSkeletonCard} key={index}>
+              <div className={styles.setCardRailSkeletonImage} />
+              <div className={styles.setCardRailSkeletonLine} />
+              <div className={styles.setCardRailSkeletonLineShort} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </CatalogSectionShell>
+  );
+}

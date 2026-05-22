@@ -15,6 +15,7 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import {
+  alignPriceHistoryWithCurrentOffer,
   buildBrickhuntValueItems,
   buildSetDecisionPresentation,
   buildSetDecisionSupportItems,
@@ -1047,6 +1048,134 @@ describe('pricing data access', () => {
         ],
       }),
     ).toBeUndefined();
+  });
+
+  test('appends the live current offer when stored history is behind', () => {
+    expect(
+      alignPriceHistoryWithCurrentOffer({
+        currentOffer: {
+          setId: '75446',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          merchantId: 'coolblue',
+          observedAt: '2026-05-22T09:21:00.000Z',
+          priceMinor: 8900,
+        },
+        priceHistoryPoints: [
+          {
+            setId: '75446',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 12499,
+            lowestMerchantId: 'misterbricks',
+            observedAt: '2026-05-21T08:00:00.000Z',
+            recordedOn: '2026-05-21',
+          },
+        ],
+        priceHistorySummaryState: {
+          pointCount: 1,
+          trackedPriceSummary: {
+            currencyCode: 'EUR',
+            currentHeadlinePriceMinor: 12499,
+            deltaVsTrackedHighMinor: 0,
+            deltaVsTrackedLowMinor: 0,
+            pointCount: 1,
+            trackedHighPriceMinor: 12499,
+            trackedLowPriceMinor: 12499,
+            trackedSinceRecordedOn: '2026-05-21',
+          },
+        },
+      }),
+    ).toMatchObject({
+      diagnostics: {
+        action: 'appended_current_offer',
+        currentBestOfferMerchantId: 'coolblue',
+        currentBestOfferPriceMinor: 8900,
+        latestHistoryMerchantId: 'misterbricks',
+        latestHistoryPriceMinor: 12499,
+        setId: '75446',
+      },
+      priceHistoryPoints: [
+        { headlinePriceMinor: 12499, lowestMerchantId: 'misterbricks' },
+        { headlinePriceMinor: 8900, lowestMerchantId: 'coolblue' },
+      ],
+      priceHistorySummaryState: {
+        pointCount: 2,
+        priceHistorySummary: {
+          currentHeadlinePriceMinor: 8900,
+          lowPriceMinor: 8900,
+          highPriceMinor: 12499,
+          pointCount: 2,
+        },
+        trackedPriceSummary: {
+          currentHeadlinePriceMinor: 8900,
+          trackedLowPriceMinor: 8900,
+          trackedHighPriceMinor: 12499,
+          pointCount: 2,
+        },
+      },
+    });
+  });
+
+  test('replaces a same-day stored history point with the live current winner', () => {
+    const result = alignPriceHistoryWithCurrentOffer({
+      currentOffer: {
+        setId: '75446',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        merchantId: 'coolblue',
+        observedAt: '2026-05-22T09:21:00.000Z',
+        priceMinor: 8900,
+      },
+      priceHistoryPoints: [
+        {
+          setId: '75446',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          headlinePriceMinor: 12499,
+          lowestMerchantId: 'misterbricks',
+          observedAt: '2026-05-22T08:00:00.000Z',
+          recordedOn: '2026-05-22',
+        },
+      ],
+      priceHistorySummaryState: {
+        pointCount: 1,
+        trackedPriceSummary: {
+          currencyCode: 'EUR',
+          currentHeadlinePriceMinor: 12499,
+          deltaVsTrackedHighMinor: 0,
+          deltaVsTrackedLowMinor: 0,
+          pointCount: 1,
+          trackedHighPriceMinor: 12499,
+          trackedLowPriceMinor: 12499,
+          trackedSinceRecordedOn: '2026-05-22',
+        },
+      },
+    });
+
+    expect(result.diagnostics.action).toBe('replaced_latest_same_day');
+    expect(result.priceHistoryPoints).toEqual([
+      {
+        setId: '75446',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 8900,
+        lowestMerchantId: 'coolblue',
+        observedAt: '2026-05-22T09:21:00.000Z',
+        recordedOn: '2026-05-22',
+      },
+    ]);
+    expect(result.priceHistorySummaryState?.trackedPriceSummary).toMatchObject({
+      currentHeadlinePriceMinor: 8900,
+      trackedLowPriceMinor: 8900,
+      trackedHighPriceMinor: 12499,
+      pointCount: 1,
+    });
   });
 
   test('builds tracked price context from the full stored history slice', () => {

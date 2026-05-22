@@ -13,6 +13,7 @@ import {
   CatalogFeatureThemeRelatedArticles,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
+import { CatalogSetCardRailSkeletonSection } from '@lego-platform/catalog/ui';
 import { listPublishedArticles } from '@lego-platform/content/data-access';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import {
@@ -532,7 +533,18 @@ export default async function ThemePage({
       <CatalogFeatureThemePage
         currentPage={currentPage}
         dealRail={
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <CatalogSetCardRailSkeletonSection
+                ariaLabel={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name} laden`}
+                description={`We halen actuele ${themePage.themeSnapshot.name}-prijzen op voor deze rail.`}
+                eyebrow="Nu interessant"
+                itemCount={5}
+                title={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name}`}
+                tone="inverse"
+              />
+            }
+          >
             <ThemeDealRailSlot slug={slug} themePage={themePage} />
           </Suspense>
         }

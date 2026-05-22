@@ -29,12 +29,13 @@ import {
   CatalogFeatureRecentlyViewed,
   CatalogRecentlyViewedSetTracker,
 } from '@lego-platform/catalog/feature-recently-viewed';
-import type {
-  CatalogSetDetailBestDeal,
-  CatalogSetDetailOfferItem,
-  CatalogSetDetailSupportItem,
-  CatalogSetDetailTrustSignal,
-  CatalogSetDetailVerdict,
+import {
+  CatalogSetCardRailSkeletonSection,
+  type CatalogSetDetailBestDeal,
+  type CatalogSetDetailOfferItem,
+  type CatalogSetDetailSupportItem,
+  type CatalogSetDetailTrustSignal,
+  type CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
 import { normalizeTheme } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
@@ -1959,6 +1960,19 @@ export default async function SetDetailPage({
         }
         priceHistoryPanel={
           <PricingFeaturePriceHistory
+            currentOffer={
+              hasLiveCurrentOffer && bestOffer
+                ? {
+                    condition: bestOffer.condition,
+                    currencyCode: bestOffer.currency,
+                    merchantId: bestOffer.merchant,
+                    observedAt: bestOffer.checkedAt,
+                    priceMinor: bestOffer.priceCents,
+                    regionCode: bestOffer.market,
+                    setId: catalogSetDetail.id,
+                  }
+                : undefined
+            }
             hasCurrentOffer={hasLiveCurrentOffer}
             merchantCount={
               trackedMerchantCount > 0 ? trackedMerchantCount : undefined
@@ -1971,7 +1985,18 @@ export default async function SetDetailPage({
           <CatalogFeatureRecentlyViewed currentSetNum={catalogSetDetail.id} />
         }
         similarSetsRail={
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <CatalogSetCardRailSkeletonSection
+                ariaLabel="Vergelijkbare LEGO sets laden"
+                description="We zoeken sets met dezelfde sfeer, schaal of prijszone."
+                eyebrow="Hierna kijken"
+                itemCount={5}
+                title="Vergelijkbare LEGO sets"
+                tone="muted"
+              />
+            }
+          >
             <SetDetailSimilarSetsRailSlot
               bestPriceMinor={
                 bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor

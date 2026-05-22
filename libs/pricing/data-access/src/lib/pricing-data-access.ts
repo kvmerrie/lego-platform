@@ -338,6 +338,36 @@ export interface PriceHistorySummaryState {
   trackedPriceSummary?: TrackedPriceSummary;
 }
 
+export interface CurrentOfferPriceHistoryPointInput {
+  condition: PriceHistoryPoint['condition'];
+  currencyCode: PriceHistoryPoint['currencyCode'];
+  merchantId?: string;
+  observedAt: string;
+  priceMinor: number;
+  regionCode: PriceHistoryPoint['regionCode'];
+  setId: string;
+}
+
+export interface CurrentOfferPriceHistoryAlignmentDiagnostics {
+  action:
+    | 'appended_current_offer'
+    | 'replaced_latest_same_day'
+    | 'skipped_invalid_current_offer'
+    | 'unchanged';
+  currentBestOfferMerchantId?: string;
+  currentBestOfferPriceMinor?: number;
+  latestHistoryMerchantId?: string;
+  latestHistoryPriceMinor?: number;
+  latestHistoryRecordedOn?: string;
+  setId: string;
+}
+
+export interface CurrentOfferPriceHistoryAlignmentResult {
+  diagnostics: CurrentOfferPriceHistoryAlignmentDiagnostics;
+  priceHistoryPoints: PriceHistoryPoint[];
+  priceHistorySummaryState?: PriceHistorySummaryState;
+}
+
 export function buildSetDealVerdict(
   pricePanelSnapshot?: Pick<
     PricePanelSnapshot,
@@ -965,6 +995,183 @@ export function buildTrackedPriceSummary({
     trackedHighPriceMinor,
     trackedLowPriceMinor,
     trackedSinceRecordedOn: firstPriceHistoryPoint.recordedOn,
+  };
+}
+
+function normalizeCurrentOfferPriceHistoryPoint(
+  currentOffer?: CurrentOfferPriceHistoryPointInput,
+): PriceHistoryPoint | undefined {
+  if (
+    !currentOffer ||
+    currentOffer.regionCode !== DUTCH_REGION_CODE ||
+    currentOffer.currencyCode !== EURO_CURRENCY_CODE ||
+    currentOffer.condition !== NEW_OFFER_CONDITION ||
+    !Number.isInteger(currentOffer.priceMinor) ||
+    currentOffer.priceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  const recordedOn = getRecordedOnFromTimestamp(currentOffer.observedAt);
+
+  if (!recordedOn) {
+    return undefined;
+  }
+
+  return {
+    setId: normalizeCatalogSetId(currentOffer.setId),
+    regionCode: DUTCH_REGION_CODE,
+    currencyCode: EURO_CURRENCY_CODE,
+    condition: NEW_OFFER_CONDITION,
+    headlinePriceMinor: currentOffer.priceMinor,
+    lowestMerchantId: currentOffer.merchantId,
+    observedAt: currentOffer.observedAt,
+    recordedOn,
+  };
+}
+
+function buildAlignedTrackedPriceSummary({
+  action,
+  alignedPriceHistoryPoints,
+  currentHeadlinePriceMinor,
+  previousSummaryState,
+}: {
+  action: CurrentOfferPriceHistoryAlignmentDiagnostics['action'];
+  alignedPriceHistoryPoints: readonly PriceHistoryPoint[];
+  currentHeadlinePriceMinor: number;
+  previousSummaryState?: PriceHistorySummaryState;
+}): TrackedPriceSummary | undefined {
+  const previousTrackedPriceSummary = previousSummaryState?.trackedPriceSummary;
+
+  if (!previousTrackedPriceSummary) {
+    return buildTrackedPriceSummary({
+      currentHeadlinePriceMinor,
+      priceHistoryPoints: alignedPriceHistoryPoints,
+    });
+  }
+
+  const trackedLowPriceMinor = Math.min(
+    previousTrackedPriceSummary.trackedLowPriceMinor,
+    currentHeadlinePriceMinor,
+  );
+  const trackedHighPriceMinor = Math.max(
+    previousTrackedPriceSummary.trackedHighPriceMinor,
+    currentHeadlinePriceMinor,
+  );
+  const pointCount =
+    action === 'appended_current_offer'
+      ? previousTrackedPriceSummary.pointCount + 1
+      : previousTrackedPriceSummary.pointCount;
+
+  return {
+    ...previousTrackedPriceSummary,
+    currentHeadlinePriceMinor,
+    deltaVsTrackedHighMinor: currentHeadlinePriceMinor - trackedHighPriceMinor,
+    deltaVsTrackedLowMinor: currentHeadlinePriceMinor - trackedLowPriceMinor,
+    pointCount,
+    trackedHighPriceMinor,
+    trackedLowPriceMinor,
+  };
+}
+
+export function alignPriceHistoryWithCurrentOffer({
+  currentOffer,
+  priceHistoryPoints,
+  priceHistorySummaryState,
+}: {
+  currentOffer?: CurrentOfferPriceHistoryPointInput;
+  priceHistoryPoints: readonly PriceHistoryPoint[];
+  priceHistorySummaryState?: PriceHistorySummaryState;
+}): CurrentOfferPriceHistoryAlignmentResult {
+  const normalizedCurrentOffer =
+    normalizeCurrentOfferPriceHistoryPoint(currentOffer);
+  const latestHistoryPoint = priceHistoryPoints.at(-1);
+  const setId = normalizeCatalogSetId(
+    currentOffer?.setId ?? latestHistoryPoint?.setId ?? '',
+  );
+
+  const baseDiagnostics = {
+    currentBestOfferMerchantId: currentOffer?.merchantId,
+    currentBestOfferPriceMinor: currentOffer?.priceMinor,
+    latestHistoryMerchantId: latestHistoryPoint?.lowestMerchantId,
+    latestHistoryPriceMinor: latestHistoryPoint?.headlinePriceMinor,
+    latestHistoryRecordedOn: latestHistoryPoint?.recordedOn,
+    setId,
+  };
+
+  if (!normalizedCurrentOffer) {
+    return {
+      diagnostics: {
+        ...baseDiagnostics,
+        action: currentOffer ? 'skipped_invalid_current_offer' : 'unchanged',
+      },
+      priceHistoryPoints: [...priceHistoryPoints],
+      priceHistorySummaryState,
+    };
+  }
+
+  const existingSameDayPointIndex = priceHistoryPoints.findIndex(
+    (priceHistoryPoint) =>
+      priceHistoryPoint.recordedOn === normalizedCurrentOffer.recordedOn,
+  );
+  const existingSameDayPoint =
+    existingSameDayPointIndex >= 0
+      ? priceHistoryPoints[existingSameDayPointIndex]
+      : undefined;
+
+  let action: CurrentOfferPriceHistoryAlignmentDiagnostics['action'] =
+    'unchanged';
+  let alignedPriceHistoryPoints = [...priceHistoryPoints];
+
+  if (
+    existingSameDayPoint &&
+    (existingSameDayPoint.headlinePriceMinor !==
+      normalizedCurrentOffer.headlinePriceMinor ||
+      existingSameDayPoint.lowestMerchantId !==
+        normalizedCurrentOffer.lowestMerchantId)
+  ) {
+    alignedPriceHistoryPoints = alignedPriceHistoryPoints.map(
+      (priceHistoryPoint, index) =>
+        index === existingSameDayPointIndex
+          ? normalizedCurrentOffer
+          : priceHistoryPoint,
+    );
+    action = 'replaced_latest_same_day';
+  } else if (!existingSameDayPoint) {
+    alignedPriceHistoryPoints = [
+      ...alignedPriceHistoryPoints,
+      normalizedCurrentOffer,
+    ].sort((left, right) => left.recordedOn.localeCompare(right.recordedOn));
+    action = 'appended_current_offer';
+  }
+
+  const currentHeadlinePriceMinor = normalizedCurrentOffer.headlinePriceMinor;
+  const nextPriceHistorySummaryState: PriceHistorySummaryState = {
+    pointCount: alignedPriceHistoryPoints.length,
+    priceHistorySummary: buildPriceHistorySummary({
+      currentHeadlinePriceMinor,
+      priceHistoryPoints: alignedPriceHistoryPoints.slice(-30),
+    }),
+    trackedPriceSummary: buildAlignedTrackedPriceSummary({
+      action,
+      alignedPriceHistoryPoints,
+      currentHeadlinePriceMinor,
+      previousSummaryState: priceHistorySummaryState,
+    }),
+  };
+
+  return {
+    diagnostics: {
+      ...baseDiagnostics,
+      action,
+      currentBestOfferMerchantId: normalizedCurrentOffer.lowestMerchantId,
+      currentBestOfferPriceMinor: normalizedCurrentOffer.headlinePriceMinor,
+      latestHistoryMerchantId: latestHistoryPoint?.lowestMerchantId,
+      latestHistoryPriceMinor: latestHistoryPoint?.headlinePriceMinor,
+      latestHistoryRecordedOn: latestHistoryPoint?.recordedOn,
+    },
+    priceHistoryPoints: alignedPriceHistoryPoints.slice(-30),
+    priceHistorySummaryState: nextPriceHistorySummaryState,
   };
 }
 

@@ -61,6 +61,7 @@ import {
   buildBrickhuntAnalyticsAttributes,
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
+import { CatalogSetCardCollectionBrowseMobileLayout } from './catalog-set-card-mobile-layout';
 import styles from './catalog-ui.module.css';
 
 export {
@@ -155,28 +156,41 @@ export const CatalogSetCardCollection = forwardRef<
   },
   ref,
 ) {
+  const isBrowseGrid = layout === 'grid' && gridMode === 'browse';
+  const collectionClassName = [
+    styles.setCardCollection,
+    isBrowseGrid ? styles.setCardCollectionBrowse : null,
+    layout === 'rail' ? styles.setCardCollectionRail : null,
+    variant === 'compact'
+      ? styles.setCardCollectionCompact
+      : styles.setCardCollectionFeatured,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const collectionProps = {
+    'data-catalog-set-card-collection': 'true',
+    'data-catalog-set-card-collection-grid-mode': gridMode,
+    'data-catalog-set-card-collection-layout': layout,
+    'data-catalog-set-card-collection-variant': variant,
+    ...rest,
+  };
+
+  if (isBrowseGrid) {
+    return (
+      <CatalogSetCardCollectionBrowseMobileLayout
+        className={collectionClassName}
+        ref={ref}
+        {...collectionProps}
+      >
+        {children}
+      </CatalogSetCardCollectionBrowseMobileLayout>
+    );
+  }
+
   return (
-    <div
-      className={[
-        styles.setCardCollection,
-        layout === 'grid' && gridMode === 'browse'
-          ? styles.setCardCollectionBrowse
-          : null,
-        layout === 'rail' ? styles.setCardCollectionRail : null,
-        variant === 'compact'
-          ? styles.setCardCollectionCompact
-          : styles.setCardCollectionFeatured,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      data-catalog-set-card-collection="true"
-      data-catalog-set-card-collection-grid-mode={gridMode}
-      data-catalog-set-card-collection-layout={layout}
-      data-catalog-set-card-collection-variant={variant}
-      ref={ref}
-      {...rest}
-    >
+    <div className={collectionClassName} ref={ref} {...collectionProps}>
       {children}
     </div>
   );

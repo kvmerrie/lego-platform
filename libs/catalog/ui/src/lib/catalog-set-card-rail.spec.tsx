@@ -7,6 +7,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CatalogSetCardRail,
+  CatalogSetCardRailSkeletonSection,
   CatalogSetCardRailSection,
 } from './catalog-set-card-rail';
 
@@ -151,6 +152,26 @@ describe('CatalogSetCardRail', () => {
     if (originalScrollBy) {
       HTMLElement.prototype.scrollBy = originalScrollBy;
     }
+  });
+
+  it('renders a stable skeleton rail for streamed or client-only rails', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRailSkeletonSection
+          ariaLabel="Vergelijkbare LEGO sets laden"
+          description="We zoeken vergelijkbare sets."
+          eyebrow="Hierna kijken"
+          itemCount={3}
+          title="Vergelijkbare LEGO sets"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('Vergelijkbare LEGO sets');
+    expect(container.textContent).toContain('We zoeken vergelijkbare sets.');
+    expect(
+      container.querySelectorAll('[class*="setCardRailSkeletonCard"]'),
+    ).toHaveLength(3);
   });
 
   it('renders the custom desktop scrollbar layer when the native rail overflows', () => {

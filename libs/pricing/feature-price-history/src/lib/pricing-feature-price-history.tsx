@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  alignPriceHistoryWithCurrentOffer,
   buildSetPriceInsights,
+  type CurrentOfferPriceHistoryPointInput,
   getPriceHistorySummaryState,
   getPricePanelSnapshot,
   listPriceHistory,
@@ -15,11 +17,13 @@ import type { PriceHistoryPoint } from '@lego-platform/pricing/util';
 import { useEffect, useState } from 'react';
 
 export function PricingFeaturePriceHistory({
+  currentOffer,
   hasCurrentOffer = false,
   merchantCount,
   setId,
   variant = 'default',
 }: {
+  currentOffer?: CurrentOfferPriceHistoryPointInput;
   hasCurrentOffer?: boolean;
   merchantCount?: number;
   setId: string;
@@ -45,8 +49,33 @@ export function PricingFeaturePriceHistory({
           return;
         }
 
-        setPriceHistoryPoints(nextPriceHistoryPoints);
-        setPriceHistorySummaryState(nextPriceHistorySummaryState);
+        const alignedPriceHistory = alignPriceHistoryWithCurrentOffer({
+          currentOffer,
+          priceHistoryPoints: nextPriceHistoryPoints,
+          priceHistorySummaryState: nextPriceHistorySummaryState,
+        });
+
+        if (shouldLogPriceHistoryAlignment(alignedPriceHistory.diagnostics)) {
+          console.info('[price-history-alignment]', {
+            action: alignedPriceHistory.diagnostics.action,
+            currentBestOfferMerchantId:
+              alignedPriceHistory.diagnostics.currentBestOfferMerchantId,
+            currentBestOfferPriceMinor:
+              alignedPriceHistory.diagnostics.currentBestOfferPriceMinor,
+            latestHistoryMerchantId:
+              alignedPriceHistory.diagnostics.latestHistoryMerchantId,
+            latestHistoryPriceMinor:
+              alignedPriceHistory.diagnostics.latestHistoryPriceMinor,
+            latestHistoryRecordedOn:
+              alignedPriceHistory.diagnostics.latestHistoryRecordedOn,
+            set_id: alignedPriceHistory.diagnostics.setId,
+          });
+        }
+
+        setPriceHistoryPoints(alignedPriceHistory.priceHistoryPoints);
+        setPriceHistorySummaryState(
+          alignedPriceHistory.priceHistorySummaryState,
+        );
       })
       .catch(() => {
         if (!isActive) {
@@ -60,7 +89,7 @@ export function PricingFeaturePriceHistory({
     return () => {
       isActive = false;
     };
-  }, [setId]);
+  }, [currentOffer, setId]);
 
   if (variant === 'set-detail') {
     const insights = buildSetPriceInsights({
@@ -101,6 +130,29 @@ export function PricingFeaturePriceHistory({
       priceHistoryPoints={priceHistoryPoints}
     />
   );
+}
+
+function shouldLogPriceHistoryAlignment(
+  diagnostics: ReturnType<
+    typeof alignPriceHistoryWithCurrentOffer
+  >['diagnostics'],
+): boolean {
+  if (diagnostics.action === 'unchanged') {
+    return false;
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    return (
+      window.localStorage.getItem('brickhunt:debug-price-history-alignment') ===
+      'true'
+    );
+  } catch {
+    return false;
+  }
 }
 
 export default PricingFeaturePriceHistory;

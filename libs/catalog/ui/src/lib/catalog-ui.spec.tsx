@@ -9,6 +9,10 @@ import {
   CatalogSetDetailPanel,
   CatalogThemeHighlight,
 } from './catalog-ui';
+import {
+  SET_CARD_MOBILE_VIEW_STORAGE_KEY,
+  normalizeSetCardMobileView,
+} from './catalog-set-card-mobile-layout';
 
 describe('CatalogSetCard', () => {
   it('keeps catalog component CSS in a later cascade layer than shared primitives', () => {
@@ -2034,5 +2038,58 @@ describe('CatalogSetCardCollection', () => {
 
     expect(markup).toContain('setCardCollectionBrowse');
     expect(markup).toContain('setCardCollectionCompact');
+  });
+
+  it('renders a mobile-only browse layout toggle above browse grids', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCardCollection gridMode="browse" variant="compact">
+        <article>Cel</article>
+      </CatalogSetCardCollection>,
+    );
+
+    expect(markup).toContain('aria-label="Mobiele kaartweergave"');
+    expect(markup.indexOf('Mobiele kaartweergave')).toBeLessThan(
+      markup.indexOf('data-catalog-set-card-collection="true"'),
+    );
+    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('Groot');
+    expect(markup).toContain('Compact');
+    expect(markup).toContain('data-catalog-set-card-mobile-view="large"');
+    expect(markup).toContain('setCardCollectionMobileOneColumn');
+  });
+
+  it('keeps the mobile card layout preference browser-local and normalized', () => {
+    expect(SET_CARD_MOBILE_VIEW_STORAGE_KEY).toBe(
+      'brickhunt:set-card-mobile-view',
+    );
+    expect(normalizeSetCardMobileView('compact')).toBe('compact');
+    expect(normalizeSetCardMobileView('large')).toBe('large');
+    expect(normalizeSetCardMobileView('anything-else')).toBe('large');
+    expect(normalizeSetCardMobileView(null)).toBe('large');
+  });
+
+  it('uses mobile-only CSS for the compact two-column browse grid', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.setCardMobileLayoutToggle');
+    expect(css).toContain('@media (max-width: 47.999rem)');
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn \{\s+grid-template-columns: minmax\(0, 1fr\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn > \.setCard \{\s+grid-column: 1 \/ -1;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn \{\s+grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn > \.setCard \{\s+grid-column: auto;/u,
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 48rem\) \{\s+\.setCardMobileLayoutToggle \{\s+display: none;/u,
+    );
   });
 });
