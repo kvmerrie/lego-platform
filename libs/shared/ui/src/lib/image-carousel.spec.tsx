@@ -121,6 +121,9 @@ describe('ImageGallery', () => {
     expect(mobileBleedRule).toContain('width: 100vw;');
     expect(mobileBleedRule).toContain('max-width: none;');
     expect(mobileFrameRule).toContain('border: 0;');
+    expect(mobileFrameRule).toContain(
+      'border-block-end: var(--lego-border-width-1) solid',
+    );
     expect(mobileFrameRule).toContain('border-radius: 0;');
     expect(mobileFocusRule).toContain(
       'box-shadow: inset 0 0 0 4px var(--lego-focus-ring);',
@@ -650,7 +653,10 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
     expect(css).toContain('height: 508px;');
     expect(css).toContain('@media (max-width: 47.99rem)');
-    expect(css).toContain('.detailMainFrame {\n    border-inline: 0;');
+    expect(css).toContain('border-inline: 0;');
+    expect(css).toContain('border-block-end: var(--lego-border-width-1) solid');
+    expect(css).toContain('box-sizing: border-box;');
+    expect(css).toContain('padding: var(--lego-space-3);');
     expect(css).toContain('border-radius: 0;');
     expect(css).toContain('.lightboxBackdrop {');
     expect(css).toContain('position: fixed;');

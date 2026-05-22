@@ -13,6 +13,7 @@ export * from './lib/commerce-current-offer-snapshot-server';
 export * from './lib/commerce-sync-server';
 export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';
+export * from './lib/rakuten-lego-feed-sync-server';
 export * from './lib/scheduled-job-reliability';
 export * from './lib/tradetracker-alternate-sync-server';
 export * from './lib/tradetracker-conrad-feed-sync-server';

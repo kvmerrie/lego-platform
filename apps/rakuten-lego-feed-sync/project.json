@@ -1,0 +1,41 @@
+{
+  "name": "rakuten-lego-feed-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/rakuten-lego-feed-sync/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/rakuten-lego-feed-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/rakuten-lego-feed-sync/src/main.ts",
+        "tsConfig": "apps/rakuten-lego-feed-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/rakuten-lego-feed-sync/main.cjs"
+      }
+    }
+  }
+}

@@ -1909,7 +1909,6 @@ export default async function SetDetailPage({
               })
         }
         dealVerdict={dealVerdict}
-        dealsHref={buildWebPath(webPathnames.deals)}
         offerList={
           hasTrackedAvailabilityFallback
             ? []

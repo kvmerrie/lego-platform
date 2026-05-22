@@ -1355,26 +1355,23 @@ describe('CatalogSetCard', () => {
     expect(railWrapperRule).toContain('display: contents;');
     expect(detailHeroContentRule).toContain('order: 2;');
     expect(detailHeroSpecsRule).toContain('order: 3;');
-    expect(metadataStripRule).toContain('display: grid;');
-    expect(metadataStripRule).toContain(
-      'grid-template-columns: minmax(4.5rem, min(8rem, 34vw)) repeat(',
-    );
-    expect(metadataStripRule).toContain('minmax(0, 1fr)');
+    expect(metadataStripRule).toContain('display: flex;');
+    expect(metadataStripRule).toContain('flex-wrap: nowrap;');
     expect(metadataStripRule).toContain('justify-content: stretch;');
     expect(css).toContain(
       ".detailHeroMetaStrip > [data-label-value-id='theme-logo'] {",
     );
     expect(css).toContain('flex: 0 0 auto;');
     expect(css).toContain('min-inline-size: 0;');
-    expect(css).toContain(
-      ".detailHeroMetaStrip > [data-label-value-id='release'] {",
-    );
+    expect(css).toContain('.detailHeroMetaStripDesktop {');
     expect(css).toContain('display: none;');
     expect(css).toContain(
       '--hero-theme-logo-max-inline-size: min(8rem, 34vw);',
     );
     expect(css).toContain('max-width: 128px;');
     expect(css).toContain('@media (min-width: 48rem)');
+    expect(css).toContain('.detailHeroMetaStripMobile {');
+    expect(css).toContain('.detailHeroMetaStripDesktop {');
     expect(css).toContain('grid-template-columns: repeat(5, max-content);');
     expect(css).toContain('justify-content: center;');
     expect(css).toContain('@media (min-width: 64rem)');

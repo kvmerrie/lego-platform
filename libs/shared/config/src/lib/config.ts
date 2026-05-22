@@ -562,6 +562,19 @@ export const misterBricksEnvKeys = {
   merchantName: 'MISTERBRICKS_MERCHANT_NAME',
 } as const;
 
+export const rakutenLegoEnvKeys = {
+  host: 'RAKUTEN_LEGO_FEED_HOST',
+  port: 'RAKUTEN_LEGO_FEED_PORT',
+  username: 'RAKUTEN_LEGO_FEED_USERNAME',
+  password: 'RAKUTEN_LEGO_FEED_PASSWORD',
+  sid: 'RAKUTEN_LEGO_FEED_SID',
+  mid: 'RAKUTEN_LEGO_FEED_MID',
+  filename: 'RAKUTEN_LEGO_FEED_FILENAME',
+  remoteDir: 'RAKUTEN_LEGO_REMOTE_DIR',
+  merchantSlug: 'RAKUTEN_LEGO_MERCHANT_SLUG',
+  merchantName: 'RAKUTEN_LEGO_MERCHANT_NAME',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -657,6 +670,19 @@ export interface MisterBricksFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
+}
+
+export interface RakutenLegoFeedConfig {
+  filename?: string;
+  host: string;
+  merchantName: string;
+  merchantSlug: string;
+  mid?: string;
+  password: string;
+  port: number;
+  remoteDir?: string;
+  sid: string;
+  username: string;
 }
 
 function getRuntimeEnvironment(): Record<string, string | undefined> {
@@ -1627,6 +1653,52 @@ export function getMisterBricksFeedConfig(
   };
 }
 
+export function getRakutenLegoFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): RakutenLegoFeedConfig {
+  return {
+    host:
+      environment[rakutenLegoEnvKeys.host]?.trim() || 'aftp.linksynergy.com',
+    port:
+      readOptionalPositiveIntegerEnvValue({
+        environment,
+        key: rakutenLegoEnvKeys.port,
+      }) ?? 22,
+    username: requireEnvValue({
+      environment,
+      key: rakutenLegoEnvKeys.username,
+    }),
+    password: requireEnvValue({
+      environment,
+      key: rakutenLegoEnvKeys.password,
+    }),
+    sid: environment[rakutenLegoEnvKeys.sid]?.trim() || '4682248',
+    mid: environment[rakutenLegoEnvKeys.mid]?.trim() || undefined,
+    filename: environment[rakutenLegoEnvKeys.filename]?.trim() || undefined,
+    remoteDir: environment[rakutenLegoEnvKeys.remoteDir]?.trim() || undefined,
+    merchantSlug:
+      environment[rakutenLegoEnvKeys.merchantSlug]?.trim() || 'lego-eu',
+    merchantName:
+      environment[rakutenLegoEnvKeys.merchantName]?.trim() || 'LEGO',
+  };
+}
+
+export function resolveRakutenLegoFeedFilename(
+  config: Pick<RakutenLegoFeedConfig, 'filename' | 'mid' | 'sid'>,
+): string {
+  if (config.filename?.trim()) {
+    return config.filename.trim();
+  }
+
+  if (config.mid?.trim()) {
+    return `${config.mid.trim()}_${config.sid.trim()}_mp.xml.gz`;
+  }
+
+  throw new Error(
+    `Missing Rakuten LEGO feed filename. Set ${rakutenLegoEnvKeys.filename} or ${rakutenLegoEnvKeys.mid}.`,
+  );
+}
+
 export function hasAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
@@ -1695,6 +1767,31 @@ export function getMissingMisterBricksEnvKeys(
   return environment[misterBricksEnvKeys.feedUrl]
     ? []
     : [misterBricksEnvKeys.feedUrl];
+}
+
+export function hasRakutenLegoFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[rakutenLegoEnvKeys.username] &&
+      environment[rakutenLegoEnvKeys.password],
+  );
+}
+
+export function getMissingRakutenLegoEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[rakutenLegoEnvKeys.username]) {
+    missingKeys.push(rakutenLegoEnvKeys.username);
+  }
+
+  if (!environment[rakutenLegoEnvKeys.password]) {
+    missingKeys.push(rakutenLegoEnvKeys.password);
+  }
+
+  return missingKeys;
 }
 
 export function hasTradeTrackerAffiliateConfig(

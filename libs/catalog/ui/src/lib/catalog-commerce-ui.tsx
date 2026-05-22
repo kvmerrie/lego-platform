@@ -342,13 +342,35 @@ export function CatalogKeyFacts({
 }: {
   items: readonly CatalogKeyFact[];
 }) {
+  const themeLogoItem = items.find((item) => item.id === 'theme-logo');
+  const mobileSpecItems = items
+    .filter((item) => item.id !== 'theme-logo')
+    .slice(0, 3);
+  const mobileItems = themeLogoItem
+    ? [themeLogoItem, ...mobileSpecItems]
+    : mobileSpecItems;
+
   return (
-    <LabelValueList
-      appearance="hero"
-      className={styles.detailHeroMetaStrip}
-      items={items}
-      spacing="compact"
-    />
+    <>
+      <LabelValueList
+        appearance="hero"
+        className={[
+          styles.detailHeroMetaStrip,
+          styles.detailHeroMetaStripMobile,
+        ].join(' ')}
+        items={mobileItems}
+        spacing="compact"
+      />
+      <LabelValueList
+        appearance="hero"
+        className={[
+          styles.detailHeroMetaStrip,
+          styles.detailHeroMetaStripDesktop,
+        ].join(' ')}
+        items={items}
+        spacing="compact"
+      />
+    </>
   );
 }
 

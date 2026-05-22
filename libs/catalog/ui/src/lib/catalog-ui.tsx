@@ -1292,7 +1292,6 @@ export function CatalogSetDetailPanel({
   catalogSetDetail,
   dealSupportItems = [],
   dealVerdict,
-  dealsHref,
   followCopy,
   followEyebrow,
   followTitle,
@@ -1314,7 +1313,6 @@ export function CatalogSetDetailPanel({
   catalogSetDetail: CatalogSetDetail;
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
-  dealsHref?: string;
   followCopy?: string;
   followEyebrow?: string;
   followTitle?: string;
@@ -1473,15 +1471,6 @@ export function CatalogSetDetailPanel({
               followTitle={followTitle}
               verdictTone={dealVerdict.tone}
             />
-          ) : null}
-          {dealsHref ? (
-            <ActionLink
-              className={styles.actionLink}
-              href={dealsHref}
-              tone="secondary"
-            >
-              Bekijk alle LEGO deals
-            </ActionLink>
           ) : null}
         </section>
       ) : null}

@@ -16,7 +16,6 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail,
   dealSupportItems = [],
   dealVerdict,
-  dealsHref,
   followCopy,
   followEyebrow,
   followTitle,
@@ -37,7 +36,6 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail: CatalogSetDetail;
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
-  dealsHref?: string;
   followCopy?: string;
   followEyebrow?: string;
   followTitle?: string;
@@ -60,7 +58,6 @@ export function CatalogFeatureSetDetail({
       catalogSetDetail={catalogSetDetail}
       dealSupportItems={dealSupportItems}
       dealVerdict={dealVerdict}
-      dealsHref={dealsHref}
       followCopy={followCopy}
       followEyebrow={followEyebrow}
       followTitle={followTitle}

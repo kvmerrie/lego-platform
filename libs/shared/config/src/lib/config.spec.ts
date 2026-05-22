@@ -28,6 +28,7 @@ import {
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
   getMissingProductionSupabaseEnvKeys,
+  getMissingRakutenLegoEnvKeys,
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
   getMissingTradeTrackerCoppenswarenhuisEnvKeys,
@@ -37,6 +38,7 @@ import {
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
+  getRakutenLegoFeedConfig,
   getSetDetailPageRobotsDirective,
   isIndexablePage,
   isIndexableSetDetailPage,
@@ -46,6 +48,7 @@ import {
   getTradeTrackerConradFeedConfig,
   getTradeTrackerLidlFeedConfig,
   getTradeDoublerMediaMarktFeedConfig,
+  resolveRakutenLegoFeedFilename,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   hasAdtractionGoodbricksFeedConfig,
@@ -57,6 +60,7 @@ import {
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
   hasProductionSupabaseConfig,
+  hasRakutenLegoFeedConfig,
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerCoppenswarenhuisFeedConfig,
@@ -68,6 +72,7 @@ import {
   publicSiteRobotsPolicy,
   resolvePublicSiteAllowIndexing,
   misterBricksEnvKeys,
+  rakutenLegoEnvKeys,
   tradeDoublerMediaMarktEnvKeys,
   tradeTrackerCoppenswarenhuisEnvKeys,
   tradeTrackerConradEnvKeys,
@@ -977,5 +982,86 @@ describe('shared config MisterBricks feed helpers', () => {
     expect(getMissingMisterBricksEnvKeys()).toEqual([
       misterBricksEnvKeys.feedUrl,
     ]);
+  });
+});
+
+describe('shared config Rakuten LEGO feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Rakuten LEGO SFTP feed config with sensible defaults', () => {
+    process.env.RAKUTEN_LEGO_FEED_USERNAME = 'rakuten-user';
+    process.env.RAKUTEN_LEGO_FEED_PASSWORD = 'rakuten-password';
+    process.env.RAKUTEN_LEGO_FEED_MID = '12345';
+
+    expect(hasRakutenLegoFeedConfig()).toBe(true);
+    expect(getMissingRakutenLegoEnvKeys()).toEqual([]);
+    expect(getRakutenLegoFeedConfig()).toEqual({
+      host: 'aftp.linksynergy.com',
+      port: 22,
+      username: 'rakuten-user',
+      password: 'rakuten-password',
+      sid: '4682248',
+      mid: '12345',
+      filename: undefined,
+      remoteDir: undefined,
+      merchantSlug: 'lego-eu',
+      merchantName: 'LEGO',
+    });
+  });
+
+  test('allows explicit Rakuten SFTP and merchant overrides', () => {
+    process.env.RAKUTEN_LEGO_FEED_HOST = 'sftp.example.test';
+    process.env.RAKUTEN_LEGO_FEED_PORT = '2200';
+    process.env.RAKUTEN_LEGO_FEED_USERNAME = 'rakuten-user';
+    process.env.RAKUTEN_LEGO_FEED_PASSWORD = 'rakuten-password';
+    process.env.RAKUTEN_LEGO_FEED_SID = '4682248';
+    process.env.RAKUTEN_LEGO_FEED_FILENAME = 'custom-feed.xml.gz';
+    process.env.RAKUTEN_LEGO_REMOTE_DIR = '12345';
+    process.env.RAKUTEN_LEGO_MERCHANT_SLUG = 'lego-eu-test';
+    process.env.RAKUTEN_LEGO_MERCHANT_NAME = 'LEGO EU';
+
+    expect(getRakutenLegoFeedConfig()).toEqual({
+      host: 'sftp.example.test',
+      port: 2200,
+      username: 'rakuten-user',
+      password: 'rakuten-password',
+      sid: '4682248',
+      mid: undefined,
+      filename: 'custom-feed.xml.gz',
+      remoteDir: '12345',
+      merchantSlug: 'lego-eu-test',
+      merchantName: 'LEGO EU',
+    });
+  });
+
+  test('reports missing Rakuten SFTP credentials', () => {
+    delete process.env.RAKUTEN_LEGO_FEED_USERNAME;
+    delete process.env.RAKUTEN_LEGO_FEED_PASSWORD;
+
+    expect(hasRakutenLegoFeedConfig()).toBe(false);
+    expect(getMissingRakutenLegoEnvKeys()).toEqual([
+      rakutenLegoEnvKeys.username,
+      rakutenLegoEnvKeys.password,
+    ]);
+  });
+
+  test('resolves Rakuten filename from explicit override or MID plus SID', () => {
+    expect(
+      resolveRakutenLegoFeedFilename({
+        filename: 'override.xml.gz',
+        mid: '111',
+        sid: '4682248',
+      }),
+    ).toBe('override.xml.gz');
+    expect(
+      resolveRakutenLegoFeedFilename({
+        mid: '111',
+        sid: '4682248',
+      }),
+    ).toBe('111_4682248_mp.xml.gz');
   });
 });

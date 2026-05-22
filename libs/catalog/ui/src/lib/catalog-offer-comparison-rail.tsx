@@ -29,7 +29,7 @@ interface CatalogOfferComparisonRailProps {
   summaryLabel?: string;
 }
 
-const MAX_VISIBLE_OFFER_RAIL_ITEMS = 6;
+const MAX_VISIBLE_OFFER_RAIL_ITEMS = 20;
 const CLOSE_PRICE_DELTA_MINOR = 100;
 
 interface CompactOfferPresentation {
@@ -599,11 +599,11 @@ export function CatalogOfferComparisonRail({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const overlayDialogRef = useRef<HTMLDivElement>(null);
   const railOffers = offers.slice(0, MAX_VISIBLE_OFFER_RAIL_ITEMS);
+  const hasHiddenOffers = railOffers.length < offers.length;
   const comparisonContext = buildCompactOfferComparisonContext(offers);
-  const railTitle =
-    railOffers.length < offers.length
-      ? `Nu bij ${railOffers.length} van ${offers.length} winkels`
-      : `Nu bij ${railOffers.length} winkels`;
+  const railTitle = hasHiddenOffers
+    ? `Nu bij ${railOffers.length} van ${offers.length} winkels`
+    : `Nu bij ${railOffers.length} winkels`;
   const offerCountSummaryLabel = getOfferCountSummaryLabel({
     offerCount: offers.length,
     summaryLabel,
@@ -733,21 +733,23 @@ export function CatalogOfferComparisonRail({
             ))}
           </ol>
         </div>
-        <div className={styles.offerRailFooter}>
-          <Button
-            aria-label={viewAllLabel}
-            className={`${styles.railActionLink} ${styles.offerRailViewAllAction}`}
-            onClick={(event) => {
-              triggerRef.current = event.currentTarget;
-              setIsOverlayOpen(true);
-            }}
-            tone="inline"
-            type="button"
-          >
-            {viewAllLabel}
-            <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
-          </Button>
-        </div>
+        {hasHiddenOffers ? (
+          <div className={styles.offerRailFooter}>
+            <Button
+              aria-label={viewAllLabel}
+              className={`${styles.railActionLink} ${styles.offerRailViewAllAction}`}
+              onClick={(event) => {
+                triggerRef.current = event.currentTarget;
+                setIsOverlayOpen(true);
+              }}
+              tone="inline"
+              type="button"
+            >
+              {viewAllLabel}
+              <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
+            </Button>
+          </div>
+        ) : null}
       </Panel>
 
       {offerOverlay}

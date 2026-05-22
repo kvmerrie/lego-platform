@@ -47,6 +47,77 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('72 × 50 × 39 cm');
   });
 
+  it('renders only the first three available specs in the mobile hero facts row', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogKeyFacts
+        items={[
+          {
+            id: 'theme-logo',
+            label: 'Thema',
+            value: 'Logo',
+          },
+          {
+            id: 'recommended-age',
+            label: 'Leeftijd',
+            value: '18+',
+          },
+          {
+            id: 'piece-count',
+            label: 'Stenen',
+            value: '5.471',
+          },
+          {
+            id: 'minifigures',
+            label: 'Minifiguren',
+            value: '10',
+          },
+          {
+            id: 'release',
+            label: 'Release',
+            value: '2026',
+          },
+        ]}
+      />,
+    );
+    const mobileMarkup =
+      markup.match(
+        /<dl[^>]*detailHeroMetaStripMobile[^>]*>([\s\S]*?)<\/dl>/u,
+      )?.[1] ?? '';
+
+    expect(mobileMarkup).toContain('Logo');
+    expect(mobileMarkup).toContain('Leeftijd');
+    expect(mobileMarkup).toContain('Stenen');
+    expect(mobileMarkup).toContain('Minifiguren');
+    expect(mobileMarkup).not.toContain('Release');
+  });
+
+  it('keeps release visible on mobile when it is one of the only available specs', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogKeyFacts
+        items={[
+          {
+            id: 'theme-logo',
+            label: 'Thema',
+            value: 'Logo',
+          },
+          {
+            id: 'release',
+            label: 'Release',
+            value: '2026',
+          },
+        ]}
+      />,
+    );
+    const mobileMarkup =
+      markup.match(
+        /<dl[^>]*detailHeroMetaStripMobile[^>]*>([\s\S]*?)<\/dl>/u,
+      )?.[1] ?? '';
+
+    expect(mobileMarkup).toContain('Logo');
+    expect(mobileMarkup).toContain('Release');
+    expect(mobileMarkup).toContain('2026');
+  });
+
   it('renders a decision panel with buy-now and follow-later states', () => {
     const markup = renderToStaticMarkup(
       <CatalogPriceDecisionPanel
@@ -232,10 +303,10 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('offerRole');
     expect(markup).toContain('alternative');
     expect(markup).toContain('rankPosition');
-    expect(markup).toContain('Vergelijk alle 2 winkels');
+    expect(markup).not.toContain('Vergelijk alle 2 winkels');
   });
 
-  it('caps the visible rail at six offers while keeping the full comparison action for the rest', () => {
+  it('shows all offers when the comparison has at most twenty shops', () => {
     const markup = renderToStaticMarkup(
       <CatalogOfferComparison
         id="set-offers"
@@ -304,17 +375,56 @@ describe('Catalog commerce UI', () => {
             rankingLabel: '€ 120,04 boven de beste prijs.',
             stockLabel: 'Op voorraad',
           },
+          {
+            checkedLabel: '2 apr om 09:00',
+            ctaHref: 'https://example.com/atat-coolblue',
+            ctaLabel: 'Bekijk bij Coolblue',
+            merchantLabel: 'Coolblue',
+            price: '€ 1.179,99',
+            rankingLabel: '€ 130,04 boven de beste prijs.',
+            stockLabel: 'Op voorraad',
+          },
         ]}
-        summaryLabel="7 winkels nagekeken · 2 apr om 09:00"
+        summaryLabel="8 winkels nagekeken · 2 apr om 09:00"
       />,
     );
 
-    expect(markup).toContain('Nu bij 6 van 7 winkels');
-    expect(markup).toContain('Vergelijk alle 7 winkels');
+    expect(markup).toContain('Nu bij 8 winkels');
+    expect(markup).not.toContain('Nu bij 8 van 8 winkels');
+    expect(markup).not.toContain('Vergelijk alle 8 winkels');
     expect(markup).toContain('LEGO');
     expect(markup).toContain('Top1Toys');
     expect(markup).toContain('MisterBricks');
-    expect(markup).not.toContain('Intertoys');
+    expect(markup).toContain('Intertoys');
+    expect(markup).toContain('Coolblue');
+  });
+
+  it('caps the visible rail at twenty offers while keeping the full comparison action for the rest', () => {
+    const offers = Array.from({ length: 21 }, (_, index) => ({
+      checkedLabel: '2 apr om 09:00',
+      ctaHref: `https://example.com/atat-shop-${index + 1}`,
+      ctaLabel: `Bekijk bij Shop ${index + 1}`,
+      isBest: index === 0,
+      merchantLabel: `Shop ${index + 1}`,
+      price: `€ ${1_049 + index},99`,
+      rankingLabel:
+        index === 0
+          ? 'Laagste nagekeken prijs op voorraad.'
+          : `€ ${index},00 boven de beste prijs.`,
+      stockLabel: 'Op voorraad',
+    }));
+    const markup = renderToStaticMarkup(
+      <CatalogOfferComparison
+        id="set-offers"
+        offers={offers}
+        summaryLabel="21 winkels nagekeken · 2 apr om 09:00"
+      />,
+    );
+
+    expect(markup).toContain('Nu bij 20 van 21 winkels');
+    expect(markup).toContain('Vergelijk alle 21 winkels');
+    expect(markup).toContain('Shop 20');
+    expect(markup).not.toContain('Shop 21');
   });
 
   it('builds one compact comparison presentation for rail and overlay use', () => {

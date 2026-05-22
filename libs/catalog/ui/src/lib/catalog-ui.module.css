@@ -180,7 +180,6 @@
     justify-content: center;
     min-height: 0;
     min-width: 0;
-    padding: 0.65rem;
     width: 100%;
   }
 
@@ -1387,12 +1386,9 @@
 
   .detailHeroMetaStrip {
     align-items: center;
-    display: grid;
+    display: flex;
+    flex-wrap: nowrap;
     gap: clamp(0.45rem, 2vw, var(--lego-space-3));
-    grid-template-columns: minmax(4.5rem, min(8rem, 34vw)) repeat(
-        3,
-        minmax(0, 1fr)
-      );
     justify-content: stretch;
     margin: 0;
     max-inline-size: 100%;
@@ -1407,6 +1403,10 @@
     justify-items: center;
     min-inline-size: 0;
     text-align: center;
+  }
+
+  .detailHeroMetaStripDesktop {
+    display: none;
   }
 
   .detailHeroMetaStrip > .labelValueListItem > .labelValueCopy {
@@ -1500,10 +1500,6 @@
   .detailHeroMetaStrip > [data-label-value-id='theme-logo'] dd {
     line-height: 1;
     max-inline-size: 100%;
-  }
-
-  .detailHeroMetaStrip > [data-label-value-id='release'] {
-    display: none;
   }
 
   .heroThemeLogoValue {
@@ -3394,16 +3390,20 @@
       width: auto;
     }
 
+    .detailHeroMetaStripMobile {
+      display: none;
+    }
+
+    .detailHeroMetaStripDesktop {
+      display: grid;
+    }
+
     .detailHeroMetaStrip > .labelValueListItem {
       flex: 0 0 auto;
     }
 
     .detailHeroMetaStrip > [data-label-value-id='theme-logo'] {
       justify-self: center;
-    }
-
-    .detailHeroMetaStrip > [data-label-value-id='release'] {
-      display: grid;
     }
 
     .heroThemeLogoValue {

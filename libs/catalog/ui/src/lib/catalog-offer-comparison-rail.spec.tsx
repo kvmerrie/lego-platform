@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CatalogOfferItem } from './catalog-commerce-ui';
 import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
 
 vi.mock('next/link', () => ({
@@ -63,6 +64,26 @@ const offers = [
   },
 ];
 
+function makeOverflowOffers(
+  primaryOffers: readonly CatalogOfferItem[] = offers,
+): CatalogOfferItem[] {
+  return [
+    ...primaryOffers,
+    ...Array.from(
+      { length: Math.max(0, 21 - primaryOffers.length) },
+      (_, index) => ({
+        checkedLabel: 'Vandaag om 09:10',
+        ctaHref: `https://example.com/overflow-${index + 1}`,
+        ctaLabel: `Bekijk bij Shop ${index + 1}`,
+        merchantLabel: `Shop ${index + 1}`,
+        price: `€ ${99 + index},99`,
+        rankingLabel: `€ ${10 + index},00 hoger dan de beste optie.`,
+        stockLabel: 'Op voorraad',
+      }),
+    ),
+  ];
+}
+
 describe('CatalogOfferComparisonRail overlay', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -93,10 +114,10 @@ describe('CatalogOfferComparisonRail overlay', () => {
   }
 
   async function openOverlay({
-    overlayOffers = offers,
-    summaryLabel = '2 winkels nagekeken',
+    overlayOffers = makeOverflowOffers(),
+    summaryLabel = '21 winkels nagekeken',
   }: {
-    overlayOffers?: typeof offers;
+    overlayOffers?: readonly CatalogOfferItem[];
     summaryLabel?: string;
   } = {}) {
     act(() => {
@@ -233,7 +254,9 @@ describe('CatalogOfferComparisonRail overlay', () => {
   });
 
   it('renders compact comparison rows with right-aligned prices and accessible short CTAs', async () => {
+    const overlayOffers = makeOverflowOffers();
     await openOverlay({
+      overlayOffers,
       summaryLabel: '2 winkels nagekeken · Vandaag om 09:00',
     });
 
@@ -261,14 +284,14 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(dialog?.textContent).not.toContain(
       '2 winkels nagekeken · Vandaag om 09:00',
     );
-    expect(rows).toHaveLength(2);
-    expect(priceCells).toHaveLength(2);
+    expect(rows).toHaveLength(overlayOffers.length);
+    expect(priceCells).toHaveLength(overlayOffers.length);
     expect(dialog?.textContent).toContain('Beste deal');
     expect(dialog?.textContent).toContain('Bekijk beste deal');
     expect(dialog?.textContent).toContain('Naar winkel');
     expect(dialog?.textContent).toContain('Naar winkel bij LEGO');
     expect(dialog?.textContent).toContain('€5 duurder');
-    expect(statusLabels).toHaveLength(2);
+    expect(statusLabels).toHaveLength(overlayOffers.length);
     expect(
       document.body.querySelector(
         '[data-offer-comparison-dialog="true"] [class*="offerRailStock"]',
@@ -302,26 +325,28 @@ describe('CatalogOfferComparisonRail overlay', () => {
   });
 
   it('keeps unavailable overlay states readable in the compact price list', async () => {
+    const overlayOffers = makeOverflowOffers([
+      offers[0],
+      {
+        ...offers[1],
+        checkedLabel: 'Gisteren om 11:00',
+        ctaHref: 'https://example.com/sold-out',
+        merchantLabel: 'Sold Out Shop',
+        price: '€ 84,99',
+        stockLabel: 'Uitverkocht',
+      },
+      {
+        ...offers[1],
+        checkedLabel: '2 apr om 11:00',
+        ctaHref: 'https://example.com/unknown',
+        merchantLabel: 'Unknown Shop',
+        price: '€ 84,99',
+        stockLabel: 'Voorraad onbekend',
+      },
+    ]);
+
     await openOverlay({
-      overlayOffers: [
-        offers[0],
-        {
-          ...offers[1],
-          checkedLabel: 'Gisteren om 11:00',
-          ctaHref: 'https://example.com/sold-out',
-          merchantLabel: 'Sold Out Shop',
-          price: '€ 84,99',
-          stockLabel: 'Uitverkocht',
-        },
-        {
-          ...offers[1],
-          checkedLabel: '2 apr om 11:00',
-          ctaHref: 'https://example.com/unknown',
-          merchantLabel: 'Unknown Shop',
-          price: '€ 84,99',
-          stockLabel: 'Voorraad onbekend',
-        },
-      ],
+      overlayOffers,
       summaryLabel: '3 winkels nagekeken',
     });
 
@@ -336,7 +361,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
   });
 
   it('uses the same compact dot status style in rail cards and modal rows', async () => {
-    const statusOffers = [
+    const statusOffers = makeOverflowOffers([
       offers[0],
       {
         ...offers[1],
@@ -350,7 +375,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
         merchantLabel: 'Sold Out Shop',
         stockLabel: 'Uitverkocht',
       },
-    ];
+    ]);
 
     await openOverlay({
       overlayOffers: statusOffers,
@@ -366,8 +391,8 @@ describe('CatalogOfferComparisonRail overlay', () => {
       ),
     );
 
-    expect(railStatuses).toHaveLength(3);
-    expect(modalStatuses).toHaveLength(3);
+    expect(railStatuses).toHaveLength(20);
+    expect(modalStatuses).toHaveLength(statusOffers.length);
     expect(container.textContent).toContain('Op voorraad');
     expect(container.textContent).toContain('Voorraad onbekend');
     expect(container.textContent).toContain('Uitverkocht');
@@ -381,16 +406,18 @@ describe('CatalogOfferComparisonRail overlay', () => {
   });
 
   it('keeps long delta text inside the fixed price column', async () => {
+    const overlayOffers = makeOverflowOffers([
+      offers[0],
+      {
+        ...offers[1],
+        ctaHref: 'https://example.com/premium-marketplace',
+        merchantLabel: 'Coppenswarenhuis Met Een Extra Lange Winkelnaam',
+        price: '€ 1.234,56',
+      },
+    ]);
+
     await openOverlay({
-      overlayOffers: [
-        offers[0],
-        {
-          ...offers[1],
-          ctaHref: 'https://example.com/premium-marketplace',
-          merchantLabel: 'Coppenswarenhuis Met Een Extra Lange Winkelnaam',
-          price: '€ 1.234,56',
-        },
-      ],
+      overlayOffers,
       summaryLabel: '2 winkels nagekeken',
     });
 
@@ -401,7 +428,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
       document.body.querySelectorAll('[class*="offerOverlayPriceCell"]'),
     );
 
-    expect(priceCells).toHaveLength(2);
+    expect(priceCells).toHaveLength(overlayOffers.length);
     expect(dialog?.textContent).toContain(
       'Coppenswarenhuis Met Een Extra Lange Winkelnaam',
     );

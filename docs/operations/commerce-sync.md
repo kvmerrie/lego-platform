@@ -277,6 +277,7 @@ Available feed commands:
 - `pnpm sync:alternate-feed`
 - `pnpm sync:coolblue-feed`
 - `pnpm sync:joybuy-feed`
+- `pnpm sync:rakuten-lego-feed`
 - `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:conrad-feed`
 - `pnpm sync:goodbricks-feed`
@@ -296,6 +297,7 @@ Recommended feed cadence:
 | Alternate        | TradeTracker | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
 | Coolblue         | Awin         | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
 | Joybuy           | Awin         | every 6 hours, offset from other jobs     | Broad affiliate feed; strict LEGO filtering and unmatched reports.    |
+| LEGO EU          | Rakuten      | every 6 hours after feed availability     | SFTP gzip XML feed; list files first to discover MID/filename.        |
 | Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
 | MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
 | MisterBricks     | Channable    | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
@@ -351,6 +353,38 @@ Joybuy job notes:
 - use `--report-unmatched-path tmp/joybuy-unmatched.json` when reviewing LEGO candidates that do not match the catalog
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses `aw_product_id`, `merchant_product_id`, feed IDs, deeplink IDs, URLs or EAN-like identifiers as LEGO set numbers
+
+LEGO EU uses the Rakuten Product Catalog over SFTP. The feed file is gzip
+compressed XML and normally follows the `MID_SID_mp.xml.gz` naming pattern.
+`SID` is `4682248`; keep `MID` configurable because it may need to be discovered
+from the SFTP listing.
+
+Recommended first local listing command:
+
+```bash
+set -a; source .env.local >/dev/null 2>&1; pnpm sync:rakuten-lego-feed -- --list-files
+```
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:rakuten-lego-feed
+```
+
+Recommended cadence:
+
+- every 6 hours, offset from the other feed jobs, for example `50 */6 * * *`
+
+Rakuten LEGO job notes:
+
+- keep `RAKUTEN_LEGO_FEED_HOST`, `RAKUTEN_LEGO_FEED_PORT`, `RAKUTEN_LEGO_FEED_USERNAME`, `RAKUTEN_LEGO_FEED_PASSWORD`, `RAKUTEN_LEGO_FEED_SID`, either `RAKUTEN_LEGO_FEED_MID` or `RAKUTEN_LEGO_FEED_FILENAME`, optional `RAKUTEN_LEGO_REMOTE_DIR`, `RAKUTEN_LEGO_MERCHANT_SLUG`, `RAKUTEN_LEGO_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- when `RAKUTEN_LEGO_FEED_FILENAME` is empty, the sync resolves `${RAKUTEN_LEGO_FEED_MID}_${RAKUTEN_LEGO_FEED_SID}_mp.xml.gz`
+- when `RAKUTEN_LEGO_REMOTE_DIR` is set and the filename is derived from MID/SID, the sync downloads from that remote directory; explicit `RAKUTEN_LEGO_FEED_FILENAME` remains exact
+- `--list-files` logs `pwd` when the SFTP server supports it, then tries `.`, `RAKUTEN_LEGO_REMOTE_DIR`, `/`, and `RAKUTEN_LEGO_FEED_MID` in order, continuing after per-path list failures
+- use `pnpm sync:rakuten-lego-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 30 --report-unmatched-path tmp/rakuten-lego-unmatched.json` for local parser review
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses EAN, SKU, product IDs, Rakuten IDs, file IDs or deeplink IDs as LEGO set numbers; set numbers are extracted only from human product text
+- after a production import changes offers, the job triggers public price revalidation with reason `rakuten_lego_feed_sync`
 
 Coppenswarenhuis uses a TradeTracker XML feed and writes through the same strict
 affiliate importer. It keeps only LEGO construction-set candidates with a set

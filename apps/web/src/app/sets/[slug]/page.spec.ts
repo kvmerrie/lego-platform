@@ -51,7 +51,6 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
     bestDeal,
-    dealsHref,
     recentlyViewedRail,
     setNewsRail,
     similarSetsRail,
@@ -63,7 +62,6 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       decisionTone?: string;
       rankingLabel?: string;
     };
-    dealsHref?: string;
     recentlyViewedRail?: unknown;
     setNewsRail?: unknown;
     similarSetsRail?: unknown;
@@ -77,7 +75,6 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
         ? createElement('a', { href: themeDirectoryHref }, "Thema's")
         : null,
       themeHref ? createElement('a', { href: themeHref }, 'Thema') : null,
-      dealsHref ? createElement('a', { href: dealsHref }, 'Deals') : null,
       bestDeal
         ? createElement(
             'div',
@@ -1028,7 +1025,7 @@ describe('set detail page JSON-LD', () => {
     );
   });
 
-  it('renders crawlable critical theme and deals links without blocking on optional rails', async () => {
+  it('renders crawlable critical theme links without blocking on optional rails', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '75355',
       imageUrl: 'https://cdn.example.com/75355.jpg',
@@ -1092,7 +1089,7 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('href="/themes"');
     expect(html).toContain('href="/themes/star-wars"');
-    expect(html).toContain('href="/deals"');
+    expect(html).not.toContain('href="/deals"');
     expect(html).toContain('data-testid="similar-slot"');
     expect(html).toContain('data-testid="recently-slot"');
     expect(html.indexOf('data-testid="similar-slot"')).toBeLessThan(
@@ -1221,7 +1218,7 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('data-testid="set-detail"');
     expect(html).toContain('href="/themes/star-wars"');
-    expect(html).toContain('href="/deals"');
+    expect(html).not.toContain('href="/deals"');
 
     expect(similarRailAbortSignal?.aborted).toBe(false);
   });
