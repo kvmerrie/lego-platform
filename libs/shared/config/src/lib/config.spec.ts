@@ -51,6 +51,7 @@ import {
   resolveRakutenLegoFeedFilename,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
+  isLikelyPublicCatalogSetSlug,
   hasAdtractionGoodbricksFeedConfig,
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
@@ -462,6 +463,34 @@ describe('shared config locale and market foundations', () => {
         index: true,
       },
       index: true,
+    });
+    expect(isLikelyPublicCatalogSetSlug('the-shire-book-nook-10354')).toBe(
+      true,
+    );
+    expect(
+      isIndexableSetDetailPage({
+        allowIndexing: true,
+        slug: 'dk-super-readers-level-1-ninjago-go-team-ninja-9780241838389',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexableSetDetailPage({
+        allowIndexing: true,
+        slug: '2026-u-s-soccer-national-team-jersey-43033',
+      }),
+    ).toBe(false);
+    expect(
+      getSetDetailPageRobotsDirective({
+        allowIndexing: true,
+        slug: 'dk-super-readers-level-1-ninjago-go-team-ninja-9780241838389',
+      }),
+    ).toEqual({
+      follow: false,
+      googleBot: {
+        follow: false,
+        index: false,
+      },
+      index: false,
     });
   });
 });

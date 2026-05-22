@@ -1,9 +1,11 @@
 import {
-  buildSitemapIndexEntries,
   buildSitemapIndexXml,
+  collectSitemapIndexEntries,
   createXmlResponse,
 } from '../lib/sitemap-builder';
 
-export function GET(): Response {
-  return createXmlResponse(buildSitemapIndexXml(buildSitemapIndexEntries()));
+export async function GET(): Promise<Response> {
+  return createXmlResponse(
+    buildSitemapIndexXml(await collectSitemapIndexEntries()),
+  );
 }

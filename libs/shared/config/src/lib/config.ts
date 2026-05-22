@@ -802,6 +802,20 @@ export function buildSetDetailPath(slug: string): string {
   return buildWebPath(`${webPathnames.sets}/${slug}`);
 }
 
+const nonCatalogSetSlugPattern =
+  /(?:^|[-])(dk-super-readers|reader|readers|magazine|activity-book|sticker-book|jersey|t-shirt|shirt|keychain|key-chain|storage|lunch-box|plush|costume|watch|clock|calendar|video-game|videogame|software)(?:[-]|$)/u;
+const nonLegoSetIdentifierSlugPattern = /-\d{10,}$/u;
+
+export function isLikelyPublicCatalogSetSlug(slug: string): boolean {
+  const normalizedSlug = slug.trim().toLowerCase();
+
+  return (
+    Boolean(normalizedSlug) &&
+    !nonCatalogSetSlugPattern.test(normalizedSlug) &&
+    !nonLegoSetIdentifierSlugPattern.test(normalizedSlug)
+  );
+}
+
 export function isIndexableSetDetailPage({
   allowIndexing = publicSiteRobotsPolicy.allowIndexing,
   slug,
@@ -809,6 +823,10 @@ export function isIndexableSetDetailPage({
   allowIndexing?: boolean;
   slug: string;
 }): boolean {
+  if (!isLikelyPublicCatalogSetSlug(slug)) {
+    return false;
+  }
+
   return isIndexablePage({
     allowIndexing,
     pathname: buildSetDetailPath(slug),
@@ -822,6 +840,14 @@ export function getSetDetailPageRobotsDirective({
   allowIndexing?: boolean;
   slug: string;
 }): PublicPageRobotsDirective {
+  if (!isLikelyPublicCatalogSetSlug(slug)) {
+    return getPublicPageRobotsDirective({
+      allowIndexing,
+      isThin: true,
+      pathname: buildSetDetailPath(slug),
+    });
+  }
+
   return getPublicPageRobotsDirective({
     allowIndexing,
     pathname: buildSetDetailPath(slug),

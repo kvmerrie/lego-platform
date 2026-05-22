@@ -6,6 +6,7 @@ import {
   collectArticleSitemapEntries,
   collectDealsSitemapEntries,
   collectSetSitemapEntries,
+  collectSitemapIndexEntries,
   collectThemeSitemapEntries,
   createSitemapUrlEntry,
 } from './sitemap-builder';
@@ -36,6 +37,69 @@ describe('sitemap generation', () => {
     expect(buildSitemapIndexXml(entries)).toContain(
       '<loc>https://www.brickhunt.nl/sitemaps/sets.xml</loc>',
     );
+  });
+
+  it('adds the article sitemap to the sitemap index only once enough public article content exists', async () => {
+    await expect(
+      collectSitemapIndexEntries({
+        allowIndexing: true,
+        dataAccess: {
+          listPublishedArticles: vi.fn().mockResolvedValue(
+            Array.from({ length: 4 }, (_, index) => ({
+              date: `2026-05-0${index + 1}`,
+              description: 'Star Wars artikel',
+              heroImageAlt: 'Grogu',
+              slug: `star-wars-day-2026-${index + 1}`,
+              status: 'published',
+              theme: 'Star Wars',
+              title: `Star Wars Day 2026 ${index + 1}`,
+            })),
+          ),
+        },
+      }),
+    ).resolves.toEqual([
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/sets.xml',
+      },
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/themes.xml',
+      },
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/deals.xml',
+      },
+    ]);
+
+    await expect(
+      collectSitemapIndexEntries({
+        allowIndexing: true,
+        dataAccess: {
+          listPublishedArticles: vi.fn().mockResolvedValue(
+            Array.from({ length: 5 }, (_, index) => ({
+              date: `2026-05-0${index + 1}`,
+              description: 'Star Wars artikel',
+              heroImageAlt: 'Grogu',
+              slug: `star-wars-day-2026-${index + 1}`,
+              status: 'published',
+              theme: 'Star Wars',
+              title: `Star Wars Day 2026 ${index + 1}`,
+            })),
+          ),
+        },
+      }),
+    ).resolves.toEqual([
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/sets.xml',
+      },
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/articles.xml',
+      },
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/themes.xml',
+      },
+      {
+        url: 'https://www.brickhunt.nl/sitemaps/deals.xml',
+      },
+    ]);
   });
 
   it('keeps the set sitemap empty while launch indexing is disabled', async () => {
@@ -69,6 +133,27 @@ describe('sitemap generation', () => {
     expect(buildUrlSetXml(entries)).toContain(
       '<loc>https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316</loc>',
     );
+  });
+
+  it('excludes non-catalog merchandise and ISBN-like rows from the set sitemap', async () => {
+    const entries = await collectSetSitemapEntries({
+      allowIndexing: true,
+      dataAccess: {
+        listCatalogSetSlugs: vi
+          .fn()
+          .mockResolvedValue([
+            'lord-of-the-rings-rivendell-10316',
+            'dk-super-readers-level-1-ninjago-go-team-ninja-9780241838389',
+            '2026-u-s-soccer-national-team-jersey-43033',
+            'the-shire-book-nook-10354',
+          ]),
+      },
+    });
+
+    expect(entries.map((entry) => entry.url)).toEqual([
+      'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+      'https://www.brickhunt.nl/sets/the-shire-book-nook-10354',
+    ]);
   });
 
   it('keeps thin article index pages out of the article sitemap while preserving article detail URLs', async () => {

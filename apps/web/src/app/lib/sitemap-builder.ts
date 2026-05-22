@@ -16,7 +16,6 @@ import {
   buildSetDetailPath,
   buildThemePath,
   buildWebPath,
-  HAS_PUBLIC_ARTICLE_CONTENT,
   hasPublicArticleContent,
   isIndexableSetDetailPage,
   isIndexablePage,
@@ -62,7 +61,6 @@ const sitemapDataAccess: SitemapDataAccess = {
 
 export const sitemapSegmentPaths = [
   '/sitemaps/sets.xml',
-  ...(HAS_PUBLIC_ARTICLE_CONTENT ? ['/sitemaps/articles.xml'] : []),
   '/sitemaps/themes.xml',
   '/sitemaps/deals.xml',
 ] as const;
@@ -178,6 +176,35 @@ export function buildSitemapIndexEntries({
   return sitemapSegmentPaths.map((pathname) => ({
     url: buildCanonicalUrl(pathname),
   }));
+}
+
+export async function collectSitemapIndexEntries({
+  allowIndexing,
+  dataAccess = sitemapDataAccess,
+}: SitemapCollectorOptions & {
+  dataAccess?: Pick<SitemapDataAccess, 'listPublishedArticles'>;
+} = {}): Promise<SitemapUrlEntry[]> {
+  const baseEntries = buildSitemapIndexEntries({ allowIndexing });
+
+  if (!baseEntries.length) {
+    return [];
+  }
+
+  const articles = await dataAccess.listPublishedArticles({
+    limit: 5,
+  });
+
+  if (!hasPublicArticleContent(articles.length)) {
+    return baseEntries;
+  }
+
+  return [
+    baseEntries[0],
+    {
+      url: buildCanonicalUrl('/sitemaps/articles.xml'),
+    },
+    ...baseEntries.slice(1),
+  ].filter((entry): entry is SitemapUrlEntry => Boolean(entry));
 }
 
 export async function collectSetSitemapEntries({
