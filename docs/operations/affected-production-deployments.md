@@ -92,7 +92,7 @@ Manual-only cron projects:
 
 - `commerce-sync`
 - `alternate-feed-sync`
-- `awin-feed-sync`
+- `coolblue-feed-sync`
 - `conrad-feed-sync`
 - `coppenswarenhuis-feed-sync`
 - `goodbricks-feed-sync`

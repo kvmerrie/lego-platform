@@ -98,18 +98,18 @@ async function main() {
 
   if (!hasServerSupabaseConfig()) {
     throw new Error(
-      `Awin feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
+      `Coolblue feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
     );
   }
 
   if (!hasAwinCoolblueFeedConfig()) {
     throw new Error(
-      `Awin feed sync requires a Coolblue feed URL. Missing: ${getMissingAwinCoolblueEnvKeys().join(', ')}.`,
+      `Coolblue feed sync requires a Coolblue Awin feed URL. Missing: ${getMissingAwinCoolblueEnvKeys().join(', ')}.`,
     );
   }
 
   console.log(
-    `[awin-feed-sync] start source=awin merchant=coolblue mode=write discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
+    `[coolblue-feed-sync] start source=awin merchant=coolblue mode=write discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
   );
 
   const result = await syncAwinCoolblueFeed({
@@ -125,7 +125,7 @@ async function main() {
 
   if (result.debugInfo) {
     console.log(
-      `[awin-feed-sync] debug_samples total_rows=${result.debugInfo.rowCount} sample_count=${result.debugInfo.sampleCount}`,
+      `[coolblue-feed-sync] debug_samples total_rows=${result.debugInfo.rowCount} sample_count=${result.debugInfo.sampleCount}`,
     );
     console.log(
       JSON.stringify(
@@ -140,7 +140,7 @@ async function main() {
 
   if (result.unmatchedDebug) {
     console.log(
-      `[awin-feed-sync] debug_unmatched total_rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount} sample_count=${result.unmatchedDebug.sampleRows.length}`,
+      `[coolblue-feed-sync] debug_unmatched total_rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount} sample_count=${result.unmatchedDebug.sampleRows.length}`,
     );
     console.log(
       JSON.stringify(
@@ -177,7 +177,7 @@ async function main() {
         ),
       );
       console.log(
-        `[awin-feed-sync] unmatched_report_written path=${JSON.stringify(reportUnmatchedPath)} rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount}`,
+        `[coolblue-feed-sync] unmatched_report_written path=${JSON.stringify(reportUnmatchedPath)} rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount}`,
       );
     }
   }
@@ -206,7 +206,7 @@ async function main() {
       ),
     );
     console.log(
-      `[awin-feed-sync] stale_latest_report_written path=${JSON.stringify(reportStaleLatestPath)} rows=${result.existingStaleSuccessLatestCount} duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0}`,
+      `[coolblue-feed-sync] stale_latest_report_written path=${JSON.stringify(reportStaleLatestPath)} rows=${result.existingStaleSuccessLatestCount} duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0}`,
     );
   }
 
@@ -215,13 +215,13 @@ async function main() {
       const revalidationResult = await revalidatePublicCatalogPriceChanges({
         changedSetIds: result.changedSetIds,
         changedSetSlugs: result.changedSetSlugs,
-        reason: 'awin_feed_sync',
+        reason: 'coolblue_feed_sync',
       });
       console.log(
-        `[awin-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
+        `[coolblue-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
       );
     } catch (error) {
-      console.warn('[awin-feed-sync] revalidation warning', {
+      console.warn('[coolblue-feed-sync] revalidation warning', {
         changed_set_count: result.changedSetIds.length,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -229,7 +229,7 @@ async function main() {
   }
 
   console.log(
-    `[awin-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[coolblue-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
@@ -237,7 +237,7 @@ main().catch((error) => {
   const classification = logScheduledJobFailure({
     context: 'source=awin merchant=coolblue mode=write',
     error,
-    jobName: 'awin-feed-sync',
+    jobName: 'coolblue-feed-sync',
   });
 
   if (!classification.recoverable) {

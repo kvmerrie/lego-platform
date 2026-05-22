@@ -1,7 +1,7 @@
 {
-  "name": "awin-feed-sync",
+  "name": "coolblue-feed-sync",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/awin-feed-sync/src",
+  "sourceRoot": "apps/coolblue-feed-sync/src",
   "projectType": "application",
   "tags": ["scope:api", "type:app", "platform:server"],
   "targets": {
@@ -11,11 +11,11 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/apps/awin-feed-sync",
+        "outputPath": "dist/apps/coolblue-feed-sync",
         "format": ["cjs"],
         "bundle": true,
-        "main": "apps/awin-feed-sync/src/main.ts",
-        "tsConfig": "apps/awin-feed-sync/tsconfig.app.json",
+        "main": "apps/coolblue-feed-sync/src/main.ts",
+        "tsConfig": "apps/coolblue-feed-sync/tsconfig.app.json",
         "assets": []
       },
       "configurations": {
@@ -31,7 +31,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "node dist/apps/awin-feed-sync/main.cjs"
+        "command": "node dist/apps/coolblue-feed-sync/main.cjs"
       }
     }
   }

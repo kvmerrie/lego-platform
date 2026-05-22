@@ -275,13 +275,17 @@ Available feed commands:
 
 - `pnpm sync:lidl-feed`
 - `pnpm sync:alternate-feed`
-- `pnpm sync:awin-feed`
+- `pnpm sync:coolblue-feed`
 - `pnpm sync:joybuy-feed`
 - `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:conrad-feed`
 - `pnpm sync:goodbricks-feed`
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
+
+`pnpm sync:awin-feed` remains as a temporary backwards-compatible alias for
+the Coolblue feed job. Prefer `pnpm sync:coolblue-feed` for new runbooks and
+operator commands.
 
 Recommended feed cadence:
 
@@ -526,7 +530,7 @@ any authoritative retirement:
 
 ```bash
 pnpm nx run alternate-feed-sync:run -- --report-stale-latest-path tmp/alternate-stale-latest.json
-pnpm nx run awin-feed-sync:run -- --report-stale-latest-path tmp/coolblue-stale-latest.json
+pnpm nx run coolblue-feed-sync:run -- --report-stale-latest-path tmp/coolblue-stale-latest.json
 pnpm nx run conrad-feed-sync:run -- --dry-run --report-stale-latest-path tmp/conrad-stale-latest.json
 pnpm nx run goodbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/goodbricks-stale-latest.json
 pnpm nx run lidl-feed-sync:run -- --report-stale-latest-path tmp/lidl-stale-latest.json
