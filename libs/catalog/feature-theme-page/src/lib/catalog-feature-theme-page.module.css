@@ -235,7 +235,6 @@
 .browseGrid {
   --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
 .paginationNav {
@@ -311,16 +310,15 @@
   font-size: var(--lego-font-size-lg);
 }
 
-@media (min-width: 28rem) {
+@media (min-width: 48rem) {
   .browseGrid {
     --catalog-browse-grid-inline-border-size: var(
       --catalog-browse-grid-divider-size,
       1px
     );
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   }
-}
 
-@media (min-width: 48rem) {
   .intro {
     padding-block: max(
       var(--lego-surface-padding-lg-block, var(--lego-space-6)),

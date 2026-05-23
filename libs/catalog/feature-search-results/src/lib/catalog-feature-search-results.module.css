@@ -10,7 +10,6 @@
 .resultsGrid {
   --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
 
 .themeResults {
@@ -63,12 +62,13 @@
   font-size: var(--lego-text-role-meta-size);
 }
 
-@media (min-width: 32rem) {
+@media (min-width: 48rem) {
   .resultsGrid {
     --catalog-browse-grid-inline-border-size: var(
       --catalog-browse-grid-divider-size,
       1px
     );
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   }
 }
 

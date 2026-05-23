@@ -98,6 +98,38 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).not.toContain('1 dozen die je kast overnemen');
   });
 
+  it('prioritizes only the first image when the row is above the fold', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        prioritizeFirstImage
+        setCards={[
+          {
+            id: '77244',
+            slug: 'mercedes-amg-f1-w15-race-car-77244',
+            name: 'Mercedes-AMG F1 W15 Race Car',
+            theme: 'Speed Champions',
+            releaseYear: 2025,
+            pieces: 267,
+            imageUrl: 'https://images.example/mercedes.jpg',
+          },
+          {
+            id: '60445',
+            slug: 'f1-truck-with-rb20-and-amr24-f1-cars-60445',
+            name: 'F1 Truck with RB20 & AMR24 F1 Cars',
+            theme: 'City',
+            releaseYear: 2025,
+            pieces: 1086,
+            imageUrl: 'https://images.example/f1-truck.jpg',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup.match(/<img[^>]*fetchPriority="high"/g)).toHaveLength(1);
+    expect(markup.match(/loading="eager"/g)).toHaveLength(1);
+    expect(markup.match(/loading="lazy"/g)).toHaveLength(1);
+  });
+
   it('renders an expanded commerce rail with up to twenty useful sets', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSetList

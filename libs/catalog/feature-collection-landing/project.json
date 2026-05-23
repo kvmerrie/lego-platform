@@ -1,0 +1,16 @@
+{
+  "name": "catalog-feature-collection-landing",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/feature-collection-landing/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:feature", "platform:web"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/catalog/feature-collection-landing",
+        "command": "vitest run src/lib/catalog-feature-collection-landing.spec.tsx --config ../vitest.config.mts"
+      }
+    }
+  }
+}

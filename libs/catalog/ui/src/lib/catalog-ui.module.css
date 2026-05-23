@@ -3585,6 +3585,7 @@
     }
 
     .setCardCollectionBrowse.setCardCollectionMobileOneColumn > .setCard {
+      border-right: 0;
       grid-column: 1 / -1;
       inline-size: 100%;
       max-inline-size: none;
@@ -3609,10 +3610,37 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn > .setCard,
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn > .setCardCompact,
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCardCompact
+      > .setCardLink,
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCardCompact
+      > .setCardLink
+      > .setVisual,
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCardCompact
+      > .setCardLink
+      > .cardCompactBody {
+      min-inline-size: 0;
+      min-width: 0;
+    }
+
     .setCardCollectionBrowse.setCardCollectionMobileTwoColumn > .setCard {
       grid-column: auto;
       inline-size: 100%;
-      min-inline-size: 0;
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCard:nth-child(odd) {
+      border-right: var(--catalog-browse-grid-divider-size) solid
+        var(--catalog-browse-grid-divider-color);
+    }
+
+    .setCardCollectionBrowse.setCardCollectionMobileTwoColumn
+      > .setCard:nth-child(even) {
+      border-right: 0;
     }
 
     .setCardCollectionBrowse.setCardCollectionMobileTwoColumn

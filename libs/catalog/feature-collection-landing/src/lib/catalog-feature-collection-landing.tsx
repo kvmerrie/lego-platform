@@ -1,0 +1,199 @@
+import type { ReactNode } from 'react';
+import {
+  CatalogPageIntro,
+  CatalogSectionShell,
+  CatalogSetCard,
+  CatalogSetCardCollection,
+  type CatalogSetCardPriceContext,
+} from '@lego-platform/catalog/ui';
+import type {
+  CatalogCollectionLandingPageConfig,
+  CatalogCollectionLandingPageSortKey,
+  CatalogHomepageSetCard,
+} from '@lego-platform/catalog/util';
+import {
+  buildSetDetailPath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
+import { ActionLink } from '@lego-platform/shared/ui';
+import styles from './catalog-feature-collection-landing.module.css';
+
+export interface CatalogCollectionLandingPageLink {
+  href: string;
+  label: string;
+}
+
+export interface CatalogCollectionLandingPageItem
+  extends CatalogHomepageSetCard {
+  priceContext?: CatalogSetCardPriceContext;
+}
+
+const sortLabels: Record<CatalogCollectionLandingPageSortKey, string> = {
+  recommended: 'Aanraders',
+  'price-asc': 'Laagste prijs',
+  newest: 'Nieuwste',
+  'pieces-desc': 'Meeste stenen',
+};
+
+function getCollectionLandingPageSortHref({
+  config,
+  sortKey,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  sortKey: CatalogCollectionLandingPageSortKey;
+}): string {
+  return sortKey === config.sort.default
+    ? config.canonicalPath
+    : `${config.canonicalPath}?sort=${sortKey}`;
+}
+
+function renderLinkList({
+  links,
+}: {
+  links: readonly CatalogCollectionLandingPageLink[];
+}): ReactNode {
+  return (
+    <ul className={styles.linkList}>
+      {links.map((link) => (
+        <li className={styles.linkItem} key={link.href}>
+          <a className={styles.textLink} href={link.href}>
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function CatalogFeatureCollectionLandingPage({
+  activeSortKey,
+  config,
+  relatedPageLinks = [],
+  setCards,
+  themeLinks = [],
+  totalSetCount,
+}: {
+  activeSortKey: CatalogCollectionLandingPageSortKey;
+  config: CatalogCollectionLandingPageConfig;
+  relatedPageLinks?: readonly CatalogCollectionLandingPageLink[];
+  setCards: readonly CatalogCollectionLandingPageItem[];
+  themeLinks?: readonly CatalogCollectionLandingPageLink[];
+  totalSetCount: number;
+}) {
+  const browseSectionId = 'sets';
+  const hasSortOptions = config.sort.options.length > 1;
+
+  return (
+    <main className={styles.page}>
+      <CatalogPageIntro
+        as="header"
+        breadcrumbs={{
+          ariaLabel: 'Paginapad',
+          items: [
+            {
+              href: buildWebPath(webPathnames.home),
+              id: 'home',
+              label: 'Brickhunt',
+            },
+            {
+              id: 'collection',
+              label: config.h1,
+            },
+          ],
+        }}
+        className={styles.intro}
+        contentClassName={styles.introContent}
+      >
+        <p className={styles.eyebrow}>LEGO keuzehulp</p>
+        <div className={styles.headingGroup}>
+          <h1 className={styles.title}>{config.h1}</h1>
+          <p className={styles.lead}>{config.intro}</p>
+        </div>
+        <p className={styles.support}>{config.description}</p>
+        <div className={styles.actions}>
+          <ActionLink href={`#${browseSectionId}`} size="hero" tone="accent">
+            Bekijk de sets
+          </ActionLink>
+          {themeLinks[0] ? (
+            <ActionLink href={themeLinks[0].href} size="hero" tone="secondary">
+              Naar {themeLinks[0].label}
+            </ActionLink>
+          ) : null}
+        </div>
+      </CatalogPageIntro>
+
+      <CatalogSectionShell
+        as="section"
+        bodySpacing="relaxed"
+        className={styles.browseSection}
+        description={config.browseDescription}
+        eyebrow={config.browseEyebrow}
+        id={browseSectionId}
+        padding="default"
+        signal={`${totalSetCount} ${config.signalLabel}`}
+        spacing="relaxed"
+        title={config.browseTitle}
+        titleAs="h2"
+        tone="default"
+        utility={
+          hasSortOptions ? (
+            <nav aria-label="Sorteer sets" className={styles.sortNav}>
+              {config.sort.options.map((sortKey) => (
+                <a
+                  aria-current={sortKey === activeSortKey ? 'true' : undefined}
+                  className={styles.sortLink}
+                  href={getCollectionLandingPageSortHref({ config, sortKey })}
+                  key={sortKey}
+                >
+                  {sortLabels[sortKey]}
+                </a>
+              ))}
+            </nav>
+          ) : undefined
+        }
+        utilityPlacement="below-heading"
+      >
+        {setCards.length ? (
+          <CatalogSetCardCollection
+            className={styles.grid}
+            gridMode="browse"
+            variant="compact"
+          >
+            {setCards.map((setCard, index) => (
+              <CatalogSetCard
+                href={buildSetDetailPath(setCard.slug)}
+                imageLoading={index < 6 ? 'eager' : 'lazy'}
+                key={setCard.id}
+                priceContext={setCard.priceContext}
+                setSummary={setCard}
+                variant="compact"
+              />
+            ))}
+          </CatalogSetCardCollection>
+        ) : (
+          <p className={styles.emptyState}>
+            Deze collectie wacht nog op genoeg betrouwbare catalogusdata.
+          </p>
+        )}
+      </CatalogSectionShell>
+
+      {themeLinks.length || relatedPageLinks.length ? (
+        <section className={styles.linkSection} aria-label="Verder ontdekken">
+          {themeLinks.length ? (
+            <div className={styles.linkGroup}>
+              <h2 className={styles.linkTitle}>Kijk ook in deze thema’s</h2>
+              {renderLinkList({ links: themeLinks })}
+            </div>
+          ) : null}
+          {relatedPageLinks.length ? (
+            <div className={styles.linkGroup}>
+              <h2 className={styles.linkTitle}>Meer keuzes</h2>
+              {renderLinkList({ links: relatedPageLinks })}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+    </main>
+  );
+}

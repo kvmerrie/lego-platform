@@ -10,13 +10,17 @@ vi.mock('@supabase/supabase-js', async () => {
 });
 
 import * as sharedConfig from '@lego-platform/shared/config';
-import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
+import {
+  buildCatalogThemeSlug,
+  type CatalogCollectionLandingPageConfig,
+} from '@lego-platform/catalog/util';
 import * as supabaseSdk from '@supabase/supabase-js';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
   type CatalogDiscoverySignal,
   getCatalogCommerceRailRuntimeDiagnostics,
+  getCatalogCollectionLandingPage,
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
@@ -1610,6 +1614,85 @@ describe('catalog effective data access web', () => {
         id: '10316',
       }),
     ]);
+  });
+
+  test('uses local set-status overlays for collection landing status filters', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75331-1/1000.jpg',
+          name: 'The Razor Crest',
+          piece_count: 6187,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2022,
+          set_id: '75331',
+          slug: 'the-razor-crest-75331',
+          source: 'rebrickable',
+          source_set_number: '75331-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75355-1/1000.jpg',
+          name: 'X-wing Starfighter',
+          piece_count: 1949,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2023,
+          set_id: '75355',
+          slug: 'x-wing-starfighter-75355',
+          source: 'rebrickable',
+          source_set_number: '75355-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Sets die bijna verdwijnen.',
+      browseEyebrow: 'Niet laten liggen',
+      browseTitle: 'Sets om nu te checken',
+      canonicalPath: '/retiring-lego-sets',
+      description: 'Retiring LEGO sets.',
+      filters: {
+        setStatuses: ['retiring_soon'],
+      },
+      h1: 'Retiring LEGO sets',
+      intro: 'Kijk naar sets die je niet te lang wilt laten liggen.',
+      links: {},
+      metaDescription: 'Bekijk retiring LEGO sets.',
+      metaTitle: 'Retiring LEGO sets | Brickhunt',
+      signalLabel: 'retiring sets',
+      slug: 'retiring-lego-sets',
+      sort: {
+        default: 'recommended',
+        options: ['recommended'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      sortKey: 'recommended',
+      supabaseClient,
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual([
+      '75331',
+      '75355',
+    ]);
+    expect(result.totalSetCount).toBe(2);
   });
 
   test('builds public theme directory from paginated Supabase catalog cards', async () => {

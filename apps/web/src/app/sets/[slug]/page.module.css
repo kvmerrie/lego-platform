@@ -13,6 +13,53 @@
   overflow: hidden;
 }
 
+.discoveryLinks {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.discoveryLinksHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.discoveryLinksEyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.discoveryLinksTitle {
+  color: var(--lego-text);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.discoveryLinksList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.discoveryLink {
+  background: var(--lego-surface-muted);
+  border-radius: var(--lego-radius-sm);
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-support-size);
+  font-weight: var(--lego-font-weight-semibold);
+  padding: var(--lego-space-2) var(--lego-space-3);
+  text-decoration: none;
+}
+
+.discoveryLink:hover,
+.discoveryLink:focus-visible {
+  background: var(--lego-surface-subtle);
+}
+
 .setNewsRail {
   display: grid;
   gap: var(--lego-space-4);

@@ -5,6 +5,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from 'react';
+import Image from 'next/image';
 import type {
   CatalogHomepageSetCard,
   CatalogPublicThemeReference,
@@ -214,8 +215,29 @@ function CatalogCanonicalText({ children }: { children: ReactNode }) {
   );
 }
 
+function getCatalogSetVisualImageSizes(variant: 'card' | 'hero'): string {
+  return variant === 'hero'
+    ? '(min-width: 64rem) 48rem, 100vw'
+    : '(min-width: 64rem) 280px, (min-width: 48rem) 33vw, 100vw';
+}
+
+function shouldOptimizeCatalogSetVisualImage(imageUrl: string): boolean {
+  try {
+    const parsedImageUrl = new URL(imageUrl);
+
+    return (
+      parsedImageUrl.protocol === 'https:' &&
+      parsedImageUrl.hostname === 'cdn.rebrickable.com' &&
+      parsedImageUrl.pathname.startsWith('/media/sets/')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function CatalogSetVisual({
   altLabel,
+  imageFetchPriority,
   imageUrl,
   imageLoading,
   name,
@@ -226,6 +248,7 @@ function CatalogSetVisual({
   variant,
 }: {
   altLabel?: string;
+  imageFetchPriority?: 'auto' | 'high' | 'low';
   imageUrl?: string;
   imageLoading?: 'eager' | 'lazy';
   name: string;
@@ -259,16 +282,35 @@ function CatalogSetVisual({
           </div>
         ) : null}
         <div className={styles.visualMedia}>
-          <img
-            alt={altLabel ?? `${name} LEGO-set`}
-            className={styles.setImage}
-            decoding="async"
-            fetchPriority={variant === 'hero' ? 'high' : 'auto'}
-            height={variant === 'hero' ? 900 : 420}
-            loading={imageLoading ?? (variant === 'hero' ? 'eager' : 'lazy')}
-            src={imageUrl}
-            width={variant === 'hero' ? 1200 : 420}
-          />
+          {shouldOptimizeCatalogSetVisualImage(imageUrl) ? (
+            <Image
+              alt={altLabel ?? `${name} LEGO-set`}
+              className={styles.setImage}
+              decoding="async"
+              fetchPriority={
+                imageFetchPriority ?? (variant === 'hero' ? 'high' : 'auto')
+              }
+              height={variant === 'hero' ? 900 : 420}
+              loading={imageLoading ?? (variant === 'hero' ? 'eager' : 'lazy')}
+              preload={imageFetchPriority === 'high' || variant === 'hero'}
+              sizes={getCatalogSetVisualImageSizes(variant)}
+              src={imageUrl}
+              width={variant === 'hero' ? 1200 : 420}
+            />
+          ) : (
+            <img
+              alt={altLabel ?? `${name} LEGO-set`}
+              className={styles.setImage}
+              decoding="async"
+              fetchPriority={
+                imageFetchPriority ?? (variant === 'hero' ? 'high' : 'auto')
+              }
+              height={variant === 'hero' ? 900 : 420}
+              loading={imageLoading ?? (variant === 'hero' ? 'eager' : 'lazy')}
+              src={imageUrl}
+              width={variant === 'hero' ? 1200 : 420}
+            />
+          )}
         </div>
       </div>
     );
@@ -767,6 +809,7 @@ export function CatalogSetCard({
   ctaMode = 'default',
   contextBadge,
   href,
+  imageFetchPriority,
   imageLoading,
   priceContext,
   priceDisplay = 'default',
@@ -782,6 +825,7 @@ export function CatalogSetCard({
   ctaMode?: CatalogSetCardCtaMode;
   contextBadge?: CatalogSetCardContextBadge;
   href?: string;
+  imageFetchPriority?: 'auto' | 'high' | 'low';
   imageLoading?: 'eager' | 'lazy';
   priceContext?: CatalogSetCardPriceContext;
   priceDisplay?: CatalogSetCardPriceDisplay;
@@ -823,6 +867,7 @@ export function CatalogSetCard({
     const browseCardContent = (
       <>
         <CatalogSetVisual
+          imageFetchPriority={imageFetchPriority}
           imageLoading={imageLoading}
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
@@ -939,6 +984,7 @@ export function CatalogSetCard({
     const featuredCardContent = (
       <>
         <CatalogSetVisual
+          imageFetchPriority={imageFetchPriority}
           imageLoading={imageLoading}
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
@@ -1066,6 +1112,7 @@ export function CatalogSetCard({
       style={setThemeStyle}
     >
       <CatalogSetVisual
+        imageFetchPriority={imageFetchPriority}
         imageLoading={imageLoading}
         imageUrl={setSummary.imageUrl}
         name={setSummary.name}

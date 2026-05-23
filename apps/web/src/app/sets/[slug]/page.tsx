@@ -18,7 +18,6 @@ import {
   listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
-  rankCatalogSimilarSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogFeatureSetList,
@@ -72,15 +71,16 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import {
+  getCatalogCollectionLandingPageConfig,
   getCatalogReleaseYear,
   resolveCatalogReleaseDatePrecision,
+  type CatalogHomepageSetCard,
   type CatalogSetDetail,
   type CatalogReleaseDatePrecision,
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
 import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
-import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
 import {
   buildSetBreadcrumbJsonLd,
   buildSetProductJsonLd,
@@ -92,7 +92,8 @@ export const revalidate = 21_600;
 const SET_DETAIL_CACHE_VERSION = 'v2';
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
-const SIMILAR_SETS_RAIL_LIMIT = 20;
+const SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT = 8;
+const SET_DETAIL_INTERNAL_LINK_CANDIDATE_LIMIT = 80;
 const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT = 240;
 const SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS = 350;
@@ -124,33 +125,6 @@ function getSetDetailStaticParamsLimit(): number {
   return Number.isFinite(value) && value > 0
     ? Math.min(Math.trunc(value), 1_000)
     : SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT;
-}
-
-export function buildSetDetailComparableRailStyle(
-  catalogSetDetail: CatalogSetDetail,
-): React.CSSProperties | undefined {
-  const backgroundColor =
-    catalogSetDetail.publicTheme?.surfaceColor ??
-    catalogSetDetail.publicTheme?.accentColor;
-  const textColor =
-    catalogSetDetail.publicTheme?.surfaceTextColor ??
-    catalogSetDetail.publicTheme?.heroTextColor;
-
-  if (!backgroundColor && !textColor) {
-    return undefined;
-  }
-
-  const railStyle: React.CSSProperties & Record<string, string> = {};
-
-  if (backgroundColor) {
-    railStyle['--article-theme-surface'] = backgroundColor;
-  }
-
-  if (textColor) {
-    railStyle['--article-theme-surface-text'] = textColor;
-  }
-
-  return railStyle;
 }
 
 function isSetPagePerfDebugEnabled(): boolean {
@@ -1513,6 +1487,173 @@ function toSimilarSetRailItems({
   });
 }
 
+export interface SetDetailInternalLinkBlock {
+  id: 'same-theme';
+  items: readonly CatalogFeatureSetListItem[];
+  title: string;
+}
+
+export interface SetDetailDiscoveryLink {
+  href: string;
+  label: string;
+}
+
+function getSetDetailThemeKey(
+  setCard: Pick<CatalogHomepageSetCard, 'publicTheme' | 'theme'>,
+): string {
+  return (
+    setCard.publicTheme?.slug ??
+    normalizeTheme(setCard.theme)?.key ??
+    setCard.theme.toLowerCase()
+  );
+}
+
+function hasSetDetailInternalLinkBasics(
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'releaseYear' | 'slug' | 'theme'
+  >,
+): boolean {
+  return (
+    setCard.id.trim().length > 0 &&
+    setCard.name.trim().length > 0 &&
+    setCard.slug.trim().length > 0 &&
+    setCard.theme.trim().length > 0 &&
+    setCard.releaseYear > 0
+  );
+}
+
+function selectSetDetailInternalLinkItems({
+  currentSetId,
+  limit,
+  setCards,
+  usedSetIds,
+}: {
+  currentSetId: string;
+  limit: number;
+  setCards: readonly CatalogHomepageSetCard[];
+  usedSetIds: Set<string>;
+}): CatalogHomepageSetCard[] {
+  const selected: CatalogHomepageSetCard[] = [];
+
+  for (const setCard of setCards) {
+    if (
+      selected.length >= limit ||
+      setCard.id === currentSetId ||
+      usedSetIds.has(setCard.id) ||
+      !hasSetDetailInternalLinkBasics(setCard)
+    ) {
+      continue;
+    }
+
+    usedSetIds.add(setCard.id);
+    selected.push(setCard);
+  }
+
+  return selected;
+}
+
+export function buildSetDetailInternalLinkBlocks({
+  candidateSetCards,
+  currentSetCard,
+}: {
+  candidateSetCards: readonly CatalogHomepageSetCard[];
+  currentSetCard: Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'pieces' | 'publicTheme' | 'releaseYear' | 'theme'
+  >;
+}): SetDetailInternalLinkBlock[] {
+  const usedSetIds = new Set<string>([currentSetCard.id]);
+  const currentThemeKey = getSetDetailThemeKey(currentSetCard);
+  const sameThemeSetCards = selectSetDetailInternalLinkItems({
+    currentSetId: currentSetCard.id,
+    limit: SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT,
+    setCards: [...candidateSetCards]
+      .filter((setCard) => getSetDetailThemeKey(setCard) === currentThemeKey)
+      .sort(
+        (left, right) =>
+          right.releaseYear - left.releaseYear ||
+          right.pieces - left.pieces ||
+          left.name.localeCompare(right.name) ||
+          left.id.localeCompare(right.id),
+      ),
+    usedSetIds,
+  });
+  const blocks: SetDetailInternalLinkBlock[] = [];
+
+  if (sameThemeSetCards.length) {
+    blocks.push({
+      id: 'same-theme',
+      items: toSimilarSetRailItems({
+        currentOfferSummaryBySetId: new Map(),
+        setCards: sameThemeSetCards,
+      }),
+      title: 'Meer uit dit thema',
+    });
+  }
+
+  return blocks.slice(0, 1);
+}
+
+function getCollectionDiscoveryLink(slug: string): SetDetailDiscoveryLink {
+  const config = getCatalogCollectionLandingPageConfig(slug);
+
+  return {
+    href: `/${slug}`,
+    label: config?.h1 ?? slug,
+  };
+}
+
+export function buildSetDetailCollectionDiscoveryLinks({
+  bestPriceMinor,
+  catalogSetDetail,
+}: {
+  bestPriceMinor?: number;
+  catalogSetDetail: CatalogSetDetail;
+}): SetDetailDiscoveryLink[] {
+  const links: SetDetailDiscoveryLink[] = [
+    getCollectionDiscoveryLink('nieuwe-lego-sets'),
+  ];
+  const themeKey = getSetDetailThemeKey(catalogSetDetail);
+  const isAdultCollectorSet =
+    (catalogSetDetail.recommendedAge ?? 0) >= 18 ||
+    catalogSetDetail.pieces >= 1_000 ||
+    ['architecture', 'ideas', 'icons', 'technic'].includes(themeKey);
+
+  if (typeof bestPriceMinor === 'number' && bestPriceMinor > 0) {
+    if (bestPriceMinor <= 5_000) {
+      links.push(getCollectionDiscoveryLink('lego-sets-onder-50-euro'));
+    }
+
+    if (bestPriceMinor <= 10_000) {
+      links.push(getCollectionDiscoveryLink('lego-sets-onder-100-euro'));
+    }
+  }
+
+  if (themeKey === 'star-wars') {
+    links.push({
+      href: '/themes/star-wars',
+      label: 'Star Wars thema',
+    });
+  }
+
+  if (isAdultCollectorSet) {
+    links.push(getCollectionDiscoveryLink('lego-voor-volwassenen'));
+  }
+
+  if (
+    catalogSetDetail.setStatus === 'retiring_soon' ||
+    catalogSetDetail.setStatus === 'retired'
+  ) {
+    links.push(getCollectionDiscoveryLink('retiring-lego-sets'));
+  }
+
+  return links.filter(
+    (link, index, allLinks) =>
+      allLinks.findIndex((candidate) => candidate.href === link.href) === index,
+  );
+}
+
 function formatSetNewsArticleDate(date: string): string {
   const parsedDate = Date.parse(`${date}T00:00:00Z`);
 
@@ -1563,6 +1704,99 @@ export function SetNewsRail({
             </time>
             <h3 className={styles.setNewsCardTitle}>{article.title}</h3>
             <p className={styles.setNewsDescription}>{article.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function buildSetDetailComparableRailStyle(
+  catalogSetDetail: CatalogSetDetail,
+): React.CSSProperties | undefined {
+  const backgroundColor =
+    catalogSetDetail.publicTheme?.surfaceColor ??
+    catalogSetDetail.publicTheme?.accentColor;
+  const textColor =
+    catalogSetDetail.publicTheme?.surfaceTextColor ??
+    catalogSetDetail.publicTheme?.heroTextColor;
+
+  if (!backgroundColor && !textColor) {
+    return undefined;
+  }
+
+  const railStyle: React.CSSProperties & Record<string, string> = {};
+
+  if (backgroundColor) {
+    railStyle['--article-theme-surface'] = backgroundColor;
+  }
+
+  if (textColor) {
+    railStyle['--article-theme-surface-text'] = textColor;
+  }
+
+  return railStyle;
+}
+
+export function SetDetailInternalLinkRails({
+  blocks,
+  catalogSetDetail,
+}: {
+  blocks: readonly SetDetailInternalLinkBlock[];
+  catalogSetDetail: CatalogSetDetail;
+}) {
+  if (!blocks.length) {
+    return null;
+  }
+
+  return (
+    <>
+      {blocks.map((block) => (
+        <CatalogFeatureSetList
+          className={styles.comparableSetsRail}
+          description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${catalogSetDetail.name} staan.`}
+          eyebrow="Zelfde thema"
+          key={block.id}
+          sectionId="same-theme-sets"
+          setCards={block.items.slice(0, SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT)}
+          signalText={`${block.items.length} sets uit ${catalogSetDetail.theme}`}
+          style={buildSetDetailComparableRailStyle(catalogSetDetail)}
+          surfaceVariant="themed"
+          tone="default"
+          title={block.title}
+        />
+      ))}
+    </>
+  );
+}
+
+export function SetDetailCollectionDiscoveryLinks({
+  links,
+}: {
+  links: readonly SetDetailDiscoveryLink[];
+}) {
+  if (!links.length) {
+    return null;
+  }
+
+  return (
+    <section
+      aria-labelledby="set-discovery-links-title"
+      className={styles.discoveryLinks}
+    >
+      <div className={styles.discoveryLinksHeader}>
+        <p className={styles.discoveryLinksEyebrow}>Meer keuzes</p>
+        <h2
+          className={styles.discoveryLinksTitle}
+          id="set-discovery-links-title"
+        >
+          Verder ontdekken
+        </h2>
+      </div>
+      <div className={styles.discoveryLinksList}>
+        {links.map((link) => (
+          <a className={styles.discoveryLink} href={link.href} key={link.href}>
+            {link.label}
           </a>
         ))}
       </div>
@@ -1993,11 +2227,11 @@ export default async function SetDetailPage({
           <Suspense
             fallback={
               <CatalogSetCardRailSkeletonSection
-                ariaLabel="Vergelijkbare LEGO sets laden"
-                description="We zoeken sets met dezelfde sfeer, schaal of prijszone."
-                eyebrow="Hierna kijken"
+                ariaLabel="Sets uit hetzelfde thema laden"
+                description="We zoeken sets uit hetzelfde thema."
+                eyebrow="Zelfde thema"
                 itemCount={5}
-                title="Vergelijkbare LEGO sets"
+                title="Meer uit dit thema"
                 tone="muted"
               />
             }
@@ -2121,7 +2355,7 @@ export async function loadSetDetailSimilarSetsRail({
     load: () =>
       listCatalogSimilarSetCards({
         currentSetCard,
-        limit: SIMILAR_SETS_RAIL_LIMIT * 4,
+        limit: SET_DETAIL_INTERNAL_LINK_CANDIDATE_LIMIT,
         referenceBestPriceMinor: bestPriceMinor,
         signal,
       }),
@@ -2138,58 +2372,51 @@ export async function loadSetDetailSimilarSetsRail({
 
   throwIfSimilarRailAborted(signal);
 
-  const similarSetCards = measureSetPageSync({
-    label: 'similar-sets:rank',
-    slug,
-    load: () =>
-      rankCatalogSimilarSetCards({
-        currentSetCard,
-        limit: SIMILAR_SETS_RAIL_LIMIT,
-        referenceBestPriceMinor: bestPriceMinor,
-        setCards: similarSetCandidateCards,
-      }),
-  });
-
-  logSimilarSetRailDebug({
-    label: 'ranked',
-    page_slug: slug,
-    ranked_count: similarSetCards.length,
-    ranked_sample: similarSetCards.slice(0, 5).map((setCard) => setCard.id),
-  });
-
   throwIfSimilarRailAborted(signal);
 
-  const similarSetRailItems = toSimilarSetRailItems({
-    currentOfferSummaryBySetId: new Map(),
-    setCards: similarSetCards,
+  const internalLinkBlocks = measureSetPageSync({
+    label: 'internal-links:select',
+    slug,
+    load: () =>
+      buildSetDetailInternalLinkBlocks({
+        candidateSetCards: similarSetCandidateCards,
+        currentSetCard: {
+          ...currentSetCard,
+          publicTheme: catalogSetDetail.publicTheme,
+        },
+      }),
+  });
+  const discoveryLinks = buildSetDetailCollectionDiscoveryLinks({
+    bestPriceMinor,
+    catalogSetDetail,
   });
 
   logSimilarSetRailDebug({
-    final_rendered_count: similarSetRailItems.length,
-    final_rendered_sample: similarSetRailItems
-      .slice(0, 5)
-      .map((setCard) => setCard.id),
+    block_count: internalLinkBlocks.length,
+    discovery_link_count: discoveryLinks.length,
+    final_rendered_count: internalLinkBlocks.reduce(
+      (count, block) => count + block.items.length,
+      0,
+    ),
+    final_rendered_sample: internalLinkBlocks.flatMap((block) =>
+      block.items.slice(0, 3).map((setCard) => setCard.id),
+    ),
     label: 'rendered',
     page_slug: slug,
   });
 
-  if (!similarSetRailItems.length) {
+  if (!internalLinkBlocks.length && !discoveryLinks.length) {
     return null;
   }
 
   return (
-    <CatalogFeatureSetList
-      className={styles.comparableSetsRail}
-      description={buildSimilarSetsRailDescription(catalogSetDetail.name)}
-      eyebrow="Hierna kijken"
-      sectionId="similar-sets"
-      setCards={similarSetRailItems}
-      signalText={`${similarSetRailItems.length} sets in ${catalogSetDetail.theme} met een vergelijkbare schaal of prijszone`}
-      style={buildSetDetailComparableRailStyle(catalogSetDetail)}
-      surfaceVariant="themed"
-      tone="default"
-      title="Vergelijkbare LEGO sets"
-    />
+    <>
+      <SetDetailInternalLinkRails
+        blocks={internalLinkBlocks}
+        catalogSetDetail={catalogSetDetail}
+      />
+      <SetDetailCollectionDiscoveryLinks links={discoveryLinks} />
+    </>
   );
 }
 

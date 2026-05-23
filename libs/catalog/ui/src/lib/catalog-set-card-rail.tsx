@@ -30,6 +30,8 @@ export interface CatalogSetCardRailItem {
   ctaMode?: CatalogSetCardCtaMode;
   href?: string;
   id: string;
+  imageFetchPriority?: 'auto' | 'high' | 'low';
+  imageLoading?: 'eager' | 'lazy';
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardRailSummary;
   showThemeBadge?: boolean;
@@ -554,6 +556,8 @@ function CatalogSetCardRailViewport({
             actions={item.actions}
             ctaMode={item.ctaMode}
             href={item.href}
+            imageFetchPriority={item.imageFetchPriority}
+            imageLoading={item.imageLoading}
             key={item.id}
             priceContext={item.priceContext}
             setSummary={item.setSummary}

@@ -61,6 +61,8 @@ export interface CatalogHomepageSetCard extends CatalogSetSummary {
   availability?: string;
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
+  recommendedAge?: number;
+  setStatus?: CatalogSetStatus;
 }
 
 export interface CatalogDiscoverySignal {

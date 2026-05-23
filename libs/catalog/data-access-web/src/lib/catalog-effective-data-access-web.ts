@@ -4,6 +4,8 @@ import { catalogSetOverlays } from '@lego-platform/catalog/data-access';
 import type {
   CatalogCanonicalSet,
   CatalogBrowseThemeGroup,
+  CatalogCollectionLandingPageConfig,
+  CatalogCollectionLandingPageSortKey,
   CatalogHomepageSetCard,
   CatalogSearchMatch,
   CatalogSetDetail,
@@ -106,6 +108,20 @@ const catalogSetOverlayByCanonicalId = new Map(
     catalogSetOverlay,
   ]),
 );
+
+function listCatalogOverlaySetIdsByStatus(
+  statuses: NonNullable<
+    CatalogCollectionLandingPageConfig['filters']['setStatuses']
+  >,
+): string[] {
+  const statusSet = new Set(statuses);
+
+  return catalogSetOverlays.flatMap((catalogSetOverlay) =>
+    catalogSetOverlay.setStatus && statusSet.has(catalogSetOverlay.setStatus)
+      ? [catalogSetOverlay.canonicalId]
+      : [],
+  );
+}
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 type CatalogAbortableQuery<T> = T & {
@@ -1037,6 +1053,11 @@ function toCatalogSetDetailFromCanonicalSet(
           recommendedAge: catalogSetOverlay.recommendedAge,
         }
       : {}),
+    ...(catalogSetOverlay?.setStatus
+      ? {
+          setStatus: catalogSetOverlay.setStatus,
+        }
+      : {}),
     ...(catalogSetOverlay?.minifigureHighlights?.length
       ? {
           minifigureHighlights: catalogSetOverlay.minifigureHighlights,
@@ -1860,6 +1881,16 @@ function toCatalogSetCardFromCanonicalSet(
     imageUrl: catalogSetDetail.imageUrl,
     images: catalogSetDetail.images,
     primaryImage: catalogSetDetail.primaryImage,
+    ...(catalogSetDetail.recommendedAge
+      ? {
+          recommendedAge: catalogSetDetail.recommendedAge,
+        }
+      : {}),
+    ...(catalogSetDetail.setStatus
+      ? {
+          setStatus: catalogSetDetail.setStatus,
+        }
+      : {}),
   };
 }
 
@@ -2186,6 +2217,277 @@ export async function listCatalogSetCards({
     offset,
     supabaseClient,
   });
+}
+
+export interface CatalogCollectionLandingPageResult {
+  bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  setCards: readonly CatalogHomepageSetCard[];
+  totalSetCount: number;
+}
+
+const catalogAdultCollectorThemeSlugs = new Set([
+  'architecture',
+  'art',
+  'botanicals',
+  'icons',
+  'ideas',
+  'technic',
+]);
+
+const CATALOG_COLLECTION_CANDIDATE_LIMIT = 500;
+const CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS = 210;
+const CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS = 120;
+
+function getCatalogCollectionThemeSlug(
+  setCard: Pick<CatalogHomepageSetCard, 'publicTheme' | 'theme'>,
+): string {
+  return setCard.publicTheme?.slug ?? buildCatalogThemeSlug(setCard.theme);
+}
+
+function getCatalogCollectionReleaseTimestamp(
+  setCard: Pick<CatalogHomepageSetCard, 'releaseDate' | 'releaseYear'>,
+): number {
+  if (setCard.releaseDate) {
+    const timestamp = Date.parse(`${setCard.releaseDate}T00:00:00Z`);
+
+    if (Number.isFinite(timestamp)) {
+      return timestamp;
+    }
+  }
+
+  return Date.UTC(setCard.releaseYear, 0, 1);
+}
+
+function matchesCatalogCollectionRecentRelease({
+  now,
+  setCard,
+}: {
+  now: Date;
+  setCard: CatalogHomepageSetCard;
+}): boolean {
+  const releaseTimestamp = getCatalogCollectionReleaseTimestamp(setCard);
+  const lowerBound =
+    now.getTime() -
+    CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS * 86_400_000;
+  const upperBound =
+    now.getTime() +
+    CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS * 86_400_000;
+
+  return releaseTimestamp >= lowerBound && releaseTimestamp <= upperBound;
+}
+
+function matchesCatalogCollectionAdultCollector(
+  setCard: CatalogHomepageSetCard,
+): boolean {
+  if ((setCard.recommendedAge ?? 0) >= 18) {
+    return true;
+  }
+
+  return (
+    catalogAdultCollectorThemeSlugs.has(
+      getCatalogCollectionThemeSlug(setCard),
+    ) && setCard.pieces >= 900
+  );
+}
+
+function matchesCatalogCollectionLandingPageConfig({
+  bestPriceMinorBySetId,
+  config,
+  now,
+  setCard,
+}: {
+  bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  config: CatalogCollectionLandingPageConfig;
+  now: Date;
+  setCard: CatalogHomepageSetCard;
+}): boolean {
+  const { filters } = config;
+
+  if (
+    typeof filters.maxBestPriceMinor === 'number' &&
+    (bestPriceMinorBySetId.get(setCard.id) ?? Number.POSITIVE_INFINITY) >
+      filters.maxBestPriceMinor
+  ) {
+    return false;
+  }
+
+  if (
+    filters.themeSlugs?.length &&
+    !filters.themeSlugs.includes(getCatalogCollectionThemeSlug(setCard))
+  ) {
+    return false;
+  }
+
+  if (
+    filters.adultCollector &&
+    !matchesCatalogCollectionAdultCollector(setCard)
+  ) {
+    return false;
+  }
+
+  if (
+    filters.recentRelease &&
+    !matchesCatalogCollectionRecentRelease({ now, setCard })
+  ) {
+    return false;
+  }
+
+  if (
+    filters.setStatuses?.length &&
+    (!setCard.setStatus || !filters.setStatuses.includes(setCard.setStatus))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function compareCatalogCollectionLandingPageSetCards({
+  bestPriceMinorBySetId,
+  sortKey,
+}: {
+  bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  sortKey: CatalogCollectionLandingPageSortKey;
+}): (left: CatalogHomepageSetCard, right: CatalogHomepageSetCard) => number {
+  return (left, right) => {
+    if (sortKey === 'price-asc') {
+      return (
+        (bestPriceMinorBySetId.get(left.id) ?? Number.POSITIVE_INFINITY) -
+          (bestPriceMinorBySetId.get(right.id) ?? Number.POSITIVE_INFINITY) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    }
+
+    if (sortKey === 'newest') {
+      return (
+        getCatalogCollectionReleaseTimestamp(right) -
+          getCatalogCollectionReleaseTimestamp(left) ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    }
+
+    if (sortKey === 'pieces-desc') {
+      return (
+        right.pieces - left.pieces ||
+        right.releaseYear - left.releaseYear ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    }
+
+    return (
+      (right.recommendedAge ?? 0) - (left.recommendedAge ?? 0) ||
+      right.pieces - left.pieces ||
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name) ||
+      left.id.localeCompare(right.id)
+    );
+  };
+}
+
+function toCatalogCollectionBestPriceMinorBySetId(
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>,
+): Map<string, number> {
+  return new Map(
+    [...currentOfferSummaryBySetId.entries()].flatMap(([setId, summary]) => {
+      const bestPriceMinor = summary.bestOffer?.priceCents;
+
+      return typeof bestPriceMinor === 'number' && bestPriceMinor > 0
+        ? [[setId, bestPriceMinor] as const]
+        : [];
+    }),
+  );
+}
+
+export async function getCatalogCollectionLandingPage({
+  cacheOptions,
+  config,
+  limit = 36,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  now = new Date(),
+  offset = 0,
+  sortKey,
+  supabaseClient,
+}: {
+  cacheOptions?: CatalogApiReadCacheOptions;
+  config: CatalogCollectionLandingPageConfig;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  now?: Date;
+  offset?: number;
+  sortKey: CatalogCollectionLandingPageSortKey;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCollectionLandingPageResult> {
+  const safeLimit = normalizeCatalogReadLimit(limit, 36);
+  const safeOffset = normalizeCatalogReadOffset(offset);
+  const scopedSetCards = config.filters.maxBestPriceMinor
+    ? await listCatalogSetCardsByIds({
+        canonicalIds: await listCatalogCurrentOfferCandidateSetIds({
+          cacheOptions: cacheOptions
+            ? {
+                revalidateSeconds: cacheOptions.revalidateSeconds,
+                tags: cacheOptions.tags ?? [],
+              }
+            : undefined,
+          limit: CATALOG_COLLECTION_CANDIDATE_LIMIT,
+          supabaseClient,
+        }),
+        listCanonicalCatalogSetsFn,
+        supabaseClient,
+      })
+    : await listCatalogSetCards({
+        limit: CATALOG_COLLECTION_CANDIDATE_LIMIT,
+        listCanonicalCatalogSetsFn,
+        supabaseClient,
+      });
+  const statusOverlaySetCards = config.filters.setStatuses?.length
+    ? await listCatalogSetCardsByIds({
+        canonicalIds: listCatalogOverlaySetIdsByStatus(
+          config.filters.setStatuses,
+        ).filter(
+          (canonicalId) =>
+            !scopedSetCards.some((setCard) => setCard.id === canonicalId),
+        ),
+        listCanonicalCatalogSetsFn,
+        supabaseClient,
+      })
+    : [];
+  const candidateSetCards = [...scopedSetCards, ...statusOverlaySetCards];
+  const currentOfferSummaryBySetId = config.filters.maxBestPriceMinor
+    ? await listCatalogCurrentOfferSummariesBySetIds({
+        cacheOptions,
+        setIds: candidateSetCards.map((setCard) => setCard.id),
+      })
+    : new Map<string, CatalogCurrentOfferSummary>();
+  const bestPriceMinorBySetId = toCatalogCollectionBestPriceMinorBySetId(
+    currentOfferSummaryBySetId,
+  );
+  const matchingSetCards = candidateSetCards
+    .filter((setCard) =>
+      matchesCatalogCollectionLandingPageConfig({
+        bestPriceMinorBySetId,
+        config,
+        now,
+        setCard,
+      }),
+    )
+    .sort(
+      compareCatalogCollectionLandingPageSetCards({
+        bestPriceMinorBySetId,
+        sortKey,
+      }),
+    );
+
+  return {
+    bestPriceMinorBySetId,
+    setCards: matchingSetCards.slice(safeOffset, safeOffset + safeLimit),
+    totalSetCount: matchingSetCards.length,
+  };
 }
 
 function selectCatalogSetCardsByIds({

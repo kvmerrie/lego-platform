@@ -28,6 +28,7 @@ export function CatalogFeatureSetList({
 
   eyebrow = 'Pronkstukken',
   layout = 'rail',
+  prioritizeFirstImage = false,
   sectionId = 'featured-sets',
   setCards,
   showSignal = true,
@@ -43,6 +44,7 @@ export function CatalogFeatureSetList({
   description?: string;
   eyebrow?: string;
   layout?: 'grid' | 'rail';
+  prioritizeFirstImage?: boolean;
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
   showSignal?: boolean;
@@ -91,12 +93,18 @@ export function CatalogFeatureSetList({
         gridMode="browse"
         variant="featured"
       >
-        {homepageSets.map((catalogSetSummary) => (
+        {homepageSets.map((catalogSetSummary, index) => (
           <CatalogSetCard
             actions={catalogSetSummary.actions}
             ctaMode={catalogSetSummary.ctaMode}
             key={catalogSetSummary.id}
             href={buildSetDetailPath(catalogSetSummary.slug)}
+            imageFetchPriority={
+              prioritizeFirstImage && index === 0 ? 'high' : undefined
+            }
+            imageLoading={
+              prioritizeFirstImage && index === 0 ? 'eager' : undefined
+            }
             priceContext={catalogSetSummary.priceContext}
             setSummary={catalogSetSummary}
             trackingEvent={catalogSetSummary.trackingEvent}
@@ -109,11 +117,14 @@ export function CatalogFeatureSetList({
     <CatalogSetCardRailSection
       {...sectionShellProps}
       ariaLabel={title}
-      items={homepageSets.map((catalogSetSummary) => ({
+      items={homepageSets.map((catalogSetSummary, index) => ({
         actions: catalogSetSummary.actions,
         ctaMode: catalogSetSummary.ctaMode,
         href: buildSetDetailPath(catalogSetSummary.slug),
         id: catalogSetSummary.id,
+        imageFetchPriority:
+          prioritizeFirstImage && index === 0 ? 'high' : undefined,
+        imageLoading: prioritizeFirstImage && index === 0 ? 'eager' : undefined,
         priceContext: catalogSetSummary.priceContext,
         setSummary: catalogSetSummary,
         trackingEvent: catalogSetSummary.trackingEvent,

@@ -6,6 +6,15 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.rebrickable.com',
+        pathname: '/media/sets/**',
+      },
+    ],
+  },
   nx: {},
   async rewrites() {
     const apiProxyTarget =

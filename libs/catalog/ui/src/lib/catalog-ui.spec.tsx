@@ -59,7 +59,7 @@ describe('CatalogSetCard', () => {
           theme: 'Icons',
           releaseYear: 2023,
           pieces: 6181,
-          imageUrl: 'https://images.example/rivendell.jpg',
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -73,6 +73,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('width="420"');
     expect(markup).toContain('height="420"');
     expect(markup).toContain('loading="lazy"');
+    expect(markup).toContain('srcSet="/_next/image?url=');
+    expect(markup).toContain(
+      'sizes="(min-width: 64rem) 280px, (min-width: 48rem) 33vw, 100vw"',
+    );
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
@@ -81,6 +85,49 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('A flagship fantasy build');
     expect(markup).not.toContain('Reviewed prijs');
     expect(markup).not.toContain('Dekking');
+  });
+
+  it('allows callers to prioritize a known above-the-fold set image', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        imageFetchPriority="high"
+        imageLoading="eager"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('fetchPriority="high"');
+    expect(markup).toContain('loading="eager"');
+    expect(markup).toContain('srcSet="/_next/image?url=');
+  });
+
+  it('keeps unknown remote set images as plain images to avoid broken Next image hosts', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('src="https://images.example/rivendell.jpg"');
+    expect(markup).not.toContain('/_next/image?url=');
   });
 
   it('renders a subtle saved-state badge when a set belongs to a collector list', () => {
@@ -2080,16 +2127,63 @@ describe('CatalogSetCardCollection', () => {
       /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn \{\s+grid-template-columns: minmax\(0, 1fr\);/u,
     );
     expect(css).toMatch(
-      /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn > \.setCard \{\s+grid-column: 1 \/ -1;/u,
+      /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn > \.setCard \{\s+border-right: 0;\s+grid-column: 1 \/ -1;/u,
     );
     expect(css).toMatch(
       /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn \{\s+grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u,
     );
     expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn > \.setCard,[\s\S]+?\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn[\s\S]+?> \.cardCompactBody \{\s+min-inline-size: 0;\s+min-width: 0;/u,
+    );
+    expect(css).toMatch(
       /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn > \.setCard \{\s+grid-column: auto;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCard:nth-child\(odd\) \{\s+border-right: var\(--catalog-browse-grid-divider-size\) solid\s+var\(--catalog-browse-grid-divider-color\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCard:nth-child\(even\) \{\s+border-right: 0;/u,
     );
     expect(css).toMatch(
       /@media \(min-width: 48rem\) \{\s+\.setCardMobileLayoutToggle \{\s+display: none;/u,
     );
+  });
+
+  it('keeps page browse grids from overriding the mobile compact columns', () => {
+    const searchCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-search-results/src/lib/catalog-feature-search-results.module.css',
+      ),
+      'utf-8',
+    );
+    const themeCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-theme-page/src/lib/catalog-feature-theme-page.module.css',
+      ),
+      'utf-8',
+    );
+    const searchBaseGridRule =
+      searchCss.match(/\.resultsGrid\s*\{[^}]+\}/u)?.[0] ?? '';
+    const themeBaseGridRule =
+      themeCss.match(/\.browseGrid\s*\{[^}]+\}/u)?.[0] ?? '';
+
+    expect(searchBaseGridRule).toMatch(/\.resultsGrid \{\s+--catalog-browse/u);
+    expect(searchBaseGridRule).not.toMatch(
+      /\.resultsGrid \{[^}]+grid-template-columns:/u,
+    );
+    expect(searchCss).toMatch(
+      /@media \(min-width: 48rem\) \{[\s\S]+?\.resultsGrid \{[\s\S]+?grid-template-columns:/u,
+    );
+    expect(searchCss).not.toContain('@media (min-width: 32rem)');
+    expect(themeBaseGridRule).toMatch(/\.browseGrid \{\s+--catalog-browse/u);
+    expect(themeBaseGridRule).not.toMatch(
+      /\.browseGrid \{[^}]+grid-template-columns:/u,
+    );
+    expect(themeCss).toMatch(
+      /@media \(min-width: 48rem\) \{[\s\S]+?\.browseGrid \{[\s\S]+?grid-template-columns:/u,
+    );
+    expect(themeCss).not.toContain('@media (min-width: 28rem)');
   });
 });

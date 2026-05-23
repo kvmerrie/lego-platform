@@ -655,6 +655,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
               eyebrow="Deals"
+              prioritizeFirstImage
               sectionId={HOMEPAGE_PRIMARY_DEAL_SECTION_ID}
               setCards={homepageStrongDealSetCards}
               showSignal={false}
@@ -667,6 +668,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Sets die nu lager staan dan recent. Geen hard deal-label, wel een goed moment om te kijken."
               eyebrow="Prijsbeweging"
+              prioritizeFirstImage
               sectionId={HOMEPAGE_SOFT_DEAL_SECTION_ID}
               setCards={homepageSoftDealSetCards}
               showSignal={false}
@@ -679,6 +681,7 @@ export default async function HomePage() {
             <CatalogFeatureSetList
               description="Geen harde kortingclaim, wel actuele prijzen met een werkende winkelroute. Begin hier als je nu wilt vergelijken."
               eyebrow="Actuele prijzen"
+              prioritizeFirstImage
               sectionId={HOMEPAGE_CURRENT_OFFERS_SECTION_ID}
               setCards={homepageCurrentOfferSetCards}
               showSignal={false}

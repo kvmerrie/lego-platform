@@ -16,10 +16,6 @@ const setPageMocks = vi.hoisted(() => ({
   listCatalogSetSlugs: vi.fn(),
   listCatalogSimilarSetCards: vi.fn(),
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
-  rankCatalogSimilarSetCards: vi.fn(
-    ({ limit, setCards }: { limit?: number; setCards: readonly unknown[] }) =>
-      setCards.slice(0, limit ?? setCards.length),
-  ),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -45,7 +41,6 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listCatalogSetLiveOffersBySetId: setPageMocks.listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs: setPageMocks.listCatalogSetSlugs,
   listCatalogSimilarSetCards: setPageMocks.listCatalogSimilarSetCards,
-  rankCatalogSimilarSetCards: setPageMocks.rankCatalogSimilarSetCards,
 }));
 
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
@@ -380,12 +375,100 @@ describe('set detail static generation', () => {
       }),
     );
 
-    expect(railHtml).toContain('Vergelijkbare LEGO sets');
+    expect(railHtml).toContain('Meer uit dit thema');
+    expect(railHtml).not.toContain('Vergelijkbare LEGO sets');
     expect(railHtml).toContain('Grogu with Hover Pram');
+    expect(railHtml).toContain(
+      'href="/sets/grogu-mandalorian-apprentice-75446"',
+    );
+    expect(railHtml).toContain('Verder ontdekken');
+    expect(railHtml).toContain('href="/nieuwe-lego-sets"');
+    expect(railHtml).toContain('href="/themes/star-wars"');
+    expect(railHtml).toContain('href="/lego-voor-volwassenen"');
     expect(railHtml).toContain('data-surface-variant="themed"');
     expect(railHtml).toContain('--article-theme-surface:#112244');
     expect(railHtml).toContain('--article-theme-surface-text:#ffffff');
     expect(setPageMocks.listCatalogSimilarSetCards).toHaveBeenCalled();
+  });
+
+  it('selects one same-theme internal-link rail without duplicate set links', async () => {
+    const pageModule = await import('./page');
+    const blocks = pageModule.buildSetDetailInternalLinkBlocks({
+      candidateSetCards: [
+        {
+          id: 'current',
+          name: 'Current Set',
+          pieces: 1000,
+          releaseYear: 2024,
+          slug: 'current-set',
+          theme: 'Star Wars',
+        },
+        {
+          id: 'theme-1',
+          name: 'TIE Fighter',
+          pieces: 432,
+          releaseYear: 2026,
+          slug: 'tie-fighter',
+          theme: 'Star Wars',
+        },
+        {
+          id: 'shared',
+          name: 'Shared Candidate',
+          pieces: 600,
+          releaseYear: 2025,
+          slug: 'shared-candidate',
+          theme: 'Star Wars',
+        },
+      ],
+      currentSetCard: {
+        id: 'current',
+        name: 'Current Set',
+        pieces: 1000,
+        releaseYear: 2024,
+        theme: 'Star Wars',
+      },
+    });
+    const linkedSetIds = blocks.flatMap((block) =>
+      block.items.map((item) => item.id),
+    );
+
+    expect(blocks.map((block) => block.id)).toEqual(['same-theme']);
+    expect(linkedSetIds).not.toContain('current');
+    expect(new Set(linkedSetIds).size).toBe(linkedSetIds.length);
+    expect(blocks.find((block) => block.id === 'same-theme')?.items).toEqual(
+      expect.arrayContaining([expect.objectContaining({ id: 'shared' })]),
+    );
+  });
+
+  it('builds relevant collection discovery links for set detail pages', async () => {
+    const pageModule = await import('./page');
+    const links = pageModule.buildSetDetailCollectionDiscoveryLinks({
+      bestPriceMinor: 4_999,
+      catalogSetDetail: {
+        id: '75439',
+        imageUrl: 'https://cdn.example.com/75439.jpg',
+        name: 'Darth Vader Bust',
+        pieces: 349,
+        publicTheme: {
+          name: 'Star Wars',
+          slug: 'star-wars',
+        },
+        recommendedAge: 18,
+        releaseYear: 2026,
+        setStatus: 'retiring_soon',
+        slug: 'darth-vader-bust-75439',
+        theme: 'Star Wars',
+      },
+    });
+
+    expect(links.map((link) => link.href)).toEqual([
+      '/nieuwe-lego-sets',
+      '/lego-sets-onder-50-euro',
+      '/lego-sets-onder-100-euro',
+      '/themes/star-wars',
+      '/lego-voor-volwassenen',
+      '/retiring-lego-sets',
+    ]);
   });
 });
 
@@ -1170,14 +1253,18 @@ describe('set detail page JSON-LD', () => {
       }),
     );
 
-    expect(html).toContain('Vergelijkbare LEGO sets');
+    expect(html).toContain('Meer uit dit thema');
+    expect(html).not.toContain('Vergelijkbare LEGO sets');
     expect(html).toContain('Up-Scaled Darth Vader Minifigure');
+    expect(html).toContain(
+      'href="/sets/up-scaled-darth-vader-minifigure-75461"',
+    );
+    expect(html).toContain('href="/nieuwe-lego-sets"');
+    expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
-    expect(html.indexOf('Vergelijkbare LEGO sets')).toBeLessThan(
+    expect(html.indexOf('Meer uit dit thema')).toBeLessThan(
       html.indexOf('Recent bekeken LEGO sets'),
     );
-    expect(html).toContain('--article-theme-surface:#171717');
-    expect(html).toContain('--article-theme-surface-text:#ffffff');
   });
 
   it('keeps optional similar and article rail slots from blocking the initial render', async () => {

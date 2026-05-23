@@ -3,7 +3,10 @@ import {
   listCatalogThemePageSlugs,
   getCatalogThemePageBySlug,
 } from '@lego-platform/catalog/data-access-web';
-import { normalizeTheme } from '@lego-platform/catalog/util';
+import {
+  listIndexableCatalogCollectionLandingPageConfigs,
+  normalizeTheme,
+} from '@lego-platform/catalog/util';
 import {
   getEditorialPageBySlug,
   listEditorialPageSlugs,
@@ -354,6 +357,12 @@ export async function collectDealsSitemapEntries({
       allowIndexing,
       pathname: buildWebPath(webPathnames.deals),
     }),
+    ...listIndexableCatalogCollectionLandingPageConfigs().map((config) =>
+      createSitemapUrlEntry({
+        allowIndexing,
+        pathname: config.canonicalPath,
+      }),
+    ),
     createSitemapUrlEntry({
       allowIndexing,
       pathname: '/hoe-werkt-het',
