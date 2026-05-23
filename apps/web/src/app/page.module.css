@@ -3,6 +3,173 @@
   gap: var(--lego-page-section-gap, var(--lego-space-6));
 }
 
+.discoveryTileSection {
+  padding-block: var(--lego-space-5);
+}
+
+.discoveryTileHeading {
+  max-width: 42rem;
+}
+
+.discoveryTileViewport {
+  margin-inline: calc(
+    -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
+  );
+  overflow-x: auto;
+  padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
+    var(--lego-space-1);
+  scroll-padding-inline: var(
+    --catalog-section-inline-padding,
+    var(--lego-space-4)
+  );
+}
+
+.discoveryTileTrack {
+  display: flex;
+  gap: var(--lego-space-2);
+  margin: 0;
+  scroll-snap-type: x proximity;
+}
+
+.discoveryTileTrack::after {
+  content: '';
+  flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
+}
+
+.discoveryTileTrack > * {
+  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.discoveryTile {
+  aspect-ratio: 3 / 4;
+  background:
+    radial-gradient(circle at 20% 16%, rgb(255 255 255 / 0.2), transparent 28%),
+    linear-gradient(145deg, #566679 0%, #263242 52%, #111827 100%);
+  border-radius: var(--lego-radius-sm);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.discoveryTile[data-discovery-tile='adult-sets'] {
+  background:
+    radial-gradient(
+      circle at 75% 12%,
+      rgb(255 255 255 / 0.18),
+      transparent 28%
+    ),
+    linear-gradient(145deg, #6f5f49 0%, #2f3340 54%, #141923 100%);
+}
+
+.discoveryTile[data-discovery-tile='budget-sets'] {
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgb(255 255 255 / 0.22),
+      transparent 30%
+    ),
+    linear-gradient(145deg, #5f7a8f 0%, #304257 54%, #131b25 100%);
+}
+
+.discoveryTile[data-discovery-tile='retiring-sets'] {
+  background:
+    radial-gradient(
+      circle at 78% 18%,
+      rgb(255 255 255 / 0.18),
+      transparent 30%
+    ),
+    linear-gradient(145deg, #727476 0%, #3a3f4a 52%, #171b22 100%);
+}
+
+.discoveryTile[data-discovery-tile='deals'] {
+  background:
+    radial-gradient(circle at 78% 14%, rgb(255 219 77 / 0.24), transparent 30%),
+    linear-gradient(145deg, #677c60 0%, #2f3c3b 52%, #121923 100%);
+}
+
+.discoveryTile[data-discovery-tile='themes'] {
+  background:
+    radial-gradient(circle at 24% 18%, rgb(255 255 255 / 0.2), transparent 28%),
+    radial-gradient(circle at 78% 26%, rgb(255 219 77 / 0.2), transparent 26%),
+    linear-gradient(145deg, #566679 0%, #29384b 52%, #111827 100%);
+}
+
+.discoveryTileLink {
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  color: #ffffff;
+  display: grid;
+  min-height: 100%;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  text-align: left;
+}
+
+.discoveryTileLink:focus-visible {
+  outline: 3px solid var(--lego-focus-ring);
+  outline-offset: -3px;
+}
+
+.discoveryTileImage {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.94;
+  transform: scale(1.02);
+  width: 100%;
+}
+
+.discoveryTileOverlay {
+  background: linear-gradient(
+    180deg,
+    rgb(14 18 28 / 0.08) 0%,
+    rgb(14 18 28 / 0.35) 48%,
+    rgb(14 18 28 / 0.82) 100%
+  );
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.discoveryTileBody {
+  align-self: end;
+  display: grid;
+  gap: var(--lego-space-1);
+  min-width: 0;
+  padding: var(--lego-space-3);
+  position: relative;
+  z-index: 2;
+}
+
+.discoveryTileTitle {
+  display: -webkit-box;
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0;
+  line-height: 1.02;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.discoveryTileSubtitle {
+  color: rgb(255 255 255 / 0.9);
+  display: -webkit-box;
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
 .valueSection {
   display: grid;
   gap: var(--lego-space-4);
@@ -58,5 +225,22 @@
 @media (min-width: 48rem) {
   .valueGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 75rem) {
+  .discoveryTileViewport {
+    margin-inline: 0;
+    overflow: visible;
+    padding: 0;
+    scroll-padding-inline: 0;
+  }
+
+  .discoveryTileTrack > * {
+    flex: 1 1 0;
+  }
+
+  .discoveryTileTrack::after {
+    content: none;
   }
 }

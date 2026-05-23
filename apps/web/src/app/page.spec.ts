@@ -202,8 +202,14 @@ describe('home metadata', () => {
     pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
     pageMocks.listHomepageSetCards.mockResolvedValue([]);
     const pageModule = await import('./page');
-    renderToStaticMarkup(await pageModule.default());
+    const markup = renderToStaticMarkup(await pageModule.default());
 
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('href="/nieuwe-lego-sets"');
+    expect(markup).toContain('href="/lego-voor-volwassenen"');
+    expect(markup).toContain('href="/lego-sets-onder-50-euro"');
+    expect(markup).toContain('href="/retiring-lego-sets"');
+    expect(markup).toContain('href="/themes"');
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',
