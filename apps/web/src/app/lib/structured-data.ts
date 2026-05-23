@@ -20,7 +20,12 @@ export interface BreadcrumbListItem {
 }
 
 interface StructuredDataOffer {
-  availability: 'in_stock' | 'out_of_stock' | 'unknown';
+  availability:
+    | 'in_stock'
+    | 'limited'
+    | 'out_of_stock'
+    | 'preorder'
+    | 'unknown';
   currency: string;
   merchantName: string;
   priceCents: number;
@@ -35,21 +40,25 @@ function toAbsoluteImageUrl(imageUrl?: string): string | undefined {
   return new URL(imageUrl, buildCanonicalUrl('/')).toString();
 }
 
-function toSchemaPrice(priceCents?: number): string | undefined {
+function toSchemaPrice(priceCents?: number): number | undefined {
   return typeof priceCents === 'number' && priceCents > 0
-    ? (priceCents / 100).toFixed(2)
+    ? Number((priceCents / 100).toFixed(2))
     : undefined;
 }
 
 function toSchemaAvailability(
   availability?: StructuredDataOffer['availability'],
 ): string | undefined {
-  if (availability === 'in_stock') {
+  if (availability === 'in_stock' || availability === 'limited') {
     return 'https://schema.org/InStock';
   }
 
   if (availability === 'out_of_stock') {
     return 'https://schema.org/OutOfStock';
+  }
+
+  if (availability === 'preorder') {
+    return 'https://schema.org/PreOrder';
   }
 
   return undefined;
@@ -112,7 +121,7 @@ export function buildSetProductJsonLd({
   canonicalUrl?: string;
   catalogSetDetail: CatalogSetDetail;
   offers?: readonly StructuredDataOffer[];
-}): JsonLdValue {
+}): JsonLdValue | undefined {
   const offerSchemas = offers.flatMap((offer) => {
     const offerSchema = toOfferSchema(offer);
 
@@ -122,10 +131,14 @@ export function buildSetProductJsonLd({
     .map((offer) => offer.priceCents)
     .filter((priceCents) => priceCents > 0);
 
+  if (!offerSchemas.length) {
+    return undefined;
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    aggregateOffer:
+    offers:
       offerSchemas.length > 1 && prices.length
         ? {
             '@type': 'AggregateOffer',
@@ -136,7 +149,7 @@ export function buildSetProductJsonLd({
             priceCurrency: offers.find((offer) => offer.priceCents > 0)
               ?.currency,
           }
-        : undefined,
+        : offerSchemas[0],
     brand: {
       '@type': 'Brand',
       name: 'LEGO',
@@ -147,7 +160,6 @@ export function buildSetProductJsonLd({
     ),
     mpn: catalogSetDetail.id,
     name: catalogSetDetail.name,
-    offers: offerSchemas.length === 1 ? offerSchemas[0] : undefined,
     sku: catalogSetDetail.id,
     url: canonicalUrl,
   };

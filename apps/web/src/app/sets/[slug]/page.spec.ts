@@ -872,6 +872,11 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('type="application/ld+json"');
     expect(html).toContain('"@type":"Product"');
     expect(html).toContain('"@type":"BreadcrumbList"');
+    expect(html).toContain('"offers":{"@type":"Offer"');
+    expect(html).toContain('"price":399.99');
+    expect(html).toContain('"priceCurrency":"EUR"');
+    expect(html).toContain('"availability":"https://schema.org/InStock"');
+    expect(html).toContain('"seller":{"@type":"Organization","name":"bol"}');
     expect(html).toContain(
       'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
     );
@@ -982,7 +987,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('€ 50,00 goedkoper dan de rest');
   });
 
-  it('renders without offer schema when merchant availability fails', async () => {
+  it('omits Product structured data when no valid offer is available', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '76439',
       imageUrl: 'https://cdn.example.com/76439.jpg',
@@ -1017,9 +1022,10 @@ describe('set detail page JSON-LD', () => {
     );
 
     expect(html).toContain('type="application/ld+json"');
-    expect(html).toContain('"@type":"Product"');
+    expect(html).not.toContain('"@type":"Product"');
     expect(html).not.toContain('"@type":"Offer"');
     expect(html).not.toContain('"@type":"AggregateOffer"');
+    expect(html).toContain('"@type":"BreadcrumbList"');
     expect(html).toContain(
       'https://www.brickhunt.nl/sets/ollivanders-and-madam-malkins-robes-76439',
     );

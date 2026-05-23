@@ -1831,17 +1831,22 @@ export default async function SetDetailPage({
   const jsonLd = measureSetPageSync({
     label: 'structured-data',
     slug,
-    load: () => [
-      buildSetProductJsonLd({
-        canonicalUrl,
-        catalogSetDetail,
-        offers: hasTrackedAvailabilityFallback ? [] : localizedSetDetailOffers,
-      }),
-      buildSetBreadcrumbJsonLd({
-        catalogSetDetail,
-        themeUrl: themeHref,
-      }),
-    ],
+    load: () =>
+      [
+        buildSetProductJsonLd({
+          canonicalUrl,
+          catalogSetDetail,
+          offers: hasTrackedAvailabilityFallback
+            ? []
+            : localizedSetDetailOffers,
+        }),
+        buildSetBreadcrumbJsonLd({
+          catalogSetDetail,
+          themeUrl: themeHref,
+        }),
+      ].filter(
+        (item): item is Exclude<typeof item, undefined> => item !== undefined,
+      ),
   });
 
   logSetPagePerf({
