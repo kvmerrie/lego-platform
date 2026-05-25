@@ -388,12 +388,19 @@ Rakuten LEGO job notes:
 - the Phase 1 sync imports only exact catalog matches with EUR prices and `nl-nl` LEGO deeplinks; unmatched candidates are logged only, never created as catalog sets
 - write-runs perform a dry-run preflight first and hard-fail before writes when locale drift, non-EUR rows, missing deeplinks, excessive parse failures, or a low match rate make the feed unsafe
 - normal cron runs should omit `--max-products` so the full feed is processed; unmatched and excluded rows stay compact in the summary unless debug flags are used
+- exact matched Rakuten rows upsert enrichment into `catalog_set_source_metadata` with `source=rakuten-lego-eu`, `locale=nl-NL`, `match_confidence=exact_set_number`, and `policy=metadata_only_pending_audit`; this must not overwrite `catalog_sets.name`, slugs, SEO titles, or public catalog identity
 - after a production import changes offers, the job triggers public price revalidation with reason `rakuten_lego_feed_sync`
 
 Rakuten LEGO dry-run:
 
 ```bash
 pnpm sync:rakuten-lego-feed -- --dry-run
+```
+
+Rakuten LEGO title audit dry-run:
+
+```bash
+pnpm sync:rakuten-lego-feed -- --dry-run --title-audit-report-path tmp/rakuten-lego-title-audit.json
 ```
 
 Rakuten LEGO write-run:
@@ -411,8 +418,17 @@ Rollback or disable:
 Monitoring after cron:
 
 - check `phase1_summary`, especially `preflight_match_rate`, `excluded_reasons`, `locale_counts`, `availability_counts`, and `guard`
-- check the final line for `parse_failures`, `changed_sets`, `imported_offers`, `unchanged_latest_timestamps_refreshed`, and `skipped_unmatched_set`
+- check `title_audit` only as an enrichment signal; public title policy is still `metadata_only_pending_policy`
+- check `source_metadata upserted=...`; dry-runs must stay `upserted=0`, write-runs should match exact catalog metadata candidates
+- check the final line for `parse_failures`, `changed_sets`, `imported_offers`, `source_metadata_upserted`, `unchanged_latest_timestamps_refreshed`, and `skipped_unmatched_set`
 - investigate immediately when the job hard-fails on a cron guard; do not bypass the guard by changing feed paths without a fresh dry-run
+
+LEGO NL title policy, pending separate approval:
+
+- keep Rebrickable as the catalog identity source
+- use LEGO NL titles/descriptions/images/GTINs only in admin/audit/enrichment surfaces until reviewed
+- do not use LEGO NL titles for public H1, SEO title, canonical slug, or structured data name
+- before public use, review brand and license ordering manually; examples like `LEGO Icons 10316 Rivendell` may be better as metadata than as the public set title
 
 Coppenswarenhuis uses a TradeTracker XML feed and writes through the same strict
 affiliate importer. It keeps only LEGO construction-set candidates with a set

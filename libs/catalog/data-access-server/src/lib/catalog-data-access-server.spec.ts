@@ -13,6 +13,7 @@ import {
   probeCatalogCurrentOfferSnapshotHitRateBySetIds,
   refreshZeroPieceSets,
   searchCatalogMissingSets,
+  upsertCatalogSetSourceMetadata,
 } from './catalog-data-access-server';
 
 function createCatalogOverlayRow(
@@ -304,6 +305,10 @@ function createCatalogOverlaySupabaseClient({
     data: null,
     error: null,
   });
+  const sourceMetadataUpsert = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
   const canonicalUpdateBuilder = createSupabaseUpdateBuilder();
   const updateCanonicalEq = canonicalUpdateBuilder.eq;
   const updateCanonical = vi.fn(() => canonicalUpdateBuilder);
@@ -379,6 +384,12 @@ function createCatalogOverlaySupabaseClient({
       return createSupabaseTableBuilder(minifigSummaryRows);
     }
 
+    if (table === 'catalog_set_source_metadata') {
+      return {
+        upsert: sourceMetadataUpsert,
+      };
+    }
+
     if (table === 'commerce_offer_seeds') {
       return createSupabaseTableBuilder(offerSeedRows);
     }
@@ -410,6 +421,7 @@ function createCatalogOverlaySupabaseClient({
     insertSingle,
     primaryThemeUpsert,
     sourceThemeUpsert,
+    sourceMetadataUpsert,
     rpc,
     supabaseClient: { from, rpc } as never,
     themeMappingUpsert,
@@ -3402,6 +3414,58 @@ describe('catalog data access server', () => {
         name: 'Great Deku Tree 2-in-1',
         theme: 'The Legend of Zelda',
       }),
+    );
+  });
+
+  test('upserts generic catalog set source metadata by set, source and locale', async () => {
+    const { sourceMetadataUpsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient();
+
+    const result = await upsertCatalogSetSourceMetadata({
+      inputs: [
+        {
+          catalogSetId: '10316',
+          lastSeenAt: '2026-05-25T17:30:00.000Z',
+          locale: 'nl-NL',
+          matchConfidence: 'exact_set_number',
+          metadataJson: {
+            description: 'Bouw Rivendell.',
+            gtin: '5702017417835',
+            imageUrl: 'https://www.lego.com/cdn/10316.png',
+            priceSourceSeen: true,
+            title: 'LEGO Icons 10316 Rivendell',
+          },
+          policy: 'metadata_only_pending_audit',
+          setNumber: '10316',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+      supabaseClient,
+    });
+
+    expect(result).toBe(1);
+    expect(sourceMetadataUpsert).toHaveBeenCalledWith(
+      [
+        {
+          catalog_set_id: '10316',
+          last_seen_at: '2026-05-25T17:30:00.000Z',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            description: 'Bouw Rivendell.',
+            gtin: '5702017417835',
+            imageUrl: 'https://www.lego.com/cdn/10316.png',
+            priceSourceSeen: true,
+            title: 'LEGO Icons 10316 Rivendell',
+          },
+          policy: 'metadata_only_pending_audit',
+          set_number: '10316',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+      {
+        onConflict: 'catalog_set_id,source,locale',
+      },
     );
   });
 });

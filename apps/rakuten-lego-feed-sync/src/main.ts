@@ -145,6 +145,10 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const titleAuditReportPath = parseOptionalStringFlag({
+    argv,
+    flag: '--title-audit-report-path',
+  });
   const auditReportPath = parseOptionalStringFlag({
     argv,
     flag: '--audit-report-path',
@@ -338,6 +342,12 @@ async function main() {
   console.log(
     `[rakuten-lego-feed-sync] phase1_summary eligible_rows=${result.phaseOneImportSummary.eligibleImportRowCount} preflight_matched_catalog_sets=${result.phaseOneImportSummary.guard.matchedCatalogSetCount} preflight_match_rate=${result.phaseOneImportSummary.guard.matchRate.toFixed(3)} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} unmatched=${result.skippedUnmatchedSetCount} excluded=${Object.values(result.phaseOneImportSummary.excludedByReason).reduce((sum, count) => sum + count, 0)} excluded_reasons=${JSON.stringify(result.phaseOneImportSummary.excludedByReason)} duplicate_set_numbers=${result.phaseOneImportSummary.duplicateSetNumberCount} locale_counts=${JSON.stringify(result.phaseOneImportSummary.localeCounts)} availability_counts=${JSON.stringify(result.phaseOneImportSummary.availabilityCounts)} guard=${JSON.stringify(result.phaseOneImportSummary.guard)} sample_eligible_set_numbers=${result.phaseOneImportSummary.sampleEligibleSetNumbers.join(',') || 'none'}`,
   );
+  console.log(
+    `[rakuten-lego-feed-sync] title_audit matched_title_candidates=${result.titleAuditReport.summary.matchedTitleCandidateCount} different=${result.titleAuditReport.summary.differentCount} same_exact=${result.titleAuditReport.summary.exactSameCount} same_after_normalization=${result.titleAuditReport.summary.sameAfterNormalizationCount} same_without_lego_or_set_number=${result.titleAuditReport.summary.sameWithoutLegoOrSetNumberCount} policy=metadata_only_pending_policy`,
+  );
+  console.log(
+    `[rakuten-lego-feed-sync] source_metadata upserted=${result.sourceMetadataUpsertedCount} locale=nl-NL policy=metadata_only_pending_audit`,
+  );
   if (result.preflightImportSummary) {
     console.log(
       `[rakuten-lego-feed-sync] preflight passed matched_catalog_sets=${result.preflightImportSummary.matchedCatalogSetCount} match_rate=${result.preflightImportSummary.matchRate.toFixed(3)} unmatched=${result.preflightImportSummary.skippedUnmatchedSetCount}`,
@@ -404,6 +414,35 @@ async function main() {
     }
   }
 
+  if (titleAuditReportPath) {
+    await mkdir(dirname(titleAuditReportPath), {
+      recursive: true,
+    });
+    await writeFile(
+      titleAuditReportPath,
+      JSON.stringify(
+        {
+          generatedAt: new Date().toISOString(),
+          merchantSlug: result.merchantSlug,
+          policy: {
+            catalogIdentitySource: 'rebrickable',
+            catalogTitleOverwrite: false,
+            publicSeoTitleChanges: false,
+            publicUse:
+              'Do not use LEGO NL titles publicly until a separate title policy is approved.',
+            slugChanges: false,
+          },
+          titleAuditReport: result.titleAuditReport,
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(
+      `[rakuten-lego-feed-sync] title_audit_report_written path=${JSON.stringify(titleAuditReportPath)} rows=${result.titleAuditReport.entries.length}`,
+    );
+  }
+
   if (!dryRun && result.changedSetIds.length > 0) {
     try {
       const revalidationResult = await revalidatePublicCatalogPriceChanges({
@@ -423,7 +462,7 @@ async function main() {
   }
 
   console.log(
-    `[rakuten-lego-feed-sync] end status=${dryRun ? 'dry-run' : 'imported'} source=rakuten merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} eligible_rows=${result.phaseOneImportSummary.eligibleImportRowCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[rakuten-lego-feed-sync] end status=${dryRun ? 'dry-run' : 'imported'} source=rakuten merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} eligible_rows=${result.phaseOneImportSummary.eligibleImportRowCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} source_metadata_upserted=${result.sourceMetadataUpsertedCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

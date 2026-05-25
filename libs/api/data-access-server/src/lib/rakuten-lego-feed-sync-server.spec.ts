@@ -598,6 +598,10 @@ describe('Rakuten LEGO feed sync server', () => {
       productId: 'rakuten-1',
       productTitle: 'LEGO Icons 10316 The Lord of the Rings Rivendell',
       shippingCost: undefined,
+      sourceMetadata: {
+        legoNlProductTitle: 'LEGO Icons 10316 The Lord of the Rings Rivendell',
+        titlePolicy: 'metadata_only_pending_audit',
+      },
     });
   });
 
@@ -732,12 +736,14 @@ describe('Rakuten LEGO feed sync server', () => {
         },
       }),
     );
+    const upsertCatalogSetSourceMetadataFn = vi.fn();
 
     const result = await syncRakutenLegoFeed({
       dependencies: {
         createSftpClientFn: () => sftpClient,
         getRakutenLegoFeedConfigFn: () => rakutenConfig,
         importAffiliateFeedRowsForMerchantFn,
+        upsertCatalogSetSourceMetadataFn,
       },
       options: {
         collectUnmatchedDebug: true,
@@ -779,6 +785,10 @@ describe('Rakuten LEGO feed sync server', () => {
           productId: undefined,
           productTitle: 'LEGO Icons 10316 Rivendell',
           shippingCost: undefined,
+          sourceMetadata: {
+            legoNlProductTitle: 'LEGO Icons 10316 Rivendell',
+            titlePolicy: 'metadata_only_pending_audit',
+          },
         },
       ],
     });
@@ -799,6 +809,77 @@ describe('Rakuten LEGO feed sync server', () => {
       unmatchedDebug: {
         totalUnmatchedRows: 1,
         uniqueUnmatchedSetCount: 1,
+      },
+    });
+    expect(result.sourceMetadataUpsertedCount).toBe(0);
+    expect(upsertCatalogSetSourceMetadataFn).not.toHaveBeenCalled();
+  });
+
+  test('builds a metadata-only LEGO NL title audit for exact catalog matches', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Icons 10316 Rivendell</productname>
+    <price>399.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
+    <part_number>10316</part_number>
+  </product>
+</products>`,
+    });
+    const importAffiliateFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult({ matchedCatalogSetCount: 1 }));
+
+    const result = await syncRakutenLegoFeed({
+      dependencies: {
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        importAffiliateFeedRowsForMerchantFn,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            createdAt: '2026-01-01T00:00:00.000Z',
+            name: 'Rivendell',
+            pieceCount: 6167,
+            primaryTheme: 'Icons',
+            releaseYear: 2023,
+            secondaryLabels: [],
+            setId: '10316',
+            slug: 'rivendell-10316',
+            source: 'rebrickable',
+            sourceSetNumber: '10316-1',
+            status: 'active',
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        ]),
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(result.titleAuditReport).toEqual({
+      entries: [
+        {
+          catalogSetId: '10316',
+          catalogTitle: 'Rivendell',
+          difference: 'different',
+          legoNlTitle: 'LEGO Icons 10316 Rivendell',
+          matchConfidence: 'exact_set_number',
+          normalizedCatalogTitle: 'rivendell',
+          normalizedLegoNlTitle: 'icons rivendell',
+          policyRecommendation: 'metadata_only_pending_policy',
+          setNumber: '10316',
+        },
+      ],
+      summary: {
+        differentCount: 1,
+        exactSameCount: 0,
+        matchedTitleCandidateCount: 1,
+        metadataOnlyCount: 1,
+        sameAfterNormalizationCount: 0,
+        sameWithoutLegoOrSetNumberCount: 0,
       },
     });
   });
@@ -915,6 +996,7 @@ describe('Rakuten LEGO feed sync server', () => {
           skippedUnmatchedSetCount: 0,
         }),
       );
+    const upsertCatalogSetSourceMetadataFn = vi.fn().mockResolvedValue(1);
 
     const result = await syncRakutenLegoFeed({
       dependencies: {
@@ -924,6 +1006,23 @@ describe('Rakuten LEGO feed sync server', () => {
           enablePhaseOneImport: true,
         }),
         importAffiliateFeedRowsForMerchantFn,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            createdAt: '2026-01-01T00:00:00.000Z',
+            name: 'Rivendell',
+            pieceCount: 6167,
+            primaryTheme: 'Icons',
+            releaseYear: 2023,
+            secondaryLabels: [],
+            setId: '10316',
+            slug: 'rivendell-10316',
+            source: 'rebrickable',
+            sourceSetNumber: '10316-1',
+            status: 'active',
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        ]),
+        upsertCatalogSetSourceMetadataFn,
       },
     });
 
@@ -962,10 +1061,30 @@ describe('Rakuten LEGO feed sync server', () => {
       }),
     );
     expect(result.importedOfferCount).toBe(1);
+    expect(result.sourceMetadataUpsertedCount).toBe(1);
     expect(result.preflightImportSummary).toEqual({
       matchedCatalogSetCount: 1,
       matchRate: 1,
       skippedUnmatchedSetCount: 0,
+    });
+    expect(upsertCatalogSetSourceMetadataFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          catalogSetId: '10316',
+          locale: 'nl-NL',
+          matchConfidence: 'exact_set_number',
+          metadataJson: {
+            description: null,
+            gtin: null,
+            imageUrl: null,
+            priceSourceSeen: true,
+            title: 'LEGO Icons 10316 Rivendell',
+          },
+          policy: 'metadata_only_pending_audit',
+          setNumber: '10316',
+          source: 'rakuten-lego-eu',
+        }),
+      ],
     });
   });
 

@@ -51,6 +51,9 @@ export interface AlternateAffiliateFeedRow {
   productId?: string;
   productTitle?: string;
   shippingCost?: number | string;
+  sourceMetadata?: Readonly<
+    Record<string, boolean | number | string | null | undefined>
+  >;
 }
 
 export interface AlternateAffiliateFeedImportResult {
@@ -699,6 +702,28 @@ function normalizeOptionalText(value?: string): string | undefined {
   return trimmedValue ? trimmedValue : undefined;
 }
 
+function buildAffiliateFeedOfferSeedNotes({
+  merchant,
+  row,
+}: {
+  merchant: AffiliateFeedMerchantConfig;
+  row: AlternateAffiliateFeedRow;
+}): string {
+  const baseNotes =
+    merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
+      ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`
+      : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`;
+  const sourceMetadata = Object.fromEntries(
+    Object.entries(row.sourceMetadata ?? {}).filter(
+      ([, value]) => value !== undefined,
+    ),
+  );
+
+  return Object.keys(sourceMetadata).length > 0
+    ? `${baseNotes} Source metadata: ${JSON.stringify(sourceMetadata)}.`
+    : baseNotes;
+}
+
 function sortUnmatchedSetSummaries(
   left: AlternateAffiliateFeedUnmatchedSetSummary,
   right: AlternateAffiliateFeedUnmatchedSetSummary,
@@ -1116,10 +1141,10 @@ export async function importAffiliateFeedRowsForMerchant({
       isActive: true,
       validationStatus: 'valid',
       lastVerifiedAt: observedAt,
-      notes:
-        merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
-          ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`
-          : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`,
+      notes: buildAffiliateFeedOfferSeedNotes({
+        merchant,
+        row,
+      }),
     };
     const seedContentChanged = hasOfferSeedContentChanged({
       existingOfferSeed,

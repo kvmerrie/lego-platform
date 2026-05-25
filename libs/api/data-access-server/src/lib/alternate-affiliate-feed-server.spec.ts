@@ -50,6 +50,10 @@ describe('alternate affiliate feed server', () => {
           legoSetNumber: '76784',
           price: '159,99',
           productTitle: 'LEGO Wednesday Nevermore Academy',
+          sourceMetadata: {
+            legoNlProductTitle: 'LEGO Wednesday Nevermore Academy',
+            titlePolicy: 'metadata_only_pending_audit',
+          },
         },
       ],
     });
@@ -69,6 +73,8 @@ describe('alternate affiliate feed server', () => {
         merchantId: 'merchant-alternate',
         productUrl: 'https://clk.tradetracker.example/alternate/76784',
         validationStatus: 'valid',
+        notes:
+          'Feed-driven Alternate import. Exact matched by LEGO set number. Product title: LEGO Wednesday Nevermore Academy. Source metadata: {"legoNlProductTitle":"LEGO Wednesday Nevermore Academy","titlePolicy":"metadata_only_pending_audit"}.',
       }),
     });
     expect(upsertCommerceOfferLatestRecordFn).toHaveBeenCalledWith({

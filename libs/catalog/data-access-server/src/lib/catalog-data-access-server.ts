@@ -32,6 +32,7 @@ import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_TABLE = 'catalog_sets';
+export const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
@@ -49,6 +50,27 @@ const CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET = 8;
 const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
+
+export interface CatalogSetSourceMetadataInput {
+  catalogSetId: string;
+  lastSeenAt: string;
+  locale: string;
+  matchConfidence: string;
+  metadataJson: Readonly<Record<string, unknown>>;
+  policy: string;
+  setNumber: string;
+  source: string;
+}
+
+function chunkCatalogRows<TRow>(rows: readonly TRow[], size: number): TRow[][] {
+  const chunks: TRow[][] = [];
+
+  for (let index = 0; index < rows.length; index += size) {
+    chunks.push(rows.slice(index, index + size));
+  }
+
+  return chunks;
+}
 
 function getCatalogSetIdOfferLookupVariants(
   setIds: readonly string[],
@@ -2568,6 +2590,48 @@ export async function listCanonicalCatalogSets({
 
     throw error;
   }
+}
+
+export async function upsertCatalogSetSourceMetadata({
+  inputs,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  inputs: readonly CatalogSetSourceMetadataInput[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<number> {
+  if (inputs.length === 0) {
+    return 0;
+  }
+
+  let upsertedCount = 0;
+
+  for (const chunk of chunkCatalogRows(inputs, 500)) {
+    const { error } = await supabaseClient
+      .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+      .upsert(
+        chunk.map((input) => ({
+          catalog_set_id: input.catalogSetId,
+          last_seen_at: input.lastSeenAt,
+          locale: input.locale,
+          match_confidence: input.matchConfidence,
+          metadata_json: input.metadataJson,
+          policy: input.policy,
+          set_number: input.setNumber,
+          source: input.source,
+        })),
+        {
+          onConflict: 'catalog_set_id,source,locale',
+        },
+      );
+
+    if (error) {
+      throw new Error('Unable to upsert catalog set source metadata.');
+    }
+
+    upsertedCount += chunk.length;
+  }
+
+  return upsertedCount;
 }
 
 export async function getCanonicalCatalogSetById({

@@ -5,7 +5,11 @@ import {
   resolveRakutenLegoFeedFilename,
   type RakutenLegoFeedConfig,
 } from '@lego-platform/shared/config';
-import { listCanonicalCatalogSets } from '@lego-platform/catalog/data-access-server';
+import {
+  listCanonicalCatalogSets,
+  upsertCatalogSetSourceMetadata,
+  type CatalogSetSourceMetadataInput,
+} from '@lego-platform/catalog/data-access-server';
 import type { CatalogCanonicalSet } from '@lego-platform/catalog/util';
 import SftpClient from 'ssh2-sftp-client';
 import { SaxesParser, type SaxesTagPlain } from 'saxes';
@@ -264,6 +268,34 @@ export interface RakutenLegoPhaseOneImportSummary {
   sampleEligibleSetNumbers: readonly string[];
 }
 
+export interface RakutenLegoTitleAuditEntry {
+  catalogSetId: string;
+  catalogTitle: string;
+  difference:
+    | 'different'
+    | 'same_after_normalization'
+    | 'same_exact'
+    | 'same_without_lego_or_set_number';
+  legoNlTitle: string;
+  matchConfidence: 'exact_set_number';
+  normalizedCatalogTitle: string;
+  normalizedLegoNlTitle: string;
+  policyRecommendation: 'metadata_only_pending_policy';
+  setNumber: string;
+}
+
+export interface RakutenLegoTitleAuditReport {
+  entries: readonly RakutenLegoTitleAuditEntry[];
+  summary: {
+    differentCount: number;
+    exactSameCount: number;
+    matchedTitleCandidateCount: number;
+    metadataOnlyCount: number;
+    sameAfterNormalizationCount: number;
+    sameWithoutLegoOrSetNumberCount: number;
+  };
+}
+
 export interface RakutenLegoFeedSyncOptions {
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
@@ -282,12 +314,14 @@ export interface RakutenLegoFeedSyncResult
   merchantSlug: string;
   normalizedRowCount: number;
   parseFailureCount: number;
+  sourceMetadataUpsertedCount: number;
   preflightImportSummary?: {
     matchedCatalogSetCount: number;
     matchRate: number;
     skippedUnmatchedSetCount: number;
   };
   phaseOneImportSummary: RakutenLegoPhaseOneImportSummary;
+  titleAuditReport: RakutenLegoTitleAuditReport;
 }
 
 export interface RakutenSftpListEntry {
@@ -337,12 +371,16 @@ export interface RakutenLegoFeedSyncDependencies {
   createSftpClientFn?: () => RakutenSftpClient;
   getRakutenLegoFeedConfigFn?: typeof getRakutenLegoFeedConfig;
   importAffiliateFeedRowsForMerchantFn?: typeof importAffiliateFeedRowsForMerchant;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  upsertCatalogSetSourceMetadataFn?: typeof upsertCatalogSetSourceMetadata;
 }
 
 const RAKUTEN_LEGO_MERCHANT_NOTES =
   'Feed-driven merchant. Current offer state is imported from the LEGO Rakuten Product Catalog feed.';
 const RAKUTEN_LEGO_PHASE_ONE_MERCHANT_SLUG = 'rakuten-lego-eu';
 const RAKUTEN_LEGO_EXPECTED_CURRENCY = 'EUR';
+const RAKUTEN_LEGO_SOURCE_METADATA_LOCALE = 'nl-NL';
+const RAKUTEN_LEGO_SOURCE_METADATA_POLICY = 'metadata_only_pending_audit';
 const RAKUTEN_LEGO_MAX_NON_NL_LOCALE_RATIO = 0.01;
 const RAKUTEN_LEGO_MAX_NON_NL_LOCALE_COUNT = 5;
 const RAKUTEN_LEGO_MAX_PARSE_FAILURE_RATIO = 0.01;
@@ -952,6 +990,12 @@ export function normalizeRakutenLegoProductToAffiliateFeedRow(
     ]),
     productTitle,
     shippingCost: readProductField(product, ['shipping', 'shipping_cost']),
+    sourceMetadata: productTitle
+      ? {
+          legoNlProductTitle: productTitle,
+          titlePolicy: 'metadata_only_pending_audit',
+        }
+      : undefined,
   };
 }
 
@@ -2511,6 +2555,246 @@ function buildDebugSample(product: RakutenXmlProduct): RakutenLegoDebugSample {
   };
 }
 
+function buildRakutenCatalogSetIdLookup(
+  catalogSets: readonly CatalogCanonicalSet[],
+): ReadonlyMap<string, string> {
+  const lookup = new Map<string, string>();
+
+  for (const catalogSet of catalogSets) {
+    const setId = catalogSet.setId.trim();
+
+    if (!setId) {
+      continue;
+    }
+
+    lookup.set(setId, setId);
+
+    const sourceSetNumber =
+      catalogSet.sourceSetNumber?.trim() ||
+      (setId.includes('-') ? setId : `${setId}-1`);
+
+    if (sourceSetNumber) {
+      lookup.set(sourceSetNumber, setId);
+    }
+  }
+
+  return lookup;
+}
+
+function resolveRakutenCatalogSetIdForFeedSetNumber({
+  catalogSetIdByIdentifier,
+  feedSetNumber,
+}: {
+  catalogSetIdByIdentifier: ReadonlyMap<string, string>;
+  feedSetNumber?: string;
+}): string | undefined {
+  const normalizedFeedSetNumber = feedSetNumber?.trim();
+
+  if (!normalizedFeedSetNumber) {
+    return undefined;
+  }
+
+  const exactSetId = catalogSetIdByIdentifier.get(normalizedFeedSetNumber);
+
+  if (exactSetId) {
+    return exactSetId;
+  }
+
+  if (normalizedFeedSetNumber.includes('-')) {
+    const [plainSetNumber] = normalizedFeedSetNumber.split('-', 1);
+
+    return plainSetNumber?.trim()
+      ? catalogSetIdByIdentifier.get(plainSetNumber.trim())
+      : undefined;
+  }
+
+  return catalogSetIdByIdentifier.get(`${normalizedFeedSetNumber}-1`);
+}
+
+function normalizeTitleForAudit(value: string, setNumber?: string): string {
+  const escapedSetNumber = setNumber
+    ? setNumber.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+    : undefined;
+
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/gu, '')
+    .replace(/lego(?:®|\u00ae)?/giu, ' ')
+    .replace(
+      escapedSetNumber ? new RegExp(`\\b${escapedSetNumber}\\b`, 'gu') : /$^/u,
+      ' ',
+    )
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function getTitleAuditDifference({
+  catalogTitle,
+  legoNlTitle,
+  normalizedCatalogTitle,
+  normalizedLegoNlTitle,
+}: {
+  catalogTitle: string;
+  legoNlTitle: string;
+  normalizedCatalogTitle: string;
+  normalizedLegoNlTitle: string;
+}): RakutenLegoTitleAuditEntry['difference'] {
+  if (catalogTitle === legoNlTitle) {
+    return 'same_exact';
+  }
+
+  if (catalogTitle.trim().toLowerCase() === legoNlTitle.trim().toLowerCase()) {
+    return 'same_after_normalization';
+  }
+
+  return normalizedCatalogTitle === normalizedLegoNlTitle
+    ? 'same_without_lego_or_set_number'
+    : 'different';
+}
+
+function buildRakutenLegoTitleAuditReport({
+  catalogSets,
+  rows,
+}: {
+  catalogSets: readonly CatalogCanonicalSet[];
+  rows: readonly AlternateAffiliateFeedRow[];
+}): RakutenLegoTitleAuditReport {
+  const catalogSetById = new Map(
+    catalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
+  );
+  const catalogSetIdByIdentifier = buildRakutenCatalogSetIdLookup(catalogSets);
+  const entriesBySetId = new Map<string, RakutenLegoTitleAuditEntry>();
+
+  for (const row of rows) {
+    const legoNlTitle = row.productTitle?.trim();
+    const setNumber = row.legoSetNumber?.trim();
+
+    if (!legoNlTitle || !setNumber) {
+      continue;
+    }
+
+    const catalogSetId = resolveRakutenCatalogSetIdForFeedSetNumber({
+      catalogSetIdByIdentifier,
+      feedSetNumber: setNumber,
+    });
+    const catalogSet = catalogSetId
+      ? catalogSetById.get(catalogSetId)
+      : undefined;
+
+    if (!catalogSet || entriesBySetId.has(catalogSet.setId)) {
+      continue;
+    }
+
+    const normalizedCatalogTitle = normalizeTitleForAudit(
+      catalogSet.name,
+      setNumber,
+    );
+    const normalizedLegoNlTitle = normalizeTitleForAudit(
+      legoNlTitle,
+      setNumber,
+    );
+
+    entriesBySetId.set(catalogSet.setId, {
+      catalogSetId: catalogSet.setId,
+      catalogTitle: catalogSet.name,
+      difference: getTitleAuditDifference({
+        catalogTitle: catalogSet.name,
+        legoNlTitle,
+        normalizedCatalogTitle,
+        normalizedLegoNlTitle,
+      }),
+      legoNlTitle,
+      matchConfidence: 'exact_set_number',
+      normalizedCatalogTitle,
+      normalizedLegoNlTitle,
+      policyRecommendation: 'metadata_only_pending_policy',
+      setNumber,
+    });
+  }
+
+  const entries = [...entriesBySetId.values()].sort((left, right) =>
+    left.setNumber.localeCompare(right.setNumber),
+  );
+
+  return {
+    entries,
+    summary: {
+      differentCount: entries.filter(
+        (entry) => entry.difference === 'different',
+      ).length,
+      exactSameCount: entries.filter(
+        (entry) => entry.difference === 'same_exact',
+      ).length,
+      matchedTitleCandidateCount: entries.length,
+      metadataOnlyCount: entries.length,
+      sameAfterNormalizationCount: entries.filter(
+        (entry) => entry.difference === 'same_after_normalization',
+      ).length,
+      sameWithoutLegoOrSetNumberCount: entries.filter(
+        (entry) => entry.difference === 'same_without_lego_or_set_number',
+      ).length,
+    },
+  };
+}
+
+function buildRakutenLegoSourceMetadataInputs({
+  catalogSets,
+  lastSeenAt,
+  rows,
+}: {
+  catalogSets: readonly CatalogCanonicalSet[];
+  lastSeenAt: string;
+  rows: readonly AlternateAffiliateFeedRow[];
+}): CatalogSetSourceMetadataInput[] {
+  const catalogSetById = new Map(
+    catalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
+  );
+  const catalogSetIdByIdentifier = buildRakutenCatalogSetIdLookup(catalogSets);
+  const inputBySetId = new Map<string, CatalogSetSourceMetadataInput>();
+
+  for (const row of rows) {
+    const setNumber = row.legoSetNumber?.trim();
+
+    if (!setNumber) {
+      continue;
+    }
+
+    const catalogSetId = resolveRakutenCatalogSetIdForFeedSetNumber({
+      catalogSetIdByIdentifier,
+      feedSetNumber: setNumber,
+    });
+    const catalogSet = catalogSetId
+      ? catalogSetById.get(catalogSetId)
+      : undefined;
+
+    if (!catalogSet || inputBySetId.has(catalogSet.setId)) {
+      continue;
+    }
+
+    inputBySetId.set(catalogSet.setId, {
+      catalogSetId: catalogSet.setId,
+      lastSeenAt,
+      locale: RAKUTEN_LEGO_SOURCE_METADATA_LOCALE,
+      matchConfidence: 'exact_set_number',
+      metadataJson: {
+        description: row.description?.trim() || null,
+        gtin: row.ean?.trim() || null,
+        imageUrl: row.imageUrl?.trim() || null,
+        priceSourceSeen: true,
+        title: row.productTitle?.trim() || null,
+      },
+      policy: RAKUTEN_LEGO_SOURCE_METADATA_POLICY,
+      setNumber,
+      source: RAKUTEN_LEGO_PHASE_ONE_MERCHANT_SLUG,
+    });
+  }
+
+  return [...inputBySetId.values()].sort((left, right) =>
+    left.setNumber.localeCompare(right.setNumber),
+  );
+}
+
 function countNonNlLocales(
   localeCounts: Readonly<Record<string, number>>,
 ): number {
@@ -2620,6 +2904,11 @@ export async function syncRakutenLegoFeed({
   const importAffiliateFeedRowsForMerchantFn =
     dependencies?.importAffiliateFeedRowsForMerchantFn ??
     importAffiliateFeedRowsForMerchant;
+  const listCanonicalCatalogSetsFn =
+    dependencies?.listCanonicalCatalogSetsFn ?? listCanonicalCatalogSets;
+  const upsertCatalogSetSourceMetadataFn =
+    dependencies?.upsertCatalogSetSourceMetadataFn ??
+    upsertCatalogSetSourceMetadata;
   const config = getRakutenLegoFeedConfigFn();
 
   if (config.merchantSlug !== RAKUTEN_LEGO_PHASE_ONE_MERCHANT_SLUG) {
@@ -2705,6 +2994,16 @@ export async function syncRakutenLegoFeed({
       count,
       setNumber,
     }));
+  const titleAuditCatalogSets = await listCanonicalCatalogSetsFn();
+  const titleAuditReport = buildRakutenLegoTitleAuditReport({
+    catalogSets: titleAuditCatalogSets,
+    rows,
+  });
+  const sourceMetadataInputs = buildRakutenLegoSourceMetadataInputs({
+    catalogSets: titleAuditCatalogSets,
+    lastSeenAt: new Date().toISOString(),
+    rows,
+  });
   const phaseOneImportSummary: RakutenLegoPhaseOneImportSummary = {
     availabilityCounts: importAvailabilityCounts,
     duplicateSetNumberCount: duplicateSetNumbers.length,
@@ -2775,6 +3074,11 @@ export async function syncRakutenLegoFeed({
           dryRun: false,
         },
       });
+  const sourceMetadataUpsertedCount = options?.dryRun
+    ? 0
+    : await upsertCatalogSetSourceMetadataFn({
+        inputs: sourceMetadataInputs,
+      });
   const debugInfo =
     options?.debugSamples && options.debugSamples > 0
       ? {
@@ -2794,6 +3098,7 @@ export async function syncRakutenLegoFeed({
     merchantSlug: config.merchantSlug,
     normalizedRowCount: rows.length,
     parseFailureCount,
+    sourceMetadataUpsertedCount,
     preflightImportSummary: options?.dryRun
       ? undefined
       : {
@@ -2803,5 +3108,6 @@ export async function syncRakutenLegoFeed({
             preflightImportResult.skippedUnmatchedSetCount,
         },
     phaseOneImportSummary,
+    titleAuditReport,
   };
 }
