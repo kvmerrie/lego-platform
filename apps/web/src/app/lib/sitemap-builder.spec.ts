@@ -217,7 +217,7 @@ describe('sitemap generation', () => {
     );
   });
 
-  it('excludes noindex CMS pages from the public static sitemap segment', async () => {
+  it('excludes noindex and legacy duplicate CMS pages from the public static sitemap segment', async () => {
     const entries = await collectDealsSitemapEntries({
       allowIndexing: true,
       dataAccess: {
@@ -253,7 +253,6 @@ describe('sitemap generation', () => {
       'https://www.brickhunt.nl/privacy',
       'https://www.brickhunt.nl/cookiebeleid',
       'https://www.brickhunt.nl/affiliate-disclosure',
-      'https://www.brickhunt.nl/pages/about',
     ]);
   });
 

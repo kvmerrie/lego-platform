@@ -62,6 +62,8 @@ const sitemapDataAccess: SitemapDataAccess = {
   listPublishedArticles,
 };
 
+const legacyEditorialPageSlugsExcludedFromSitemap = new Set(['about']);
+
 export const sitemapSegmentPaths = [
   '/sitemaps/sets.xml',
   '/sitemaps/themes.xml',
@@ -388,7 +390,8 @@ export async function collectDealsSitemapEntries({
       pathname: buildWebPath(webPathnames.affiliateDisclosure),
     }),
     ...editorialPages.map((editorialPage) =>
-      editorialPage?.slug
+      editorialPage?.slug &&
+      !legacyEditorialPageSlugsExcludedFromSitemap.has(editorialPage.slug)
         ? createSitemapUrlEntry({
             allowIndexing,
             pathname: buildWebPath(
