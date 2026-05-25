@@ -6,7 +6,10 @@ import {
   listCatalogThemePageSlugs,
   rankCatalogComparisonDiscoverySetCards,
 } from '@lego-platform/catalog/data-access-web';
-import { normalizeTheme } from '@lego-platform/catalog/util';
+import {
+  CATALOG_BROWSE_PAGE_SIZE,
+  normalizeTheme,
+} from '@lego-platform/catalog/util';
 import {
   CatalogFeatureThemePage,
   CatalogFeatureThemeDealRail,
@@ -43,7 +46,7 @@ import {
 export const dynamicParams = true;
 export const revalidate = 21_600;
 const THEME_DISCOVERY_RAIL_LIMIT = 6;
-const THEME_SET_PAGE_SIZE = 20;
+const THEME_SET_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 const THEME_RELATED_ARTICLE_LIMIT = 3;
 const THEME_NON_CRITICAL_TIMEOUT_MS = 350;
 const THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;

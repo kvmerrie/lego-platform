@@ -20,6 +20,7 @@
 .title,
 .lead,
 .support,
+.coverageNote,
 .emptyState,
 .linkTitle {
   margin: 0;
@@ -119,6 +120,15 @@
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-support-size);
   line-height: var(--lego-text-role-support-line-height);
+}
+
+.coverageNote {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin-inline: auto;
+  max-width: 42rem;
+  text-align: center;
 }
 
 .linkSection {

@@ -8,7 +8,9 @@ export interface RebrickableClient {
     },
   ): Promise<unknown>;
   listSets(options?: {
+    comingSoon?: boolean;
     minYear?: number;
+    newRelease?: boolean;
     ordering?: string;
     page?: number;
     pageSize?: number;
@@ -217,10 +219,14 @@ export function createRebrickableClient({
         typeof options?.ordering === 'string' && options.ordering.trim()
           ? options.ordering.trim()
           : undefined;
+      const newRelease = options?.newRelease ? 1 : undefined;
+      const comingSoon = options?.comingSoon ? 1 : undefined;
 
       return requestJson(
         `/lego/sets/${buildListQueryString({
+          comingsoon: comingSoon,
           min_year: minYear,
+          newrelease: newRelease,
           ordering,
           page,
           page_size: pageSize,

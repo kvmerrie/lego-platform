@@ -63,6 +63,79 @@
     outline-offset: 2px;
   }
 
+  .browsePagination {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lego-space-2);
+    justify-content: center;
+  }
+
+  .browsePaginationList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lego-space-1);
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .browsePaginationItem {
+    display: flex;
+  }
+
+  .browsePaginationPageLink,
+  .browsePaginationStepLink,
+  .browsePaginationSecondaryLink {
+    align-items: center;
+    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border-radius: var(--lego-radius-sm);
+    color: var(--lego-text-muted);
+    display: inline-flex;
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-bold);
+    justify-content: center;
+    min-height: 2.35rem;
+    text-decoration: none;
+  }
+
+  .browsePaginationPageLink {
+    min-width: 2.35rem;
+    padding: 0 var(--lego-space-2);
+  }
+
+  .browsePaginationStepLink,
+  .browsePaginationSecondaryLink {
+    padding: 0 var(--lego-space-3);
+  }
+
+  .browsePaginationPageLink:hover,
+  .browsePaginationStepLink:hover,
+  .browsePaginationSecondaryLink:hover {
+    color: var(--lego-text);
+    text-decoration: none;
+  }
+
+  .browsePaginationPageLink[aria-current='page'] {
+    background: var(--lego-accent);
+    border-color: transparent;
+    color: var(--lego-accent-contrast);
+  }
+
+  .browsePaginationStepLink[aria-disabled='true'] {
+    color: var(--lego-text-muted);
+    opacity: 0.48;
+    pointer-events: none;
+  }
+
+  .browsePaginationPageLink:focus-visible,
+  .browsePaginationStepLink:focus-visible,
+  .browsePaginationSecondaryLink:focus-visible {
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: 2px;
+  }
+
   .setCardCollectionRail {
     gap: var(--lego-space-2);
   }

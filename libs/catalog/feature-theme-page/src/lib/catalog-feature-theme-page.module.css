@@ -237,39 +237,6 @@
   display: grid;
 }
 
-.paginationNav {
-  display: flex;
-  justify-content: center;
-}
-
-.paginationList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-1);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.paginationLink {
-  align-items: center;
-  border: 1px solid var(--lego-color-border-subtle);
-  border-radius: var(--lego-radius-sm);
-  color: inherit;
-  display: inline-flex;
-  font-weight: 700;
-  justify-content: center;
-  min-height: 2.5rem;
-  min-width: 2.5rem;
-  text-decoration: none;
-}
-
-.paginationLink[aria-current='page'] {
-  background: var(--lego-color-text);
-  border-color: var(--lego-color-text);
-  color: var(--lego-color-surface);
-}
-
 .relatedArticlesSection {
   scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
 }

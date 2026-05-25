@@ -18,6 +18,7 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  CATALOG_BROWSE_PAGE_SIZE,
   catalogDiscoverDealCandidateIds,
   catalogDiscoverSetOrder,
   catalogHomepageDealCandidateIds,
@@ -56,6 +57,7 @@ import {
   getRuntimeBaseUrl,
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
+  resolvePublicMerchantDisplayName,
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_TABLE = 'catalog_sets';
@@ -776,6 +778,11 @@ function normalizeCatalogResolvedOfferRecord(
 
     return {
       ...value,
+      merchant: normalizeCatalogOfferMerchant(value.merchant, merchantSlug),
+      merchantName: resolvePublicMerchantDisplayName({
+        merchantName: value.merchantName,
+        merchantSlug,
+      }),
       merchantSlug,
       setId: getCanonicalCatalogSetId(value.setId),
     };
@@ -846,7 +853,10 @@ function normalizeCatalogResolvedOfferRecord(
     currency: 'EUR',
     market: 'NL',
     merchant: normalizeCatalogOfferMerchant(value['merchant'], merchantSlug),
-    merchantName,
+    merchantName: resolvePublicMerchantDisplayName({
+      merchantName,
+      merchantSlug,
+    }),
     merchantSlug:
       merchantSlug ??
       getOfferLookupKey({
@@ -1365,7 +1375,7 @@ function getCatalogOfferMerchantFromMerchantSlug(
     return 'amazon';
   }
 
-  if (merchantSlug === 'lego') {
+  if (merchantSlug === 'lego' || merchantSlug === 'rakuten-lego-eu') {
     return 'lego';
   }
 
@@ -1572,7 +1582,10 @@ function toCatalogRuntimeOffer({
     commercialUnitType,
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
-    merchantName: merchant.name,
+    merchantName: resolvePublicMerchantDisplayName({
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+    }),
     merchantSlug: merchant.slug,
     priceCents: latestOffer.price_minor,
     setId: getCanonicalCatalogSetId(offerSeed.set_id),
@@ -2231,10 +2244,35 @@ const catalogAdultCollectorThemeSlugs = new Set([
   'botanicals',
   'icons',
   'ideas',
+  'lord-of-the-rings',
   'technic',
 ]);
 
-const CATALOG_COLLECTION_CANDIDATE_LIMIT = 500;
+const catalogAdultCollectorDisplayThemeSlugs = new Set([
+  'disney',
+  'harry-potter',
+  'marvel',
+  'star-wars',
+]);
+
+const catalogAdultCollectorExcludedHighPieceThemeSlugs = new Set([
+  'animal-crossing',
+  'city',
+  'disney',
+  'dreamzzz',
+  'duplo',
+  'friends',
+  'gabby-s-poppenhuis',
+  'minecraft',
+  'sonic-the-hedgehog',
+  'super-mario',
+]);
+
+const CATALOG_COLLECTION_ADULT_CORE_THEME_MIN_PIECES = 600;
+const CATALOG_COLLECTION_ADULT_DISPLAY_THEME_MIN_PIECES = 1_600;
+const CATALOG_COLLECTION_ADULT_HIGH_PIECE_MIN_PIECES = 2_500;
+const CATALOG_COLLECTION_CANDIDATE_LIMIT = 1_000;
+const CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE = 500;
 const CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS = 210;
 const CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS = 120;
 
@@ -2245,17 +2283,26 @@ function getCatalogCollectionThemeSlug(
 }
 
 function getCatalogCollectionReleaseTimestamp(
-  setCard: Pick<CatalogHomepageSetCard, 'releaseDate' | 'releaseYear'>,
-): number {
-  if (setCard.releaseDate) {
-    const timestamp = Date.parse(`${setCard.releaseDate}T00:00:00Z`);
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'releaseDate' | 'releaseDatePrecision' | 'releaseYear'
+  >,
+): number | undefined {
+  const releaseDatePrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate: setCard.releaseDate,
+    releaseDatePrecision: setCard.releaseDatePrecision,
+    releaseYear: setCard.releaseYear,
+  });
 
-    if (Number.isFinite(timestamp)) {
-      return timestamp;
-    }
+  if (releaseDatePrecision !== 'day' && releaseDatePrecision !== 'month') {
+    return undefined;
   }
 
-  return Date.UTC(setCard.releaseYear, 0, 1);
+  const timestamp = setCard.releaseDate
+    ? Date.parse(`${setCard.releaseDate}T00:00:00Z`)
+    : Number.NaN;
+
+  return Number.isFinite(timestamp) ? timestamp : undefined;
 }
 
 function matchesCatalogCollectionRecentRelease({
@@ -2266,6 +2313,7 @@ function matchesCatalogCollectionRecentRelease({
   setCard: CatalogHomepageSetCard;
 }): boolean {
   const releaseTimestamp = getCatalogCollectionReleaseTimestamp(setCard);
+
   const lowerBound =
     now.getTime() -
     CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS * 86_400_000;
@@ -2273,20 +2321,47 @@ function matchesCatalogCollectionRecentRelease({
     now.getTime() +
     CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS * 86_400_000;
 
-  return releaseTimestamp >= lowerBound && releaseTimestamp <= upperBound;
+  if (releaseTimestamp !== undefined) {
+    return releaseTimestamp >= lowerBound && releaseTimestamp <= upperBound;
+  }
+
+  const releaseDatePrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate: setCard.releaseDate,
+    releaseDatePrecision: setCard.releaseDatePrecision,
+    releaseYear: setCard.releaseYear,
+  });
+  const currentYear = now.getUTCFullYear();
+
+  return (
+    releaseDatePrecision === 'year' &&
+    setCard.releaseYear >= currentYear &&
+    setCard.releaseYear <= currentYear + 1
+  );
 }
 
 function matchesCatalogCollectionAdultCollector(
   setCard: CatalogHomepageSetCard,
 ): boolean {
+  // Rebrickable does not give us a stable "Adults Welcome" browse flag in the
+  // public catalog model. Keep this as an explicit, conservative score: real
+  // 18+ overlays win first, then display-oriented themes and large builds.
   if ((setCard.recommendedAge ?? 0) >= 18) {
     return true;
   }
 
+  const themeSlug = getCatalogCollectionThemeSlug(setCard);
+
+  if (catalogAdultCollectorThemeSlugs.has(themeSlug)) {
+    return setCard.pieces >= CATALOG_COLLECTION_ADULT_CORE_THEME_MIN_PIECES;
+  }
+
+  if (catalogAdultCollectorDisplayThemeSlugs.has(themeSlug)) {
+    return setCard.pieces >= CATALOG_COLLECTION_ADULT_DISPLAY_THEME_MIN_PIECES;
+  }
+
   return (
-    catalogAdultCollectorThemeSlugs.has(
-      getCatalogCollectionThemeSlug(setCard),
-    ) && setCard.pieces >= 900
+    setCard.pieces >= CATALOG_COLLECTION_ADULT_HIGH_PIECE_MIN_PIECES &&
+    !catalogAdultCollectorExcludedHighPieceThemeSlugs.has(themeSlug)
   );
 }
 
@@ -2363,8 +2438,10 @@ function compareCatalogCollectionLandingPageSetCards({
 
     if (sortKey === 'newest') {
       return (
-        getCatalogCollectionReleaseTimestamp(right) -
-          getCatalogCollectionReleaseTimestamp(left) ||
+        (getCatalogCollectionReleaseTimestamp(right) ??
+          Date.UTC(right.releaseYear, 0, 1)) -
+          (getCatalogCollectionReleaseTimestamp(left) ??
+            Date.UTC(left.releaseYear, 0, 1)) ||
         right.pieces - left.pieces ||
         left.name.localeCompare(right.name) ||
         left.id.localeCompare(right.id)
@@ -2404,10 +2481,51 @@ function toCatalogCollectionBestPriceMinorBySetId(
   );
 }
 
+async function listCatalogCollectionCandidateSetCards({
+  listCanonicalCatalogSetsFn,
+  supabaseClient,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogHomepageSetCard[]> {
+  const pages: CatalogHomepageSetCard[][] = [];
+
+  for (
+    let offset = 0;
+    offset < CATALOG_COLLECTION_CANDIDATE_LIMIT;
+    offset += CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE
+  ) {
+    const pageSetCards = await listCatalogSetCards({
+      limit: CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE,
+      listCanonicalCatalogSetsFn,
+      offset,
+      supabaseClient,
+    });
+
+    pages.push(pageSetCards);
+
+    if (pageSetCards.length < CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  const seenSetIds = new Set<string>();
+
+  return pages.flat().filter((setCard) => {
+    if (seenSetIds.has(setCard.id)) {
+      return false;
+    }
+
+    seenSetIds.add(setCard.id);
+
+    return true;
+  });
+}
+
 export async function getCatalogCollectionLandingPage({
   cacheOptions,
   config,
-  limit = 36,
+  limit = CATALOG_BROWSE_PAGE_SIZE,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   now = new Date(),
   offset = 0,
@@ -2423,7 +2541,7 @@ export async function getCatalogCollectionLandingPage({
   sortKey: CatalogCollectionLandingPageSortKey;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCollectionLandingPageResult> {
-  const safeLimit = normalizeCatalogReadLimit(limit, 36);
+  const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
   const safeOffset = normalizeCatalogReadOffset(offset);
   const scopedSetCards = config.filters.maxBestPriceMinor
     ? await listCatalogSetCardsByIds({
@@ -2440,8 +2558,7 @@ export async function getCatalogCollectionLandingPage({
         listCanonicalCatalogSetsFn,
         supabaseClient,
       })
-    : await listCatalogSetCards({
-        limit: CATALOG_COLLECTION_CANDIDATE_LIMIT,
+    : await listCatalogCollectionCandidateSetCards({
         listCanonicalCatalogSetsFn,
         supabaseClient,
       });

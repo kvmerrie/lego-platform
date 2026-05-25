@@ -120,6 +120,129 @@ type CatalogSetCardCollectionLayout = 'grid' | 'rail';
 type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
+export interface CatalogBrowsePaginationProps {
+  ariaLabel: string;
+  basePath: string;
+  className?: string;
+  currentPage?: number;
+  pageCount: number;
+  queryParams?: Readonly<Record<string, string | undefined>>;
+  topHref?: string;
+}
+
+function buildCatalogBrowsePageHref({
+  basePath,
+  page,
+  queryParams,
+}: {
+  basePath: string;
+  page: number;
+  queryParams?: Readonly<Record<string, string | undefined>>;
+}): string {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(queryParams ?? {})) {
+    if (value) {
+      searchParams.set(key, value);
+    }
+  }
+
+  if (page > 1) {
+    searchParams.set('page', String(page));
+  } else {
+    searchParams.delete('page');
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `${basePath}?${queryString}` : basePath;
+}
+
+export function CatalogBrowsePagination({
+  ariaLabel,
+  basePath,
+  className,
+  currentPage = 1,
+  pageCount,
+  queryParams,
+  topHref = '#top',
+}: CatalogBrowsePaginationProps) {
+  const normalizedPageCount = Math.max(1, Math.floor(pageCount));
+  const normalizedCurrentPage = Math.min(
+    normalizedPageCount,
+    Math.max(1, Math.floor(currentPage)),
+  );
+
+  if (normalizedPageCount <= 1) {
+    return (
+      <div
+        className={[styles.browsePagination, className]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <a className={styles.browsePaginationSecondaryLink} href={topHref}>
+          Terug naar boven
+        </a>
+      </div>
+    );
+  }
+
+  const previousPage = Math.max(1, normalizedCurrentPage - 1);
+  const nextPage = Math.min(normalizedPageCount, normalizedCurrentPage + 1);
+
+  return (
+    <nav
+      aria-label={ariaLabel}
+      className={[styles.browsePagination, className].filter(Boolean).join(' ')}
+    >
+      <a
+        aria-disabled={normalizedCurrentPage === 1 ? 'true' : undefined}
+        className={styles.browsePaginationStepLink}
+        href={buildCatalogBrowsePageHref({
+          basePath,
+          page: previousPage,
+          queryParams,
+        })}
+      >
+        Vorige
+      </a>
+      <ol className={styles.browsePaginationList}>
+        {Array.from(
+          { length: normalizedPageCount },
+          (_, index) => index + 1,
+        ).map((page) => (
+          <li className={styles.browsePaginationItem} key={page}>
+            <a
+              aria-current={page === normalizedCurrentPage ? 'page' : undefined}
+              className={styles.browsePaginationPageLink}
+              href={buildCatalogBrowsePageHref({
+                basePath,
+                page,
+                queryParams,
+              })}
+            >
+              {page}
+            </a>
+          </li>
+        ))}
+      </ol>
+      <a
+        aria-disabled={
+          normalizedCurrentPage === normalizedPageCount ? 'true' : undefined
+        }
+        className={styles.browsePaginationStepLink}
+        href={buildCatalogBrowsePageHref({
+          basePath,
+          page: nextPage,
+          queryParams,
+        })}
+      >
+        Volgende
+      </a>
+    </nav>
+  );
+}
+
 export function CatalogRailTertiaryAction({
   children,
   className,

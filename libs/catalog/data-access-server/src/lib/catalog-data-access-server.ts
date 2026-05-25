@@ -26,6 +26,7 @@ import {
   getCommerceMerchantReliabilityTier,
   getRebrickableApiConfig,
   hasServerSupabaseConfig,
+  resolvePublicMerchantDisplayName,
 } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -251,6 +252,7 @@ const CATALOG_SUGGESTED_SET_DEFAULT_LIMIT = 36;
 const CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE = 100;
 const CATALOG_SUGGESTED_SET_MAX_PAGES = 3;
 const CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW = 3;
+const CATALOG_OVERLAY_SET_FETCH_PAGE_SIZE = 1000;
 const CATALOG_SUGGESTED_EXCLUDED_THEMES = new Set([
   'BrickLink Designer Program',
   'Editions',
@@ -451,7 +453,7 @@ function getCatalogOfferMerchantFromMerchantSlug(
     return 'bol';
   }
 
-  if (merchantSlug === 'lego-nl') {
+  if (merchantSlug === 'lego-nl' || merchantSlug === 'rakuten-lego-eu') {
     return 'lego';
   }
 
@@ -602,7 +604,10 @@ function toCatalogLiveOfferFromSnapshotOffer(
     currency: EURO_CURRENCY_CODE,
     market: DUTCH_REGION_CODE,
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchantSlug),
-    merchantName,
+    merchantName: resolvePublicMerchantDisplayName({
+      merchantName,
+      merchantSlug,
+    }),
     merchantSlug,
     priceCents: offer.priceMinor,
     setId,
@@ -636,7 +641,10 @@ function toCatalogBestOfferFromSnapshotRow({
     currency: EURO_CURRENCY_CODE,
     market: DUTCH_REGION_CODE,
     merchant: getCatalogOfferMerchantFromMerchantSlug(row.best_merchant_slug),
-    merchantName: row.best_merchant_name,
+    merchantName: resolvePublicMerchantDisplayName({
+      merchantName: row.best_merchant_name,
+      merchantSlug: row.best_merchant_slug,
+    }),
     merchantSlug: row.best_merchant_slug,
     priceCents: row.best_price_minor,
     setId,
@@ -752,7 +760,10 @@ function toCatalogLiveOffer({
     currency: 'EUR',
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
-    merchantName: merchant.name,
+    merchantName: resolvePublicMerchantDisplayName({
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+    }),
     merchantSlug: merchant.slug,
     priceCents: latestOffer.price_minor,
     setId: getCanonicalCatalogSetId(offerSeed.set_id),
@@ -2106,23 +2117,47 @@ async function listCatalogOverlaySetRows({
   includeInactive?: boolean;
   supabaseClient: CatalogSupabaseClient;
 }): Promise<CatalogOverlaySetRow[]> {
-  const query = supabaseClient
-    .from(CATALOG_SETS_TABLE)
-    .select(
-      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
-    );
+  const rows: CatalogOverlaySetRow[] = [];
 
-  const { data, error } = includeInactive
-    ? await query.order('created_at', { ascending: false })
-    : await query.eq('status', 'active').order('created_at', {
-        ascending: false,
-      });
+  for (let offset = 0; ; offset += CATALOG_OVERLAY_SET_FETCH_PAGE_SIZE) {
+    let query = supabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select(
+        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
+      );
 
-  if (error) {
-    throw new Error('Unable to load catalog sets.');
+    if (!includeInactive) {
+      query = query.eq('status', 'active');
+    }
+
+    query = query.order('created_at', { ascending: false });
+
+    if ('range' in query && typeof query.range === 'function') {
+      query = query.range(
+        offset,
+        offset + CATALOG_OVERLAY_SET_FETCH_PAGE_SIZE - 1,
+      );
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error('Unable to load catalog sets.');
+    }
+
+    const pageRows = (data as CatalogOverlaySetRow[] | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_OVERLAY_SET_FETCH_PAGE_SIZE) {
+      break;
+    }
+
+    if (!('range' in query) || typeof query.range !== 'function') {
+      break;
+    }
   }
 
-  return (data as CatalogOverlaySetRow[] | null) ?? [];
+  return rows;
 }
 
 async function getCatalogOverlaySetByColumn({

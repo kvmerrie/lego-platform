@@ -15,6 +15,7 @@ import {
 import {
   getDefaultFormattingLocale,
   isCommerceCommercialUnitComparableForDeals,
+  resolvePublicMerchantDisplayName,
 } from '@lego-platform/shared/config';
 
 const DEAL_REASON_MIN_MERCHANT_COUNT = 2;
@@ -75,6 +76,18 @@ function canBestOfferDriveDealClaims(
   return isCommerceCommercialUnitComparableForDeals(
     bestOffer?.commercialUnitType,
   );
+}
+
+function getPublicBestOfferMerchantName(
+  bestOffer: NonNullable<CatalogCurrentOfferSummary['bestOffer']>,
+): string {
+  return resolvePublicMerchantDisplayName({
+    merchantName: bestOffer.merchantName,
+    merchantSlug:
+      'merchantSlug' in bestOffer && typeof bestOffer.merchantSlug === 'string'
+        ? bestOffer.merchantSlug
+        : undefined,
+  });
 }
 
 function getCurrentOfferRejectionReason({
@@ -395,7 +408,9 @@ export function buildCurrentSetCardPriceContext({
     }),
     decisionLabel,
     decisionNote,
-    merchantLabel: `Nu het laagst bij ${bestOffer.merchantName}`,
+    merchantLabel: `Nu het laagst bij ${getPublicBestOfferMerchantName(
+      bestOffer,
+    )}`,
     primaryActionHref: bestOffer.url,
     pricePositionLabel: getPricePositionLabel({
       currencyCode: bestOffer.currency,
@@ -452,7 +467,7 @@ export function buildCurrentSearchReviewedPriceContext({
     currencyCode: bestOffer.currency,
     deltaMinor: pricePanelSnapshot?.deltaMinor,
     headlinePriceMinor: bestOffer.priceCents,
-    merchantName: bestOffer.merchantName,
+    merchantName: getPublicBestOfferMerchantName(bestOffer),
     setId: currentOfferSummary.setId,
   };
 }

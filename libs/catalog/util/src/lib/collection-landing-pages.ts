@@ -8,6 +8,8 @@ export const catalogCollectionLandingPageSortKeys = [
 export type CatalogCollectionLandingPageSortKey =
   (typeof catalogCollectionLandingPageSortKeys)[number];
 
+export const CATALOG_BROWSE_PAGE_SIZE = 40;
+
 export interface CatalogCollectionLandingPageFilterConfig {
   adultCollector?: boolean;
   maxBestPriceMinor?: number;
@@ -31,6 +33,7 @@ export interface CatalogCollectionLandingPageConfig {
   browseEyebrow: string;
   browseTitle: string;
   canonicalPath: string;
+  coverageNote?: string;
   description: string;
   filters: CatalogCollectionLandingPageFilterConfig;
   h1: string;
@@ -223,6 +226,8 @@ export const catalogCollectionLandingPageConfigs = [
     browseTitle: 'Sets om nu te checken',
     browseDescription:
       'Als je er één wilt hebben voor je collectie, wacht dan vooral niet tot hij overal uitverkocht raakt.',
+    coverageNote:
+      'Deze lijst gebruikt alleen sets met een expliciet retiring- of retired-signaal in onze catalogus. Zodra de feed meer betrouwbare EOL-data bevat, groeit deze pagina vanzelf mee.',
     signalLabel: 'retiring sets',
     filters: {
       setStatuses: ['retiring_soon', 'retired'],

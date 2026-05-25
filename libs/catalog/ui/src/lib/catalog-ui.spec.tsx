@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  CatalogBrowsePagination,
   CatalogQuickFilterBar,
   CatalogSetCard,
   CatalogSetCardCollection,
@@ -29,6 +30,44 @@ describe('CatalogSetCard', () => {
     expect(sharedCss).toContain('@layer shared {');
     expect(catalogCss).toContain('@layer reset, shared, catalog;');
     expect(catalogCss).toContain('@layer catalog {');
+  });
+
+  it('renders crawlable shared browse pagination links with preserved query params', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogBrowsePagination
+        ariaLabel="Collectiepagina's"
+        basePath="/lego-voor-volwassenen"
+        currentPage={2}
+        pageCount={3}
+        queryParams={{ sort: 'newest' }}
+      />,
+    );
+
+    expect(markup).toContain('Collectiepagina');
+    expect(markup).toContain('href="/lego-voor-volwassenen?sort=newest"');
+    expect(markup).toContain(
+      'href="/lego-voor-volwassenen?sort=newest&amp;page=2"',
+    );
+    expect(markup).toContain(
+      'href="/lego-voor-volwassenen?sort=newest&amp;page=3"',
+    );
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('Vorige');
+    expect(markup).toContain('Volgende');
+  });
+
+  it('renders a back-to-top link when browse pagination is unnecessary', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogBrowsePagination
+        ariaLabel="Collectiepagina's"
+        basePath="/retiring-lego-sets"
+        pageCount={1}
+      />,
+    );
+
+    expect(markup).toContain('href="#top"');
+    expect(markup).toContain('Terug naar boven');
+    expect(markup).not.toContain('Volgende');
   });
 
   it('renders set detail gallery rounded on desktop and edge-to-edge on mobile', () => {

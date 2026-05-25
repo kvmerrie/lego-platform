@@ -79,11 +79,26 @@ import {
   tradeTrackerConradEnvKeys,
   webNavigation,
   platformConfig,
+  resolvePublicMerchantDisplayName,
 } from './config';
 
 describe('platform config', () => {
   test('uses the public Brickhunt support email', () => {
     expect(platformConfig.supportEmail).toBe('hello@brickhunt.nl');
+  });
+
+  test('resolves Rakuten LEGO to the public registered merchant display name', () => {
+    expect(
+      resolvePublicMerchantDisplayName({
+        merchantName: 'LEGO EU',
+        merchantSlug: 'rakuten-lego-eu',
+      }),
+    ).toBe('LEGO®');
+    expect(
+      resolvePublicMerchantDisplayName({
+        merchantName: 'LEGO EU',
+      }),
+    ).toBe('LEGO®');
   });
 });
 
@@ -1022,38 +1037,45 @@ describe('shared config Rakuten LEGO feed helpers', () => {
   });
 
   test('reads the Rakuten LEGO SFTP feed config with sensible defaults', () => {
-    process.env.RAKUTEN_LEGO_FEED_USERNAME = 'rakuten-user';
-    process.env.RAKUTEN_LEGO_FEED_PASSWORD = 'rakuten-password';
-    process.env.RAKUTEN_LEGO_FEED_MID = '12345';
+    const environment = {
+      RAKUTEN_LEGO_FEED_MID: '12345',
+      RAKUTEN_LEGO_FEED_PASSWORD: 'rakuten-password',
+      RAKUTEN_LEGO_FEED_USERNAME: 'rakuten-user',
+    };
 
-    expect(hasRakutenLegoFeedConfig()).toBe(true);
-    expect(getMissingRakutenLegoEnvKeys()).toEqual([]);
-    expect(getRakutenLegoFeedConfig()).toEqual({
+    expect(hasRakutenLegoFeedConfig(environment)).toBe(true);
+    expect(getMissingRakutenLegoEnvKeys(environment)).toEqual([]);
+    expect(getRakutenLegoFeedConfig(environment)).toEqual({
+      enablePhaseOneImport: false,
       host: 'aftp.linksynergy.com',
       port: 22,
       username: 'rakuten-user',
       password: 'rakuten-password',
       sid: '4682248',
       mid: '12345',
-      filename: undefined,
+      filename: '/GLOBAL/NL-NL_EUR/50641_4682248_mp_NL-NL_EUR.xml.gz',
       remoteDir: undefined,
-      merchantSlug: 'lego-eu',
+      merchantSlug: 'rakuten-lego-eu',
       merchantName: 'LEGO',
     });
   });
 
   test('allows explicit Rakuten SFTP and merchant overrides', () => {
-    process.env.RAKUTEN_LEGO_FEED_HOST = 'sftp.example.test';
-    process.env.RAKUTEN_LEGO_FEED_PORT = '2200';
-    process.env.RAKUTEN_LEGO_FEED_USERNAME = 'rakuten-user';
-    process.env.RAKUTEN_LEGO_FEED_PASSWORD = 'rakuten-password';
-    process.env.RAKUTEN_LEGO_FEED_SID = '4682248';
-    process.env.RAKUTEN_LEGO_FEED_FILENAME = 'custom-feed.xml.gz';
-    process.env.RAKUTEN_LEGO_REMOTE_DIR = '12345';
-    process.env.RAKUTEN_LEGO_MERCHANT_SLUG = 'lego-eu-test';
-    process.env.RAKUTEN_LEGO_MERCHANT_NAME = 'LEGO EU';
+    const environment = {
+      RAKUTEN_LEGO_FEED_FILENAME: 'custom-feed.xml.gz',
+      RAKUTEN_LEGO_FEED_HOST: 'sftp.example.test',
+      RAKUTEN_LEGO_FEED_PASSWORD: 'rakuten-password',
+      RAKUTEN_LEGO_FEED_PORT: '2200',
+      RAKUTEN_LEGO_FEED_SID: '4682248',
+      RAKUTEN_LEGO_FEED_USERNAME: 'rakuten-user',
+      RAKUTEN_LEGO_MERCHANT_NAME: 'LEGO EU',
+      RAKUTEN_LEGO_MERCHANT_SLUG: 'lego-eu-test',
+      RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED: 'true',
+      RAKUTEN_LEGO_REMOTE_DIR: '12345',
+    };
 
-    expect(getRakutenLegoFeedConfig()).toEqual({
+    expect(getRakutenLegoFeedConfig(environment)).toEqual({
+      enablePhaseOneImport: true,
       host: 'sftp.example.test',
       port: 2200,
       username: 'rakuten-user',

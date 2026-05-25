@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  auditRakutenLegoFeedDiscovery,
+  auditRakutenLegoFeed,
   listRakutenLegoFeedFiles,
   logScheduledJobFailure,
   revalidatePublicCatalogPriceChanges,
@@ -83,12 +85,45 @@ function parseOptionalStringFlag({
   return rawValue ? rawValue : undefined;
 }
 
+function parseOptionalNonNegativeIntegerFlag({
+  argv,
+  flag,
+}: {
+  argv: readonly string[];
+  flag: `--${string}`;
+}): number | undefined {
+  const rawValue = getFlagValue({
+    argv,
+    flag,
+  });
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+    throw new Error(`Use ${flag} <non-negative-integer>.`);
+  }
+
+  return parsedValue;
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const startedAt = Date.now();
   const dryRun = hasBooleanFlag({
     argv,
     flag: '--dry-run',
+  });
+  const auditOnly = hasBooleanFlag({
+    argv,
+    flag: '--audit-only',
+  });
+  const auditDiscovery = hasBooleanFlag({
+    argv,
+    flag: '--audit-discovery',
   });
   const listFiles = hasBooleanFlag({
     argv,
@@ -110,6 +145,22 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const auditReportPath = parseOptionalStringFlag({
+    argv,
+    flag: '--audit-report-path',
+  });
+  const auditTemplateFilename = parseOptionalStringFlag({
+    argv,
+    flag: '--audit-template-filename',
+  });
+  const auditFeedFilename = parseOptionalStringFlag({
+    argv,
+    flag: '--audit-feed-filename',
+  });
+  const auditRedirectSamples = parseOptionalNonNegativeIntegerFlag({
+    argv,
+    flag: '--audit-redirect-samples',
+  });
 
   if (!hasRakutenLegoFeedConfig()) {
     throw new Error(
@@ -119,7 +170,7 @@ async function main() {
 
   if (listFiles) {
     console.log(
-      '[rakuten-lego-feed-sync] start source=rakuten merchant=lego-eu mode=list-files',
+      '[rakuten-lego-feed-sync] start source=rakuten merchant=rakuten-lego-eu mode=list-files',
     );
     const listing = await listRakutenLegoFeedFiles();
     const sampleEntries = listing.entries.slice(0, 120).map((entry) => ({
@@ -158,6 +209,111 @@ async function main() {
     return;
   }
 
+  if (auditDiscovery) {
+    console.log(
+      `[rakuten-lego-feed-sync] start source=rakuten merchant=rakuten-lego-eu mode=audit-discovery max_products_per_file=${maxProducts ?? 50} redirect_samples=${auditRedirectSamples ?? 3}`,
+    );
+
+    const report = await auditRakutenLegoFeedDiscovery({
+      options: {
+        maxProductsPerFile: maxProducts,
+        redirectSampleLimit: auditRedirectSamples,
+        templateFilename: auditTemplateFilename,
+      },
+    });
+
+    console.log(
+      `[rakuten-lego-feed-sync] discovery files=${report.files.all.length} relevant_feed_files=${report.files.relevantFeedFiles.length} nl_feed_available=${report.conclusion.likelyNlFeedAvailable}`,
+    );
+    console.log(
+      JSON.stringify(
+        {
+          report,
+        },
+        null,
+        2,
+      ),
+    );
+
+    if (auditReportPath) {
+      await mkdir(dirname(auditReportPath), {
+        recursive: true,
+      });
+      await writeFile(
+        auditReportPath,
+        JSON.stringify(
+          {
+            report,
+          },
+          null,
+          2,
+        ),
+      );
+      console.log(
+        `[rakuten-lego-feed-sync] audit_report_written path=${JSON.stringify(auditReportPath)}`,
+      );
+    }
+
+    console.log(
+      `[rakuten-lego-feed-sync] end status=audit-discovery duration_ms=${Date.now() - startedAt}`,
+    );
+
+    return;
+  }
+
+  if (auditOnly) {
+    console.log(
+      `[rakuten-lego-feed-sync] start source=rakuten merchant=rakuten-lego-eu mode=audit-only max_products=${maxProducts ?? 500} report_path=${JSON.stringify(auditReportPath ?? '')}`,
+    );
+
+    const report = await auditRakutenLegoFeed({
+      options: {
+        feedFilename: auditFeedFilename,
+        maxProducts,
+        sampleLimit: debugSamples,
+        templateFilename: auditTemplateFilename,
+      },
+    });
+
+    console.log(
+      `[rakuten-lego-feed-sync] audit parsed_products=${report.parsedProductsCount} lego_candidates=${report.setMatching.legoCandidateCount} detected_sets=${report.setMatching.detectedSetNumberCount} matched_catalog=${report.setMatching.matchedCatalogCount} non_sets=${report.setMatching.nonSetProductCount}`,
+    );
+    console.log(
+      JSON.stringify(
+        {
+          report,
+        },
+        null,
+        2,
+      ),
+    );
+
+    if (auditReportPath) {
+      await mkdir(dirname(auditReportPath), {
+        recursive: true,
+      });
+      await writeFile(
+        auditReportPath,
+        JSON.stringify(
+          {
+            report,
+          },
+          null,
+          2,
+        ),
+      );
+      console.log(
+        `[rakuten-lego-feed-sync] audit_report_written path=${JSON.stringify(auditReportPath)}`,
+      );
+    }
+
+    console.log(
+      `[rakuten-lego-feed-sync] end status=audit-only duration_ms=${Date.now() - startedAt}`,
+    );
+
+    return;
+  }
+
   if (!hasServerSupabaseConfig() && !dryRun) {
     throw new Error(
       `Rakuten LEGO feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
@@ -165,7 +321,7 @@ async function main() {
   }
 
   console.log(
-    `[rakuten-lego-feed-sync] start source=rakuten merchant=lego-eu mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[rakuten-lego-feed-sync] start source=rakuten merchant=rakuten-lego-eu mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
   const result = await syncRakutenLegoFeed({
@@ -178,6 +334,15 @@ async function main() {
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
+
+  console.log(
+    `[rakuten-lego-feed-sync] phase1_summary eligible_rows=${result.phaseOneImportSummary.eligibleImportRowCount} preflight_matched_catalog_sets=${result.phaseOneImportSummary.guard.matchedCatalogSetCount} preflight_match_rate=${result.phaseOneImportSummary.guard.matchRate.toFixed(3)} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} unmatched=${result.skippedUnmatchedSetCount} excluded=${Object.values(result.phaseOneImportSummary.excludedByReason).reduce((sum, count) => sum + count, 0)} excluded_reasons=${JSON.stringify(result.phaseOneImportSummary.excludedByReason)} duplicate_set_numbers=${result.phaseOneImportSummary.duplicateSetNumberCount} locale_counts=${JSON.stringify(result.phaseOneImportSummary.localeCounts)} availability_counts=${JSON.stringify(result.phaseOneImportSummary.availabilityCounts)} guard=${JSON.stringify(result.phaseOneImportSummary.guard)} sample_eligible_set_numbers=${result.phaseOneImportSummary.sampleEligibleSetNumbers.join(',') || 'none'}`,
+  );
+  if (result.preflightImportSummary) {
+    console.log(
+      `[rakuten-lego-feed-sync] preflight passed matched_catalog_sets=${result.preflightImportSummary.matchedCatalogSetCount} match_rate=${result.preflightImportSummary.matchRate.toFixed(3)} unmatched=${result.preflightImportSummary.skippedUnmatchedSetCount}`,
+    );
+  }
 
   if (result.debugInfo) {
     console.log(
@@ -258,13 +423,13 @@ async function main() {
   }
 
   console.log(
-    `[rakuten-lego-feed-sync] end status=imported source=rakuten merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[rakuten-lego-feed-sync] end status=${dryRun ? 'dry-run' : 'imported'} source=rakuten merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} parse_failures=${result.parseFailureCount} eligible_rows=${result.phaseOneImportSummary.eligibleImportRowCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
 main().catch((error) => {
   const classification = logScheduledJobFailure({
-    context: 'source=rakuten merchant=lego-eu',
+    context: 'source=rakuten merchant=rakuten-lego-eu',
     error,
     jobName: 'rakuten-lego-feed-sync',
   });

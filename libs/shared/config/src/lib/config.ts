@@ -77,6 +77,26 @@ export const platformConfig = {
   ],
 } as const;
 
+export function resolvePublicMerchantDisplayName({
+  merchantName,
+  merchantSlug,
+}: {
+  merchantName: string;
+  merchantSlug?: string | null;
+}): string {
+  const normalizedMerchantSlug = merchantSlug?.trim().toLowerCase();
+  const normalizedMerchantName = merchantName.trim();
+
+  if (
+    normalizedMerchantSlug === 'rakuten-lego-eu' ||
+    normalizedMerchantName.toLowerCase() === 'lego eu'
+  ) {
+    return 'LEGO®';
+  }
+
+  return normalizedMerchantName || merchantName;
+}
+
 export function buildPublicSiteRobotsPolicy({
   allowIndexing,
 }: {
@@ -563,6 +583,7 @@ export const misterBricksEnvKeys = {
 } as const;
 
 export const rakutenLegoEnvKeys = {
+  enablePhaseOneImport: 'RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED',
   host: 'RAKUTEN_LEGO_FEED_HOST',
   port: 'RAKUTEN_LEGO_FEED_PORT',
   username: 'RAKUTEN_LEGO_FEED_USERNAME',
@@ -574,6 +595,9 @@ export const rakutenLegoEnvKeys = {
   merchantSlug: 'RAKUTEN_LEGO_MERCHANT_SLUG',
   merchantName: 'RAKUTEN_LEGO_MERCHANT_NAME',
 } as const;
+
+export const rakutenLegoDefaultNlFeedFilename =
+  '/GLOBAL/NL-NL_EUR/50641_4682248_mp_NL-NL_EUR.xml.gz';
 
 export interface BrowserSupabaseConfig {
   anonKey: string;
@@ -673,6 +697,7 @@ export interface MisterBricksFeedConfig {
 }
 
 export interface RakutenLegoFeedConfig {
+  enablePhaseOneImport: boolean;
   filename?: string;
   host: string;
   merchantName: string;
@@ -1684,12 +1709,19 @@ export function getRakutenLegoFeedConfig(
 ): RakutenLegoFeedConfig {
   return {
     host:
-      environment[rakutenLegoEnvKeys.host]?.trim() || 'aftp.linksynergy.com',
+      environment[rakutenLegoEnvKeys.host]?.trim() ||
+      environment['RAKUTEN_LEGO_FTP_HOST']?.trim() ||
+      'aftp.linksynergy.com',
     port:
       readOptionalPositiveIntegerEnvValue({
         environment,
         key: rakutenLegoEnvKeys.port,
-      }) ?? 22,
+      }) ??
+      readOptionalPositiveIntegerEnvValue({
+        environment,
+        key: 'RAKUTEN_LEGO_FTP_PORT',
+      }) ??
+      22,
     username: requireEnvValue({
       environment,
       key: rakutenLegoEnvKeys.username,
@@ -1698,12 +1730,20 @@ export function getRakutenLegoFeedConfig(
       environment,
       key: rakutenLegoEnvKeys.password,
     }),
-    sid: environment[rakutenLegoEnvKeys.sid]?.trim() || '4682248',
+    sid:
+      environment[rakutenLegoEnvKeys.sid]?.trim() ||
+      environment['RAKUTEN_LEGO_SID']?.trim() ||
+      '4682248',
     mid: environment[rakutenLegoEnvKeys.mid]?.trim() || undefined,
-    filename: environment[rakutenLegoEnvKeys.filename]?.trim() || undefined,
+    filename:
+      environment[rakutenLegoEnvKeys.filename]?.trim() ||
+      rakutenLegoDefaultNlFeedFilename,
     remoteDir: environment[rakutenLegoEnvKeys.remoteDir]?.trim() || undefined,
+    enablePhaseOneImport: isTrueEnvValue(
+      environment[rakutenLegoEnvKeys.enablePhaseOneImport],
+    ),
     merchantSlug:
-      environment[rakutenLegoEnvKeys.merchantSlug]?.trim() || 'lego-eu',
+      environment[rakutenLegoEnvKeys.merchantSlug]?.trim() || 'rakuten-lego-eu',
     merchantName:
       environment[rakutenLegoEnvKeys.merchantName]?.trim() || 'LEGO',
   };

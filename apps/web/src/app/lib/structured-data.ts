@@ -10,6 +10,7 @@ import {
   buildThemePath,
   buildWebPath,
   platformConfig,
+  resolvePublicMerchantDisplayName,
   webPathnames,
 } from '@lego-platform/shared/config';
 import type { JsonLdValue } from './json-ld';
@@ -28,6 +29,7 @@ interface StructuredDataOffer {
     | 'unknown';
   currency: string;
   merchantName: string;
+  merchantSlug?: string;
   priceCents: number;
   url: string;
 }
@@ -92,7 +94,10 @@ function toOfferSchema(offer: StructuredDataOffer): JsonLdValue | undefined {
     priceCurrency: offer.currency,
     seller: {
       '@type': 'Organization',
-      name: offer.merchantName,
+      name: resolvePublicMerchantDisplayName({
+        merchantName: offer.merchantName,
+        merchantSlug: offer.merchantSlug,
+      }),
     },
     url: offer.url,
   };

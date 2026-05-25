@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {
+  CatalogBrowsePagination,
   CatalogPageIntro,
   CatalogSectionShell,
   CatalogSetCard,
@@ -43,9 +44,17 @@ function getCollectionLandingPageSortHref({
   config: CatalogCollectionLandingPageConfig;
   sortKey: CatalogCollectionLandingPageSortKey;
 }): string {
-  return sortKey === config.sort.default
-    ? config.canonicalPath
-    : `${config.canonicalPath}?sort=${sortKey}`;
+  const searchParams = new URLSearchParams();
+
+  if (sortKey !== config.sort.default) {
+    searchParams.set('sort', sortKey);
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString
+    ? `${config.canonicalPath}?${queryString}`
+    : config.canonicalPath;
 }
 
 function renderLinkList({
@@ -69,6 +78,8 @@ function renderLinkList({
 export function CatalogFeatureCollectionLandingPage({
   activeSortKey,
   config,
+  currentPage = 1,
+  pageSize,
   relatedPageLinks = [],
   setCards,
   themeLinks = [],
@@ -76,6 +87,8 @@ export function CatalogFeatureCollectionLandingPage({
 }: {
   activeSortKey: CatalogCollectionLandingPageSortKey;
   config: CatalogCollectionLandingPageConfig;
+  currentPage?: number;
+  pageSize?: number;
   relatedPageLinks?: readonly CatalogCollectionLandingPageLink[];
   setCards: readonly CatalogCollectionLandingPageItem[];
   themeLinks?: readonly CatalogCollectionLandingPageLink[];
@@ -83,6 +96,15 @@ export function CatalogFeatureCollectionLandingPage({
 }) {
   const browseSectionId = 'sets';
   const hasSortOptions = config.sort.options.length > 1;
+  const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
+  const normalizedPageSize =
+    typeof pageSize === 'number' && pageSize > 0
+      ? Math.max(1, Math.floor(pageSize))
+      : setCards.length;
+  const pageCount =
+    normalizedPageSize > 0
+      ? Math.max(1, Math.ceil(totalSetCount / normalizedPageSize))
+      : 1;
 
   return (
     <main className={styles.page}>
@@ -155,22 +177,38 @@ export function CatalogFeatureCollectionLandingPage({
         utilityPlacement="below-heading"
       >
         {setCards.length ? (
-          <CatalogSetCardCollection
-            className={styles.grid}
-            gridMode="browse"
-            variant="compact"
-          >
-            {setCards.map((setCard, index) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(setCard.slug)}
-                imageLoading={index < 6 ? 'eager' : 'lazy'}
-                key={setCard.id}
-                priceContext={setCard.priceContext}
-                setSummary={setCard}
-                variant="compact"
-              />
-            ))}
-          </CatalogSetCardCollection>
+          <>
+            <CatalogSetCardCollection
+              className={styles.grid}
+              gridMode="browse"
+              variant="compact"
+            >
+              {setCards.map((setCard, index) => (
+                <CatalogSetCard
+                  href={buildSetDetailPath(setCard.slug)}
+                  imageLoading={index < 6 ? 'eager' : 'lazy'}
+                  key={setCard.id}
+                  priceContext={setCard.priceContext}
+                  setSummary={setCard}
+                  variant="compact"
+                />
+              ))}
+            </CatalogSetCardCollection>
+            <CatalogBrowsePagination
+              ariaLabel={`${config.h1} pagina's`}
+              basePath={config.canonicalPath}
+              currentPage={normalizedCurrentPage}
+              pageCount={pageCount}
+              queryParams={
+                activeSortKey !== config.sort.default
+                  ? { sort: activeSortKey }
+                  : undefined
+              }
+            />
+            {config.coverageNote && totalSetCount < normalizedPageSize ? (
+              <p className={styles.coverageNote}>{config.coverageNote}</p>
+            ) : null}
+          </>
         ) : (
           <p className={styles.emptyState}>
             Deze collectie wacht nog op genoeg betrouwbare catalogusdata.

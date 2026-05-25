@@ -6,6 +6,7 @@ import {
   getCatalogCollectionLandingPageConfig,
   listCatalogCollectionLandingPageConfigs,
   normalizeCatalogCollectionLandingPageSortKey,
+  CATALOG_BROWSE_PAGE_SIZE,
   type CatalogCollectionLandingPageConfig,
 } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
@@ -19,12 +20,30 @@ import {
 export const dynamicParams = false;
 export const revalidate = 21_600;
 
-const COLLECTION_LANDING_PAGE_SIZE = 36;
+const COLLECTION_LANDING_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 
 function readSearchParam(
   value: string | string[] | undefined,
 ): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function normalizeCollectionPageNumber(value?: string): number {
+  const parsedPage = Number.parseInt(value ?? '', 10);
+
+  return Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : 1;
+}
+
+function buildCollectionCanonicalPath({
+  config,
+  page,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  page: number;
+}): string {
+  return page > 1
+    ? `${config.canonicalPath}?page=${page}`
+    : config.canonicalPath;
 }
 
 function formatCollectionPrice(minorUnits: number): string {
@@ -59,17 +78,30 @@ export function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ collectionSlug: string }>;
+  searchParams?: Promise<{
+    page?: string | string[];
+    sort?: string | string[];
+  }>;
 }): Promise<Metadata> {
   const { collectionSlug } = await params;
+  const resolvedSearchParams = await searchParams;
   const config = getCatalogCollectionLandingPageConfig(collectionSlug);
 
   if (!config) {
     return {};
   }
 
-  const canonicalUrl = buildCanonicalUrl(config.canonicalPath);
+  const currentPage = normalizeCollectionPageNumber(
+    readSearchParam(resolvedSearchParams?.page),
+  );
+  const canonicalPath = buildCollectionCanonicalPath({
+    config,
+    page: currentPage,
+  });
+  const canonicalUrl = buildCanonicalUrl(canonicalPath);
 
   if (config.redirectPath) {
     return {
@@ -105,7 +137,10 @@ export default async function CollectionLandingPage({
   searchParams,
 }: {
   params: Promise<{ collectionSlug: string }>;
-  searchParams?: Promise<{ sort?: string | string[] }>;
+  searchParams?: Promise<{
+    page?: string | string[];
+    sort?: string | string[];
+  }>;
 }) {
   const { collectionSlug } = await params;
   const config = getCatalogCollectionLandingPageConfig(collectionSlug);
@@ -123,6 +158,9 @@ export default async function CollectionLandingPage({
     config,
     value: readSearchParam(resolvedSearchParams?.sort),
   });
+  const currentPage = normalizeCollectionPageNumber(
+    readSearchParam(resolvedSearchParams?.page),
+  );
   const collectionPage = await getCatalogCollectionLandingPage({
     cacheOptions: {
       revalidateSeconds: revalidate,
@@ -135,9 +173,21 @@ export default async function CollectionLandingPage({
     },
     config,
     limit: COLLECTION_LANDING_PAGE_SIZE,
+    offset: (currentPage - 1) * COLLECTION_LANDING_PAGE_SIZE,
     sortKey,
   });
-  const canonicalUrl = buildCanonicalUrl(config.canonicalPath);
+  const pageCount = Math.max(
+    1,
+    Math.ceil(collectionPage.totalSetCount / COLLECTION_LANDING_PAGE_SIZE),
+  );
+
+  if (currentPage > pageCount) {
+    notFound();
+  }
+
+  const canonicalUrl = buildCanonicalUrl(
+    buildCollectionCanonicalPath({ config, page: currentPage }),
+  );
   const jsonLd = [
     buildCollectionPageJsonLd({
       description: config.metaDescription,
@@ -179,6 +229,8 @@ export default async function CollectionLandingPage({
       <CatalogFeatureCollectionLandingPage
         activeSortKey={sortKey}
         config={config}
+        currentPage={currentPage}
+        pageSize={COLLECTION_LANDING_PAGE_SIZE}
         relatedPageLinks={getRelatedCollectionLandingPageLinks(config)}
         setCards={setCards}
         themeLinks={config.links.themes}

@@ -46,6 +46,7 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
     bestDeal,
+    offerList,
     recentlyViewedRail,
     setNewsRail,
     similarSetsRail,
@@ -53,10 +54,16 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     themeHref,
   }: {
     bestDeal?: {
+      ctaLabel?: string;
       decisionLabel?: string;
       decisionTone?: string;
+      merchantLabel?: string;
       rankingLabel?: string;
     };
+    offerList?: readonly {
+      ctaLabel?: string;
+      merchantLabel?: string;
+    }[];
     recentlyViewedRail?: unknown;
     setNewsRail?: unknown;
     similarSetsRail?: unknown;
@@ -79,6 +86,22 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             },
             bestDeal.decisionLabel,
             bestDeal.rankingLabel,
+            bestDeal.ctaLabel,
+            bestDeal.merchantLabel,
+          )
+        : null,
+      offerList?.length
+        ? createElement(
+            'ul',
+            { 'data-testid': 'offer-list' },
+            ...offerList.map((offer, index) =>
+              createElement(
+                'li',
+                { key: index },
+                offer.ctaLabel,
+                offer.merchantLabel,
+              ),
+            ),
           )
         : null,
       similarSetsRail
@@ -196,6 +219,7 @@ function createCurrentOfferSummaryMap({
     currency: 'EUR';
     merchant: 'amazon' | 'bol' | 'lego' | 'other';
     merchantName: string;
+    merchantSlug?: string;
     priceCents: number;
     url: string;
   }[];
@@ -975,6 +999,76 @@ describe('set detail page JSON-LD', () => {
     expect(
       setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
     ).not.toHaveBeenCalled();
+  });
+
+  it('renders Rakuten LEGO offers with the public LEGO registered display name', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '10300',
+      imageUrl: 'https://cdn.example.com/10300.jpg',
+      name: 'Back to the Future Time Machine',
+      pieces: 1872,
+      releaseYear: 2022,
+      slug: 'back-to-the-future-time-machine-10300',
+      theme: 'Icons',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-05-25T10:00:00.000Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        merchantSlug: 'rakuten-lego-eu',
+        priceCents: 19999,
+        setId: '10300',
+        url: 'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
+      },
+    ]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 1,
+        validPrimaryOfferCount: 1,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-25T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'lego',
+            merchantName: 'LEGO EU',
+            merchantSlug: 'rakuten-lego-eu',
+            priceCents: 19999,
+            url: 'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
+          },
+        ],
+        setId: '10300',
+      }),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'back-to-the-future-time-machine-10300',
+        }),
+      }),
+    );
+
+    expect(html).toContain('Bekijk deal bij LEGO®');
+    expect(html).toContain('Bekijk bij LEGO®');
+    expect(html).toContain('"seller":{"@type":"Organization","name":"LEGO®"}');
+    expect(html).not.toContain('LEGO EU');
   });
 
   it('uses the current discovery reference delta for the set-detail deal verdict', async () => {

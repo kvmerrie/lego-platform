@@ -377,14 +377,42 @@ Recommended cadence:
 
 Rakuten LEGO job notes:
 
-- keep `RAKUTEN_LEGO_FEED_HOST`, `RAKUTEN_LEGO_FEED_PORT`, `RAKUTEN_LEGO_FEED_USERNAME`, `RAKUTEN_LEGO_FEED_PASSWORD`, `RAKUTEN_LEGO_FEED_SID`, either `RAKUTEN_LEGO_FEED_MID` or `RAKUTEN_LEGO_FEED_FILENAME`, optional `RAKUTEN_LEGO_REMOTE_DIR`, `RAKUTEN_LEGO_MERCHANT_SLUG`, `RAKUTEN_LEGO_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
-- when `RAKUTEN_LEGO_FEED_FILENAME` is empty, the sync resolves `${RAKUTEN_LEGO_FEED_MID}_${RAKUTEN_LEGO_FEED_SID}_mp.xml.gz`
-- when `RAKUTEN_LEGO_REMOTE_DIR` is set and the filename is derived from MID/SID, the sync downloads from that remote directory; explicit `RAKUTEN_LEGO_FEED_FILENAME` remains exact
+- keep `RAKUTEN_LEGO_FEED_HOST`, `RAKUTEN_LEGO_FEED_PORT`, `RAKUTEN_LEGO_FEED_USERNAME`, `RAKUTEN_LEGO_FEED_PASSWORD`, optional `RAKUTEN_LEGO_FEED_FILENAME`, optional `RAKUTEN_LEGO_REMOTE_DIR`, `RAKUTEN_LEGO_MERCHANT_SLUG`, `RAKUTEN_LEGO_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- the default production feed is `/GLOBAL/NL-NL_EUR/50641_4682248_mp_NL-NL_EUR.xml.gz`; only override `RAKUTEN_LEGO_FEED_FILENAME` for explicit audit or fallback work
+- the Phase 1 source key must stay `rakuten-lego-eu`; remove stale `RAKUTEN_LEGO_MERCHANT_SLUG=lego-eu` overrides before enabling cron
+- write imports are blocked unless `RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED=true`; dry-runs and audits remain available without the flag
+- when `RAKUTEN_LEGO_FEED_FILENAME` is empty, the sync uses the NL feed above instead of deriving a generic MID/SID file
 - `--list-files` logs `pwd` when the SFTP server supports it, then tries `.`, `RAKUTEN_LEGO_REMOTE_DIR`, `/`, and `RAKUTEN_LEGO_FEED_MID` in order, continuing after per-path list failures
 - use `pnpm sync:rakuten-lego-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 30 --report-unmatched-path tmp/rakuten-lego-unmatched.json` for local parser review
 - use `--max-products <n>` only for local/debug runs, never for the production job
-- the sync never uses EAN, SKU, product IDs, Rakuten IDs, file IDs or deeplink IDs as LEGO set numbers; set numbers are extracted only from human product text
+- the Phase 1 sync imports only exact catalog matches with EUR prices and `nl-nl` LEGO deeplinks; unmatched candidates are logged only, never created as catalog sets
+- write-runs perform a dry-run preflight first and hard-fail before writes when locale drift, non-EUR rows, missing deeplinks, excessive parse failures, or a low match rate make the feed unsafe
+- normal cron runs should omit `--max-products` so the full feed is processed; unmatched and excluded rows stay compact in the summary unless debug flags are used
 - after a production import changes offers, the job triggers public price revalidation with reason `rakuten_lego_feed_sync`
+
+Rakuten LEGO dry-run:
+
+```bash
+pnpm sync:rakuten-lego-feed -- --dry-run
+```
+
+Rakuten LEGO write-run:
+
+```bash
+RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED=true pnpm sync:rakuten-lego-feed
+```
+
+Rollback or disable:
+
+- remove or set `RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED=false`
+- leave the merchant/source key unchanged; the next cron run will stop before writes
+- if a bad offer batch was imported, remove or mark latest offers for merchant `rakuten-lego-eu` stale through the commerce admin/runbook path, then rerun `pnpm sync:commerce` or revalidate affected set pages
+
+Monitoring after cron:
+
+- check `phase1_summary`, especially `preflight_match_rate`, `excluded_reasons`, `locale_counts`, `availability_counts`, and `guard`
+- check the final line for `parse_failures`, `changed_sets`, `imported_offers`, `unchanged_latest_timestamps_refreshed`, and `skipped_unmatched_set`
+- investigate immediately when the job hard-fails on a cron guard; do not bypass the guard by changing feed paths without a fresh dry-run
 
 Coppenswarenhuis uses a TradeTracker XML feed and writes through the same strict
 affiliate importer. It keeps only LEGO construction-set candidates with a set

@@ -109,6 +109,11 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         type: 'limit';
         count: number;
       }
+    | {
+        type: 'range';
+        from: number;
+        to: number;
+      }
   > = [];
 
   const builder = {
@@ -147,6 +152,15 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
       return builder;
     },
+    range(from: number, to: number) {
+      filters.push({
+        from,
+        to,
+        type: 'range',
+      });
+
+      return builder;
+    },
     maybeSingle() {
       return builder.then((result) => ({
         data: result.data[0] ?? null,
@@ -181,6 +195,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
           if (filter.type === 'limit') {
             return resultRows.slice(0, filter.count);
+          }
+
+          if (filter.type === 'range') {
+            return resultRows.slice(filter.from, filter.to + 1);
           }
 
           const sortedRows = [...resultRows].sort((left, right) => {
@@ -985,6 +1003,66 @@ describe('catalog data access server', () => {
           },
         ],
         setId: '75398',
+      },
+    ]);
+  });
+
+  test('uses the public LEGO registered display name for Rakuten LEGO current offers', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          offer_seed_id: 'seed-rakuten-lego',
+          price_minor: 19999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetched_at: '2026-05-25T10:00:00.000Z',
+          fetch_status: 'success',
+          observed_at: '2026-05-25T09:55:00.000Z',
+          updated_at: '2026-05-25T10:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-rakuten-lego',
+          is_active: true,
+          name: 'LEGO EU',
+          slug: 'rakuten-lego-eu',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-rakuten-lego',
+          is_active: true,
+          merchant_id: 'merchant-rakuten-lego',
+          notes: 'Product title: LEGO Icons full set bouwset.',
+          product_url:
+            'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
+          set_id: '10300',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['10300'],
+      supabaseClient,
+    });
+
+    expect(result).toMatchObject([
+      {
+        bestOffer: {
+          merchant: 'lego',
+          merchantName: 'LEGO®',
+          merchantSlug: 'rakuten-lego-eu',
+        },
+        offers: [
+          {
+            merchant: 'lego',
+            merchantName: 'LEGO®',
+            merchantSlug: 'rakuten-lego-eu',
+          },
+        ],
+        setId: '10300',
       },
     ]);
   });
@@ -1958,6 +2036,32 @@ describe('catalog data access server', () => {
         (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
       ),
     ).toHaveLength(1);
+  });
+
+  test('loads canonical catalog sets beyond the default Supabase response window', async () => {
+    const overlayRows = Array.from({ length: 1001 }, (_, index) =>
+      createCatalogOverlayRow({
+        created_at: `2026-04-${String(1 + (index % 28)).padStart(2, '0')}T08:00:00.000Z`,
+        name: `Catalog set ${index}`,
+        set_id: String(10000 + index),
+        slug: `catalog-set-${10000 + index}`,
+        source_set_number: `${10000 + index}-1`,
+      }),
+    );
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows,
+    });
+
+    const canonicalCatalogSets = await listCanonicalCatalogSets({
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSets).toHaveLength(1001);
+    expect(
+      canonicalCatalogSets.some(
+        (catalogSet) => catalogSet.sourceSetNumber === '11000-1',
+      ),
+    ).toBe(true);
   });
 
   test('returns no canonical set when no Supabase-backed set exists', async () => {

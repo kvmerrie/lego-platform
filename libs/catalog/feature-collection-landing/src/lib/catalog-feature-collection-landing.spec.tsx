@@ -17,6 +17,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
       <CatalogFeatureCollectionLandingPage
         activeSortKey="recommended"
         config={config}
+        currentPage={1}
+        pageSize={1}
         relatedPageLinks={[
           {
             href: '/lego-voor-volwassenen',
@@ -34,7 +36,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
           },
         ]}
         themeLinks={[{ href: '/themes/icons', label: 'Icons' }]}
-        totalSetCount={1}
+        totalSetCount={2}
       />,
     );
 
@@ -52,6 +54,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('/themes/icons');
     expect(markup).toContain('/lego-voor-volwassenen');
     expect(markup).toContain('?sort=newest');
+    expect(markup).toContain('href="/lego-voor-volwassenen?page=2"');
+    expect(markup).toContain('aria-current="page"');
   });
 
   it('renders a compact empty state when collection data is missing', () => {
@@ -74,5 +78,38 @@ describe('CatalogFeatureCollectionLandingPage', () => {
       'Deze collectie wacht nog op genoeg betrouwbare catalogusdata.',
     );
     expect(markup).not.toContain('data-catalog-set-card-collection="true"');
+  });
+
+  it('renders an honest coverage note for thin retiring data', () => {
+    const config = getCatalogCollectionLandingPageConfig('retiring-lego-sets');
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        pageSize={40}
+        setCards={[
+          {
+            id: '75331',
+            slug: 'the-razor-crest-75331',
+            name: 'The Razor Crest',
+            theme: 'Star Wars',
+            releaseYear: 2022,
+            pieces: 6187,
+          },
+        ]}
+        totalSetCount={1}
+      />,
+    );
+
+    expect(markup).toContain('href="#top"');
+    expect(markup).toContain('Terug naar boven');
+    expect(markup).toContain(
+      'alleen sets met een expliciet retiring- of retired-signaal',
+    );
   });
 });

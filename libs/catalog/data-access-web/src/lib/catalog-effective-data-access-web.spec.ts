@@ -1695,6 +1695,140 @@ describe('catalog effective data access web', () => {
     expect(result.totalSetCount).toBe(2);
   });
 
+  test('selects adult collection sets using explicit age and conservative display criteria', async () => {
+    const config = {
+      browseDescription: 'Displaysets.',
+      browseEyebrow: 'Voor op de plank',
+      browseTitle: 'Sets die blijven staan',
+      canonicalPath: '/lego-voor-volwassenen',
+      description: 'LEGO voor volwassenen.',
+      filters: {
+        adultCollector: true,
+      },
+      h1: 'LEGO voor volwassenen',
+      intro: 'Kijk naar displaysets en grote bouwprojecten.',
+      links: {},
+      metaDescription: 'Bekijk LEGO voor volwassenen.',
+      metaTitle: 'LEGO voor volwassenen | Brickhunt',
+      signalLabel: 'collector sets',
+      slug: 'lego-voor-volwassenen',
+      sort: {
+        default: 'pieces-desc',
+        options: ['pieces-desc'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Architecture Display',
+          pieceCount: 650,
+          primaryTheme: 'Architecture',
+          setId: '21099',
+          slug: 'architecture-display-21099',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Star Wars Display Ship',
+          pieceCount: 1_900,
+          primaryTheme: 'Star Wars',
+          setId: '75499',
+          slug: 'star-wars-display-ship-75499',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Large Kids Playset',
+          pieceCount: 3_000,
+          primaryTheme: 'DUPLO',
+          setId: '10999',
+          slug: 'large-kids-playset-10999',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Small Botanicals',
+          pieceCount: 300,
+          primaryTheme: 'Botanicals',
+          setId: '10399',
+          slug: 'small-botanicals-10399',
+        }),
+      ],
+      sortKey: 'pieces-desc',
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual([
+      '75499',
+      '21099',
+    ]);
+    expect(result.totalSetCount).toBe(2);
+  });
+
+  test('prioritizes precise release metadata for new collection pages before narrow year-only fallbacks', async () => {
+    const config = {
+      browseDescription: 'Nieuwe sets.',
+      browseEyebrow: 'Net uit',
+      browseTitle: 'Nieuwe dozen',
+      canonicalPath: '/nieuwe-lego-sets',
+      description: 'Nieuwe LEGO sets.',
+      filters: {
+        recentRelease: true,
+      },
+      h1: 'Nieuwe LEGO sets',
+      intro: 'Kijk naar sets die net uit zijn of eraan komen.',
+      links: {},
+      metaDescription: 'Bekijk nieuwe LEGO sets.',
+      metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+      signalLabel: 'nieuwe sets',
+      slug: 'nieuwe-lego-sets',
+      sort: {
+        default: 'newest',
+        options: ['newest'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'AT-ST Walker',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          setId: '75417',
+          slug: 'at-st-walker-75417',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Shire',
+          releaseDate: '2026-07-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2026,
+          setId: '10354',
+          slug: 'the-shire-10354',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Year Only Current Release',
+          releaseYear: 2026,
+          setId: '60499',
+          slug: 'year-only-current-release-60499',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Older Precise Release',
+          releaseDate: '2025-01-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2025,
+          setId: '10399',
+          slug: 'older-precise-release-10399',
+        }),
+      ],
+      now: new Date('2026-05-25T12:00:00.000Z'),
+      sortKey: 'newest',
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual([
+      '10354',
+      '75417',
+      '60499',
+    ]);
+    expect(result.totalSetCount).toBe(3);
+  });
+
   test('builds public theme directory from paginated Supabase catalog cards', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
@@ -7428,6 +7562,55 @@ describe('catalog effective data access web', () => {
         priceCents: 17240,
         availability: 'out_of_stock',
         checkedAt: '2026-04-18T11:40:00.000Z',
+      },
+    ]);
+  });
+
+  test('uses the public LEGO registered display name for Rakuten LEGO offers', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetched_at: '2026-05-25T10:00:00.000Z',
+          fetch_status: 'success',
+          observed_at: '2026-05-25T09:55:00.000Z',
+          offer_seed_id: 'seed-rakuten-lego',
+          price_minor: 19999,
+          updated_at: '2026-05-25T10:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-rakuten-lego',
+          is_active: true,
+          name: 'LEGO EU',
+          slug: 'rakuten-lego-eu',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-rakuten-lego',
+          is_active: true,
+          merchant_id: 'merchant-rakuten-lego',
+          product_url:
+            'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
+          set_id: '10300',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogSetLiveOffersBySetId({
+      setId: '10300',
+      supabaseClient,
+    });
+
+    expect(result).toMatchObject([
+      {
+        merchant: 'lego',
+        merchantName: 'LEGO®',
+        merchantSlug: 'rakuten-lego-eu',
       },
     ]);
   });

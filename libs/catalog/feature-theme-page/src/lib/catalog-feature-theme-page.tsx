@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
   CatalogPageIntro,
+  CatalogBrowsePagination,
   CatalogSectionShell,
   CatalogSetCard,
   type CatalogSetCardCtaMode,
@@ -89,8 +90,6 @@ export function CatalogFeatureThemePage({
         normalizedCurrentPage * normalizedPageSize,
       );
   const themePageHref = buildThemePath(themeSnapshot.slug);
-  const buildThemePageHref = (page: number) =>
-    page <= 1 ? themePageHref : `${themePageHref}?page=${page}`;
   const themePageStyle =
     themeVisual?.backgroundColor || themeVisual?.textColor
       ? ({
@@ -250,30 +249,12 @@ export function CatalogFeatureThemePage({
             />
           ))}
         </CatalogSetCardCollection>
-        {pageCount > 1 ? (
-          <nav
-            aria-label={`${themeName} sets pagina's`}
-            className={styles.paginationNav}
-          >
-            <ol className={styles.paginationList}>
-              {Array.from({ length: pageCount }, (_, index) => index + 1).map(
-                (page) => (
-                  <li className={styles.paginationItem} key={page}>
-                    <a
-                      aria-current={
-                        page === normalizedCurrentPage ? 'page' : undefined
-                      }
-                      className={styles.paginationLink}
-                      href={buildThemePageHref(page)}
-                    >
-                      {page}
-                    </a>
-                  </li>
-                ),
-              )}
-            </ol>
-          </nav>
-        ) : null}
+        <CatalogBrowsePagination
+          ariaLabel={`${themeName} sets pagina's`}
+          basePath={themePageHref}
+          currentPage={normalizedCurrentPage}
+          pageCount={pageCount}
+        />
       </CatalogSectionShell>
       {relatedArticlesRail ?? (
         <CatalogFeatureThemeRelatedArticles

@@ -64,6 +64,7 @@ import {
   getDefaultFormattingLocale,
   getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
+  resolvePublicMerchantDisplayName,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
@@ -761,6 +762,26 @@ function getCatalogOfferMerchantSlug(
     : undefined;
 }
 
+function getCatalogOfferPublicMerchantName(catalogOffer: CatalogOffer): string {
+  return resolvePublicMerchantDisplayName({
+    merchantName: catalogOffer.merchantName,
+    merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
+  });
+}
+
+function withCatalogOfferPublicMerchantName(
+  catalogOffer: CatalogOffer,
+): CatalogOffer {
+  const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
+
+  return merchantName === catalogOffer.merchantName
+    ? catalogOffer
+    : {
+        ...catalogOffer,
+        merchantName,
+      };
+}
+
 export function buildSetDetailMetadata({
   allowIndexing,
   catalogSetDetail,
@@ -773,6 +794,9 @@ export function buildSetDetailMetadata({
   pricePanelSnapshot?: PricePanelSnapshot;
 }): Metadata {
   const bestOffer = currentOfferSummary?.bestOffer;
+  const bestOfferMerchantName = bestOffer
+    ? getCatalogOfferPublicMerchantName(bestOffer)
+    : undefined;
   const discountPercentage = getReliableDiscountPercentage(pricePanelSnapshot);
   const metadataImage = getSetDetailMetadataImage(
     catalogSetDetail,
@@ -805,7 +829,7 @@ export function buildSetDetailMetadata({
   ].filter(Boolean);
   const description =
     bestOffer && typeof nextBestPriceDeltaMinor === 'number'
-      ? `Laagste nagekeken prijs bij ${bestOffer.merchantName}. ${formatMetadataPrice(
+      ? `Laagste nagekeken prijs bij ${bestOfferMerchantName}. ${formatMetadataPrice(
           {
             currencyCode: bestOffer.currency,
             minorUnits: nextBestPriceDeltaMinor,
@@ -814,7 +838,7 @@ export function buildSetDetailMetadata({
       : bestOffer && (currentOfferSummary?.offers.length ?? 0) > 1
         ? `Nu verkrijgbaar bij ${currentOfferSummary?.offers.length} winkels. Laagste nagekeken prijs: ${priceLabel}.`
         : bestOffer
-          ? `Laagste nagekeken prijs bij ${bestOffer.merchantName}: ${priceLabel}.`
+          ? `Laagste nagekeken prijs bij ${bestOfferMerchantName}: ${priceLabel}.`
           : `${fallbackDescriptionParts.join(' ')}. Prijs volgt nog; volg deze set zodra er een koopmoment is.`;
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
@@ -1176,6 +1200,7 @@ function buildBestDeal({
   }
 
   const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
+  const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
   const nextBestPriceDeltaMinor = getNextBestOfferPriceDeltaMinor(
     catalogOffers ?? [catalogOffer],
     catalogOffer,
@@ -1186,14 +1211,14 @@ function buildBestDeal({
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
     ctaHref: catalogOffer.url,
-    ctaLabel: `Bekijk deal bij ${catalogOffer.merchantName}`,
+    ctaLabel: `Bekijk deal bij ${merchantName}`,
     ctaTone: dealVerdict.tone === 'positive' ? 'accent' : 'secondary',
     coverageLabel: buildMerchantCoverageLabel(merchantCount),
     decisionHelper: shortenCommerceHeroDecisionHelper(dealVerdict.explanation),
     decisionLabel: dealVerdict.label,
     decisionTone: dealVerdict.tone,
     eyebrow: 'Beste prijs nu',
-    merchantLabel: `Bij ${catalogOffer.merchantName}`,
+    merchantLabel: `Bij ${merchantName}`,
     price: formatOfferPrice(catalogOffer),
     rankingLabel: buildBestOfferRankingLabel({
       availability: catalogOffer.availability,
@@ -1206,7 +1231,7 @@ function buildBestDeal({
       event: 'offer_click',
       properties: {
         merchantCount,
-        merchantName: catalogOffer.merchantName,
+        merchantName,
         merchantSlug,
         offerPlacement: 'best_offer',
         offerRole: 'best',
@@ -1237,34 +1262,39 @@ function buildOfferList(
   },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
-  return sortCatalogOffers(catalogOffers).map((catalogOffer, index) => ({
-    checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
-    ctaHref: catalogOffer.url,
-    ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
-    isBest: bestOffer?.url === catalogOffer.url,
-    merchantLabel: catalogOffer.merchantName,
-    price: formatOfferPrice(catalogOffer),
-    rankingLabel: buildOfferRankingLabel({
-      bestOffer,
-      catalogOffer,
-    }),
-    stockLabel: getOfferStockLabel(catalogOffer.availability),
-    trackingEvent: {
-      event: 'offer_click',
-      properties: {
-        merchantCount,
-        merchantName: catalogOffer.merchantName,
-        merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
-        offerPlacement: 'comparison_row',
-        offerRole: bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
-        pageSurface: 'set_detail',
-        priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
-        rankPosition: index + 1,
-        setId,
-        theme,
+  return sortCatalogOffers(catalogOffers).map((catalogOffer, index) => {
+    const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
+
+    return {
+      checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
+      ctaHref: catalogOffer.url,
+      ctaLabel: `Bekijk bij ${merchantName}`,
+      isBest: bestOffer?.url === catalogOffer.url,
+      merchantLabel: merchantName,
+      price: formatOfferPrice(catalogOffer),
+      rankingLabel: buildOfferRankingLabel({
+        bestOffer,
+        catalogOffer,
+      }),
+      stockLabel: getOfferStockLabel(catalogOffer.availability),
+      trackingEvent: {
+        event: 'offer_click',
+        properties: {
+          merchantCount,
+          merchantName,
+          merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
+          offerPlacement: 'comparison_row',
+          offerRole:
+            bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
+          pageSurface: 'set_detail',
+          priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+          rankPosition: index + 1,
+          setId,
+          theme,
+        },
       },
-    },
-  }));
+    };
+  });
 }
 
 function buildTrustSignals({
@@ -2014,7 +2044,7 @@ export default async function SetDetailPage({
               ? localizedSetDetailOffers.length
               : undefined,
           merchantId: bestOffer.merchant,
-          merchantName: bestOffer.merchantName,
+          merchantName: getCatalogOfferPublicMerchantName(bestOffer),
           observedAt: bestOffer.checkedAt,
           priceMinor: bestOffer.priceCents,
           regionCode: bestOffer.market,
@@ -2072,7 +2102,7 @@ export default async function SetDetailPage({
           catalogSetDetail,
           offers: hasTrackedAvailabilityFallback
             ? []
-            : localizedSetDetailOffers,
+            : localizedSetDetailOffers.map(withCatalogOfferPublicMerchantName),
         }),
         buildSetBreadcrumbJsonLd({
           catalogSetDetail,
