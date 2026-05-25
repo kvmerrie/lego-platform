@@ -80,6 +80,12 @@ function toSetDescription(catalogSetDetail: CatalogSetDetail): string {
   return catalogSetDetail.tagline ?? `${descriptionParts.join(' ')}.`;
 }
 
+function getCatalogSetStructuredDataName(
+  catalogSetDetail: Pick<CatalogSetDetail, 'displayTitle' | 'name'>,
+): string {
+  return catalogSetDetail.displayTitle?.trim() || catalogSetDetail.name;
+}
+
 function toOfferSchema(offer: StructuredDataOffer): JsonLdValue | undefined {
   const price = toSchemaPrice(offer.priceCents);
 
@@ -164,7 +170,7 @@ export function buildSetProductJsonLd({
       catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl,
     ),
     mpn: catalogSetDetail.id,
-    name: catalogSetDetail.name,
+    name: getCatalogSetStructuredDataName(catalogSetDetail),
     sku: catalogSetDetail.id,
     url: canonicalUrl,
   };
@@ -279,7 +285,7 @@ export function buildSetBreadcrumbJsonLd({
         ]
       : []),
     {
-      name: catalogSetDetail.name,
+      name: getCatalogSetStructuredDataName(catalogSetDetail),
       url: buildCanonicalUrl(buildSetDetailPath(catalogSetDetail.slug)),
     },
   ]);

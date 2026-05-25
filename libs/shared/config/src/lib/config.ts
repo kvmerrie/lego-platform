@@ -142,6 +142,10 @@ export const publicSiteIndexingEnvKeys = {
   allowIndexing: 'BRICKHUNT_ALLOW_INDEXING',
 } as const;
 
+export const legoNlDisplayTitleEnvKeys = {
+  enabled: 'ENABLE_LEGO_NL_DISPLAY_TITLES',
+} as const;
+
 const canonicalProductionHost = 'www.brickhunt.nl';
 const productionEnvironmentNames = new Set(['production', 'prod']);
 
@@ -211,6 +215,12 @@ export function resolvePublicSiteAllowIndexing(
     isTrueEnvValue(environment[publicSiteIndexingEnvKeys.allowIndexing]) &&
     isCanonicalProductionIndexingEnvironment(environment)
   );
+}
+
+export function isLegoNlDisplayTitleEnrichmentEnabled(
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
+): boolean {
+  return isTrueEnvValue(environment[legoNlDisplayTitleEnvKeys.enabled]);
 }
 
 export const publicSiteRobotsPolicy = buildPublicSiteRobotsPolicy({

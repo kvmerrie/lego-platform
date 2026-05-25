@@ -292,7 +292,8 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
     expect(markup).toContain('Naar winkel');
-    expect(markup).toContain('Naar winkel bij Amazon');
+    expect(markup).toContain('Amazon');
+    expect(markup).not.toContain('Amazon Amazon');
     expect(markup).toContain('Nagekeken 2 apr');
     expect(markup).not.toContain('2 apr om 09:00');
     expect(markup).toContain('data-best="true"');

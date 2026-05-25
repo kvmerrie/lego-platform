@@ -666,6 +666,12 @@ function getSetDetailMetadataImage(
   };
 }
 
+function getCatalogSetDisplayTitle(
+  catalogSetDetail: Pick<CatalogSetDetail, 'displayTitle' | 'name'>,
+): string {
+  return catalogSetDetail.displayTitle?.trim() || catalogSetDetail.name;
+}
+
 function shouldLogSetDetailOgImageDebug(): boolean {
   return process.env['DEBUG_SET_OG_IMAGE']?.trim().toLowerCase() === 'true';
 }
@@ -798,9 +804,10 @@ export function buildSetDetailMetadata({
     ? getCatalogOfferPublicMerchantName(bestOffer)
     : undefined;
   const discountPercentage = getReliableDiscountPercentage(pricePanelSnapshot);
+  const displayTitle = getCatalogSetDisplayTitle(catalogSetDetail);
   const metadataImage = getSetDetailMetadataImage(
     catalogSetDetail,
-    `${catalogSetDetail.name} setbeeld`,
+    `${displayTitle} setbeeld`,
   );
   const priceLabel = bestOffer
     ? formatMetadataPrice({
@@ -809,7 +816,7 @@ export function buildSetDetailMetadata({
       })
     : undefined;
   const titleParts = [
-    catalogSetDetail.name,
+    displayTitle,
     priceLabel ? `Nu ${priceLabel}` : undefined,
     discountPercentage ? `${discountPercentage}% korting` : undefined,
   ].filter(Boolean);
@@ -1779,12 +1786,14 @@ export function SetDetailInternalLinkRails({
     return null;
   }
 
+  const displayTitle = getCatalogSetDisplayTitle(catalogSetDetail);
+
   return (
     <>
       {blocks.map((block) => (
         <CatalogFeatureSetList
           className={styles.comparableSetsRail}
-          description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${catalogSetDetail.name} staan.`}
+          description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${displayTitle} staan.`}
           eyebrow="Zelfde thema"
           key={block.id}
           sectionId="same-theme-sets"
@@ -2364,7 +2373,7 @@ export async function loadSetDetailSimilarSetsRail({
 
   const currentSetCard = {
     id: catalogSetDetail.id,
-    name: catalogSetDetail.name,
+    name: getCatalogSetDisplayTitle(catalogSetDetail),
     pieces: catalogSetDetail.pieces,
     releaseYear: catalogSetDetail.releaseYear,
     theme: catalogSetDetail.theme,

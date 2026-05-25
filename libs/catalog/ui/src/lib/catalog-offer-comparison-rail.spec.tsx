@@ -149,6 +149,31 @@ describe('CatalogOfferComparisonRail overlay', () => {
     return trigger as HTMLButtonElement;
   }
 
+  it('does not duplicate the LEGO merchant label in compact offer text', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/lego',
+              ctaLabel: 'Bekijk deal bij LEGO®',
+              isBest: true,
+              merchantLabel: 'LEGO®',
+              price: '€ 59,99',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="1 winkel nagekeken"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('LEGO®');
+    expect(container.textContent).not.toContain('LEGO® LEGO®');
+  });
+
   it('uses the shared full-screen overlay layer and locks background scroll', async () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
@@ -289,7 +314,8 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(dialog?.textContent).toContain('Beste deal');
     expect(dialog?.textContent).toContain('Bekijk beste deal');
     expect(dialog?.textContent).toContain('Naar winkel');
-    expect(dialog?.textContent).toContain('Naar winkel bij LEGO');
+    expect(dialog?.textContent).toContain('LEGO');
+    expect(dialog?.textContent).not.toContain('LEGO LEGO');
     expect(dialog?.textContent).toContain('€5 duurder');
     expect(statusLabels).toHaveLength(overlayOffers.length);
     expect(

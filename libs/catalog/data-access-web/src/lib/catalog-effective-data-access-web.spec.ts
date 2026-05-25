@@ -411,6 +411,7 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows = [],
   offerSeedRows,
   priceHistoryRows = [],
+  sourceMetadataRows = [],
   onSelect,
   rpcHandlers = {},
   sourceThemeRows = [],
@@ -425,6 +426,7 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
   priceHistoryRows?: readonly Record<string, unknown>[];
+  sourceMetadataRows?: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
   rpcHandlers?: Record<
     string,
@@ -488,6 +490,13 @@ function createCatalogSupabaseClientMock({
         });
       }
 
+      if (table === 'catalog_set_source_metadata') {
+        return createSupabaseTableBuilder(sourceMetadataRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
       if (table === 'commerce_offer_seeds') {
         return createSupabaseTableBuilder(offerSeedRows, {
           maxInFilterValues,
@@ -540,6 +549,7 @@ describe('catalog effective data access web', () => {
     resetWebCatalogSupabaseClientsForTests();
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   test('prefers normalized theme joins for UCS-like canonical reads', async () => {
@@ -703,6 +713,88 @@ describe('catalog effective data access web', () => {
       setId: '10316',
       slug: 'lord-of-the-rings-rivendell-10316',
       source: 'rebrickable',
+    });
+  });
+
+  test('uses audited LEGO NL source metadata as public display title when enabled', async () => {
+    vi.stubEnv('ENABLE_LEGO_NL_DISPLAY_TITLES', 'true');
+
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10280-1/1000.jpg',
+          name: 'Flower Bouquet',
+          piece_count: 756,
+          primary_theme_id: 'theme:icons',
+          release_year: 2021,
+          set_id: '10280',
+          slug: 'flower-bouquet-10280',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10280-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10280',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            title: 'Bloemenboeket',
+          },
+          policy: 'metadata_only_pending_audit',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'Icons',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+    });
+
+    const [catalogSetDetail] = await Promise.all([
+      getCatalogSetBySlug({
+        slug: 'flower-bouquet-10280',
+        supabaseClient,
+      }),
+    ]);
+    const [setCard] = await listCatalogSetCards({
+      listCanonicalCatalogSetsFn: async () =>
+        listCanonicalCatalogSets({ supabaseClient }),
+    });
+
+    expect(catalogSetDetail).toMatchObject({
+      catalogName: 'Flower Bouquet',
+      displayTitle: 'Bloemenboeket',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'Bloemenboeket',
+      slug: 'flower-bouquet-10280',
+    });
+    expect(setCard).toMatchObject({
+      catalogName: 'Flower Bouquet',
+      displayTitle: 'Bloemenboeket',
+      name: 'Bloemenboeket',
+      slug: 'flower-bouquet-10280',
     });
   });
 

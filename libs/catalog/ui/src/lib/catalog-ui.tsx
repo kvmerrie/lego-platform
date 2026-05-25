@@ -338,6 +338,12 @@ function CatalogCanonicalText({ children }: { children: ReactNode }) {
   );
 }
 
+function getCatalogSetVisibleTitle(
+  catalogSetDetail: Pick<CatalogSetDetail, 'displayTitle' | 'name'>,
+): string {
+  return catalogSetDetail.displayTitle?.trim() || catalogSetDetail.name;
+}
+
 function getCatalogSetVisualImageSizes(variant: 'card' | 'hero'): string {
   return variant === 'hero'
     ? '(min-width: 64rem) 48rem, 100vw'
@@ -1517,6 +1523,7 @@ export function CatalogSetDetailPanel({
     catalogSetDetail,
     themeHref,
   });
+  const visibleTitle = getCatalogSetVisibleTitle(catalogSetDetail);
   const offerComparisonSectionId = 'set-offers';
   const themeBadgeStyle = getCatalogThemeStyleVariables({
     visual: getCatalogPublicThemeVisual(catalogSetDetail.publicTheme),
@@ -1622,8 +1629,17 @@ export function CatalogSetDetailPanel({
             <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
           }
           keyFacts={<CatalogKeyFacts items={heroSpecs} />}
-          title={
-            <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
+          title={<CatalogCanonicalText>{visibleTitle}</CatalogCanonicalText>}
+          titleSupplement={
+            catalogSetDetail.catalogName &&
+            catalogSetDetail.catalogName !== visibleTitle ? (
+              <span className={styles.detailTitleAlias}>
+                Ook bekend als:{' '}
+                <CatalogCanonicalText>
+                  {catalogSetDetail.catalogName}
+                </CatalogCanonicalText>
+              </span>
+            ) : null
           }
         />
       </CatalogPageIntro>

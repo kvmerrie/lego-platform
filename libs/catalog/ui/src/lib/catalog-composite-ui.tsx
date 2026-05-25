@@ -437,6 +437,7 @@ export function CatalogSetDetailHero({
   keyFacts,
   title,
   titleAs: TitleTag = 'h1',
+  titleSupplement,
 }: {
   badges?: ReactNode;
   className?: string;
@@ -449,6 +450,7 @@ export function CatalogSetDetailHero({
   keyFacts?: ReactNode;
   title: ReactNode;
   titleAs?: 'h1' | 'h2' | 'h3';
+  titleSupplement?: ReactNode;
 }) {
   const heroHeader = (
     <div className={styles.detailHeroHeader}>
@@ -457,6 +459,7 @@ export function CatalogSetDetailHero({
         <div className={styles.detailHeroEyebrow}>{eyebrow}</div>
       ) : null}
       <TitleTag className={styles.detailTitle}>{title}</TitleTag>
+      {titleSupplement ? titleSupplement : null}
     </div>
   );
 

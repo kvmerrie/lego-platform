@@ -46,6 +46,7 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
     bestDeal,
+    catalogSetDetail,
     offerList,
     recentlyViewedRail,
     setNewsRail,
@@ -60,6 +61,10 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       merchantLabel?: string;
       rankingLabel?: string;
     };
+    catalogSetDetail?: {
+      displayTitle?: string;
+      name: string;
+    };
     offerList?: readonly {
       ctaLabel?: string;
       merchantLabel?: string;
@@ -73,6 +78,13 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     createElement(
       'div',
       { 'data-testid': 'set-detail' },
+      catalogSetDetail
+        ? createElement(
+            'h1',
+            {},
+            catalogSetDetail.displayTitle ?? catalogSetDetail.name,
+          )
+        : null,
       themeDirectoryHref
         ? createElement('a', { href: themeDirectoryHref }, "Thema's")
         : null,
@@ -720,6 +732,30 @@ describe('set detail metadata', () => {
     );
   });
 
+  it('keeps canonical URLs stable when a LEGO NL display title is used', async () => {
+    const { buildSetDetailMetadata } = await import('./page');
+    const metadata = buildSetDetailMetadata({
+      allowIndexing: true,
+      catalogSetDetail: {
+        ...baseSet,
+        catalogName: 'Flower Bouquet',
+        displayTitle: 'Bloemenboeket',
+        displayTitleSource: 'rakuten-lego-eu',
+        id: '10280',
+        name: 'Flower Bouquet',
+        slug: 'flower-bouquet-10280',
+      },
+    });
+
+    expect(metadata.title).toBe('Bloemenboeket');
+    expect(metadata.alternates?.canonical).toBe(
+      'https://www.brickhunt.nl/sets/flower-bouquet-10280',
+    );
+    expect(metadata.openGraph?.url).toBe(
+      'https://www.brickhunt.nl/sets/flower-bouquet-10280',
+    );
+  });
+
   it('includes reliable discount and price-spread benefit copy when available', async () => {
     const { buildSetDetailMetadata } = await import('./page');
     const metadata = buildSetDetailMetadata({
@@ -912,17 +948,20 @@ describe('set detail metadata', () => {
 describe('set detail page JSON-LD', () => {
   it('renders Product and BreadcrumbList structured data', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
-      id: '10316',
-      imageUrl: 'https://cdn.example.com/10316.jpg',
-      name: 'The Lord of the Rings: Rivendell',
-      pieces: 6167,
+      catalogName: 'Flower Bouquet',
+      displayTitle: 'Bloemenboeket',
+      displayTitleSource: 'rakuten-lego-eu',
+      id: '10280',
+      imageUrl: 'https://cdn.example.com/10280.jpg',
+      name: 'Flower Bouquet',
+      pieces: 756,
       publicTheme: {
-        name: 'Lord of the Rings',
-        slug: 'lord-of-the-rings',
+        name: 'Icons',
+        slug: 'icons',
       },
-      releaseYear: 2023,
-      slug: 'lord-of-the-rings-rivendell-10316',
-      theme: 'Lord of the Rings',
+      releaseYear: 2021,
+      slug: 'flower-bouquet-10280',
+      theme: 'Icons',
     });
     setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
       {
@@ -934,8 +973,8 @@ describe('set detail page JSON-LD', () => {
         merchant: 'bol',
         merchantName: 'bol',
         priceCents: 39999,
-        setId: '10316',
-        url: 'https://partner.example/10316',
+        setId: '10280',
+        url: 'https://partner.example/10280',
       },
     ]);
     setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
@@ -959,10 +998,10 @@ describe('set detail page JSON-LD', () => {
             merchant: 'bol',
             merchantName: 'bol',
             priceCents: 39999,
-            url: 'https://partner.example/10316',
+            url: 'https://partner.example/10280',
           },
         ],
-        setId: '10316',
+        setId: '10280',
       }),
     );
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
@@ -971,7 +1010,7 @@ describe('set detail page JSON-LD', () => {
     const html = renderToStaticMarkup(
       await pageModule.default({
         params: Promise.resolve({
-          slug: 'lord-of-the-rings-rivendell-10316',
+          slug: 'flower-bouquet-10280',
         }),
       }),
     );
@@ -984,17 +1023,19 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('"priceCurrency":"EUR"');
     expect(html).toContain('"availability":"https://schema.org/InStock"');
     expect(html).toContain('"seller":{"@type":"Organization","name":"bol"}');
+    expect(html).toContain('<h1>Bloemenboeket</h1>');
+    expect(html).toContain('"name":"Bloemenboeket"');
     expect(html).toContain(
-      'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+      'https://www.brickhunt.nl/sets/flower-bouquet-10280',
     );
     expect(
       setPageMocks.listCatalogDiscoverySignalsBySetId,
     ).toHaveBeenCalledWith({
       cacheOptions: {
         revalidateSeconds: 21_600,
-        tags: ['prices', 'set:10316'],
+        tags: ['prices', 'set:10280'],
       },
-      setIds: ['10316'],
+      setIds: ['10280'],
     });
     expect(
       setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
@@ -1068,6 +1109,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('Bekijk deal bij LEGO®');
     expect(html).toContain('Bekijk bij LEGO®');
     expect(html).toContain('"seller":{"@type":"Organization","name":"LEGO®"}');
+    expect(html).not.toContain('LEGO® LEGO®');
     expect(html).not.toContain('LEGO EU');
   });
 

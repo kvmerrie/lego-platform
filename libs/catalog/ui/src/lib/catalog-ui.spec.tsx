@@ -1256,7 +1256,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
     expect(markup).toContain('Naar winkel');
-    expect(markup).toContain('Naar winkel bij LEGO');
+    expect(markup).toContain('LEGO');
+    expect(markup).not.toContain('LEGO LEGO');
     expect(markup).not.toContain('Sterke deal');
     expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
       markup.indexOf('Prijs in het kort'),
@@ -1501,6 +1502,35 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('alt="Star Wars logo"');
     expect(markup).not.toContain('aria-label="Bekijk Star Wars"');
     expect(markup).not.toContain('heroThemeLogoLink');
+  });
+
+  it('uses an audited display title for the set detail H1 without losing the catalog alias', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          catalogName: 'Flower Bouquet',
+          displayTitle: 'Bloemenboeket',
+          displayTitleSource: 'rakuten-lego-eu',
+          id: '10280',
+          slug: 'flower-bouquet-10280',
+          name: 'Flower Bouquet',
+          theme: 'Botanicals',
+          releaseYear: 2021,
+          pieces: 756,
+          imageUrl: 'https://images.example/flower-bouquet.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+      />,
+    );
+
+    expect(markup).toMatch(/<h1[^>]*>.*Bloemenboeket.*<\/h1>/);
+    expect(markup).not.toMatch(/<h1[^>]*>.*Ook bekend als:.*<\/h1>/);
+    expect(markup).toContain('Ook bekend als:');
+    expect(markup).toContain('Flower Bouquet');
   });
 
   it('avoids a thin comparison block when only one offer is available', () => {

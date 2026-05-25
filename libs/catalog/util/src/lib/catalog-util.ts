@@ -26,7 +26,10 @@ export interface CatalogReleaseMetadata {
 }
 
 export interface CatalogSetSummary {
+  catalogName?: string;
   createdAt?: string;
+  displayTitle?: string;
+  displayTitleSource?: CatalogSetDisplayTitleSource;
   id: string;
   slug: string;
   name: string;
@@ -129,6 +132,8 @@ export interface CatalogSetDetail extends CatalogSetSummary {
   setStatus?: CatalogSetStatus;
   subtheme?: string;
 }
+
+export type CatalogSetDisplayTitleSource = 'catalog' | 'rakuten-lego-eu';
 
 export type CatalogSetStatus =
   | 'available'
@@ -491,7 +496,10 @@ export type CatalogCanonicalSetSource =
 export type CatalogCanonicalSetStatus = CatalogOverlaySetStatus;
 
 export interface CatalogCanonicalSet {
+  catalogName?: string;
   createdAt: string;
+  displayTitle?: string;
+  displayTitleSource?: CatalogSetDisplayTitleSource;
   imageUrl?: string;
   minifigureCount?: number;
   name: string;

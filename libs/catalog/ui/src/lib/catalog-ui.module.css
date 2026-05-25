@@ -1485,6 +1485,16 @@
     margin: 0;
   }
 
+  .detailTitleAlias {
+    color: var(--lego-text-muted);
+    display: block;
+    font-size: var(--lego-text-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.4;
+    margin-top: var(--lego-space-2);
+  }
+
   .specNote {
     color: var(--lego-text-muted);
     line-height: 1.5;

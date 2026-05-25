@@ -345,6 +345,18 @@ export function buildCompactOfferPresentation({
   };
 }
 
+function buildOfferActionAriaLabel({
+  actionLabel,
+  merchantLabel,
+}: {
+  actionLabel: string;
+  merchantLabel: string;
+}): string {
+  return actionLabel.toLowerCase().includes(merchantLabel.toLowerCase())
+    ? actionLabel
+    : `${actionLabel} bij ${merchantLabel}`;
+}
+
 function handleOverlayEscape(
   event: KeyboardEvent<HTMLDivElement>,
   onClose: () => void,
@@ -501,9 +513,7 @@ function CatalogOfferRailCard({
       {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
     >
       {card}
-      <VisuallyHidden>
-        {presentation.actionLabel} bij {presentation.merchantLabel}
-      </VisuallyHidden>
+      <VisuallyHidden>{presentation.actionLabel}</VisuallyHidden>
     </ActionLink>
   );
 }
@@ -522,7 +532,10 @@ function CatalogOfferOverlayRow({
 
   return (
     <ActionLink
-      aria-label={`${presentation.actionLabel} bij ${presentation.merchantLabel}`}
+      aria-label={buildOfferActionAriaLabel({
+        actionLabel: presentation.actionLabel,
+        merchantLabel: presentation.merchantLabel,
+      })}
       className={styles.offerOverlayRowLink}
       href={offer.ctaHref}
       rel="noreferrer sponsored"
@@ -579,9 +592,7 @@ function CatalogOfferOverlayRow({
         <span className={styles.offerOverlayChevron} aria-hidden="true">
           <ChevronRight size={18} strokeWidth={2.2} />
         </span>
-        <VisuallyHidden>
-          {presentation.actionLabel} bij {presentation.merchantLabel}
-        </VisuallyHidden>
+        <VisuallyHidden>{presentation.actionLabel}</VisuallyHidden>
       </article>
     </ActionLink>
   );
