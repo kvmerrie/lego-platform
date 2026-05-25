@@ -1669,6 +1669,96 @@ function getCatalogOfferMerchantReliabilityKey(
     : catalogOffer.merchantName;
 }
 
+function getCatalogOfferMerchantSlug(
+  catalogOffer: CatalogResolvedOffer,
+): string | undefined {
+  return 'merchantSlug' in catalogOffer &&
+    typeof catalogOffer.merchantSlug === 'string'
+    ? catalogOffer.merchantSlug
+    : undefined;
+}
+
+function getCatalogOfferPublicMerchantKey(
+  catalogOffer: CatalogResolvedOffer,
+): string {
+  return normalizeCatalogAsciiText(
+    resolvePublicMerchantDisplayName({
+      merchantName: catalogOffer.merchantName,
+      merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
+    }),
+  )
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function compareCatalogOfferCheckedAtDescending(
+  left: CatalogResolvedOffer,
+  right: CatalogResolvedOffer,
+): number {
+  return right.checkedAt.localeCompare(left.checkedAt);
+}
+
+function compareCatalogPublicMerchantDuplicatePreference(
+  left: CatalogResolvedOffer,
+  right: CatalogResolvedOffer,
+): number {
+  const leftMerchantSlug = getCatalogOfferMerchantSlug(left);
+  const rightMerchantSlug = getCatalogOfferMerchantSlug(right);
+  const leftIsRakutenLego = leftMerchantSlug === 'rakuten-lego-eu';
+  const rightIsRakutenLego = rightMerchantSlug === 'rakuten-lego-eu';
+
+  if (leftIsRakutenLego !== rightIsRakutenLego) {
+    return leftIsRakutenLego ? -1 : 1;
+  }
+
+  return (
+    compareCatalogOfferCheckedAtDescending(left, right) ||
+    left.priceCents - right.priceCents ||
+    getCatalogOfferAvailabilityRank(left.availability) -
+      getCatalogOfferAvailabilityRank(right.availability)
+  );
+}
+
+function dedupeCatalogOffersByPublicMerchant<
+  Offer extends CatalogResolvedOffer,
+>(catalogOffers: readonly Offer[]): Offer[] {
+  const selectedOfferByPublicMerchantKey = new Map<string, Offer>();
+
+  for (const catalogOffer of catalogOffers) {
+    const publicMerchantKey = getCatalogOfferPublicMerchantKey(catalogOffer);
+    const selectedOffer =
+      selectedOfferByPublicMerchantKey.get(publicMerchantKey);
+
+    if (
+      !selectedOffer ||
+      compareCatalogPublicMerchantDuplicatePreference(
+        catalogOffer,
+        selectedOffer,
+      ) < 0
+    ) {
+      selectedOfferByPublicMerchantKey.set(publicMerchantKey, catalogOffer);
+    }
+  }
+
+  return [...selectedOfferByPublicMerchantKey.values()];
+}
+
+function withCatalogOfferPublicMerchantDisplayName<
+  Offer extends CatalogResolvedOffer,
+>(catalogOffer: Offer): Offer {
+  const merchantName = resolvePublicMerchantDisplayName({
+    merchantName: catalogOffer.merchantName,
+    merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
+  });
+
+  return merchantName === catalogOffer.merchantName
+    ? catalogOffer
+    : {
+        ...catalogOffer,
+        merchantName,
+      };
+}
+
 function compareCatalogOfferReliability<Offer extends CatalogResolvedOffer>(
   left: Offer,
   right: Offer,
@@ -1813,7 +1903,11 @@ export function resolveCatalogSetDetailOffers({
   liveOffers: readonly CatalogRuntimeOffer[];
 }): CatalogResolvedOffer[] {
   if (!liveOffers.length) {
-    return sortResolvedCatalogOffers(generatedOffers);
+    return sortResolvedCatalogOffers(
+      dedupeCatalogOffersByPublicMerchant(
+        generatedOffers.map(withCatalogOfferPublicMerchantDisplayName),
+      ),
+    );
   }
 
   const generatedOfferByMerchantKey = new Map(
@@ -1825,28 +1919,33 @@ export function resolveCatalogSetDetailOffers({
     ]),
   );
 
-  return sortResolvedCatalogOffers(
-    liveOffers.map((liveOffer) => {
-      const matchingGeneratedOffer = generatedOfferByMerchantKey.get(
-        getOfferLookupKey({
-          merchantName: liveOffer.merchantName,
-          merchantSlug: liveOffer.merchantSlug,
-        }),
-      );
+  const resolvedOffers = liveOffers.map((liveOffer) => {
+    const matchingGeneratedOffer = generatedOfferByMerchantKey.get(
+      getOfferLookupKey({
+        merchantName: liveOffer.merchantName,
+        merchantSlug: liveOffer.merchantSlug,
+      }),
+    );
 
-      if (!matchingGeneratedOffer) {
-        return liveOffer;
-      }
+    if (!matchingGeneratedOffer) {
+      return withCatalogOfferPublicMerchantDisplayName(liveOffer);
+    }
 
-      return {
-        ...liveOffer,
-        condition: matchingGeneratedOffer.condition,
-        market: matchingGeneratedOffer.market,
-        merchant: matchingGeneratedOffer.merchant,
+    return {
+      ...liveOffer,
+      condition: matchingGeneratedOffer.condition,
+      market: matchingGeneratedOffer.market,
+      merchant: matchingGeneratedOffer.merchant,
+      merchantName: resolvePublicMerchantDisplayName({
         merchantName: matchingGeneratedOffer.merchantName,
-        url: matchingGeneratedOffer.url,
-      } satisfies CatalogResolvedOffer;
-    }),
+        merchantSlug: liveOffer.merchantSlug,
+      }),
+      url: matchingGeneratedOffer.url,
+    } satisfies CatalogResolvedOffer;
+  });
+
+  return sortResolvedCatalogOffers(
+    dedupeCatalogOffersByPublicMerchant(resolvedOffers),
   );
 }
 

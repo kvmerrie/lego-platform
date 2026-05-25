@@ -744,9 +744,9 @@ function getNextBestOfferPriceDeltaMinor(
   offers: readonly CatalogOffer[],
   bestOffer: CatalogOffer,
 ): number | undefined {
-  const nextBestOffer = sortCatalogOffers(offers).find(
-    (catalogOffer) => catalogOffer.url !== bestOffer.url,
-  );
+  const nextBestOffer = sortCatalogOffers(
+    dedupeCatalogOffersByPublicMerchant(offers),
+  ).find((catalogOffer) => catalogOffer.url !== bestOffer.url);
   const deltaMinor = nextBestOffer
     ? nextBestOffer.priceCents - bestOffer.priceCents
     : undefined;
@@ -786,6 +786,62 @@ function withCatalogOfferPublicMerchantName(
         ...catalogOffer,
         merchantName,
       };
+}
+
+function getCatalogOfferPublicMerchantKey(catalogOffer: CatalogOffer): string {
+  return getCatalogOfferPublicMerchantName(catalogOffer)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function compareCatalogOfferFreshnessDescending(
+  left: CatalogOffer,
+  right: CatalogOffer,
+): number {
+  return right.checkedAt.localeCompare(left.checkedAt);
+}
+
+function comparePublicMerchantDuplicatePreference(
+  left: CatalogOffer,
+  right: CatalogOffer,
+): number {
+  const leftMerchantSlug = getCatalogOfferMerchantSlug(left);
+  const rightMerchantSlug = getCatalogOfferMerchantSlug(right);
+  const leftIsRakutenLego = leftMerchantSlug === 'rakuten-lego-eu';
+  const rightIsRakutenLego = rightMerchantSlug === 'rakuten-lego-eu';
+
+  if (leftIsRakutenLego !== rightIsRakutenLego) {
+    return leftIsRakutenLego ? -1 : 1;
+  }
+
+  return (
+    compareCatalogOfferFreshnessDescending(left, right) ||
+    left.priceCents - right.priceCents ||
+    left.merchantName.localeCompare(right.merchantName)
+  );
+}
+
+function dedupeCatalogOffersByPublicMerchant(
+  catalogOffers: readonly CatalogOffer[],
+): CatalogOffer[] {
+  const selectedOfferByPublicMerchantKey = new Map<string, CatalogOffer>();
+
+  for (const catalogOffer of catalogOffers) {
+    const publicMerchantKey = getCatalogOfferPublicMerchantKey(catalogOffer);
+    const selectedOffer =
+      selectedOfferByPublicMerchantKey.get(publicMerchantKey);
+
+    if (
+      !selectedOffer ||
+      comparePublicMerchantDuplicatePreference(catalogOffer, selectedOffer) < 0
+    ) {
+      selectedOfferByPublicMerchantKey.set(publicMerchantKey, catalogOffer);
+    }
+  }
+
+  return [...selectedOfferByPublicMerchantKey.values()];
 }
 
 export function buildSetDetailMetadata({
@@ -1269,7 +1325,9 @@ function buildOfferList(
   },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
-  return sortCatalogOffers(catalogOffers).map((catalogOffer, index) => {
+  return sortCatalogOffers(
+    dedupeCatalogOffersByPublicMerchant(catalogOffers),
+  ).map((catalogOffer, index) => {
     const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
 
     return {
@@ -1978,8 +2036,9 @@ export default async function SetDetailPage({
       }),
   });
   // Only live validated offers count as current public pricing.
-  const localizedSetDetailOffers =
-    liveSetDetailOffers.filter(isEuroCatalogOffer);
+  const localizedSetDetailOffers = dedupeCatalogOffersByPublicMerchant(
+    liveSetDetailOffers.filter(isEuroCatalogOffer),
+  );
   const hasInStockOffer = localizedSetDetailOffers.some(
     (catalogOffer) => catalogOffer.availability === 'in_stock',
   );

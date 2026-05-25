@@ -6,6 +6,7 @@ import {
   getAwinCoolblueFeedConfig,
   getAwinJoybuyFeedConfig,
   getAdminPromotionConfig,
+  getBrickfeverFeedConfig,
   buildArticlePath,
   buildCanonicalUrl,
   buildPublicSiteRobotsPolicy,
@@ -18,6 +19,7 @@ import {
   getMissingAdminPromotionEnvKeys,
   getMissingAwinCoolblueEnvKeys,
   getMissingAwinJoybuyEnvKeys,
+  getMissingBrickfeverEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
@@ -58,6 +60,7 @@ import {
   hasAwinCoolblueFeedConfig,
   hasAwinJoybuyFeedConfig,
   hasBrowserSupabaseConfig,
+  hasBrickfeverFeedConfig,
   hasMisterBricksFeedConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
@@ -74,6 +77,7 @@ import {
   publicSiteIndexingEnvKeys,
   publicSiteRobotsPolicy,
   resolvePublicSiteAllowIndexing,
+  brickfeverEnvKeys,
   misterBricksEnvKeys,
   rakutenLegoEnvKeys,
   tradeDoublerMediaMarktEnvKeys,
@@ -1047,6 +1051,47 @@ describe('shared config MisterBricks feed helpers', () => {
     expect(getMissingMisterBricksEnvKeys()).toEqual([
       misterBricksEnvKeys.feedUrl,
     ]);
+  });
+});
+
+describe('shared config Brickfever feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Brickfever feed config with sensible merchant defaults', () => {
+    process.env.BRICKFEVER_FEED_URL =
+      'https://bfautomation.nl/bf-create-bwfeed/brickwatch.xml';
+
+    expect(hasBrickfeverFeedConfig()).toBe(true);
+    expect(getMissingBrickfeverEnvKeys()).toEqual([]);
+    expect(getBrickfeverFeedConfig()).toEqual({
+      feedUrl: 'https://bfautomation.nl/bf-create-bwfeed/brickwatch.xml',
+      merchantSlug: 'brickfever',
+      merchantName: 'Brickfever',
+    });
+  });
+
+  test('allows explicit Brickfever merchant overrides', () => {
+    process.env.BRICKFEVER_FEED_URL =
+      'https://bfautomation.nl/bf-create-bwfeed/brickwatch.xml';
+    process.env.BRICKFEVER_MERCHANT_SLUG = 'brickfever-direct';
+    process.env.BRICKFEVER_MERCHANT_NAME = 'Brickfever Direct';
+
+    expect(getBrickfeverFeedConfig()).toEqual({
+      feedUrl: 'https://bfautomation.nl/bf-create-bwfeed/brickwatch.xml',
+      merchantSlug: 'brickfever-direct',
+      merchantName: 'Brickfever Direct',
+    });
+  });
+
+  test('reports the missing Brickfever feed URL', () => {
+    delete process.env.BRICKFEVER_FEED_URL;
+
+    expect(hasBrickfeverFeedConfig()).toBe(false);
+    expect(getMissingBrickfeverEnvKeys()).toEqual([brickfeverEnvKeys.feedUrl]);
   });
 });
 

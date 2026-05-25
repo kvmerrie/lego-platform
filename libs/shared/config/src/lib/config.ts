@@ -592,6 +592,12 @@ export const misterBricksEnvKeys = {
   merchantName: 'MISTERBRICKS_MERCHANT_NAME',
 } as const;
 
+export const brickfeverEnvKeys = {
+  feedUrl: 'BRICKFEVER_FEED_URL',
+  merchantSlug: 'BRICKFEVER_MERCHANT_SLUG',
+  merchantName: 'BRICKFEVER_MERCHANT_NAME',
+} as const;
+
 export const rakutenLegoEnvKeys = {
   enablePhaseOneImport: 'RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED',
   host: 'RAKUTEN_LEGO_FEED_HOST',
@@ -701,6 +707,12 @@ export interface TradeDoublerMediaMarktFeedConfig {
 }
 
 export interface MisterBricksFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface BrickfeverFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -1714,6 +1726,21 @@ export function getMisterBricksFeedConfig(
   };
 }
 
+export function getBrickfeverFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): BrickfeverFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: brickfeverEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[brickfeverEnvKeys.merchantSlug]?.trim() || 'brickfever',
+    merchantName:
+      environment[brickfeverEnvKeys.merchantName]?.trim() || 'Brickfever',
+  };
+}
+
 export function getRakutenLegoFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): RakutenLegoFeedConfig {
@@ -1843,6 +1870,20 @@ export function getMissingMisterBricksEnvKeys(
   return environment[misterBricksEnvKeys.feedUrl]
     ? []
     : [misterBricksEnvKeys.feedUrl];
+}
+
+export function hasBrickfeverFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[brickfeverEnvKeys.feedUrl]);
+}
+
+export function getMissingBrickfeverEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[brickfeverEnvKeys.feedUrl]
+    ? []
+    : [brickfeverEnvKeys.feedUrl];
 }
 
 export function hasRakutenLegoFeedConfig(

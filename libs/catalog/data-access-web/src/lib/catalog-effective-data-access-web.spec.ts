@@ -7937,6 +7937,81 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('dedupes public LEGO offers and prefers the Rakuten feed source', () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-24T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'LEGO®',
+        merchantSlug: 'lego-eu',
+        priceCents: 5599,
+        setId: '10280',
+        url: 'https://lego.example/legacy/10280',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-25T10:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'lego' as const,
+        merchantName: 'LEGO EU',
+        merchantSlug: 'rakuten-lego-eu',
+        priceCents: 5999,
+        setId: '10280',
+        url: 'https://click.linksynergy.com/lego/10280',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-25T08:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Top1Toys',
+        merchantSlug: 'top1toys',
+        priceCents: 4999,
+        setId: '10280',
+        url: 'https://top1toys.example/10280',
+      },
+    ];
+
+    const detailOffers = resolveCatalogSetDetailOffers({
+      generatedOffers: [],
+      liveOffers,
+    });
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '10280',
+    });
+
+    expect(
+      detailOffers.filter((offer) => offer.merchantName === 'LEGO®'),
+    ).toHaveLength(1);
+    expect(
+      detailOffers.find((offer) => offer.merchantName === 'LEGO®'),
+    ).toMatchObject({
+      merchantSlug: 'rakuten-lego-eu',
+      priceCents: 5999,
+    });
+    expect(summary.offers.map((offer) => offer.merchantName)).toEqual([
+      'Top1Toys',
+      'LEGO®',
+    ]);
+    expect(summary.bestOffer).toMatchObject({
+      merchantSlug: 'top1toys',
+      priceCents: 4999,
+    });
+  });
+
   test('does not let stale or unavailable current offers win card summaries', () => {
     const liveOffers = [
       {

@@ -1066,6 +1066,19 @@ describe('set detail page JSON-LD', () => {
         setId: '10300',
         url: 'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
       },
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-05-24T10:00:00.000Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'other',
+        merchantName: 'LEGO®',
+        merchantSlug: 'lego-eu',
+        priceCents: 19999,
+        setId: '10300',
+        url: 'https://legacy.example/lego/10300',
+      },
     ]);
     setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
@@ -1091,6 +1104,16 @@ describe('set detail page JSON-LD', () => {
             priceCents: 19999,
             url: 'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fback-to-the-future-time-machine-10300',
           },
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-24T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'other',
+            merchantName: 'LEGO®',
+            merchantSlug: 'lego-eu',
+            priceCents: 19999,
+            url: 'https://legacy.example/lego/10300',
+          },
         ],
         setId: '10300',
       }),
@@ -1108,9 +1131,11 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('Bekijk deal bij LEGO®');
     expect(html).toContain('Bekijk bij LEGO®');
+    expect(html.match(/Bekijk bij LEGO®/g) ?? []).toHaveLength(1);
     expect(html).toContain('"seller":{"@type":"Organization","name":"LEGO®"}');
     expect(html).not.toContain('LEGO® LEGO®');
     expect(html).not.toContain('LEGO EU');
+    expect(html).not.toContain('https://legacy.example/lego/10300');
   });
 
   it('uses the current discovery reference delta for the set-detail deal verdict', async () => {

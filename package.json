@@ -27,6 +27,7 @@
     "sync:goodbricks-feed": "pnpm nx run goodbricks-feed-sync:run",
     "sync:mediamarkt-feed": "pnqpm nx run mediamarkt-feed-sync:run",
     "sync:misterbricks-feed": "pnpm nx run misterbricks-feed-sync:run",
+    "sync:brickfever-feed": "pnpm nx run brickfever-feed-sync:run",
     "sync:discover:alternate-feed": "pnpm nx run alternate-feed-sync:run -- --discover-missing-sets",
     "sync:discover:lidl-feed": "pnpm nx run lidl-feed-sync:run -- --discover-missing-sets",
     "sync:discover:coolblue-feed": "pnpm nx run coolblue-feed-sync:run -- --discover-missing-sets",

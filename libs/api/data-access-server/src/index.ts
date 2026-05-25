@@ -21,3 +21,4 @@ export * from './lib/tradetracker-coppenswarenhuis-feed-sync-server';
 export * from './lib/tradetracker-lidl-feed-sync-server';
 export * from './lib/tradedoubler-mediamarkt-sync-server';
 export * from './lib/misterbricks-feed-sync-server';
+export * from './lib/brickfever-feed-sync-server';

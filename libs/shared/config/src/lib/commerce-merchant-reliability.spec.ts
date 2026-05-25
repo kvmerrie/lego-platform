@@ -15,6 +15,7 @@ describe('commerce merchant reliability config', () => {
     );
     expect(isCommerceMerchantProductionFeed('conrad')).toBe(true);
     expect(isCommerceMerchantProductionFeed('alternate')).toBe(true);
+    expect(isCommerceMerchantProductionFeed('brickfever')).toBe(true);
   });
 
   test('classifies strategic manual merchants conservatively', () => {

@@ -15,6 +15,7 @@ const productionFeedMerchantSlugs = [
   'alternate',
   'coolblue',
   'misterbricks',
+  'brickfever',
   'lidl',
   'conrad',
 ] as const;

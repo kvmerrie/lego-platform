@@ -283,6 +283,7 @@ Available feed commands:
 - `pnpm sync:goodbricks-feed`
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
+- `pnpm sync:brickfever-feed`
 
 `pnpm sync:awin-feed` remains as a temporary backwards-compatible alias for
 the Coolblue feed job. Prefer `pnpm sync:coolblue-feed` for new runbooks and
@@ -301,6 +302,7 @@ Recommended feed cadence:
 | Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
 | MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
 | MisterBricks     | Channable    | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
+| Brickfever       | Direct XML   | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
 | Coppenswarenhuis | TradeTracker | once daily after feed refresh             | Strategic/manual until availability quality is consistently reliable. |
 
 All feed jobs currently treat missing-from-feed as non-authoritative unless a
@@ -500,6 +502,29 @@ MisterBricks job notes:
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses EAN, SKU, product IDs, feed IDs or URL IDs as LEGO set numbers
 
+Brickfever uses a direct XML product feed and writes through the same strict
+offer import path as MisterBricks. The merchant is stored as a direct
+non-affiliate source and contributes price-comparison offers only.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:brickfever-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the Brickfever feed refresh window
+
+Brickfever job notes:
+
+- keep `BRICKFEVER_FEED_URL`, `BRICKFEVER_MERCHANT_SLUG`, `BRICKFEVER_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `pnpm sync:brickfever-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:brickfever-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/brickfever-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync only uses the explicit `lego_set_id` field as LEGO set number; it never uses EAN, URLs, product IDs or title-only matches as set numbers
+
 ## Troubleshooting Notes
 
 Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
@@ -614,6 +639,7 @@ pnpm nx run goodbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp
 pnpm nx run lidl-feed-sync:run -- --report-stale-latest-path tmp/lidl-stale-latest.json
 pnpm nx run mediamarkt-feed-sync:run -- --dry-run --report-stale-latest-path tmp/mediamarkt-stale-latest.json
 pnpm nx run misterbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/misterbricks-stale-latest.json
+pnpm nx run brickfever-feed-sync:run -- --dry-run --report-stale-latest-path tmp/brickfever-stale-latest.json
 pnpm nx run coppenswarenhuis-feed-sync:run -- --dry-run --report-stale-latest-path tmp/coppenswarenhuis-stale-latest.json
 ```
 
