@@ -69,6 +69,8 @@ const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const CATALOG_THEME_SUMMARIES_TABLE = 'catalog_theme_summaries';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
+const COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE =
+  'commerce_current_offer_snapshots';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
@@ -84,6 +86,7 @@ const CATALOG_CURRENT_OFFER_HTTP_BATCH_SIZE = 50;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LIMIT = 240;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_MULTIPLIER = 8;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_LIMIT = 2_000;
+const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 const LEGO_NL_DISPLAY_TITLE_SOURCE = 'rakuten-lego-eu' as const;
 const LEGO_NL_DISPLAY_TITLE_LOCALE = 'nl-NL';
 const LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE = 'exact_set_number';
@@ -396,6 +399,37 @@ interface CatalogCommerceOfferSeedRow {
   product_url: string;
   set_id: string;
   validation_status: string;
+}
+
+interface CatalogCommerceCurrentOfferSnapshotOfferRow {
+  availability?: string | null;
+  checkedAt?: string | null;
+  commercialUnitType?: CommerceCommercialUnitType | null;
+  condition?: string | null;
+  currency?: string | null;
+  market?: string | null;
+  merchantName?: string | null;
+  merchantSlug?: string | null;
+  priceMinor?: number | null;
+  setId?: string | null;
+  url?: string | null;
+}
+
+interface CatalogCommerceCurrentOfferSnapshotRow {
+  best_availability: string | null;
+  best_checked_at: string | null;
+  best_commercial_unit_type: CommerceCommercialUnitType | null;
+  best_merchant_name: string | null;
+  best_merchant_slug: string | null;
+  best_price_minor: number | null;
+  best_product_url: string | null;
+  computed_at: string | null;
+  condition: string | null;
+  currency_code: string | null;
+  offer_count: number | null;
+  offers: unknown;
+  region_code: string | null;
+  set_id: string;
 }
 
 interface CatalogPriceHistoryRow {
@@ -924,6 +958,168 @@ function normalizeCatalogCurrentOfferSummaryRecord(
     ...(bestOffer ? { bestOffer } : {}),
     offers: resolvedOffers,
     setId,
+  };
+}
+
+function getCurrentOfferSnapshotInvalidReason(
+  row: CatalogCommerceCurrentOfferSnapshotRow,
+  now = new Date(),
+): string | undefined {
+  if (
+    row.region_code !== DUTCH_REGION_CODE ||
+    row.currency_code !== EURO_CURRENCY_CODE ||
+    row.condition !== NEW_OFFER_CONDITION
+  ) {
+    return 'invalid_scope';
+  }
+
+  if (!row.computed_at) {
+    return 'missing_computed_at';
+  }
+
+  const computedAt = new Date(row.computed_at);
+
+  if (
+    Number.isNaN(computedAt.getTime()) ||
+    now.getTime() - computedAt.getTime() > CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS
+  ) {
+    return 'stale_snapshot';
+  }
+
+  if (!Number.isInteger(row.best_price_minor)) {
+    return 'missing_best_offer';
+  }
+
+  if (!Array.isArray(row.offers)) {
+    return 'invalid_offers_json';
+  }
+
+  return undefined;
+}
+
+function toCatalogCurrentOfferSummaryFromSnapshotRow(
+  row: CatalogCommerceCurrentOfferSnapshotRow,
+): CatalogCurrentOfferSummaryRecord | undefined {
+  const setId = getCanonicalCatalogSetId(row.set_id);
+
+  if (!setId || !Array.isArray(row.offers)) {
+    return undefined;
+  }
+
+  return normalizeCatalogCurrentOfferSummaryRecord(
+    {
+      bestOffer: {
+        availability: row.best_availability,
+        checkedAt: row.best_checked_at,
+        commercialUnitType: row.best_commercial_unit_type,
+        condition: NEW_OFFER_CONDITION,
+        currency: EURO_CURRENCY_CODE,
+        market: DUTCH_REGION_CODE,
+        merchantName: row.best_merchant_name,
+        merchantSlug: row.best_merchant_slug,
+        priceMinor: row.best_price_minor,
+        setId,
+        url: row.best_product_url,
+      },
+      offers: row.offers.map((offer) =>
+        typeof offer === 'object' && offer !== null
+          ? {
+              ...(offer as CatalogCommerceCurrentOfferSnapshotOfferRow),
+              setId:
+                (offer as CatalogCommerceCurrentOfferSnapshotOfferRow).setId ??
+                setId,
+            }
+          : offer,
+      ),
+      setId,
+    },
+    setId,
+  );
+}
+
+async function listCatalogCurrentOfferSnapshotSummariesBySetIds({
+  setIds,
+  signal,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  signal?: AbortSignal;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<{
+  fallbackSetIds: string[];
+  snapshotMissingBestOfferCount: number;
+  snapshotStaleCount: number;
+  summaryBySetId: Map<string, CatalogCurrentOfferSummaryRecord>;
+}> {
+  const summaryBySetId = new Map<string, CatalogCurrentOfferSummaryRecord>();
+  const fallbackSetIds = new Set(setIds);
+  let snapshotMissingBestOfferCount = 0;
+  let snapshotStaleCount = 0;
+
+  for (const setIdChunk of chunkCatalogValues(
+    setIds,
+    CATALOG_CURRENT_OFFER_IN_FILTER_PAGE_SIZE,
+  )) {
+    throwIfCatalogReadAborted(signal);
+
+    const { data, error } = await applyCatalogAbortSignal(
+      supabaseClient
+        .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
+        .select(
+          'set_id, region_code, currency_code, condition, best_availability, best_checked_at, best_commercial_unit_type, best_merchant_name, best_merchant_slug, best_price_minor, best_product_url, offer_count, offers, computed_at',
+        )
+        .in('set_id', setIdChunk),
+      signal,
+    );
+
+    if (error) {
+      return {
+        fallbackSetIds: [...fallbackSetIds],
+        snapshotMissingBestOfferCount,
+        snapshotStaleCount,
+        summaryBySetId,
+      };
+    }
+
+    for (const row of (data as
+      | CatalogCommerceCurrentOfferSnapshotRow[]
+      | null) ?? []) {
+      const setId = getCanonicalCatalogSetId(row.set_id);
+
+      if (!setId) {
+        continue;
+      }
+
+      const invalidReason = getCurrentOfferSnapshotInvalidReason(row);
+
+      if (invalidReason) {
+        if (invalidReason === 'stale_snapshot') {
+          snapshotStaleCount += 1;
+        }
+
+        if (invalidReason === 'missing_best_offer') {
+          snapshotMissingBestOfferCount += 1;
+        }
+
+        continue;
+      }
+
+      const summary = toCatalogCurrentOfferSummaryFromSnapshotRow(row);
+
+      if (!summary) {
+        continue;
+      }
+
+      fallbackSetIds.delete(setId);
+      summaryBySetId.set(setId, summary);
+    }
+  }
+
+  return {
+    fallbackSetIds: [...fallbackSetIds],
+    snapshotMissingBestOfferCount,
+    snapshotStaleCount,
+    summaryBySetId,
   };
 }
 
@@ -3189,6 +3385,7 @@ export async function getCatalogCollectionLandingPage({
     ? await listCatalogCurrentOfferSummariesBySetIds({
         cacheOptions,
         setIds: candidateSetCards.map((setCard) => setCard.id),
+        supabaseClient,
       })
     : new Map<string, CatalogCurrentOfferSummary>();
   const bestPriceMinorBySetId = toCatalogCollectionBestPriceMinorBySetId(
@@ -7558,18 +7755,33 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
     }
 
     const startedAt = Date.now();
-    const liveOffersBySetId =
-      await listCatalogRuntimeOffersBySetIdsFromSupabase({
+    const snapshotResult =
+      await listCatalogCurrentOfferSnapshotSummariesBySetIds({
         signal,
         setIds: uniqueSetIds,
         supabaseClient: activeSupabaseClient,
       });
-    const summaryBySetId = toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
+    const fallbackOffersBySetId = snapshotResult.fallbackSetIds.length
+      ? await listCatalogRuntimeOffersBySetIdsFromSupabase({
+          signal,
+          setIds: snapshotResult.fallbackSetIds,
+          supabaseClient: activeSupabaseClient,
+        })
+      : new Map<string, CatalogRuntimeOffer[]>();
+    const summaryBySetId = new Map([
+      ...snapshotResult.summaryBySetId,
+      ...toCatalogCurrentOfferSummaryMap(fallbackOffersBySetId),
+    ]);
 
     logCurrentOfferSummaryReadDiagnostic({
+      fallback_set_id_count: snapshotResult.fallbackSetIds.length,
       request_duration_ms: Date.now() - startedAt,
       set_id_count: uniqueSetIds.length,
-      source: 'direct_supabase',
+      snapshot_hit_count: snapshotResult.summaryBySetId.size,
+      snapshot_missing_best_offer_count:
+        snapshotResult.snapshotMissingBestOfferCount,
+      snapshot_stale_count: snapshotResult.snapshotStaleCount,
+      source: 'direct_supabase_snapshot',
       summary_count: summaryBySetId.size,
     });
 

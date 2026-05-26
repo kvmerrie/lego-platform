@@ -411,6 +411,7 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows = [],
   offerSeedRows,
   priceHistoryRows = [],
+  snapshotRows = [],
   sourceMetadataRows = [],
   onSelect,
   rpcHandlers = {},
@@ -426,6 +427,7 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
   priceHistoryRows?: readonly Record<string, unknown>[];
+  snapshotRows?: readonly Record<string, unknown>[];
   sourceMetadataRows?: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
   rpcHandlers?: Record<
@@ -513,6 +515,13 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'commerce_offer_latest') {
         return createSupabaseTableBuilder(latestOfferRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'commerce_current_offer_snapshots') {
+        return createSupabaseTableBuilder(snapshotRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
@@ -1946,6 +1955,125 @@ describe('catalog effective data access web', () => {
       '60499',
     ]);
     expect(result.totalSetCount).toBe(3);
+  });
+
+  test('uses current-offer snapshots for price-filtered collection pages', async () => {
+    const selectedTables: string[] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/10307.jpg',
+          name: 'Eiffel Tower',
+          piece_count: 10001,
+          primary_theme_id: 'theme:icons',
+          release_year: 2022,
+          set_id: '10307',
+          slug: 'eiffel-tower-10307',
+          source: 'rebrickable',
+          source_set_number: '10307-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      onSelect: (table) => {
+        selectedTables.push(table);
+      },
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+        },
+      ],
+      rpcHandlers: {
+        list_catalog_current_offer_candidate_set_ids: () => ({
+          data: [
+            {
+              set_id: '10307',
+            },
+          ],
+          error: null,
+        }),
+      },
+      snapshotRows: [
+        {
+          best_availability: 'in_stock',
+          best_checked_at: '2026-05-26T08:00:00.000Z',
+          best_commercial_unit_type: 'single_item',
+          best_merchant_name: 'LEGO EU',
+          best_merchant_slug: 'rakuten-lego-eu',
+          best_price_minor: 4999,
+          best_product_url:
+            'https://www.lego.com/nl-nl/product/eiffel-tower-10307',
+          computed_at: new Date().toISOString(),
+          condition: 'new',
+          currency_code: 'EUR',
+          offer_count: 1,
+          offers: [
+            {
+              availability: 'in_stock',
+              checkedAt: '2026-05-26T08:00:00.000Z',
+              commercialUnitType: 'single_item',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchantName: 'LEGO EU',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 4999,
+              setId: '10307',
+              url: 'https://www.lego.com/nl-nl/product/eiffel-tower-10307',
+            },
+          ],
+          region_code: 'NL',
+          set_id: '10307',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Budget sets.',
+      browseEyebrow: 'Onder budget',
+      browseTitle: 'Sets onder budget',
+      canonicalPath: '/lego-sets-onder-50-euro',
+      description: 'LEGO sets onder 50 euro.',
+      filters: {
+        maxBestPriceMinor: 5_000,
+      },
+      h1: 'LEGO sets onder 50 euro',
+      intro: 'Kijk naar sets onder budget.',
+      links: {},
+      metaDescription: 'Bekijk LEGO sets onder 50 euro.',
+      metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
+      signalLabel: 'sets onder 50 euro',
+      slug: 'lego-sets-onder-50-euro',
+      sort: {
+        default: 'price-asc',
+        options: ['price-asc'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      sortKey: 'price-asc',
+      supabaseClient,
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual(['10307']);
+    expect(result.bestPriceMinorBySetId.get('10307')).toBe(4999);
+    expect(supabaseClient.from).toHaveBeenCalledWith(
+      'commerce_current_offer_snapshots',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_latest',
+    );
+    expect(selectedTables).toContain('commerce_current_offer_snapshots');
   });
 
   test('builds public theme directory from paginated Supabase catalog cards', async () => {
@@ -8714,6 +8842,129 @@ describe('catalog effective data access web', () => {
         priceCents: 10149,
       },
       setId: '70149',
+    });
+  });
+
+  test('uses current-offer snapshots for targeted Supabase summary reads before live fallback', async () => {
+    const selectedTables: string[] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      onSelect: (table) => {
+        selectedTables.push(table);
+      },
+      snapshotRows: [
+        {
+          best_availability: 'in_stock',
+          best_checked_at: '2026-05-26T08:00:00.000Z',
+          best_commercial_unit_type: 'single_item',
+          best_merchant_name: 'LEGO EU',
+          best_merchant_slug: 'rakuten-lego-eu',
+          best_price_minor: 2699,
+          best_product_url: 'https://www.lego.com/nl-nl/product/77244',
+          computed_at: new Date().toISOString(),
+          condition: 'new',
+          currency_code: 'EUR',
+          offer_count: 1,
+          offers: [
+            {
+              availability: 'in_stock',
+              checkedAt: '2026-05-26T08:00:00.000Z',
+              commercialUnitType: 'single_item',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchantName: 'LEGO EU',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 2699,
+              setId: '77244',
+              url: 'https://www.lego.com/nl-nl/product/77244',
+            },
+          ],
+          region_code: 'NL',
+          set_id: '77244',
+        },
+      ],
+    });
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['77244'],
+      supabaseClient,
+    });
+
+    expect(supabaseClient.from).toHaveBeenCalledWith(
+      'commerce_current_offer_snapshots',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_latest',
+    );
+    expect(selectedTables).toContain('commerce_current_offer_snapshots');
+    expect(summaries.get('77244')).toMatchObject({
+      bestOffer: {
+        merchantName: 'LEGO®',
+        merchantSlug: 'rakuten-lego-eu',
+        priceCents: 2699,
+      },
+      setId: '77244',
+    });
+  });
+
+  test('falls back to live current offers when targeted Supabase snapshots are missing', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-26T08:00:00.000Z',
+          offer_seed_id: 'seed-10307',
+          price_minor: 62999,
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-lego',
+          is_active: true,
+          name: 'LEGO EU',
+          slug: 'rakuten-lego-eu',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-10307',
+          is_active: true,
+          merchant_id: 'merchant-lego',
+          product_url: 'https://www.lego.com/nl-nl/product/eiffel-tower-10307',
+          set_id: '10307',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [],
+    });
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['10307'],
+      supabaseClient,
+    });
+
+    expect(supabaseClient.from).toHaveBeenCalledWith(
+      'commerce_current_offer_snapshots',
+    );
+    expect(supabaseClient.from).toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(summaries.get('10307')).toMatchObject({
+      bestOffer: {
+        merchantName: 'LEGO®',
+        merchantSlug: 'rakuten-lego-eu',
+        priceCents: 62999,
+      },
+      setId: '10307',
     });
   });
 

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { renderToReadableStream } from 'react-dom/server.browser';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 
 const themePageMocks = vi.hoisted(() => ({
   getCatalogThemeMetadataBySlug: vi.fn(),
@@ -166,7 +167,7 @@ describe('theme page JSON-LD', () => {
     expect(html).toContain('"@type":"BreadcrumbList"');
     expect(html).toContain('https://www.brickhunt.nl/themes/star-wars');
     expect(themePageMocks.getCatalogThemePageBySlug).toHaveBeenCalledWith({
-      limit: 20,
+      limit: CATALOG_BROWSE_PAGE_SIZE,
       offset: 0,
       slug: 'star-wars',
     });
