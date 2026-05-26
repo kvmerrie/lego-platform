@@ -3,10 +3,6 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const collectionPageMocks = vi.hoisted(() => ({
-  cacheCalls: [] as {
-    keyParts: readonly string[];
-    options: { revalidate?: number; tags?: readonly string[] };
-  }[],
   collectionConfig: {
     browseDescription: 'Sets die onder budget blijven.',
     browseEyebrow: 'Onder budget',
@@ -85,18 +81,6 @@ vi.mock('@lego-platform/shared/config', () => ({
   },
 }));
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (
-    callback: () => unknown,
-    keyParts: readonly string[],
-    options: { revalidate?: number; tags?: readonly string[] },
-  ) => {
-    collectionPageMocks.cacheCalls.push({ keyParts, options });
-
-    return callback;
-  },
-}));
-
 vi.mock('next/navigation', () => ({
   notFound: collectionPageMocks.notFound,
   permanentRedirect: collectionPageMocks.permanentRedirect,
@@ -105,7 +89,6 @@ vi.mock('next/navigation', () => ({
 describe('collection landing page route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    collectionPageMocks.cacheCalls.length = 0;
     collectionPageMocks.getCatalogCollectionLandingPage.mockResolvedValue({
       bestPriceMinorBySetId: new Map([['10307', 9_999]]),
       setCards: [
@@ -123,39 +106,52 @@ describe('collection landing page route', () => {
     });
   });
 
-  it('wraps collection data loading in a route-level cache keyed by slug, sort and pagination', async () => {
+  it('renders repeated collection requests without depending on cached Map serialization', async () => {
     const pageModule = await import('./page');
 
-    renderToStaticMarkup(
-      await pageModule.default({
-        params: Promise.resolve({
-          collectionSlug: 'lego-sets-onder-100-euro',
+    const renderPage = async () =>
+      renderToStaticMarkup(
+        await pageModule.default({
+          params: Promise.resolve({
+            collectionSlug: 'lego-sets-onder-100-euro',
+          }),
+          searchParams: Promise.resolve({
+            sort: 'price-asc',
+          }),
         }),
-        searchParams: Promise.resolve({
-          sort: 'price-asc',
-        }),
-      }),
+      );
+
+    await expect(renderPage()).resolves.toContain(
+      'data-testid="collection-page"',
+    );
+    await expect(renderPage()).resolves.toContain(
+      'data-testid="collection-page"',
     );
 
-    expect(collectionPageMocks.cacheCalls).toEqual([
-      {
-        keyParts: [
-          'catalog-collection-landing-page',
-          'lego-sets-onder-100-euro',
-          'price-asc',
-          '40',
-          '0',
-        ],
-        options: {
-          revalidate: 21_600,
-          tags: ['catalog', 'sets', 'prices', 'deals'],
-        },
-      },
-    ]);
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
-    ).toHaveBeenCalledWith(
+    ).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
+        cacheOptions: {
+          revalidateSeconds: 21_600,
+          tags: ['catalog', 'sets', 'prices', 'deals'],
+        },
+        config: collectionPageMocks.collectionConfig,
+        limit: 40,
+        offset: 0,
+        sortKey: 'price-asc',
+      }),
+    );
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        cacheOptions: {
+          revalidateSeconds: 21_600,
+          tags: ['catalog', 'sets', 'prices', 'deals'],
+        },
         config: collectionPageMocks.collectionConfig,
         limit: 40,
         offset: 0,
