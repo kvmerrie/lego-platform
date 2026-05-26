@@ -716,9 +716,7 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('uses audited LEGO NL source metadata as public display title when enabled', async () => {
-    vi.stubEnv('ENABLE_LEGO_NL_DISPLAY_TITLES', 'true');
-
+  test('uses audited LEGO NL source metadata as public display title', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
       merchantRows: [],

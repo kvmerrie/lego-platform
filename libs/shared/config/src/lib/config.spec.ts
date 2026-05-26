@@ -50,7 +50,6 @@ import {
   getTradeTrackerConradFeedConfig,
   getTradeTrackerLidlFeedConfig,
   getTradeDoublerMediaMarktFeedConfig,
-  isLegoNlDisplayTitleEnrichmentEnabled,
   resolveRakutenLegoFeedFilename,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
@@ -72,7 +71,6 @@ import {
   hasTradeTrackerConradFeedConfig,
   hasTradeTrackerLidlFeedConfig,
   hasTradeDoublerMediaMarktFeedConfig,
-  legoNlDisplayTitleEnvKeys,
   isArticlePreviewEnabled,
   publicSiteIndexingEnvKeys,
   publicSiteRobotsPolicy,
@@ -133,25 +131,6 @@ describe('shared config article preview helper', () => {
     expect(
       isArticlePreviewEnabled({
         [articlePreviewEnvKeys.enabled]: 'false',
-      }),
-    ).toBe(false);
-  });
-});
-
-describe('shared config LEGO NL display title helper', () => {
-  test('is disabled by default', () => {
-    expect(isLegoNlDisplayTitleEnrichmentEnabled({})).toBe(false);
-  });
-
-  test('only enables public LEGO NL display titles with an explicit true value', () => {
-    expect(
-      isLegoNlDisplayTitleEnrichmentEnabled({
-        [legoNlDisplayTitleEnvKeys.enabled]: 'true',
-      }),
-    ).toBe(true);
-    expect(
-      isLegoNlDisplayTitleEnrichmentEnabled({
-        [legoNlDisplayTitleEnvKeys.enabled]: 'false',
       }),
     ).toBe(false);
   });

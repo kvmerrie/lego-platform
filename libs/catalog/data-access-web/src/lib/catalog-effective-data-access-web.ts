@@ -57,7 +57,6 @@ import {
   getRuntimeBaseUrl,
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
-  isLegoNlDisplayTitleEnrichmentEnabled,
   resolvePublicMerchantDisplayName,
 } from '@lego-platform/shared/config';
 
@@ -1116,10 +1115,6 @@ async function enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
 }): Promise<CatalogCanonicalSet[]> {
   if (!canonicalCatalogSets.length) {
     return [];
-  }
-
-  if (!isLegoNlDisplayTitleEnrichmentEnabled()) {
-    return [...canonicalCatalogSets];
   }
 
   try {
