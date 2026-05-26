@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
+import React from 'react';
 import { getCatalogCollectionLandingPage } from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureCollectionLandingPage } from '@lego-platform/catalog/feature-collection-landing';
 import {
@@ -7,6 +9,7 @@ import {
   listCatalogCollectionLandingPageConfigs,
   normalizeCatalogCollectionLandingPageSortKey,
   CATALOG_BROWSE_PAGE_SIZE,
+  type CatalogCollectionLandingPageSortKey,
   type CatalogCollectionLandingPageConfig,
 } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
@@ -21,6 +24,13 @@ export const dynamicParams = false;
 export const revalidate = 21_600;
 
 const COLLECTION_LANDING_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
+
+const COLLECTION_LANDING_PAGE_CACHE_TAGS = [
+  cacheTags.catalog(),
+  cacheTags.sets(),
+  cacheTags.prices(),
+  cacheTags.deals(),
+];
 
 function readSearchParam(
   value: string | string[] | undefined,
@@ -74,6 +84,43 @@ export function generateStaticParams() {
   return listCatalogCollectionLandingPageConfigs().map((config) => ({
     collectionSlug: config.slug,
   }));
+}
+
+async function getCachedCatalogCollectionLandingPage({
+  config,
+  limit,
+  offset,
+  sortKey,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  limit: number;
+  offset: number;
+  sortKey: CatalogCollectionLandingPageSortKey;
+}) {
+  return unstable_cache(
+    () =>
+      getCatalogCollectionLandingPage({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: COLLECTION_LANDING_PAGE_CACHE_TAGS,
+        },
+        config,
+        limit,
+        offset,
+        sortKey,
+      }),
+    [
+      'catalog-collection-landing-page',
+      config.slug,
+      sortKey,
+      String(limit),
+      String(offset),
+    ],
+    {
+      revalidate,
+      tags: COLLECTION_LANDING_PAGE_CACHE_TAGS,
+    },
+  )();
 }
 
 export async function generateMetadata({
@@ -161,16 +208,7 @@ export default async function CollectionLandingPage({
   const currentPage = normalizeCollectionPageNumber(
     readSearchParam(resolvedSearchParams?.page),
   );
-  const collectionPage = await getCatalogCollectionLandingPage({
-    cacheOptions: {
-      revalidateSeconds: revalidate,
-      tags: [
-        cacheTags.catalog(),
-        cacheTags.sets(),
-        cacheTags.prices(),
-        cacheTags.deals(),
-      ],
-    },
+  const collectionPage = await getCachedCatalogCollectionLandingPage({
     config,
     limit: COLLECTION_LANDING_PAGE_SIZE,
     offset: (currentPage - 1) * COLLECTION_LANDING_PAGE_SIZE,

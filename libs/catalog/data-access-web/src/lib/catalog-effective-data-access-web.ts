@@ -3079,6 +3079,7 @@ const CATALOG_COLLECTION_ADULT_DISPLAY_THEME_MIN_PIECES = 1_600;
 const CATALOG_COLLECTION_ADULT_HIGH_PIECE_MIN_PIECES = 2_500;
 const CATALOG_COLLECTION_CANDIDATE_LIMIT = 1_000;
 const CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE = 500;
+const CATALOG_COLLECTION_LIVE_OFFER_FALLBACK_SET_LIMIT = 50;
 const CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS = 210;
 const CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS = 120;
 
@@ -3384,6 +3385,8 @@ export async function getCatalogCollectionLandingPage({
   const currentOfferSummaryBySetId = config.filters.maxBestPriceMinor
     ? await listCatalogCurrentOfferSummariesBySetIds({
         cacheOptions,
+        liveFallbackSetIdLimit:
+          CATALOG_COLLECTION_LIVE_OFFER_FALLBACK_SET_LIMIT,
         setIds: candidateSetCards.map((setCard) => setCard.id),
         supabaseClient,
       })
@@ -7716,6 +7719,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   apiBaseUrl,
   cacheOptions,
   fetchImpl,
+  liveFallbackSetIdLimit,
   setIds,
   signal,
   supabaseClient,
@@ -7723,6 +7727,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   apiBaseUrl?: string;
   cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
+  liveFallbackSetIdLimit?: number;
   setIds: readonly string[];
   signal?: AbortSignal;
   supabaseClient?: CatalogSupabaseClient;
@@ -7761,7 +7766,11 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
         setIds: uniqueSetIds,
         supabaseClient: activeSupabaseClient,
       });
-    const fallbackOffersBySetId = snapshotResult.fallbackSetIds.length
+    const shouldUseLiveFallback =
+      snapshotResult.fallbackSetIds.length > 0 &&
+      (liveFallbackSetIdLimit === undefined ||
+        snapshotResult.fallbackSetIds.length <= liveFallbackSetIdLimit);
+    const fallbackOffersBySetId = shouldUseLiveFallback
       ? await listCatalogRuntimeOffersBySetIdsFromSupabase({
           signal,
           setIds: snapshotResult.fallbackSetIds,
@@ -7775,6 +7784,9 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 
     logCurrentOfferSummaryReadDiagnostic({
       fallback_set_id_count: snapshotResult.fallbackSetIds.length,
+      live_fallback_skipped_set_id_count: shouldUseLiveFallback
+        ? 0
+        : snapshotResult.fallbackSetIds.length,
       request_duration_ms: Date.now() - startedAt,
       set_id_count: uniqueSetIds.length,
       snapshot_hit_count: snapshotResult.summaryBySetId.size,

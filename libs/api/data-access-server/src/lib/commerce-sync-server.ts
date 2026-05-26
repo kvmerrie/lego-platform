@@ -342,6 +342,7 @@ function formatCurrentOfferSnapshotSummaryLog({
   missingSnapshotSample,
   mode,
   offerCount,
+  snapshotComputedAt,
   upsertedCount,
   bestOfferMismatchCount,
 }: {
@@ -358,11 +359,13 @@ function formatCurrentOfferSnapshotSummaryLog({
   missingSnapshotSample: readonly CommerceCurrentOfferSnapshotParitySample[];
   mode: 'check' | 'write';
   offerCount: number;
+  snapshotComputedAt: string;
   upsertedCount: number;
 }): string {
   return [
     '[commerce-sync] current_offer_snapshots',
     `mode=${mode}`,
+    `snapshot_computed_at=${snapshotComputedAt}`,
     `current_offer_snapshots_built=${builtCount}`,
     `current_offer_snapshots_upserted=${upsertedCount}`,
     `snapshot_offer_count=${offerCount}`,
@@ -733,6 +736,10 @@ export async function runCommerceSync({
         currentOfferSnapshotResult.summary.missingSnapshotSample,
       mode,
       offerCount: currentOfferSnapshotResult.summary.snapshotOfferCount,
+      snapshotComputedAt:
+        currentOfferSnapshotResult.snapshots[0]?.computedAt ??
+        now?.toISOString() ??
+        'not-built',
       upsertedCount: currentOfferSnapshotUpsertResult.upsertedCount,
     }),
   );

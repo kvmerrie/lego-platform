@@ -2076,6 +2076,149 @@ describe('catalog effective data access web', () => {
     expect(selectedTables).toContain('commerce_current_offer_snapshots');
   });
 
+  test('skips live offer reconstruction for large price-filtered collection pages with stale snapshots', async () => {
+    const selectedTables: string[] = [];
+    const catalogRows = Array.from({ length: 500 }, (_, index) => {
+      const setId = String(10_000 + index);
+
+      return {
+        created_at: '2026-04-18T08:00:00.000Z',
+        image_url: `https://cdn.example.com/${setId}.jpg`,
+        name: `Budget Set ${setId}`,
+        piece_count: 100 + index,
+        primary_theme_id: 'theme:city',
+        release_year: 2026,
+        set_id: setId,
+        slug: `budget-set-${setId}`,
+        source: 'rebrickable',
+        source_set_number: `${setId}-1`,
+        status: 'active',
+        updated_at: '2026-04-18T08:00:00.000Z',
+      };
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows,
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-26T08:00:00.000Z',
+          offer_seed_id: 'seed-10000',
+          price_minor: 4999,
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-lego',
+          is_active: true,
+          name: 'LEGO EU',
+          slug: 'rakuten-lego-eu',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-10000',
+          is_active: true,
+          merchant_id: 'merchant-lego',
+          product_url: 'https://www.lego.com/nl-nl/product/budget-set-10000',
+          set_id: '10000',
+          validation_status: 'valid',
+        },
+      ],
+      onSelect: (table) => {
+        selectedTables.push(table);
+      },
+      primaryThemeRows: [
+        {
+          display_name: 'City',
+          id: 'theme:city',
+          slug: 'city',
+        },
+      ],
+      rpcHandlers: {
+        list_catalog_current_offer_candidate_set_ids: () => ({
+          data: catalogRows.map((row) => ({
+            set_id: row.set_id,
+          })),
+          error: null,
+        }),
+      },
+      snapshotRows: catalogRows.map((row) => ({
+        best_availability: 'in_stock',
+        best_checked_at: '2026-05-22T08:00:00.000Z',
+        best_commercial_unit_type: 'single_item',
+        best_merchant_name: 'LEGO EU',
+        best_merchant_slug: 'rakuten-lego-eu',
+        best_price_minor: 4999,
+        best_product_url: `https://www.lego.com/nl-nl/product/${row.slug}`,
+        computed_at: '2026-05-22T08:00:00.000Z',
+        condition: 'new',
+        currency_code: 'EUR',
+        offer_count: 1,
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-22T08:00:00.000Z',
+            commercialUnitType: 'single_item',
+            condition: 'new',
+            currency: 'EUR',
+            market: 'NL',
+            merchantName: 'LEGO EU',
+            merchantSlug: 'rakuten-lego-eu',
+            priceMinor: 4999,
+            setId: row.set_id,
+            url: `https://www.lego.com/nl-nl/product/${row.slug}`,
+          },
+        ],
+        region_code: 'NL',
+        set_id: row.set_id,
+      })),
+    });
+    const config = {
+      browseDescription: 'Budget sets.',
+      browseEyebrow: 'Onder budget',
+      browseTitle: 'Sets onder budget',
+      canonicalPath: '/lego-sets-onder-50-euro',
+      description: 'LEGO sets onder 50 euro.',
+      filters: {
+        maxBestPriceMinor: 5_000,
+      },
+      h1: 'LEGO sets onder 50 euro',
+      intro: 'Kijk naar sets onder budget.',
+      links: {},
+      metaDescription: 'Bekijk LEGO sets onder 50 euro.',
+      metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
+      signalLabel: 'sets onder 50 euro',
+      slug: 'lego-sets-onder-50-euro',
+      sort: {
+        default: 'price-asc',
+        options: ['price-asc'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      now: new Date('2026-05-26T12:00:00.000Z'),
+      sortKey: 'price-asc',
+      supabaseClient,
+    });
+
+    expect(result.setCards).toEqual([]);
+    expect(result.bestPriceMinorBySetId.size).toBe(0);
+    expect(supabaseClient.from).toHaveBeenCalledWith(
+      'commerce_current_offer_snapshots',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_latest',
+    );
+    expect(selectedTables).toContain('commerce_current_offer_snapshots');
+  });
+
   test('builds public theme directory from paginated Supabase catalog cards', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
@@ -8950,6 +9093,7 @@ describe('catalog effective data access web', () => {
     });
 
     const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      liveFallbackSetIdLimit: 50,
       setIds: ['10307'],
       supabaseClient,
     });
