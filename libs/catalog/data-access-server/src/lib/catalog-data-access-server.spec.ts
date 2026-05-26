@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
+  backfillRakutenLegoSourceMetadataForCatalogSet,
   backfillCatalogOverlayThemeIdentity,
   createCatalogSet,
   listCatalogCurrentOfferSummariesBySetIds,
@@ -270,6 +271,7 @@ function createCatalogOverlaySupabaseClient({
   priceHistoryRows = [],
   primaryThemeRows = [],
   snapshotRows = [],
+  sourceMetadataRows = [],
   sourceThemeRows = [],
   themeMappingRows = [],
 }: {
@@ -290,6 +292,7 @@ function createCatalogOverlaySupabaseClient({
   priceHistoryRows?: Record<string, unknown>[];
   primaryThemeRows?: Record<string, unknown>[];
   snapshotRows?: Record<string, unknown>[];
+  sourceMetadataRows?: Record<string, unknown>[];
   sourceThemeRows?: Record<string, unknown>[];
   themeMappingRows?: Record<string, unknown>[];
 } = {}) {
@@ -385,7 +388,10 @@ function createCatalogOverlaySupabaseClient({
     }
 
     if (table === 'catalog_set_source_metadata') {
+      const builder = createSupabaseTableBuilder(sourceMetadataRows);
+
       return {
+        select: builder.select,
         upsert: sourceMetadataUpsert,
       };
     }
@@ -2726,7 +2732,7 @@ describe('catalog data access server', () => {
 
   test('creates a canonical catalog record with normalized set data', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
-    const { canonicalInsert, insert, supabaseClient } =
+    const { canonicalInsert, insert, sourceMetadataUpsert, supabaseClient } =
       createCatalogOverlaySupabaseClient();
     const fetchImpl = createRebrickableFetchMock({
       setPayloads: {
@@ -2768,6 +2774,139 @@ describe('catalog data access server', () => {
       }),
     );
     expect(insert).not.toHaveBeenCalled();
+    expect(sourceMetadataUpsert).not.toHaveBeenCalled();
+  });
+
+  test('backfills Rakuten LEGO source metadata after creating a catalog set', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const { sourceMetadataUpsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient({
+        canonicalInsertResult: {
+          data: createCatalogOverlayRow({
+            image_url:
+              'https://cdn.rebrickable.com/media/sets/10280-1/1000.jpg',
+            name: 'Flower Bouquet',
+            piece_count: 756,
+            release_year: 2021,
+            set_id: '10280',
+            slug: 'flower-bouquet-10280',
+            source_set_number: '10280-1',
+            theme: undefined,
+          }),
+          error: null,
+        },
+        sourceMetadataRows: [
+          {
+            last_seen_at: '2026-05-26T08:00:00.000Z',
+            locale: 'nl-NL',
+            match_confidence: 'exact_set_number',
+            metadata_json: {
+              description: 'Een boeket dat op tafel blijft staan.',
+              features: [
+                {
+                  body: 'Schik rozen en lavendel in je eigen vaas.',
+                  title: 'Bloemen om te bouwen',
+                },
+                {
+                  body: 'Blijft mooi op tafel.',
+                  title: 'Displayklaar',
+                },
+              ],
+              gtin: '5702016913767',
+              imageUrl: 'https://www.lego.com/cdn/10280.png',
+              priceSourceSeen: true,
+              title: 'Bloemenboeket',
+            },
+            policy: 'metadata_only_pending_audit',
+            set_number: '10280',
+            source: 'rakuten-lego-eu',
+          },
+        ],
+      });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '10280-1': {
+          set_num: '10280-1',
+          theme_id: 721,
+        },
+      },
+      themePayloads: {
+        '721': {
+          id: 721,
+          name: 'Icons',
+        },
+      },
+    });
+
+    const result = await createCatalogSet({
+      fetchImpl,
+      input: {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10280-1/1000.jpg',
+        name: 'Flower Bouquet',
+        pieces: 756,
+        releaseYear: 2021,
+        setId: '10280',
+        slug: 'flower-bouquet-10280',
+        source: 'rebrickable',
+        sourceSetNumber: '10280-1',
+        theme: 'Icons',
+      },
+      supabaseClient,
+    });
+
+    expect(result.slug).toBe('flower-bouquet-10280');
+    expect(sourceMetadataUpsert).toHaveBeenCalledWith(
+      [
+        {
+          catalog_set_id: '10280',
+          last_seen_at: '2026-05-26T08:00:00.000Z',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            description: 'Een boeket dat op tafel blijft staan.',
+            features: [
+              {
+                body: 'Schik rozen en lavendel in je eigen vaas.',
+                title: 'Bloemen om te bouwen',
+              },
+              {
+                body: 'Blijft mooi op tafel.',
+                title: 'Displayklaar',
+              },
+            ],
+            gtin: '5702016913767',
+            imageUrl: 'https://www.lego.com/cdn/10280.png',
+            priceSourceSeen: true,
+            title: 'Bloemenboeket',
+          },
+          policy: 'metadata_only_pending_audit',
+          set_number: '10280',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+      {
+        onConflict: 'catalog_set_id,source,locale',
+      },
+    );
+  });
+
+  test('does not fail source metadata backfill when Rakuten LEGO metadata is missing', async () => {
+    const { sourceMetadataUpsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient();
+
+    const result = await backfillRakutenLegoSourceMetadataForCatalogSet({
+      catalogSetId: '76339',
+      lastSeenAt: '2026-05-26T08:00:00.000Z',
+      setNumber: '76339-1',
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      found: false,
+      missing: true,
+      upsertedCount: 0,
+    });
+    expect(sourceMetadataUpsert).not.toHaveBeenCalled();
   });
 
   test('creates a catalog set when Rebrickable still reports an unknown piece count', async () => {

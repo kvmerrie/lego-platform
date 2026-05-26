@@ -750,6 +750,18 @@ describe('catalog effective data access web', () => {
           locale: 'nl-NL',
           match_confidence: 'exact_set_number',
           metadata_json: {
+            description:
+              '<p onclick="alert(1)">Geef je huis een <strong>kleurrijke</strong> blikvanger.<br><b>Voor op tafel.</b></p><script>alert("x")</script><ul><li>Rozen</li><li><em>Margrieten</em></li></ul>',
+            features: [
+              {
+                body: 'Zet rozen, leeuwenbekjes en lavendel in je vaas.',
+                title: 'Bloemen om zelf te schikken',
+              },
+              {
+                body: '<script>alert(1)</script>Blijft mooi op tafel.',
+                title: '<span onclick="x">Displayklaar</span>',
+              },
+            ],
             title: 'Bloemenboeket',
           },
           policy: 'metadata_only_pending_audit',
@@ -785,9 +797,26 @@ describe('catalog effective data access web', () => {
       catalogName: 'Flower Bouquet',
       displayTitle: 'Bloemenboeket',
       displayTitleSource: 'rakuten-lego-eu',
+      legoProductDescription:
+        '<p>Geef je huis een <strong>kleurrijke</strong> blikvanger.<br><strong>Voor op tafel.</strong></p><ul><li>Rozen</li><li><em>Margrieten</em></li></ul>',
+      legoProductFeatures: [
+        {
+          body: 'Zet rozen, leeuwenbekjes en lavendel in je vaas.',
+          title: 'Bloemen om zelf te schikken',
+        },
+        {
+          body: 'Blijft mooi op tafel.',
+          title: 'Displayklaar',
+        },
+      ],
       name: 'Bloemenboeket',
       slug: 'flower-bouquet-10280',
     });
+    expect(catalogSetDetail?.legoProductDescription).not.toContain('script');
+    expect(catalogSetDetail?.legoProductDescription).not.toContain('alert');
+    expect(catalogSetDetail?.legoProductDescription).not.toContain('onclick');
+    expect(catalogSetDetail?.legoProductDescription).toContain('<br>');
+    expect(catalogSetDetail?.legoProductDescription).toContain('<ul><li>');
     expect(setCard).toMatchObject({
       catalogName: 'Flower Bouquet',
       displayTitle: 'Bloemenboeket',
@@ -4079,6 +4108,82 @@ describe('catalog effective data access web', () => {
       expect.objectContaining({
         setCard: expect.objectContaining({
           id: '75440',
+        }),
+      }),
+    ]);
+  });
+
+  test('searches Supabase catalog sets by LEGO NL display title while keeping catalog title searchable', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/10307.jpg',
+          name: 'Eiffel Tower',
+          piece_count: 10001,
+          primary_theme_id: 'theme:icons',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2022,
+          set_id: '10307',
+          slug: 'eiffel-tower-10307',
+          source: 'rebrickable',
+          source_set_number: '10307-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10307',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            title: 'Eiffeltoren',
+          },
+          policy: 'metadata_only_pending_audit',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSearchMatches({
+        query: 'Eiffeltoren',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        score: 1,
+        setCard: expect.objectContaining({
+          catalogName: 'Eiffel Tower',
+          id: '10307',
+          name: 'Eiffeltoren',
+          slug: 'eiffel-tower-10307',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'Eiffel Tower',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '10307',
+          name: 'Eiffeltoren',
+          slug: 'eiffel-tower-10307',
         }),
       }),
     ]);

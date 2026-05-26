@@ -8,6 +8,7 @@ import {
 import Image from 'next/image';
 import type {
   CatalogHomepageSetCard,
+  CatalogProductFeature,
   CatalogPublicThemeReference,
   CatalogSetDetail,
   CatalogSetSummary,
@@ -1476,6 +1477,298 @@ function CatalogSetSupportCard({
   );
 }
 
+function getCatalogProductDescriptionBlocks(description: string): Array<
+  | {
+      items: string[];
+      type: 'list';
+      variant: 'ol' | 'ul';
+    }
+  | {
+      content: string;
+      type: 'paragraph';
+    }
+> {
+  const blocks: Array<
+    | {
+        items: string[];
+        type: 'list';
+        variant: 'ol' | 'ul';
+      }
+    | {
+        content: string;
+        type: 'paragraph';
+      }
+  > = [];
+  const pushTextLinesAsBlocks = (content: string) => {
+    const lines = content
+      .split(/<br>|\n/gi)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const paragraphLines: string[] = [];
+    const listItems: string[] = [];
+    const flushParagraph = () => {
+      if (paragraphLines.length > 0) {
+        blocks.push({
+          content: paragraphLines.join('<br>'),
+          type: 'paragraph',
+        });
+        paragraphLines.length = 0;
+      }
+    };
+    const flushList = () => {
+      if (listItems.length > 0) {
+        blocks.push({
+          items: [...listItems],
+          type: 'list',
+          variant: 'ul',
+        });
+        listItems.length = 0;
+      }
+    };
+
+    for (const line of lines) {
+      const bulletMatch = line.match(/^(?:[-*•])\s*(.+)$/);
+
+      if (bulletMatch) {
+        flushParagraph();
+        listItems.push(bulletMatch[1].trim());
+      } else {
+        flushList();
+        paragraphLines.push(line);
+      }
+    }
+
+    flushParagraph();
+    flushList();
+  };
+  const htmlBlocks = Array.from(
+    description.matchAll(/<(p|ul|ol)>([\s\S]*?)<\/\1>/gi),
+  );
+
+  if (!htmlBlocks.length) {
+    pushTextLinesAsBlocks(description);
+
+    return blocks;
+  }
+
+  for (const [, tagName, content] of htmlBlocks) {
+    const normalizedTagName = tagName.toLowerCase();
+
+    if (normalizedTagName === 'ul' || normalizedTagName === 'ol') {
+      const listVariant: 'ol' | 'ul' = normalizedTagName;
+      const items = Array.from(content.matchAll(/<li>([\s\S]*?)<\/li>/gi))
+        .map(([, item]) => item.trim())
+        .filter(Boolean);
+
+      if (items.length > 0) {
+        blocks.push({
+          items,
+          type: 'list' as const,
+          variant: listVariant,
+        });
+      }
+
+      continue;
+    }
+
+    pushTextLinesAsBlocks(content);
+  }
+
+  return blocks;
+}
+
+function renderCatalogProductDescriptionInlineContent(
+  content: string,
+  keyPrefix: string,
+): ReactNode[] {
+  return content.split(/<br>/gi).flatMap((line, lineIndex) => {
+    const inlineNodes: ReactNode[] = [];
+    let lastIndex = 0;
+
+    for (const match of line.matchAll(/<(strong|em)>([\s\S]*?)<\/\1>/gi)) {
+      const [fullMatch, tagName, text] = match;
+      const matchIndex = match.index ?? 0;
+
+      if (matchIndex > lastIndex) {
+        inlineNodes.push(line.slice(lastIndex, matchIndex));
+      }
+
+      inlineNodes.push(
+        tagName.toLowerCase() === 'strong' ? (
+          <strong key={`${keyPrefix}-strong-${matchIndex}`}>{text}</strong>
+        ) : (
+          <em key={`${keyPrefix}-em-${matchIndex}`}>{text}</em>
+        ),
+      );
+      lastIndex = matchIndex + fullMatch.length;
+    }
+
+    if (lastIndex < line.length) {
+      inlineNodes.push(line.slice(lastIndex));
+    }
+
+    if (lineIndex === 0) {
+      return inlineNodes;
+    }
+
+    return [<br key={`${keyPrefix}-br-${lineIndex}`} />, ...inlineNodes];
+  });
+}
+
+export function CatalogSetProductDescription({
+  description,
+  imageAlt,
+  imageUrl,
+}: {
+  description?: string;
+  imageAlt?: string;
+  imageUrl?: string;
+}) {
+  const trimmedDescription = description?.trim();
+
+  if (!trimmedDescription) {
+    return null;
+  }
+
+  const blocks = getCatalogProductDescriptionBlocks(trimmedDescription);
+
+  if (!blocks.length) {
+    return null;
+  }
+
+  return (
+    <section className={styles.detailProductDescriptionSection}>
+      <details className={styles.productDescriptionDisclosure}>
+        <summary className={styles.productDescriptionSummary}>
+          <span className={styles.productDescriptionHeading}>
+            <span className={styles.productDescriptionEyebrow}>
+              Beschrijving van LEGO
+            </span>
+            <h2 className={styles.productDescriptionTitle}>Productgegevens</h2>
+          </span>
+          <span className={styles.productDescriptionIconFrame}>
+            <ChevronRight
+              aria-hidden="true"
+              className={styles.productDescriptionIcon}
+              size={24}
+              strokeWidth={2.3}
+            />
+          </span>
+        </summary>
+        <div className={styles.productDescriptionLayout}>
+          {imageUrl ? (
+            <div className={styles.productDescriptionVisual}>
+              <img
+                alt={imageAlt ?? 'LEGO setbeeld'}
+                className={styles.productDescriptionImage}
+                decoding="async"
+                loading="lazy"
+                src={imageUrl}
+              />
+            </div>
+          ) : null}
+          <div className={styles.productDescriptionBody}>
+            {blocks.map((block, blockIndex) =>
+              block.type === 'list' ? (
+                block.variant === 'ol' ? (
+                  <ol
+                    className={styles.productDescriptionList}
+                    key={`list-${blockIndex}`}
+                  >
+                    {block.items.map((item, itemIndex) => (
+                      <li key={`${blockIndex}-${itemIndex}`}>
+                        {renderCatalogProductDescriptionInlineContent(
+                          item,
+                          `${blockIndex}-${itemIndex}`,
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <ul
+                    className={styles.productDescriptionList}
+                    key={`list-${blockIndex}`}
+                  >
+                    {block.items.map((item, itemIndex) => (
+                      <li key={`${blockIndex}-${itemIndex}`}>
+                        {renderCatalogProductDescriptionInlineContent(
+                          item,
+                          `${blockIndex}-${itemIndex}`,
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : (
+                <p
+                  className={styles.productDescriptionParagraph}
+                  key={`paragraph-${blockIndex}`}
+                >
+                  {renderCatalogProductDescriptionInlineContent(
+                    block.content,
+                    `${blockIndex}`,
+                  )}
+                </p>
+              ),
+            )}
+          </div>
+        </div>
+      </details>
+    </section>
+  );
+}
+
+export function CatalogSetProductFeatures({
+  features,
+}: {
+  features?: readonly CatalogProductFeature[];
+}) {
+  const safeFeatures =
+    features?.filter((feature) => feature.body.trim().length > 0) ?? [];
+
+  if (safeFeatures.length < 2) {
+    return null;
+  }
+
+  return (
+    <section className={styles.detailProductDescriptionSection}>
+      <details className={styles.productDescriptionDisclosure}>
+        <summary className={styles.productDescriptionSummary}>
+          <span className={styles.productDescriptionHeading}>
+            <span className={styles.productDescriptionEyebrow}>
+              Details van LEGO
+            </span>
+            <h2 className={styles.productDescriptionTitle}>Productkenmerken</h2>
+          </span>
+          <span className={styles.productDescriptionIconFrame}>
+            <ChevronRight
+              aria-hidden="true"
+              className={styles.productDescriptionIcon}
+              size={24}
+              strokeWidth={2.3}
+            />
+          </span>
+        </summary>
+        <div className={styles.productFeaturesLayout}>
+          <ul className={styles.productFeaturesList}>
+            {safeFeatures.map((feature, index) => (
+              <li className={styles.productFeaturesItem} key={index}>
+                {feature.title ? (
+                  <>
+                    <strong>{feature.title}</strong>
+                    <span aria-hidden="true"> - </span>
+                  </>
+                ) : null}
+                <span>{feature.body}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
+    </section>
+  );
+}
+
 export function CatalogSetDetailPanel({
   bestDeal,
   brickhuntValueItems = [],
@@ -1630,17 +1923,6 @@ export function CatalogSetDetailPanel({
           }
           keyFacts={<CatalogKeyFacts items={heroSpecs} />}
           title={<CatalogCanonicalText>{visibleTitle}</CatalogCanonicalText>}
-          titleSupplement={
-            catalogSetDetail.catalogName &&
-            catalogSetDetail.catalogName !== visibleTitle ? (
-              <span className={styles.detailTitleAlias}>
-                Ook bekend als:{' '}
-                <CatalogCanonicalText>
-                  {catalogSetDetail.catalogName}
-                </CatalogCanonicalText>
-              </span>
-            ) : null
-          }
         />
       </CatalogPageIntro>
 
@@ -1674,6 +1956,16 @@ export function CatalogSetDetailPanel({
           ) : null}
         </section>
       ) : null}
+
+      <CatalogSetProductDescription
+        description={catalogSetDetail.legoProductDescription}
+        imageAlt={`${visibleTitle} LEGO-set`}
+        imageUrl={catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl}
+      />
+
+      <CatalogSetProductFeatures
+        features={catalogSetDetail.legoProductFeatures}
+      />
 
       {similarSetsRail ? (
         <div className={styles.detailSimilarRail}>{similarSetsRail}</div>

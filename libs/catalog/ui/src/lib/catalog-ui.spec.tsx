@@ -8,6 +8,8 @@ import {
   CatalogSetCard,
   CatalogSetCardCollection,
   CatalogSetDetailPanel,
+  CatalogSetProductFeatures,
+  CatalogSetProductDescription,
   CatalogThemeHighlight,
 } from './catalog-ui';
 import {
@@ -30,6 +32,17 @@ describe('CatalogSetCard', () => {
     expect(sharedCss).toContain('@layer shared {');
     expect(catalogCss).toContain('@layer reset, shared, catalog;');
     expect(catalogCss).toContain('@layer catalog {');
+    expect(catalogCss).toContain(
+      'font-size: var(--lego-text-role-section-size);',
+    );
+    expect(catalogCss).toContain('.productDescriptionIconFrame');
+    expect(catalogCss).toContain('flex: 0 0 2.75rem;');
+    expect(catalogCss).toContain('border-radius: inherit;');
+    expect(catalogCss).toContain('transform: rotate(-90deg);');
+    expect(catalogCss).toContain(
+      '.productDescriptionDisclosure[open] .productDescriptionIcon',
+    );
+    expect(catalogCss).not.toContain('--lego-text-role-section-title-');
   });
 
   it('renders crawlable shared browse pagination links with preserved query params', () => {
@@ -1151,6 +1164,8 @@ describe('CatalogSetCard', () => {
           displaySize: {
             value: '72 × 50 × 39 cm',
           },
+          legoProductDescription:
+            '<p>Bouw de vallei van <strong>Rivendell</strong> met de Council of Elrond.</p><ul><li>Frodo</li><li><em>Elrond</em></li></ul>',
           setStatus: 'available',
         }}
         dealSupportItems={[
@@ -1267,6 +1282,15 @@ describe('CatalogSetCard', () => {
     expect(markup.indexOf('Prijs in het kort')).toBeLessThan(
       markup.indexOf('Nog niet klaar om te kopen?'),
     );
+    expect(markup).toContain('<details');
+    expect(markup).not.toContain('<details open');
+    expect(markup).toContain('Beschrijving van LEGO');
+    expect(markup).toContain('<h2');
+    expect(markup).toContain('Productgegevens</h2>');
+    expect(markup).toContain('Bouw de vallei van <strong>Rivendell</strong>');
+    expect(markup).toContain('<li>Frodo</li>');
+    expect(markup).toContain('<li><em>Elrond</em></li>');
+    expect(markup).toContain('alt="Rivendell LEGO-set"');
     expect(markup).toContain('Zo lees je dit');
     expect(markup).toContain('Je ziet meteen of deze prijs echt opvalt.');
     expect(markup).toContain('Wat Brickhunt nu ziet');
@@ -1292,6 +1316,100 @@ describe('CatalogSetCard', () => {
       'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
     );
     expect(markup).not.toContain('$499 to $569');
+  });
+
+  it('does not render the LEGO product description section without description', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductDescription description={undefined} />,
+    );
+
+    expect(markup).toBe('');
+  });
+
+  it('renders safe product description structure without opening by default', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductDescription
+        description={
+          '<p>Een <strong>displayset</strong><br>voor je plank.</p><ol><li>Eerste stap</li><li><em>Tweede stap</em></li></ol>'
+        }
+        imageAlt="Bloemenboeket LEGO-set"
+        imageUrl="https://images.example/10280.jpg"
+      />,
+    );
+
+    expect(markup).toContain('<details');
+    expect(markup).not.toContain('<details open');
+    expect(markup).toContain('<strong>displayset</strong><br/>voor je plank.');
+    expect(markup).toContain('<ol');
+    expect(markup).toContain('<li>Eerste stap</li>');
+    expect(markup).toContain('<li><em>Tweede stap</em></li>');
+    expect(markup).toContain('src="https://images.example/10280.jpg"');
+  });
+
+  it('converts bullet-like description lines into semantic list items', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductDescription
+        description={
+          '<p>Dit valt op:<br>• Een vaas vol kleur<br>- Lange stelen<br>* Displayklaar</p>'
+        }
+      />,
+    );
+
+    expect(markup).toContain('<p');
+    expect(markup).toContain('Dit valt op:');
+    expect(markup).toContain('<ul');
+    expect(markup).toContain('<li>Een vaas vol kleur</li>');
+    expect(markup).toContain('<li>Lange stelen</li>');
+    expect(markup).toContain('<li>Displayklaar</li>');
+  });
+
+  it('renders unknown product description markup as escaped text', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductDescription
+        description={'<script>x</script> Veilig'}
+      />,
+    );
+
+    expect(markup).toContain('&lt;script&gt;x&lt;/script&gt; Veilig');
+    expect(markup).not.toContain('<script>');
+  });
+
+  it('renders LEGO product features as a collapsed structured list', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductFeatures
+        features={[
+          {
+            body: 'Bouw de zwarte en zilveren Mercedes-AMG F1 W15.',
+            title: 'F1 displaymodel',
+          },
+          {
+            body: 'Zet hem naast andere racewagens op je plank.',
+            title: 'Voor verzamelaars',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('<details');
+    expect(markup).not.toContain('<details open');
+    expect(markup).toContain('Productkenmerken');
+    expect(markup).toContain('<strong>F1 displaymodel</strong>');
+    expect(markup).toContain('Bouw de zwarte en zilveren Mercedes-AMG F1 W15.');
+    expect(markup).toContain('<li');
+  });
+
+  it('does not render LEGO product features for a single plain feature', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetProductFeatures
+        features={[
+          {
+            body: 'Een gewone beschrijving is nog geen featureblok.',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toBe('');
   });
 
   it('does not render an empty theme logo spec when the public theme has no logo', () => {
@@ -1504,7 +1622,7 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('heroThemeLogoLink');
   });
 
-  it('uses an audited display title for the set detail H1 without losing the catalog alias', () => {
+  it('uses an audited display title for the set detail H1 without rendering the catalog alias', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         catalogSetDetail={{
@@ -1529,8 +1647,7 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toMatch(/<h1[^>]*>.*Bloemenboeket.*<\/h1>/);
     expect(markup).not.toMatch(/<h1[^>]*>.*Ook bekend als:.*<\/h1>/);
-    expect(markup).toContain('Ook bekend als:');
-    expect(markup).toContain('Flower Bouquet');
+    expect(markup).not.toContain('Ook bekend als:');
   });
 
   it('avoids a thin comparison block when only one offer is available', () => {

@@ -62,6 +62,24 @@ export interface CatalogSetSourceMetadataInput {
   source: string;
 }
 
+export interface CatalogSetSourceMetadataBackfillResult {
+  found: boolean;
+  missing: boolean;
+  upsertedCount: number;
+}
+
+interface CatalogSetSourceMetadataRow {
+  last_seen_at: string | null;
+  metadata_json: Record<string, unknown> | null;
+  policy: string | null;
+  set_number: string;
+}
+
+const RAKUTEN_LEGO_SOURCE = 'rakuten-lego-eu';
+const RAKUTEN_LEGO_NL_LOCALE = 'nl-NL';
+const RAKUTEN_LEGO_EXACT_MATCH_CONFIDENCE = 'exact_set_number';
+const RAKUTEN_LEGO_DEFAULT_METADATA_POLICY = 'metadata_only_pending_audit';
+
 function chunkCatalogRows<TRow>(rows: readonly TRow[], size: number): TRow[][] {
   const chunks: TRow[][] = [];
 
@@ -2634,6 +2652,154 @@ export async function upsertCatalogSetSourceMetadata({
   return upsertedCount;
 }
 
+function buildCatalogSetSourceMetadataSetNumberVariants(
+  setNumber: string,
+): string[] {
+  const trimmedSetNumber = setNumber.trim();
+  const canonicalSetId = getCanonicalCatalogSetId(trimmedSetNumber);
+
+  return [
+    ...new Set(
+      [
+        trimmedSetNumber,
+        canonicalSetId,
+        canonicalSetId ? `${canonicalSetId}-1` : undefined,
+      ].filter((value): value is string => Boolean(value?.trim())),
+    ),
+  ];
+}
+
+function pickRakutenLegoSourceMetadataJson(
+  metadataJson: Record<string, unknown> | null,
+): Record<string, unknown> {
+  const sourceMetadata = metadataJson ?? {};
+  const features = Array.isArray(sourceMetadata['features'])
+    ? sourceMetadata['features']
+    : undefined;
+
+  return {
+    description:
+      typeof sourceMetadata['description'] === 'string'
+        ? sourceMetadata['description']
+        : null,
+    ...(features ? { features } : {}),
+    gtin:
+      typeof sourceMetadata['gtin'] === 'string'
+        ? sourceMetadata['gtin']
+        : null,
+    imageUrl:
+      typeof sourceMetadata['imageUrl'] === 'string'
+        ? sourceMetadata['imageUrl']
+        : null,
+    priceSourceSeen: sourceMetadata['priceSourceSeen'] === true,
+    title:
+      typeof sourceMetadata['title'] === 'string'
+        ? sourceMetadata['title']
+        : null,
+  };
+}
+
+export async function backfillRakutenLegoSourceMetadataForCatalogSet({
+  catalogSetId,
+  lastSeenAt = new Date().toISOString(),
+  setNumber,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  catalogSetId: string;
+  lastSeenAt?: string;
+  setNumber: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogSetSourceMetadataBackfillResult> {
+  const setNumberVariants =
+    buildCatalogSetSourceMetadataSetNumberVariants(setNumber);
+
+  if (!setNumberVariants.length) {
+    console.info('[catalog-source-metadata] metadata_backfill_missing', {
+      catalogSetId,
+      setNumber,
+      source: RAKUTEN_LEGO_SOURCE,
+    });
+
+    return {
+      found: false,
+      missing: true,
+      upsertedCount: 0,
+    };
+  }
+
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+    .select('set_number, metadata_json, policy, last_seen_at')
+    .eq('source', RAKUTEN_LEGO_SOURCE)
+    .eq('locale', RAKUTEN_LEGO_NL_LOCALE)
+    .eq('match_confidence', RAKUTEN_LEGO_EXACT_MATCH_CONFIDENCE)
+    .in('set_number', setNumberVariants)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      'Unable to load Rakuten LEGO source metadata for backfill.',
+    );
+  }
+
+  const sourceMetadata = data as CatalogSetSourceMetadataRow | null;
+
+  if (!sourceMetadata) {
+    console.info('[catalog-source-metadata] metadata_backfill_missing', {
+      catalogSetId,
+      setNumber,
+      setNumberVariants,
+      source: RAKUTEN_LEGO_SOURCE,
+    });
+
+    return {
+      found: false,
+      missing: true,
+      upsertedCount: 0,
+    };
+  }
+
+  console.info('[catalog-source-metadata] metadata_backfill_found', {
+    catalogSetId,
+    setNumber: sourceMetadata.set_number,
+    source: RAKUTEN_LEGO_SOURCE,
+  });
+
+  const upsertedCount = await upsertCatalogSetSourceMetadata({
+    inputs: [
+      {
+        catalogSetId,
+        lastSeenAt: sourceMetadata.last_seen_at ?? lastSeenAt,
+        locale: RAKUTEN_LEGO_NL_LOCALE,
+        matchConfidence: RAKUTEN_LEGO_EXACT_MATCH_CONFIDENCE,
+        metadataJson: pickRakutenLegoSourceMetadataJson(
+          sourceMetadata.metadata_json,
+        ),
+        policy:
+          sourceMetadata.policy?.trim() || RAKUTEN_LEGO_DEFAULT_METADATA_POLICY,
+        setNumber:
+          getCanonicalCatalogSetId(sourceMetadata.set_number) ?? setNumber,
+        source: RAKUTEN_LEGO_SOURCE,
+      },
+    ],
+    supabaseClient,
+  });
+
+  console.info('[catalog-source-metadata] metadata_backfill_upserted', {
+    catalogSetId,
+    setNumber,
+    source: RAKUTEN_LEGO_SOURCE,
+    upsertedCount,
+  });
+
+  return {
+    found: true,
+    missing: false,
+    upsertedCount,
+  };
+}
+
 export async function getCanonicalCatalogSetById({
   includeInactive = false,
   setId,
@@ -3545,6 +3711,11 @@ export async function createCatalogSet({
         setId: setConflict.setId,
         supabaseClient: activeSupabaseClient,
       });
+      await backfillRakutenLegoSourceMetadataForCatalogSet({
+        catalogSetId: setConflict.setId,
+        setNumber: setConflict.sourceSetNumber,
+        supabaseClient: activeSupabaseClient,
+      });
 
       return {
         ...setConflict,
@@ -3592,6 +3763,11 @@ export async function createCatalogSet({
       normalizedSet,
       supabaseClient: activeSupabaseClient,
       themePersistence,
+    });
+    await backfillRakutenLegoSourceMetadataForCatalogSet({
+      catalogSetId: data.set_id,
+      setNumber: data.source_set_number ?? normalizedSet.sourceSetNumber,
+      supabaseClient: activeSupabaseClient,
     });
     await refreshCatalogThemeSummaries({
       supabaseClient: activeSupabaseClient,

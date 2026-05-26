@@ -105,6 +105,11 @@ export interface CatalogSetDisplaySize {
   value: string;
 }
 
+export interface CatalogProductFeature {
+  body: string;
+  title?: string;
+}
+
 export interface CatalogThemeIdentity {
   primaryTheme: string;
   publicTheme?: CatalogPublicThemeReference;
@@ -125,6 +130,8 @@ export interface CatalogSetDetail extends CatalogSetSummary {
   tagline?: string;
   availability?: string;
   collectorHighlights?: readonly string[];
+  legoProductDescription?: string;
+  legoProductFeatures?: readonly CatalogProductFeature[];
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
   recommendedAge?: number;
@@ -266,7 +273,7 @@ function normalizeCatalogSearchToken(value: string): string {
 function getCatalogSetCardSearchScore<
   T extends Pick<
     CatalogHomepageSetCard,
-    'id' | 'name' | 'minifigureHighlights'
+    'catalogName' | 'id' | 'name' | 'minifigureHighlights'
   >,
 >({
   queryText,
@@ -280,6 +287,12 @@ function getCatalogSetCardSearchScore<
   const canonicalIdToken = normalizeCatalogSearchToken(setCard.id);
   const normalizedName = normalizeCatalogSearchText(setCard.name);
   const compactName = normalizeCatalogSearchToken(setCard.name);
+  const normalizedCatalogName = setCard.catalogName
+    ? normalizeCatalogSearchText(setCard.catalogName)
+    : undefined;
+  const compactCatalogName = setCard.catalogName
+    ? normalizeCatalogSearchToken(setCard.catalogName)
+    : undefined;
   const highlightText = setCard.minifigureHighlights?.join(' ');
   const normalizedHighlights = highlightText
     ? normalizeCatalogSearchText(highlightText)
@@ -304,6 +317,13 @@ function getCatalogSetCardSearchScore<
   }
 
   if (
+    normalizedCatalogName?.startsWith(queryText) ||
+    compactCatalogName?.startsWith(queryToken)
+  ) {
+    return 2.5;
+  }
+
+  if (
     normalizedName
       .split(' ')
       .some((normalizedNameWord) => normalizedNameWord.startsWith(queryText))
@@ -313,6 +333,13 @@ function getCatalogSetCardSearchScore<
 
   if (normalizedName.includes(queryText) || compactName.includes(queryToken)) {
     return 4;
+  }
+
+  if (
+    normalizedCatalogName?.includes(queryText) ||
+    compactCatalogName?.includes(queryToken)
+  ) {
+    return 4.5;
   }
 
   if (
@@ -338,7 +365,7 @@ function getCatalogSetCardSearchScore<
 export function listCatalogSetCardSearchMatches<
   T extends Pick<
     CatalogHomepageSetCard,
-    'id' | 'name' | 'releaseYear' | 'minifigureHighlights'
+    'catalogName' | 'id' | 'name' | 'releaseYear' | 'minifigureHighlights'
   >,
 >({
   limit = 6,
@@ -501,6 +528,8 @@ export interface CatalogCanonicalSet {
   displayTitle?: string;
   displayTitleSource?: CatalogSetDisplayTitleSource;
   imageUrl?: string;
+  legoProductDescription?: string;
+  legoProductFeatures?: readonly CatalogProductFeature[];
   minifigureCount?: number;
   name: string;
   pieceCount: number;

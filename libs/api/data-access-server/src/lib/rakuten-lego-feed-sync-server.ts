@@ -386,6 +386,7 @@ const RAKUTEN_LEGO_MAX_NON_NL_LOCALE_COUNT = 5;
 const RAKUTEN_LEGO_MAX_PARSE_FAILURE_RATIO = 0.01;
 const RAKUTEN_LEGO_MAX_PARSE_FAILURE_COUNT = 10;
 const RAKUTEN_LEGO_MIN_PHASE_ONE_MATCH_RATE = 0.75;
+const RAKUTEN_LEGO_MIN_PRODUCT_FEATURE_COUNT = 2;
 
 const NON_BUILDING_SET_PATTERN =
   /\b(?:boek|books?|game|games|software|playstation|xbox|nintendo|switch|pc|kleding|shirt|t-shirt|hoodie|pyjama|sokken|cap|rugzak|backpack|tas|bag|sleutelhanger|keychain|keyring|porte-cl[eé]s|lamp|lighting|light kit|display case|vitrine|beker|mok|mug|tasse|drinkfles|sali[eè]re|poivri[eè]re|sticker|poster|puzzel|puzzle|plush|knuffel|costume|kostuum|watch|horloge|mini-bo[iî]te|serious play)\b/i;
@@ -997,6 +998,93 @@ export function normalizeRakutenLegoProductToAffiliateFeedRow(
         }
       : undefined,
   };
+}
+
+function decodeRakutenLegoMetadataEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, codePoint: string) =>
+      String.fromCodePoint(Number.parseInt(codePoint, 16)),
+    )
+    .replace(/&#(\d+);/g, (_, codePoint: string) =>
+      String.fromCodePoint(Number.parseInt(codePoint, 10)),
+    );
+}
+
+function cleanRakutenLegoFeatureText(value: string): string {
+  return decodeRakutenLegoMetadataEntities(value)
+    .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseRakutenLegoFeatureText(
+  value: string,
+): { body: string; title?: string } | undefined {
+  const cleanValue = cleanRakutenLegoFeatureText(value).replace(
+    /^(?:[-*•])\s*/u,
+    '',
+  );
+
+  if (!cleanValue) {
+    return undefined;
+  }
+
+  const titledFeatureMatch = cleanValue.match(/^(.{2,80}?)\s+[–-]\s+(.+)$/u);
+
+  if (!titledFeatureMatch) {
+    return {
+      body: cleanValue,
+    };
+  }
+
+  return {
+    body: titledFeatureMatch[2].trim(),
+    title: titledFeatureMatch[1].trim(),
+  };
+}
+
+function parseRakutenLegoProductFeatures(
+  description?: string,
+): { body: string; title?: string }[] | undefined {
+  if (!description) {
+    return undefined;
+  }
+
+  const htmlListFeatures = Array.from(
+    description.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi),
+  )
+    .map(([, item]) => parseRakutenLegoFeatureText(item))
+    .filter(
+      (feature): feature is { body: string; title?: string } => feature != null,
+    );
+
+  if (htmlListFeatures.length >= RAKUTEN_LEGO_MIN_PRODUCT_FEATURE_COUNT) {
+    return htmlListFeatures;
+  }
+
+  const lineFeatures = description
+    .split(/<br\s*\/?>|\r?\n/gi)
+    .map((line) => line.trim())
+    .map((line) => {
+      const clearFeatureLine = line.match(
+        /^(?:[-*•]\s*)?(.{2,80}?)\s+[–-]\s+(.+)$/u,
+      );
+
+      return clearFeatureLine ? parseRakutenLegoFeatureText(line) : undefined;
+    })
+    .filter(
+      (feature): feature is { body: string; title?: string } => feature != null,
+    );
+
+  return lineFeatures.length >= RAKUTEN_LEGO_MIN_PRODUCT_FEATURE_COUNT
+    ? lineFeatures
+    : undefined;
 }
 
 async function* iterateTextChunks(
@@ -2772,6 +2860,8 @@ function buildRakutenLegoSourceMetadataInputs({
       continue;
     }
 
+    const productFeatures = parseRakutenLegoProductFeatures(row.description);
+
     inputBySetId.set(catalogSet.setId, {
       catalogSetId: catalogSet.setId,
       lastSeenAt,
@@ -2779,6 +2869,7 @@ function buildRakutenLegoSourceMetadataInputs({
       matchConfidence: 'exact_set_number',
       metadataJson: {
         description: row.description?.trim() || null,
+        ...(productFeatures ? { features: productFeatures } : {}),
         gtin: row.ean?.trim() || null,
         imageUrl: row.imageUrl?.trim() || null,
         priceSourceSeen: true,

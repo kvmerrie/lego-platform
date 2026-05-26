@@ -613,6 +613,7 @@ describe('Rakuten LEGO feed sync server', () => {
     <price>399.99</price>
     <currency>EUR</currency>
     <availability>available</availability>
+    <description><![CDATA[<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>]]></description>
     <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
     <part_number>10316</part_number>
   </product>
@@ -648,6 +649,7 @@ describe('Rakuten LEGO feed sync server', () => {
     <price>399.99</price>
     <currency>EUR</currency>
     <availability>available</availability>
+    <description><![CDATA[<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>]]></description>
     <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
     <part_number>10316</part_number>
   </product>
@@ -682,6 +684,7 @@ describe('Rakuten LEGO feed sync server', () => {
     <price>399.99</price>
     <currency>EUR</currency>
     <availability>available</availability>
+    <description><![CDATA[<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>]]></description>
     <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
     <part_number>10316</part_number>
   </product>
@@ -719,6 +722,7 @@ describe('Rakuten LEGO feed sync server', () => {
     <price>399.99</price>
     <currency>EUR</currency>
     <availability>available</availability>
+    <description><![CDATA[<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>]]></description>
     <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
     <part_number>10316</part_number>
   </product>
@@ -777,7 +781,8 @@ describe('Rakuten LEGO feed sync server', () => {
           category: undefined,
           condition: undefined,
           currency: 'EUR',
-          description: undefined,
+          description:
+            '<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>',
           ean: undefined,
           imageUrl: undefined,
           legoSetNumber: '10316',
@@ -976,6 +981,7 @@ describe('Rakuten LEGO feed sync server', () => {
     <price>399.99</price>
     <currency>EUR</currency>
     <availability>available</availability>
+    <description><![CDATA[<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>]]></description>
     <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
     <part_number>10316</part_number>
   </product>
@@ -1074,7 +1080,18 @@ describe('Rakuten LEGO feed sync server', () => {
           locale: 'nl-NL',
           matchConfidence: 'exact_set_number',
           metadataJson: {
-            description: null,
+            description:
+              '<ul><li>Racewagen voor display – Bouw de Mercedes-AMG F1 W15 voor je plank.</li><li>Authentieke details – Met slicks, halo en sponsorstijl.</li></ul>',
+            features: [
+              {
+                body: 'Bouw de Mercedes-AMG F1 W15 voor je plank.',
+                title: 'Racewagen voor display',
+              },
+              {
+                body: 'Met slicks, halo en sponsorstijl.',
+                title: 'Authentieke details',
+              },
+            ],
             gtin: null,
             imageUrl: null,
             priceSourceSeen: true,

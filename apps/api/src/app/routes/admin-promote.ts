@@ -8,6 +8,7 @@ import {
 } from '@lego-platform/api/data-access-server';
 import {
   apiPaths,
+  buildSetDetailPath,
   buildThemePath,
   cacheTags,
   getAdminPromotionConfig,
@@ -16,6 +17,7 @@ import {
 import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
 
 const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
+const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 50;
 const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
 
 export interface AdminPromoteService {
@@ -183,12 +185,37 @@ export function createAdminPromoteRoutes({
             changedThemeSlugs: result.changedThemeSlugs,
             log: request.log,
           });
-          const revalidationPaths = revalidationPlan.paths;
+          const promotedMetadataSetSlugs =
+            result.promotedMetadataSetSlugs ?? [];
+          const promotedMetadataSetIds = result.promotedMetadataSetIds ?? [];
+          const promotedMetadataSetPathFallback =
+            promotedMetadataSetSlugs.length >
+            MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
+          const promotedMetadataSetPaths = promotedMetadataSetPathFallback
+            ? []
+            : promotedMetadataSetSlugs.map((slug) => buildSetDetailPath(slug));
+          const revalidationPaths = [
+            ...revalidationPlan.paths,
+            ...promotedMetadataSetPaths,
+          ];
           const revalidationTags = [
             cacheTags.homepage(),
             cacheTags.themes(),
             'catalog',
+            ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
           ];
+
+          if (promotedMetadataSetPathFallback) {
+            request.log.warn(
+              {
+                maxSetDetailRevalidationPaths:
+                  MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS,
+                promotedMetadataSetCount: promotedMetadataSetSlugs.length,
+                route: apiPaths.adminCatalogPromotion,
+              },
+              'Skipping targeted set detail revalidation after metadata promotion because too many set paths changed.',
+            );
+          }
 
           try {
             revalidation = await revalidatePublicWebFn({
@@ -220,6 +247,7 @@ export function createAdminPromoteRoutes({
                 attempted: revalidation?.attempted ?? false,
                 pathCount: revalidation?.pathCount ?? revalidationPaths.length,
                 paths: revalidation?.paths ?? revalidationPaths,
+                promotedMetadataSetPathFallback,
                 themeDetailFallback: revalidationPlan.fallbackMode,
                 skipped: revalidation?.skipped ?? false,
                 tagCount: revalidation?.tagCount ?? revalidationTags.length,

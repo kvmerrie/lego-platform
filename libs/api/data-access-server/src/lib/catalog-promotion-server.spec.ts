@@ -194,6 +194,24 @@ describe('catalog promotion server', () => {
             updated_at: '2026-05-14T10:00:00.000Z',
           },
         ],
+        catalog_set_source_metadata: [
+          {
+            catalog_set_id: '10316',
+            last_seen_at: '2026-05-26T08:00:00.000Z',
+            locale: 'nl-NL',
+            match_confidence: 'exact_set_number',
+            metadata_json: {
+              description: 'Bouw Rivendell met de Council of Elrond.',
+              gtin: '5702017417835',
+              imageUrl: 'https://www.lego.com/cdn/10316.png',
+              priceSourceSeen: true,
+              title: 'Rivendel',
+            },
+            policy: 'metadata_only_pending_audit',
+            set_number: '10316',
+            source: 'rakuten-lego-eu',
+          },
+        ],
         commerce_merchants: [
           {
             affiliate_network: null,
@@ -272,6 +290,12 @@ describe('catalog promotion server', () => {
       updatedCount: 0,
       upsertedCount: 1,
     });
+    expect(result.tables.catalog_set_source_metadata).toEqual({
+      insertedCount: 1,
+      readCount: 1,
+      updatedCount: 0,
+      upsertedCount: 1,
+    });
     expect(result.tables.commerce_merchants).toEqual({
       insertedCount: 0,
       readCount: 1,
@@ -319,6 +343,31 @@ describe('catalog promotion server', () => {
       ],
       {
         onConflict: 'set_id',
+      },
+    );
+    expect(
+      productionClient.upsertByTable.get('catalog_set_source_metadata'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          catalog_set_id: '10316',
+          last_seen_at: '2026-05-26T08:00:00.000Z',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            description: 'Bouw Rivendell met de Council of Elrond.',
+            gtin: '5702017417835',
+            imageUrl: 'https://www.lego.com/cdn/10316.png',
+            priceSourceSeen: true,
+            title: 'Rivendel',
+          },
+          policy: 'metadata_only_pending_audit',
+          set_number: '10316',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+      {
+        onConflict: 'catalog_set_id,source,locale',
       },
     );
     expect(

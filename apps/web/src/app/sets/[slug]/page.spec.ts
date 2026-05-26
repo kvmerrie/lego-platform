@@ -63,6 +63,11 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     };
     catalogSetDetail?: {
       displayTitle?: string;
+      legoProductDescription?: string;
+      legoProductFeatures?: readonly {
+        body: string;
+        title?: string;
+      }[];
       name: string;
     };
     offerList?: readonly {
@@ -113,6 +118,24 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
                 offer.ctaLabel,
                 offer.merchantLabel,
               ),
+            ),
+          )
+        : null,
+      catalogSetDetail?.legoProductDescription
+        ? createElement(
+            'details',
+            {},
+            createElement('summary', {}, 'Productgegevens'),
+            catalogSetDetail.legoProductDescription,
+          )
+        : null,
+      catalogSetDetail?.legoProductFeatures?.length
+        ? createElement(
+            'details',
+            {},
+            createElement('summary', {}, 'Productkenmerken'),
+            ...catalogSetDetail.legoProductFeatures.map((feature, index) =>
+              createElement('p', { key: index }, feature.title, feature.body),
             ),
           )
         : null,
@@ -953,6 +976,17 @@ describe('set detail page JSON-LD', () => {
       displayTitleSource: 'rakuten-lego-eu',
       id: '10280',
       imageUrl: 'https://cdn.example.com/10280.jpg',
+      legoProductDescription: 'Officiële LEGO beschrijving voor dit boeket.',
+      legoProductFeatures: [
+        {
+          body: 'Zet het boeket in een vaas op tafel.',
+          title: 'Displayklaar',
+        },
+        {
+          body: 'Bouw rozen, madeliefjes en lavendel.',
+          title: 'Bloemenmix',
+        },
+      ],
       name: 'Flower Bouquet',
       pieces: 756,
       publicTheme: {
@@ -1024,7 +1058,14 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('"availability":"https://schema.org/InStock"');
     expect(html).toContain('"seller":{"@type":"Organization","name":"bol"}');
     expect(html).toContain('<h1>Bloemenboeket</h1>');
+    expect(html).not.toContain('Ook bekend als:');
+    expect(html).toContain('Officiële LEGO beschrijving voor dit boeket.');
+    expect(html).toContain('Productkenmerken');
+    expect(html).toContain('Displayklaar');
     expect(html).toContain('"name":"Bloemenboeket"');
+    expect(html).not.toContain(
+      '"description":"Officiële LEGO beschrijving voor dit boeket."',
+    );
     expect(html).toContain(
       'https://www.brickhunt.nl/sets/flower-bouquet-10280',
     );

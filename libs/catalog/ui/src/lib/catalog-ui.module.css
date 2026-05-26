@@ -1192,6 +1192,7 @@
   .detailHeroRail,
   .detailCommerceFlow,
   .detailSimilarRail,
+  .detailProductDescriptionSection,
   .detailInfoGrid {
     display: grid;
     gap: var(--lego-space-3);
@@ -1485,14 +1486,143 @@
     margin: 0;
   }
 
-  .detailTitleAlias {
+  .productDescriptionDisclosure {
+    background: var(--lego-surface-muted);
+    border-radius: var(--lego-radius-md);
+    overflow: hidden;
+  }
+
+  .productDescriptionSummary {
+    align-items: center;
+    border-radius: inherit;
+    cursor: pointer;
+    display: flex;
+    gap: var(--lego-space-3);
+    justify-content: space-between;
+    list-style: none;
+    min-height: 5.25rem;
+    padding: var(--lego-space-5);
+  }
+
+  .productDescriptionSummary::-webkit-details-marker {
+    display: none;
+  }
+
+  .productDescriptionSummary:focus-visible {
+    border-radius: inherit;
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: -3px;
+  }
+
+  .productDescriptionHeading {
+    display: grid;
+    gap: var(--lego-space-1);
+  }
+
+  .productDescriptionEyebrow {
     color: var(--lego-text-muted);
-    display: block;
-    font-size: var(--lego-text-sm);
-    font-weight: 600;
+    font-size: var(--lego-text-role-label-size);
+    font-weight: var(--lego-font-weight-bold);
+    letter-spacing: var(--lego-text-role-label-tracking);
+    line-height: var(--lego-text-role-label-line-height);
+    text-transform: uppercase;
+  }
+
+  .productDescriptionTitle {
+    color: var(--lego-text);
+    font-size: var(--lego-text-role-section-size);
+    font-weight: var(--lego-text-role-section-weight);
     letter-spacing: 0;
-    line-height: 1.4;
-    margin-top: var(--lego-space-2);
+    line-height: var(--lego-text-role-section-line-height);
+    margin: 0;
+  }
+
+  .productDescriptionIconFrame {
+    align-items: center;
+    border-radius: var(--lego-radius-sm);
+    display: inline-flex;
+    flex: 0 0 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    width: 2.75rem;
+  }
+
+  .productDescriptionIcon {
+    color: var(--lego-text-muted);
+    flex: 0 0 auto;
+    transform: rotate(-90deg);
+    transition: transform var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .productDescriptionDisclosure[open] .productDescriptionIcon {
+    transform: rotate(90deg);
+  }
+
+  .productDescriptionLayout {
+    display: grid;
+    gap: var(--lego-space-4);
+    padding: 0 var(--lego-space-5) var(--lego-space-5);
+  }
+
+  .productDescriptionBody {
+    color: var(--lego-text-muted);
+    display: grid;
+    gap: var(--lego-space-3);
+    line-height: 1.6;
+  }
+
+  .productDescriptionVisual {
+    align-items: center;
+    align-self: start;
+    background: var(--lego-surface-default);
+    border-radius: var(--lego-radius-sm);
+    display: flex;
+    justify-content: center;
+    min-height: 11rem;
+    padding: var(--lego-space-4);
+  }
+
+  .productDescriptionImage {
+    display: block;
+    max-height: min(18rem, 48vw);
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .productDescriptionParagraph,
+  .productDescriptionList {
+    margin: 0;
+  }
+
+  .productDescriptionParagraph + .productDescriptionParagraph,
+  .productDescriptionParagraph + .productDescriptionList,
+  .productDescriptionList + .productDescriptionParagraph,
+  .productDescriptionList + .productDescriptionList {
+    margin-top: var(--lego-space-1);
+  }
+
+  .productDescriptionList {
+    display: grid;
+    gap: var(--lego-space-2);
+    padding-inline-start: 1.2rem;
+  }
+
+  .productFeaturesLayout {
+    padding: 0 var(--lego-space-5) var(--lego-space-5);
+  }
+
+  .productFeaturesList {
+    color: var(--lego-text-muted);
+    display: grid;
+    gap: var(--lego-space-3);
+    line-height: 1.6;
+    margin: 0;
+    padding-inline-start: 1.2rem;
+  }
+
+  .productFeaturesItem strong {
+    color: var(--lego-text);
   }
 
   .specNote {
@@ -3987,6 +4117,19 @@
     .detailHeroMain {
       gap: var(--lego-space-16);
       grid-template-columns: minmax(0, 1fr) clamp(22rem, 26vw, 25rem);
+    }
+
+    .productDescriptionLayout {
+      align-items: start;
+      grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+    }
+
+    .productDescriptionVisual {
+      order: 2;
+    }
+
+    .productDescriptionBody {
+      order: 1;
     }
 
     .detailHeroRailInner {

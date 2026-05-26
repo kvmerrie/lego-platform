@@ -7,6 +7,7 @@ import type {
   CatalogCollectionLandingPageConfig,
   CatalogCollectionLandingPageSortKey,
   CatalogHomepageSetCard,
+  CatalogProductFeature,
   CatalogSearchMatch,
   CatalogSetDetail,
   CatalogSetSummary,
@@ -994,6 +995,279 @@ function readLegoNlDisplayTitle(metadataJson: unknown): string | undefined {
     : undefined;
 }
 
+function decodeCatalogMetadataHtmlEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, codePoint: string) =>
+      String.fromCodePoint(Number.parseInt(codePoint, 16)),
+    )
+    .replace(/&#(\d+);/g, (_, codePoint: string) =>
+      String.fromCodePoint(Number.parseInt(codePoint, 10)),
+    );
+}
+
+function sanitizeLegoNlProductDescription(value: string): string | undefined {
+  const safeDescription = value
+    .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<\s*\/?\s*([a-z0-9]+)(?:\s[^>]*)?\s*\/?\s*>/gi, (tag) => {
+      const tagMatch = tag.match(/^<\s*(\/?)\s*([a-z0-9]+)/i);
+      const tagName = tagMatch?.[2]?.toLowerCase();
+      const isClosingTag = Boolean(tagMatch?.[1]);
+
+      if (!tagName) {
+        return ' ';
+      }
+
+      if (tagName === 'br') {
+        return '<br>';
+      }
+
+      const normalizedTagName =
+        tagName === 'b' ? 'strong' : tagName === 'i' ? 'em' : tagName;
+      const allowedTags = new Set(['em', 'li', 'ol', 'p', 'strong', 'ul']);
+
+      if (!allowedTags.has(normalizedTagName)) {
+        return ' ';
+      }
+
+      return isClosingTag
+        ? `</${normalizedTagName}>`
+        : `<${normalizedTagName}>`;
+    });
+  const sanitizedDescription = decodeCatalogMetadataHtmlEntities(
+    safeDescription,
+  )
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/>\s+</g, '><')
+    .trim();
+
+  return sanitizedDescription.length > 0 ? sanitizedDescription : undefined;
+}
+
+function readLegoNlProductDescription(
+  metadataJson: unknown,
+): string | undefined {
+  if (
+    !metadataJson ||
+    typeof metadataJson !== 'object' ||
+    Array.isArray(metadataJson)
+  ) {
+    return undefined;
+  }
+
+  const description = (metadataJson as { description?: unknown }).description;
+
+  return typeof description === 'string'
+    ? sanitizeLegoNlProductDescription(description)
+    : undefined;
+}
+
+function normalizeCatalogMetadataSearchText(value: string): string {
+  return normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeCatalogMetadataSearchToken(value: string): string {
+  return normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function getLegoNlDisplayTitleSearchScore({
+  query,
+  title,
+}: {
+  query: string;
+  title: string;
+}): number | undefined {
+  const normalizedQueryText = normalizeCatalogMetadataSearchText(query);
+  const normalizedQueryToken = normalizeCatalogMetadataSearchToken(query);
+  const normalizedTitle = normalizeCatalogMetadataSearchText(title);
+  const compactTitle = normalizeCatalogMetadataSearchToken(title);
+
+  if (
+    !normalizedQueryText ||
+    !normalizedQueryToken ||
+    !normalizedTitle ||
+    !compactTitle
+  ) {
+    return undefined;
+  }
+
+  if (
+    normalizedTitle === normalizedQueryText ||
+    compactTitle === normalizedQueryToken
+  ) {
+    return 1;
+  }
+
+  if (
+    normalizedTitle.startsWith(normalizedQueryText) ||
+    compactTitle.startsWith(normalizedQueryToken)
+  ) {
+    return 1.5;
+  }
+
+  if (
+    normalizedTitle
+      .split(' ')
+      .some((normalizedTitleWord) =>
+        normalizedTitleWord.startsWith(normalizedQueryText),
+      )
+  ) {
+    return 2.5;
+  }
+
+  if (
+    normalizedTitle.includes(normalizedQueryText) ||
+    compactTitle.includes(normalizedQueryToken)
+  ) {
+    return 3.5;
+  }
+
+  return undefined;
+}
+
+async function listLegoNlDisplayTitleSearchMatches({
+  query,
+  supabaseClient,
+}: {
+  query: string;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, { score: number; title: string }>> {
+  const titleMatchesBySetId = new Map<
+    string,
+    { score: number; title: string }
+  >();
+
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+    .select('catalog_set_id, metadata_json')
+    .eq('source', LEGO_NL_DISPLAY_TITLE_SOURCE)
+    .eq('locale', LEGO_NL_DISPLAY_TITLE_LOCALE)
+    .eq('match_confidence', LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE)
+    .eq('policy', LEGO_NL_DISPLAY_TITLE_POLICY);
+
+  if (error) {
+    throw new Error('Unable to search LEGO NL display title metadata.');
+  }
+
+  for (const row of (data as CatalogSetSourceMetadataRow[] | null) ?? []) {
+    const title = readLegoNlDisplayTitle(row.metadata_json);
+    const score = title
+      ? getLegoNlDisplayTitleSearchScore({
+          query,
+          title,
+        })
+      : undefined;
+
+    if (title && typeof score === 'number') {
+      titleMatchesBySetId.set(row.catalog_set_id, {
+        score,
+        title,
+      });
+    }
+  }
+
+  return titleMatchesBySetId;
+}
+
+function sanitizeLegoNlProductFeatureText(value: string): string | undefined {
+  const sanitizedValue = decodeCatalogMetadataHtmlEntities(value)
+    .replace(/<\s*(script|style)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return sanitizedValue.length > 0 ? sanitizedValue : undefined;
+}
+
+function readLegoNlProductFeatures(
+  metadataJson: unknown,
+): CatalogProductFeature[] | undefined {
+  if (
+    !metadataJson ||
+    typeof metadataJson !== 'object' ||
+    Array.isArray(metadataJson)
+  ) {
+    return undefined;
+  }
+
+  const features = (metadataJson as { features?: unknown }).features;
+
+  if (!Array.isArray(features)) {
+    return undefined;
+  }
+
+  const safeFeatures = features
+    .map((feature): CatalogProductFeature | undefined => {
+      if (!feature || typeof feature !== 'object' || Array.isArray(feature)) {
+        return undefined;
+      }
+
+      const rawFeature = feature as { body?: unknown; title?: unknown };
+      const body =
+        typeof rawFeature.body === 'string'
+          ? sanitizeLegoNlProductFeatureText(rawFeature.body)
+          : undefined;
+      const title =
+        typeof rawFeature.title === 'string'
+          ? sanitizeLegoNlProductFeatureText(rawFeature.title)
+          : undefined;
+
+      return body ? { ...(title ? { title } : {}), body } : undefined;
+    })
+    .filter((feature): feature is CatalogProductFeature => feature != null);
+
+  return safeFeatures.length >= 2 ? safeFeatures : undefined;
+}
+
+async function getLegoNlProductDescriptionBySetId({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<
+  | {
+      description?: string;
+      features?: CatalogProductFeature[];
+    }
+  | undefined
+> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+    .select('metadata_json')
+    .eq('catalog_set_id', setId)
+    .eq('source', LEGO_NL_DISPLAY_TITLE_SOURCE)
+    .eq('locale', LEGO_NL_DISPLAY_TITLE_LOCALE)
+    .eq('match_confidence', LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE)
+    .eq('policy', LEGO_NL_DISPLAY_TITLE_POLICY)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load LEGO NL product description metadata.');
+  }
+
+  const metadataJson = (
+    data as Pick<CatalogSetSourceMetadataRow, 'metadata_json'> | null
+  )?.metadata_json;
+  const description = readLegoNlProductDescription(metadataJson);
+  const features = readLegoNlProductFeatures(metadataJson);
+
+  return description || features ? { description, features } : undefined;
+}
+
 async function listLegoNlDisplayTitleBySetId({
   setIds,
   supabaseClient,
@@ -1242,6 +1516,16 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
+    ...(canonicalCatalogSet.legoProductDescription
+      ? {
+          legoProductDescription: canonicalCatalogSet.legoProductDescription,
+        }
+      : {}),
+    ...(canonicalCatalogSet.legoProductFeatures?.length
+      ? {
+          legoProductFeatures: canonicalCatalogSet.legoProductFeatures,
+        }
+      : {}),
     ...(typeof canonicalCatalogSet.minifigureCount === 'number'
       ? {
           minifigureCount: canonicalCatalogSet.minifigureCount,
@@ -8190,9 +8474,23 @@ export async function getCatalogSetBySlug({
     setId: canonicalCatalogSet.setId,
     supabaseClient: activeSupabaseClient,
   });
+  const legoProductMetadata = await getLegoNlProductDescriptionBySetId({
+    setId: canonicalCatalogSet.setId,
+    supabaseClient: activeSupabaseClient,
+  });
 
   return toCatalogSetDetailFromCanonicalSet({
     ...canonicalCatalogSet,
+    ...(legoProductMetadata?.description
+      ? {
+          legoProductDescription: legoProductMetadata.description,
+        }
+      : {}),
+    ...(legoProductMetadata?.features?.length
+      ? {
+          legoProductFeatures: legoProductMetadata.features,
+        }
+      : {}),
     ...(typeof minifigureCount === 'number'
       ? {
           minifigureCount,
@@ -8202,14 +8500,20 @@ export async function getCatalogSetBySlug({
 }
 
 function getCatalogSearchMatchScore({
+  legoNlTitleScore,
   query,
   row,
   setCard,
 }: {
+  legoNlTitleScore?: number;
   query: string;
   row: CatalogSetRow;
   setCard: CatalogHomepageSetCard;
 }): number | undefined {
+  if (typeof legoNlTitleScore === 'number') {
+    return legoNlTitleScore;
+  }
+
   const [cardMatch] = listCatalogSetCardSearchMatches({
     limit: 1,
     query,
@@ -8293,6 +8597,15 @@ async function listCatalogSearchMatchesFromSupabase({
   const searchPattern = escapeCatalogSupabaseSearchPattern(query);
 
   try {
+    const legoNlTitleMatchesBySetId = await listLegoNlDisplayTitleSearchMatches(
+      {
+        query,
+        supabaseClient: activeSupabaseClient,
+      },
+    );
+    const legoNlTitleMatchSetIds = [...legoNlTitleMatchesBySetId.keys()].sort(
+      (left, right) => left.localeCompare(right),
+    );
     const { data, error } = await activeSupabaseClient
       .from(CATALOG_SETS_TABLE)
       .select(CATALOG_SET_SELECT_COLUMNS)
@@ -8309,12 +8622,33 @@ async function listCatalogSearchMatchesFromSupabase({
       .order('name', { ascending: true })
       .order('set_id', { ascending: true })
       .limit(Math.min(CATALOG_PUBLIC_SEARCH_MATCH_LIMIT, safeCandidateLimit));
+    const { data: legoNlTitleCatalogData, error: legoNlTitleCatalogError } =
+      legoNlTitleMatchSetIds.length > 0
+        ? await activeSupabaseClient
+            .from(CATALOG_SETS_TABLE)
+            .select(CATALOG_SET_SELECT_COLUMNS)
+            .eq('status', 'active')
+            .in('set_id', legoNlTitleMatchSetIds)
+        : { data: [], error: null };
 
     if (error) {
       throw new Error('Unable to search catalog sets.');
     }
 
-    const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+    if (legoNlTitleCatalogError) {
+      throw new Error('Unable to search catalog sets by LEGO NL title.');
+    }
+
+    const catalogRowsBySetId = new Map<string, CatalogSetRow>();
+
+    for (const row of [
+      ...((data as CatalogSetRow[] | null) ?? []),
+      ...((legoNlTitleCatalogData as CatalogSetRow[] | null) ?? []),
+    ]) {
+      catalogRowsBySetId.set(row.set_id, row);
+    }
+
+    const catalogRows = [...catalogRowsBySetId.values()];
     const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
       catalogRows,
       supabaseClient: activeSupabaseClient,
@@ -8347,6 +8681,7 @@ async function listCatalogSearchMatchesFromSupabase({
             }),
         );
         const score = getCatalogSearchMatchScore({
+          legoNlTitleScore: legoNlTitleMatchesBySetId.get(row.set_id)?.score,
           query,
           row,
           setCard,

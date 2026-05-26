@@ -17,12 +17,14 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
+const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const CATALOG_PROMOTION_PAGE_SIZE = 1000;
 const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
   CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+  CATALOG_SET_SOURCE_METADATA_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
 const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
@@ -100,6 +102,13 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'synced_at',
     'created_at',
     'updated_at',
+  ],
+  [CATALOG_SET_SOURCE_METADATA_TABLE]: [
+    'last_seen_at',
+    'match_confidence',
+    'metadata_json',
+    'policy',
+    'set_number',
   ],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
@@ -186,6 +195,18 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
     curated: [],
     generatedRuntime: ['minifig_count', 'source_minifig_count', 'synced_at'],
     protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_SET_SOURCE_METADATA_TABLE]: {
+    canonical: [
+      'catalog_set_id',
+      'source',
+      'locale',
+      'match_confidence',
+      'set_number',
+    ],
+    curated: [],
+    generatedRuntime: ['metadata_json', 'policy', 'last_seen_at'],
+    protected: [],
   },
   [COMMERCE_MERCHANTS_TABLE]: {
     canonical: ['id', 'slug', 'name', 'source_type', 'affiliate_network'],
@@ -311,6 +332,17 @@ interface CommerceOfferSeedRow {
   validation_status: string;
 }
 
+interface CatalogSetSourceMetadataRow {
+  catalog_set_id: string;
+  last_seen_at: string;
+  locale: string;
+  match_confidence: string;
+  metadata_json: Record<string, unknown>;
+  policy: string;
+  set_number: string;
+  source: string;
+}
+
 export interface CatalogPromotionTableSummary {
   insertedCount: number;
   readCount: number;
@@ -321,6 +353,8 @@ export interface CatalogPromotionTableSummary {
 export interface CatalogPromotionResult {
   changedThemeSlugs: string[];
   durationMs: number;
+  promotedMetadataSetIds?: string[];
+  promotedMetadataSetSlugs?: string[];
   startedAt: string;
   status: 'ok';
   tables: {
@@ -329,6 +363,7 @@ export interface CatalogPromotionResult {
     catalog_theme_mappings: CatalogPromotionTableSummary;
     catalog_sets: CatalogPromotionTableSummary;
     catalog_set_minifig_summaries: CatalogPromotionTableSummary;
+    catalog_set_source_metadata?: CatalogPromotionTableSummary;
     commerce_merchants: CatalogPromotionTableSummary;
     commerce_benchmark_sets: CatalogPromotionTableSummary;
     commerce_offer_seeds: CatalogPromotionTableSummary;
@@ -1803,6 +1838,7 @@ export async function promoteCatalogFromStagingToProduction({
       catalogThemeMappings,
       catalogSets,
       catalogSetMinifigSummaries,
+      catalogSetSourceMetadata,
       commerceMerchants,
       commerceBenchmarkSets,
       commerceOfferSeeds,
@@ -1841,6 +1877,13 @@ export async function promoteCatalogFromStagingToProduction({
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
       }),
+      readOrderedRows<CatalogSetSourceMetadataRow>({
+        columns:
+          'catalog_set_id, set_number, source, locale, metadata_json, match_confidence, policy, last_seen_at',
+        orderBy: 'catalog_set_id',
+        supabaseClient: stagingSupabaseClient,
+        table: CATALOG_SET_SOURCE_METADATA_TABLE,
+      }),
       readOrderedRows<CommerceMerchantRow>({
         columns:
           'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
@@ -1874,6 +1917,10 @@ export async function promoteCatalogFromStagingToProduction({
     assertPromotionReadWasNotDefaultCapped({
       readCount: catalogSetMinifigSummaries.length,
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+    });
+    assertPromotionReadWasNotDefaultCapped({
+      readCount: catalogSetSourceMetadata.length,
+      table: CATALOG_SET_SOURCE_METADATA_TABLE,
     });
 
     const normalizedCatalogSourceThemes = catalogSourceThemes.map((theme) =>
@@ -1922,6 +1969,12 @@ export async function promoteCatalogFromStagingToProduction({
           nowIso: startedAtIso,
           summary,
         }),
+    );
+    const normalizedCatalogSetSourceMetadata = catalogSetSourceMetadata.filter(
+      (row) =>
+        row.source === 'rakuten-lego-eu' &&
+        row.locale === 'nl-NL' &&
+        row.match_confidence === 'exact_set_number',
     );
     logCatalogSetStatusNormalization({
       rowsAfter: normalizedCatalogSets as unknown as Readonly<
@@ -2039,6 +2092,21 @@ export async function promoteCatalogFromStagingToProduction({
     });
     validatePromotionRowsRequiredColumns({
       columns: [
+        'catalog_set_id',
+        'source',
+        'locale',
+        'match_confidence',
+        'policy',
+        'set_number',
+        'last_seen_at',
+      ],
+      rows: normalizedCatalogSetSourceMetadata as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: [
         'id',
         'slug',
         'name',
@@ -2107,6 +2175,26 @@ export async function promoteCatalogFromStagingToProduction({
       rows: normalizedCatalogThemes,
       supabaseClient: productionSupabaseClient,
     });
+    const catalogSetBySetId = new Map(
+      normalizedCatalogSets.map((catalogSet) => [
+        catalogSet.set_id,
+        catalogSet,
+      ]),
+    );
+    const promotedMetadataSetIds = [
+      ...new Set(
+        normalizedCatalogSetSourceMetadata.map(
+          (metadata) => metadata.catalog_set_id,
+        ),
+      ),
+    ].sort((left, right) => left.localeCompare(right));
+    const promotedMetadataSetSlugs = [
+      ...new Set(
+        promotedMetadataSetIds
+          .map((setId) => catalogSetBySetId.get(setId)?.slug)
+          .filter((slug): slug is string => Boolean(slug)),
+      ),
+    ].sort((left, right) => left.localeCompare(right));
 
     tables.catalog_source_themes = await upsertRows({
       nowIso: startedAtIso,
@@ -2143,6 +2231,20 @@ export async function promoteCatalogFromStagingToProduction({
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
+    tables.catalog_set_source_metadata = await upsertRows({
+      nowIso: startedAtIso,
+      onConflict: 'catalog_set_id,source,locale',
+      rows: normalizedCatalogSetSourceMetadata,
+      supabaseClient: productionSupabaseClient,
+      table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+
+    console.info('[catalog-promotion] promote_metadata_rows_copied', {
+      promote_metadata_rows_copied:
+        tables.catalog_set_source_metadata.upsertedCount,
+      source: 'rakuten-lego-eu',
+      table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
 
     if (
       tables.catalog_themes.upsertedCount > 0 ||
@@ -2175,6 +2277,8 @@ export async function promoteCatalogFromStagingToProduction({
     return {
       changedThemeSlugs,
       durationMs: now().getTime() - startedAt.getTime(),
+      promotedMetadataSetIds,
+      promotedMetadataSetSlugs,
       startedAt: startedAtIso,
       status: 'ok',
       tables: tables as CatalogPromotionResult['tables'],
@@ -2185,7 +2289,7 @@ export async function promoteCatalogFromStagingToProduction({
         ? error.message
         : 'Catalog promotion failed unexpectedly.';
     const failedTableMatch = message.match(
-      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
+      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|catalog_set_source_metadata|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
     );
 
     throw new CatalogPromotionError(message, {
