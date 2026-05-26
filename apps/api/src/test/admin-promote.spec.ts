@@ -120,8 +120,8 @@ describe('admin promote routes', () => {
       pathCount: 2,
       paths: ['/', '/themes'],
       skipped: false,
-      tagCount: 3,
-      tags: ['homepage', 'themes', 'catalog'],
+      tagCount: 5,
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     }));
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
@@ -141,7 +141,7 @@ describe('admin promote routes', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: ['/', '/themes'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'catalog'],
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     });
     expect(response.json()).toEqual({
       changedThemeSlugs: [],
@@ -151,8 +151,8 @@ describe('admin promote routes', () => {
         pathCount: 2,
         paths: ['/', '/themes'],
         skipped: false,
-        tagCount: 3,
-        tags: ['homepage', 'themes', 'catalog'],
+        tagCount: 5,
+        tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
       },
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok',
@@ -177,8 +177,8 @@ describe('admin promote routes', () => {
       pathCount: 3,
       paths: ['/', '/themes', '/themes/icons'],
       skipped: false,
-      tagCount: 3,
-      tags: ['homepage', 'themes', 'catalog'],
+      tagCount: 5,
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     }));
     const adminPromoteService: AdminPromoteService = {
       promoteCatalog: vi.fn(async () => ({
@@ -256,7 +256,7 @@ describe('admin promote routes', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: ['/', '/themes', '/themes/icons'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'catalog'],
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     });
 
     await server.close();
@@ -268,8 +268,8 @@ describe('admin promote routes', () => {
       pathCount: 2,
       paths: ['/', '/themes'],
       skipped: false,
-      tagCount: 3,
-      tags: ['homepage', 'themes', 'catalog'],
+      tagCount: 5,
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     }));
     const adminPromoteService: AdminPromoteService = {
       promoteCatalog: vi.fn(async () => ({
@@ -350,7 +350,7 @@ describe('admin promote routes', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: ['/', '/themes'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'catalog'],
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     });
 
     await server.close();
@@ -378,7 +378,7 @@ describe('admin promote routes', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: ['/', '/themes'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'catalog'],
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     });
     expect(response.json()).toEqual(
       expect.objectContaining({
@@ -396,8 +396,8 @@ describe('admin promote routes', () => {
       pathCount: 2,
       paths: ['/', '/themes'],
       skipped: true,
-      tagCount: 3,
-      tags: ['homepage', 'themes', 'catalog'],
+      tagCount: 5,
+      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
     }));
     const { server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
@@ -420,8 +420,8 @@ describe('admin promote routes', () => {
           pathCount: 2,
           paths: ['/', '/themes'],
           skipped: true,
-          tagCount: 3,
-          tags: ['homepage', 'themes', 'catalog'],
+          tagCount: 5,
+          tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
         },
         status: 'ok',
       }),

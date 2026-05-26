@@ -3,6 +3,8 @@ import {
   buildCatalogSetRevalidationTags,
   buildMerchantRevalidationTags,
   buildNewsRevalidationTags,
+  buildPublicBrowseCollectionCacheTags,
+  buildPublicBrowseThemeCacheTags,
   buildThemeRevalidationTags,
   cacheTags,
   isValidCacheTag,
@@ -15,6 +17,10 @@ describe('cache tags', () => {
     expect(cacheTags.catalog()).toBe('catalog');
     expect(cacheTags.sets()).toBe('sets');
     expect(cacheTags.set('Rivendell 10316')).toBe('set:rivendell-10316');
+    expect(cacheTags.collections()).toBe('collections');
+    expect(cacheTags.collection('LEGO sets onder €50')).toBe(
+      'collection:lego-sets-onder-50',
+    );
     expect(cacheTags.theme('Harry Potter')).toBe('theme:harry-potter');
     expect(cacheTags.merchantProducts('Coolblue')).toBe(
       'merchant-products:coolblue',
@@ -76,6 +82,26 @@ describe('cache tags', () => {
       'homepage',
       'sitemap',
       'search-index',
+    ]);
+  });
+
+  test('builds shared public browse cache tags', () => {
+    expect(
+      buildPublicBrowseThemeCacheTags({
+        themeSlug: 'star-wars',
+      }),
+    ).toEqual(['catalog', 'sets', 'themes', 'theme:star-wars', 'prices']);
+    expect(
+      buildPublicBrowseCollectionCacheTags({
+        collectionSlug: 'lego-sets-onder-100-euro',
+      }),
+    ).toEqual([
+      'catalog',
+      'sets',
+      'collections',
+      'collection:lego-sets-onder-100-euro',
+      'prices',
+      'deals',
     ]);
   });
 

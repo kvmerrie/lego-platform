@@ -429,6 +429,8 @@ describe('public web revalidation server', () => {
     expect(secondRequest.paths).toHaveLength(7);
     expect(firstRequest.tags).toContain('prices');
     expect(firstRequest.tags).toContain('catalog');
+    expect(firstRequest.tags).not.toContain('collections');
+    expect(firstRequest.tags).not.toContain('themes');
     expect(result).toMatchObject({
       attempted: true,
       pathCount: 32,

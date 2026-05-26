@@ -12,7 +12,10 @@ import {
   type CatalogCollectionLandingPageSortKey,
 } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
-import { buildCanonicalUrl, cacheTags } from '@lego-platform/shared/config';
+import {
+  buildCanonicalUrl,
+  buildPublicBrowseCollectionCacheTags,
+} from '@lego-platform/shared/config';
 import { JsonLdScript } from '../lib/json-ld';
 import {
   getCachedPublicBrowsePageData,
@@ -95,12 +98,9 @@ async function getCachedSerializableCollectionLandingPage({
   offset: number;
   sortKey: CatalogCollectionLandingPageSortKey;
 }): Promise<SerializableCollectionLandingPageResult> {
-  const tags = [
-    cacheTags.catalog(),
-    cacheTags.sets(),
-    cacheTags.prices(),
-    cacheTags.deals(),
-  ];
+  const tags = buildPublicBrowseCollectionCacheTags({
+    collectionSlug: config.slug,
+  });
 
   return getCachedPublicBrowsePageData({
     load: async () =>

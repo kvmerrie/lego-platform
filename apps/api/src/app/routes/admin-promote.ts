@@ -201,7 +201,9 @@ export function createAdminPromoteRoutes({
           const revalidationTags = [
             cacheTags.homepage(),
             cacheTags.themes(),
-            'catalog',
+            cacheTags.collections(),
+            cacheTags.catalog(),
+            cacheTags.sets(),
             ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
           ];
 

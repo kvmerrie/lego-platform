@@ -160,4 +160,61 @@ describe('web revalidation route', () => {
       },
     );
   });
+
+  test('accepts and revalidates public browse cache tags', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'expected-secret';
+    const { POST } = await import('./route');
+
+    const response = await POST(
+      new Request('http://localhost:3000/api/revalidate', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-revalidate-secret': 'expected-secret',
+        },
+        body: JSON.stringify({
+          reason: 'browse_cache_invalidation',
+          tags: [
+            'catalog',
+            'sets',
+            'themes',
+            'theme:star-wars',
+            'collections',
+            'collection:lego-sets-onder-100-euro',
+            'prices',
+            'deals',
+          ],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(revalidateTag).toHaveBeenCalledTimes(8);
+    expect(revalidateTag).toHaveBeenNthCalledWith(1, 'catalog', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(2, 'sets', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(3, 'themes', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(4, 'theme:star-wars', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(5, 'collections', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(
+      6,
+      'collection:lego-sets-onder-100-euro',
+      'max',
+    );
+    expect(revalidateTag).toHaveBeenNthCalledWith(7, 'prices', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(8, 'deals', 'max');
+    await expect(response.json()).resolves.toMatchObject({
+      pathCount: 0,
+      tagCount: 8,
+      tags: [
+        'catalog',
+        'sets',
+        'themes',
+        'theme:star-wars',
+        'collections',
+        'collection:lego-sets-onder-100-euro',
+        'prices',
+        'deals',
+      ],
+    });
+  });
 });

@@ -11,10 +11,14 @@ export const dynamic = 'force-dynamic';
 const MAX_REVALIDATION_PATHS = 25;
 const MAX_REVALIDATION_TAGS = 100;
 const BROAD_REVALIDATION_TAGS = new Set([
+  'catalog',
+  'collections',
   'homepage',
   'deals',
   'prices',
   'sitemap',
+  'sets',
+  'themes',
 ]);
 const LOGGED_VALUE_LIMIT = 12;
 

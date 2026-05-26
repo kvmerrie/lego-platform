@@ -1,5 +1,6 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
+import { getCachedPublicLandingPageData } from './lib/public-landing-page-cache';
 import {
   buildCurrentSetCardPriceContextBySetId,
   getCurrentOfferRailDiagnostics,
@@ -70,6 +71,14 @@ const HOMEPAGE_SOFT_DEAL_SECTION_ID = 'soft-price-opportunities';
 const HOMEPAGE_CURRENT_OFFERS_SECTION_ID = 'current-offers';
 const HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID = 'popular-to-follow';
 const HOMEPAGE_DISCOVERY_SECTION_ID = 'ontdek-lego-op-jouw-manier';
+const HOMEPAGE_CACHE_TAGS = [
+  cacheTags.homepage(),
+  cacheTags.catalog(),
+  cacheTags.sets(),
+  cacheTags.themes(),
+  cacheTags.prices(),
+  cacheTags.deals(),
+] as const;
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -141,6 +150,47 @@ const homepageDiscoveryTileConfigs = [
 type HomepageDiscoveryTile = (typeof homepageDiscoveryTileConfigs)[number] & {
   imageUrl?: string;
 };
+
+type HomepageQueryMode = Awaited<ReturnType<typeof getEditorialQueryMode>>;
+
+type HomepageCurrentOfferSummaryEntries = ReadonlyArray<
+  readonly [
+    string,
+    Awaited<
+      ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+    > extends Map<string, infer Summary>
+      ? Summary
+      : never,
+  ]
+>;
+
+type HomepageDiscoverySignalEntries = ReadonlyArray<
+  readonly [
+    string,
+    Awaited<ReturnType<typeof listCatalogDiscoverySignalsBySetId>> extends Map<
+      string,
+      infer Signal
+    >
+      ? Signal
+      : never,
+  ]
+>;
+
+interface HomepageLandingPageData {
+  allCatalogSetCards: readonly CatalogHomepageSetCard[];
+  catalogDiscoverySignalEntries: HomepageDiscoverySignalEntries;
+  commerceCandidateSetCards: readonly CatalogHomepageSetCard[];
+  currentOfferSummaryEntries: HomepageCurrentOfferSummaryEntries;
+  homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  homepageFollowCurrentOfferSummaryEntries: HomepageCurrentOfferSummaryEntries;
+  homepageFollowSetCards: readonly CatalogHomepageSetCard[];
+  homepagePage: Awaited<ReturnType<typeof getHomepagePage>>;
+  homepageSoftDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  homepageThemeDirectoryItems: readonly CatalogThemeDirectoryItem[];
+  homepageThemeSpotlightItems: Awaited<
+    ReturnType<typeof listHomepageThemeSpotlightItems>
+  >;
+}
 
 function getThemeImageUrl(
   themeItemsBySlug: ReadonlyMap<string, CatalogThemeDirectoryItem>,
@@ -541,8 +591,11 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function HomePage() {
-  const queryMode = await getEditorialQueryMode();
+async function loadHomepageLandingPageData({
+  queryMode,
+}: {
+  queryMode: HomepageQueryMode;
+}): Promise<HomepageLandingPageData> {
   const [
     homepagePage,
     allCatalogSetCards,
@@ -577,11 +630,6 @@ export default async function HomePage() {
           setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
         })
       : new Map();
-  const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
-    ? await getCatalogCommerceRailRuntimeDiagnostics({
-        limit: 300,
-      })
-    : undefined;
   const catalogDiscoverySignalBySetId =
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
@@ -615,6 +663,124 @@ export default async function HomePage() {
         setCards: commerceCandidateSetCards,
       })
     : [];
+  const homepageBestDealCandidates = toFeatureSetListItems(
+    homepageBestDealCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      catalogDiscoverySignalBySetId,
+      sectionId: HOMEPAGE_PRIMARY_DEAL_SECTION_ID,
+    },
+  ).filter(hasCommerceAction);
+  const homepageStrongDealSetCards =
+    homepageBestDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageBestDealCandidates
+      : [];
+  const homepageSoftDealCandidates = toFeatureSetListItems(
+    homepageSoftDealCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      catalogDiscoverySignalBySetId,
+      sectionId: HOMEPAGE_SOFT_DEAL_SECTION_ID,
+    },
+  ).filter(hasCommerceAction);
+  const homepageSoftDealSetCards =
+    homepageStrongDealSetCards.length === 0 &&
+    homepageSoftDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageSoftDealCandidates
+      : [];
+  const homepageRenderedDealSetCards = homepageStrongDealSetCards.length
+    ? homepageStrongDealSetCards
+    : homepageSoftDealSetCards;
+  const homepageFollowExcludedSetIds = getUniqueCatalogSetIds([
+    homepageRenderedDealSetCards,
+  ]);
+  const homepageFollowSetCards = await listHomepageSetCards({
+    excludedSetIds: homepageFollowExcludedSetIds,
+    getCatalogDiscoverySignalFn,
+    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
+    rotationSeed: commerceRailRotationSeed,
+  });
+  const homepageFollowCurrentOfferSummaryBySetId =
+    homepageFollowSetCards.length > 0
+      ? await listCatalogCurrentOfferSummariesBySetIds({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+            tags: [
+              cacheTags.homepage(),
+              cacheTags.prices(),
+              ...homepageFollowSetCards.map((setCard) =>
+                cacheTags.set(setCard.id),
+              ),
+            ],
+          },
+          setIds: homepageFollowSetCards.map((setCard) => setCard.id),
+        })
+      : new Map();
+
+  return {
+    allCatalogSetCards,
+    catalogDiscoverySignalEntries: [...catalogDiscoverySignalBySetId.entries()],
+    commerceCandidateSetCards,
+    currentOfferSummaryEntries: [...currentOfferSummaryBySetId.entries()],
+    homepageBestDealCandidateSetCards,
+    homepageFollowCurrentOfferSummaryEntries: [
+      ...homepageFollowCurrentOfferSummaryBySetId.entries(),
+    ],
+    homepageFollowSetCards,
+    homepagePage,
+    homepageSoftDealCandidateSetCards,
+    homepageThemeDirectoryItems,
+    homepageThemeSpotlightItems,
+  };
+}
+
+function getHomepageLandingPageData({
+  queryMode,
+}: {
+  queryMode: HomepageQueryMode;
+}): Promise<HomepageLandingPageData> {
+  if (queryMode === 'preview') {
+    return loadHomepageLandingPageData({ queryMode });
+  }
+
+  return getCachedPublicLandingPageData({
+    load: () => loadHomepageLandingPageData({ queryMode }),
+    page: 'homepage',
+    params: [queryMode],
+    revalidateSeconds: revalidate,
+    tags: HOMEPAGE_CACHE_TAGS,
+  });
+}
+
+export default async function HomePage() {
+  const queryMode = await getEditorialQueryMode();
+  const {
+    allCatalogSetCards,
+    catalogDiscoverySignalEntries,
+    commerceCandidateSetCards,
+    currentOfferSummaryEntries,
+    homepagePage,
+    homepageBestDealCandidateSetCards,
+    homepageFollowCurrentOfferSummaryEntries,
+    homepageFollowSetCards,
+    homepageSoftDealCandidateSetCards,
+    homepageThemeDirectoryItems,
+    homepageThemeSpotlightItems,
+  } = await getHomepageLandingPageData({ queryMode });
+  const commerceRailRotationSeed = 0;
+  const currentOfferSummaryBySetId = new Map(currentOfferSummaryEntries);
+  const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
+    ? await getCatalogCommerceRailRuntimeDiagnostics({
+        limit: 300,
+      })
+    : undefined;
+  const catalogDiscoverySignalBySetId = new Map(catalogDiscoverySignalEntries);
+  const getCatalogDiscoverySignalFn =
+    catalogDiscoverySignalBySetId.size > 0
+      ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
+      : undefined;
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageBestDealCandidates = toFeatureSetListItems(
     homepageBestDealCandidateSetCards,
@@ -692,12 +858,6 @@ export default async function HomePage() {
   const homepageFollowExcludedSetIds = getUniqueCatalogSetIds([
     homepageRenderedDealSetCards,
   ]);
-  const homepageFollowSetCards = await listHomepageSetCards({
-    excludedSetIds: homepageFollowExcludedSetIds,
-    getCatalogDiscoverySignalFn,
-    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
-    rotationSeed: commerceRailRotationSeed,
-  });
   const homepageFollowRailDiagnostics = isHomepageCommerceRailsDebugEnabled()
     ? await resolveHomepageFollowRailDiagnostics({
         excludedSetIds: homepageFollowExcludedSetIds,
@@ -706,22 +866,9 @@ export default async function HomePage() {
         rotationSeed: commerceRailRotationSeed,
       })
     : undefined;
-  const homepageFollowCurrentOfferSummaryBySetId =
-    homepageFollowSetCards.length > 0
-      ? await listCatalogCurrentOfferSummariesBySetIds({
-          cacheOptions: {
-            revalidateSeconds: revalidate,
-            tags: [
-              cacheTags.homepage(),
-              cacheTags.prices(),
-              ...homepageFollowSetCards.map((setCard) =>
-                cacheTags.set(setCard.id),
-              ),
-            ],
-          },
-          setIds: homepageFollowSetCards.map((setCard) => setCard.id),
-        })
-      : new Map();
+  const homepageFollowCurrentOfferSummaryBySetId = new Map(
+    homepageFollowCurrentOfferSummaryEntries,
+  );
   const homepageCardCurrentOfferSummaryBySetId = new Map([
     ...currentOfferSummaryBySetId,
     ...homepageFollowCurrentOfferSummaryBySetId,

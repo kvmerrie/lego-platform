@@ -39,6 +39,9 @@ export const cacheTags = {
   catalog: () => 'catalog',
   sets: () => 'sets',
   set: (setNumberOrSlug: string) => buildScopedTag('set', setNumberOrSlug),
+  collections: () => 'collections',
+  collection: (collectionSlug: string) =>
+    buildScopedTag('collection', collectionSlug),
   themes: () => 'themes',
   theme: (themeSlug: string) => buildScopedTag('theme', themeSlug),
   merchants: () => 'merchants',
@@ -55,6 +58,35 @@ export const cacheTags = {
   sitemap: () => 'sitemap',
   searchIndex: () => 'search-index',
 } as const;
+
+export function buildPublicBrowseThemeCacheTags({
+  themeSlug,
+}: {
+  themeSlug: string;
+}): string[] {
+  return normalizeCacheTags([
+    cacheTags.catalog(),
+    cacheTags.sets(),
+    cacheTags.themes(),
+    cacheTags.theme(themeSlug),
+    cacheTags.prices(),
+  ]);
+}
+
+export function buildPublicBrowseCollectionCacheTags({
+  collectionSlug,
+}: {
+  collectionSlug: string;
+}): string[] {
+  return normalizeCacheTags([
+    cacheTags.catalog(),
+    cacheTags.sets(),
+    cacheTags.collections(),
+    cacheTags.collection(collectionSlug),
+    cacheTags.prices(),
+    cacheTags.deals(),
+  ]);
+}
 
 export function buildMerchantRevalidationTags({
   affectsHomepage = false,

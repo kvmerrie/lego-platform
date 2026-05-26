@@ -63,6 +63,22 @@ vi.mock('@lego-platform/pricing/data-access', () => ({
   getFeaturedSetPriceContext: () => undefined,
 }));
 
+vi.mock('@lego-platform/shared/config', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@lego-platform/shared/config')>();
+
+  return {
+    ...actual,
+    buildPublicBrowseThemeCacheTags: ({ themeSlug }: { themeSlug: string }) => [
+      'catalog',
+      'sets',
+      'themes',
+      `theme:${themeSlug}`,
+      'prices',
+    ],
+  };
+});
+
 vi.mock('@lego-platform/shell/web', () => ({
   ShellWeb: ({ children }: { children?: unknown }) => children ?? null,
 }));
@@ -131,7 +147,7 @@ describe('theme page JSON-LD', () => {
         pageType: 'theme-metadata',
         revalidateSeconds: 21_600,
         slug: 'star-wars',
-        tags: ['theme:star-wars'],
+        tags: ['catalog', 'sets', 'themes', 'theme:star-wars', 'prices'],
       }),
     );
     expect(themePageMocks.getCatalogThemePageBySlug).not.toHaveBeenCalled();
@@ -189,7 +205,7 @@ describe('theme page JSON-LD', () => {
         params: ['limit', CATALOG_BROWSE_PAGE_SIZE, 'offset', 0],
         revalidateSeconds: 21_600,
         slug: 'star-wars',
-        tags: ['theme:star-wars'],
+        tags: ['catalog', 'sets', 'themes', 'theme:star-wars', 'prices'],
       }),
     );
     expect(

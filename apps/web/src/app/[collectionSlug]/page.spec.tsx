@@ -76,6 +76,18 @@ vi.mock('@lego-platform/shell/web', () => ({
 
 vi.mock('@lego-platform/shared/config', () => ({
   buildCanonicalUrl: (path: string) => `https://www.brickhunt.nl${path}`,
+  buildPublicBrowseCollectionCacheTags: ({
+    collectionSlug,
+  }: {
+    collectionSlug: string;
+  }) => [
+    'catalog',
+    'sets',
+    'collections',
+    `collection:${collectionSlug}`,
+    'prices',
+    'deals',
+  ],
   buildWebPath: (path: string) => path,
   cacheTags: {
     catalog: () => 'catalog',
@@ -161,7 +173,14 @@ describe('collection landing page route', () => {
         params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
         revalidateSeconds: 21_600,
         slug: 'lego-sets-onder-100-euro',
-        tags: ['catalog', 'sets', 'prices', 'deals'],
+        tags: [
+          'catalog',
+          'sets',
+          'collections',
+          'collection:lego-sets-onder-100-euro',
+          'prices',
+          'deals',
+        ],
       }),
     );
     expect(
@@ -173,7 +192,14 @@ describe('collection landing page route', () => {
         params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
         revalidateSeconds: 21_600,
         slug: 'lego-sets-onder-100-euro',
-        tags: ['catalog', 'sets', 'prices', 'deals'],
+        tags: [
+          'catalog',
+          'sets',
+          'collections',
+          'collection:lego-sets-onder-100-euro',
+          'prices',
+          'deals',
+        ],
       }),
     );
     expect(
@@ -182,7 +208,14 @@ describe('collection landing page route', () => {
       expect.objectContaining({
         cacheOptions: expect.objectContaining({
           revalidateSeconds: 21_600,
-          tags: ['catalog', 'sets', 'prices', 'deals'],
+          tags: [
+            'catalog',
+            'sets',
+            'collections',
+            'collection:lego-sets-onder-100-euro',
+            'prices',
+            'deals',
+          ],
         }),
       }),
     );

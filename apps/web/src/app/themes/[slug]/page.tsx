@@ -28,6 +28,7 @@ import {
   buildCanonicalUrl,
   buildArticlePath,
   buildThemePath,
+  buildPublicBrowseThemeCacheTags,
   cacheTags,
 } from '@lego-platform/shared/config';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
@@ -223,7 +224,7 @@ async function getCachedCatalogThemeMetadataBySlug({ slug }: { slug: string }) {
     pageType: 'theme-metadata',
     revalidateSeconds: revalidate,
     slug,
-    tags: [cacheTags.theme(slug)],
+    tags: buildPublicBrowseThemeCacheTags({ themeSlug: slug }),
   });
 }
 
@@ -247,7 +248,7 @@ async function getCachedCatalogThemePageBySlug({
     params: ['limit', limit, 'offset', offset],
     revalidateSeconds: revalidate,
     slug,
-    tags: [cacheTags.theme(slug)],
+    tags: buildPublicBrowseThemeCacheTags({ themeSlug: slug }),
   });
 }
 

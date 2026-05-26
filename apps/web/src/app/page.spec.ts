@@ -19,6 +19,7 @@ const pageMocks = vi.hoisted(() => ({
   listHomepageSetCards: vi.fn(),
   listHomepageThemeDirectoryItems: vi.fn(),
   listHomepageThemeSpotlightItems: vi.fn(),
+  getCachedPublicLandingPageData: vi.fn(),
   rankCatalogPartnerOfferSetCards: vi.fn(),
   resolveHomepageFollowRailDiagnostics: vi.fn(),
   selectCatalogFirstCommerceRailSetCards: vi.fn(),
@@ -100,6 +101,10 @@ vi.mock('@lego-platform/content/feature-page-renderer', () => ({
   },
 }));
 
+vi.mock('./lib/public-landing-page-cache', () => ({
+  getCachedPublicLandingPageData: pageMocks.getCachedPublicLandingPageData,
+}));
+
 vi.mock('@lego-platform/pricing/data-access', () => ({
   buildSetDecisionPresentation: () => ({
     cardLabel: 'Actuele prijzen binnen',
@@ -121,6 +126,15 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 describe('home metadata', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    pageMocks.getCachedPublicLandingPageData.mockImplementation(
+      async ({ load, ...cacheOptions }) =>
+        JSON.parse(
+          JSON.stringify({
+            ...(await load()),
+            __cacheOptions: cacheOptions,
+          }),
+        ),
+    );
     pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
     pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
     pageMocks.listHomepageSetCards.mockResolvedValue([]);
@@ -213,6 +227,14 @@ describe('home metadata', () => {
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',
+      }),
+    );
+    expect(pageMocks.getCachedPublicLandingPageData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        page: 'homepage',
+        params: ['delivery'],
+        revalidateSeconds: 21_600,
+        tags: ['homepage', 'catalog', 'sets', 'themes', 'prices', 'deals'],
       }),
     );
   });
