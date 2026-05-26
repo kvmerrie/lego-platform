@@ -9,10 +9,16 @@ import {
   normalizeCatalogCollectionLandingPageSortKey,
   CATALOG_BROWSE_PAGE_SIZE,
   type CatalogCollectionLandingPageConfig,
+  type CatalogCollectionLandingPageSortKey,
 } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { buildCanonicalUrl, cacheTags } from '@lego-platform/shared/config';
 import { JsonLdScript } from '../lib/json-ld';
+import {
+  getCachedPublicBrowsePageData,
+  type SerializablePublicBrowsePageResult,
+  toPublicBrowsePagePriceMinorRecord,
+} from '../lib/public-browse-page-cache';
 import {
   buildBreadcrumbListJsonLd,
   buildCollectionPageJsonLd,
@@ -22,6 +28,18 @@ export const dynamicParams = false;
 export const revalidate = 21_600;
 
 const COLLECTION_LANDING_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
+
+type CatalogCollectionLandingPageResult = Awaited<
+  ReturnType<typeof getCatalogCollectionLandingPage>
+>;
+
+type CatalogCollectionSetCard =
+  CatalogCollectionLandingPageResult['setCards'][number];
+
+interface SerializableCollectionLandingPageResult
+  extends SerializablePublicBrowsePageResult<CatalogCollectionSetCard> {
+  readonly bestPriceMinorBySetId: Readonly<Record<string, number>>;
+}
 
 function readSearchParam(
   value: string | string[] | undefined,
@@ -52,6 +70,58 @@ function formatCollectionPrice(minorUnits: number): string {
     currency: 'EUR',
     style: 'currency',
   }).format(minorUnits / 100);
+}
+
+function toSerializableCollectionLandingPageResult(
+  collectionPage: CatalogCollectionLandingPageResult,
+): SerializableCollectionLandingPageResult {
+  return {
+    bestPriceMinorBySetId: toPublicBrowsePagePriceMinorRecord(
+      collectionPage.bestPriceMinorBySetId,
+    ),
+    setCards: collectionPage.setCards,
+    totalSetCount: collectionPage.totalSetCount,
+  };
+}
+
+async function getCachedSerializableCollectionLandingPage({
+  config,
+  limit,
+  offset,
+  sortKey,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  limit: number;
+  offset: number;
+  sortKey: CatalogCollectionLandingPageSortKey;
+}): Promise<SerializableCollectionLandingPageResult> {
+  const tags = [
+    cacheTags.catalog(),
+    cacheTags.sets(),
+    cacheTags.prices(),
+    cacheTags.deals(),
+  ];
+
+  return getCachedPublicBrowsePageData({
+    load: async () =>
+      toSerializableCollectionLandingPageResult(
+        await getCatalogCollectionLandingPage({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+            tags,
+          },
+          config,
+          limit,
+          offset,
+          sortKey,
+        }),
+      ),
+    pageType: 'collection',
+    params: ['sort', sortKey, 'limit', limit, 'offset', offset],
+    revalidateSeconds: revalidate,
+    slug: config.slug,
+    tags,
+  });
 }
 
 function getRelatedCollectionLandingPageLinks(
@@ -162,16 +232,7 @@ export default async function CollectionLandingPage({
   const currentPage = normalizeCollectionPageNumber(
     readSearchParam(resolvedSearchParams?.page),
   );
-  const collectionPage = await getCatalogCollectionLandingPage({
-    cacheOptions: {
-      revalidateSeconds: revalidate,
-      tags: [
-        cacheTags.catalog(),
-        cacheTags.sets(),
-        cacheTags.prices(),
-        cacheTags.deals(),
-      ],
-    },
+  const collectionPage = await getCachedSerializableCollectionLandingPage({
     config,
     limit: COLLECTION_LANDING_PAGE_SIZE,
     offset: (currentPage - 1) * COLLECTION_LANDING_PAGE_SIZE,
@@ -207,7 +268,7 @@ export default async function CollectionLandingPage({
     ]),
   ];
   const setCards = collectionPage.setCards.map((setCard) => {
-    const bestPriceMinor = collectionPage.bestPriceMinorBySetId.get(setCard.id);
+    const bestPriceMinor = collectionPage.bestPriceMinorBySetId[setCard.id];
 
     return {
       ...setCard,

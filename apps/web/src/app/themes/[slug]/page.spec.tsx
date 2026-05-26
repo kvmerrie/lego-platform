@@ -7,6 +7,7 @@ import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 const themePageMocks = vi.hoisted(() => ({
   getCatalogThemeMetadataBySlug: vi.fn(),
   getCatalogThemePageBySlug: vi.fn(),
+  getCachedPublicBrowsePageData: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
   listCatalogThemePageSlugs: vi.fn(),
@@ -50,6 +51,10 @@ vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
   ),
 }));
 
+vi.mock('../../lib/public-browse-page-cache', () => ({
+  getCachedPublicBrowsePageData: themePageMocks.getCachedPublicBrowsePageData,
+}));
+
 vi.mock('@lego-platform/content/data-access', () => ({
   listPublishedArticles: themePageMocks.listPublishedArticles,
 }));
@@ -70,10 +75,6 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }));
 
-vi.mock('next/cache', () => ({
-  unstable_cache: (callback: () => unknown) => callback,
-}));
-
 async function renderToStreamedMarkup(element: React.ReactElement) {
   const stream = await renderToReadableStream(element);
 
@@ -85,6 +86,9 @@ async function renderToStreamedMarkup(element: React.ReactElement) {
 describe('theme page JSON-LD', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    themePageMocks.getCachedPublicBrowsePageData.mockImplementation(
+      async ({ load }) => load(),
+    );
   });
 
   it('renders representative canonical theme metadata', async () => {
@@ -122,6 +126,14 @@ describe('theme page JSON-LD', () => {
     expect(themePageMocks.getCatalogThemeMetadataBySlug).toHaveBeenCalledWith({
       slug: 'star-wars',
     });
+    expect(themePageMocks.getCachedPublicBrowsePageData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pageType: 'theme-metadata',
+        revalidateSeconds: 21_600,
+        slug: 'star-wars',
+        tags: ['theme:star-wars'],
+      }),
+    );
     expect(themePageMocks.getCatalogThemePageBySlug).not.toHaveBeenCalled();
   });
 
@@ -171,6 +183,15 @@ describe('theme page JSON-LD', () => {
       offset: 0,
       slug: 'star-wars',
     });
+    expect(themePageMocks.getCachedPublicBrowsePageData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pageType: 'theme',
+        params: ['limit', CATALOG_BROWSE_PAGE_SIZE, 'offset', 0],
+        revalidateSeconds: 21_600,
+        slug: 'star-wars',
+        tags: ['theme:star-wars'],
+      }),
+    );
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
     ).toHaveBeenCalledWith(

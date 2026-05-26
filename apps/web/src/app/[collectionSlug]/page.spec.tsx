@@ -27,6 +27,8 @@ const collectionPageMocks = vi.hoisted(() => ({
   },
   featureCollectionLandingPage: vi.fn(),
   getCatalogCollectionLandingPage: vi.fn(),
+  getCachedPublicBrowsePageData: vi.fn(),
+  loadedCacheResults: [] as unknown[],
   notFound: vi.fn(),
   permanentRedirect: vi.fn(),
 }));
@@ -42,6 +44,14 @@ vi.mock('@lego-platform/catalog/feature-collection-landing', () => ({
 
     return <main data-testid="collection-page" />;
   },
+}));
+
+vi.mock('../lib/public-browse-page-cache', () => ({
+  getCachedPublicBrowsePageData:
+    collectionPageMocks.getCachedPublicBrowsePageData,
+  toPublicBrowsePagePriceMinorRecord: (
+    priceMinorBySetId: ReadonlyMap<string, number>,
+  ) => Object.fromEntries(priceMinorBySetId.entries()),
 }));
 
 vi.mock('@lego-platform/catalog/util', () => ({
@@ -89,6 +99,20 @@ vi.mock('next/navigation', () => ({
 describe('collection landing page route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    collectionPageMocks.loadedCacheResults = [];
+    collectionPageMocks.getCachedPublicBrowsePageData.mockImplementation(
+      async ({ load, ...cacheOptions }) => {
+        const loaded = await load();
+        collectionPageMocks.loadedCacheResults.push(loaded);
+
+        return JSON.parse(
+          JSON.stringify({
+            ...loaded,
+            __cacheOptions: cacheOptions,
+          }),
+        );
+      },
+    );
     collectionPageMocks.getCatalogCollectionLandingPage.mockResolvedValue({
       bestPriceMinorBySetId: new Map([['10307', 9_999]]),
       setCards: [
@@ -106,7 +130,7 @@ describe('collection landing page route', () => {
     });
   });
 
-  it('renders repeated collection requests without depending on cached Map serialization', async () => {
+  it('uses the shared browse cache with a serializable collection result shape', async () => {
     const pageModule = await import('./page');
 
     const renderPage = async () =>
@@ -129,35 +153,53 @@ describe('collection landing page route', () => {
     );
 
     expect(
-      collectionPageMocks.getCatalogCollectionLandingPage,
+      collectionPageMocks.getCachedPublicBrowsePageData,
     ).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        cacheOptions: {
-          revalidateSeconds: 21_600,
-          tags: ['catalog', 'sets', 'prices', 'deals'],
-        },
-        config: collectionPageMocks.collectionConfig,
-        limit: 40,
-        offset: 0,
-        sortKey: 'price-asc',
+        pageType: 'collection',
+        params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
+        revalidateSeconds: 21_600,
+        slug: 'lego-sets-onder-100-euro',
+        tags: ['catalog', 'sets', 'prices', 'deals'],
+      }),
+    );
+    expect(
+      collectionPageMocks.getCachedPublicBrowsePageData,
+    ).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        pageType: 'collection',
+        params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
+        revalidateSeconds: 21_600,
+        slug: 'lego-sets-onder-100-euro',
+        tags: ['catalog', 'sets', 'prices', 'deals'],
       }),
     );
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
-    ).toHaveBeenNthCalledWith(
-      2,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
-        cacheOptions: {
+        cacheOptions: expect.objectContaining({
           revalidateSeconds: 21_600,
           tags: ['catalog', 'sets', 'prices', 'deals'],
-        },
-        config: collectionPageMocks.collectionConfig,
-        limit: 40,
-        offset: 0,
-        sortKey: 'price-asc',
+        }),
       }),
     );
+    expect(collectionPageMocks.loadedCacheResults[0]).toEqual(
+      expect.objectContaining({
+        bestPriceMinorBySetId: {
+          '10307': 9_999,
+        },
+      }),
+    );
+    expect(
+      (
+        collectionPageMocks.loadedCacheResults[0] as {
+          bestPriceMinorBySetId?: unknown;
+        }
+      ).bestPriceMinorBySetId,
+    ).not.toBeInstanceOf(Map);
     expect(
       collectionPageMocks.featureCollectionLandingPage,
     ).toHaveBeenCalledWith(
@@ -165,6 +207,16 @@ describe('collection landing page route', () => {
         activeSortKey: 'price-asc',
         currentPage: 1,
         pageSize: 40,
+        setCards: [
+          expect.objectContaining({
+            id: '10307',
+            priceContext: expect.objectContaining({
+              coverageLabel: 'Actuele prijs gevonden',
+              merchantLabel: 'Laagste bekende prijs',
+              reviewedLabel: 'Server-side bijgewerkt',
+            }),
+          }),
+        ],
         totalSetCount: 1,
       }),
     );

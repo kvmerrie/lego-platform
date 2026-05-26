@@ -32,11 +32,11 @@ import {
 } from '@lego-platform/shared/config';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
-import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
 import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
+import { getCachedPublicBrowsePageData } from '../../lib/public-browse-page-cache';
 import {
   buildCollectionPageJsonLd,
   buildThemeBreadcrumbJsonLd,
@@ -218,14 +218,13 @@ async function withThemePageOptionalTimeout<T>({
 }
 
 async function getCachedCatalogThemeMetadataBySlug({ slug }: { slug: string }) {
-  return unstable_cache(
-    () => getCatalogThemeMetadataBySlug({ slug }),
-    ['catalog-theme-metadata', slug],
-    {
-      revalidate,
-      tags: [cacheTags.theme(slug)],
-    },
-  )();
+  return getCachedPublicBrowsePageData({
+    load: () => getCatalogThemeMetadataBySlug({ slug }),
+    pageType: 'theme-metadata',
+    revalidateSeconds: revalidate,
+    slug,
+    tags: [cacheTags.theme(slug)],
+  });
 }
 
 async function getCachedCatalogThemePageBySlug({
@@ -237,19 +236,19 @@ async function getCachedCatalogThemePageBySlug({
   offset: number;
   slug: string;
 }) {
-  return unstable_cache(
-    () =>
+  return getCachedPublicBrowsePageData({
+    load: () =>
       getCatalogThemePageBySlug({
         limit,
         offset,
         slug,
       }),
-    ['catalog-theme-page', slug, String(limit), String(offset)],
-    {
-      revalidate,
-      tags: [cacheTags.theme(slug)],
-    },
-  )();
+    pageType: 'theme',
+    params: ['limit', limit, 'offset', offset],
+    revalidateSeconds: revalidate,
+    slug,
+    tags: [cacheTags.theme(slug)],
+  });
 }
 
 function readThemePageParam(value: string | string[] | undefined): number {
