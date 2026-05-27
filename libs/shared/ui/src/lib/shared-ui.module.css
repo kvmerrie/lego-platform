@@ -645,6 +645,7 @@
   }
 
   .sectionHeading {
+    color: var(--lego-section-heading-text, inherit);
     display: grid;
     gap: var(--lego-space-1);
   }
@@ -654,7 +655,7 @@
   }
 
   .eyebrow {
-    color: var(--lego-text-muted);
+    color: var(--lego-section-heading-eyebrow, var(--lego-text-muted));
     font-size: var(--lego-text-role-eyebrow-size);
     font-weight: var(--lego-font-weight-bold);
     letter-spacing: var(--lego-text-role-label-tracking);
@@ -664,7 +665,7 @@
   }
 
   .sectionHeadingDisplay .eyebrow {
-    color: var(--lego-accent);
+    color: var(--lego-section-heading-eyebrow, var(--lego-accent));
   }
 
   .sectionTitle {
@@ -684,7 +685,7 @@
   }
 
   .sectionDescription {
-    color: var(--lego-text-muted);
+    color: var(--lego-section-heading-description, var(--lego-text-muted));
     font-size: var(--lego-text-role-support-size);
     line-height: var(--lego-text-role-support-line-height);
     margin: 0;

@@ -11,7 +11,10 @@ import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
 } from '@lego-platform/catalog/feature-set-list';
-import { CatalogSectionShell } from '@lego-platform/catalog/ui';
+import {
+  CatalogSectionShell,
+  CatalogVisualTile,
+} from '@lego-platform/catalog/ui';
 import {
   CatalogFeatureThemeList,
   CatalogFeatureThemeSpotlight,
@@ -34,9 +37,10 @@ import {
   rankCatalogPartnerOfferSetCards,
   resolveHomepageFollowRailDiagnostics,
 } from '@lego-platform/catalog/data-access-web';
-import type {
-  CatalogHomepageSetCard,
-  CatalogThemeDirectoryItem,
+import {
+  catalogDiscoveryVisualVariants,
+  type CatalogHomepageSetCard,
+  type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
@@ -58,7 +62,6 @@ import {
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 
 export const revalidate = false;
 const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 20;
@@ -79,6 +82,20 @@ const HOMEPAGE_CACHE_TAGS = [
   cacheTags.prices(),
   cacheTags.deals(),
 ] as const;
+
+interface HomepageDiscoveryTileConfig {
+  href: string;
+  id: string;
+  imageSetIds: readonly string[];
+  imageThemeSlugs: readonly string[];
+  imageUrl?: string;
+  title: string;
+  visual: {
+    backgroundColor?: string;
+    imageUrl?: string;
+    textColor?: string;
+  };
+}
 
 function getPublicMerchandisingRotationSeed(): number {
   return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
@@ -103,55 +120,61 @@ const homepageValueSignals = [
 const homepageDiscoveryTileConfigs = [
   {
     href: '/nieuwe-lego-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg',
     imageThemeSlugs: ['city', 'speed-champions', 'star-wars'],
     imageSetIds: ['60445', '60443', '60462', '75405'],
     id: 'new-sets',
-    subtitle: 'Net uit: schepen, auto’s en displaymodellen.',
     title: 'Nieuwe sets',
+    visual: catalogDiscoveryVisualVariants.newSets,
   },
   {
     href: '/lego-voor-volwassenen',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
     imageThemeSlugs: ['icons', 'the-lord-of-the-rings', 'technic'],
     imageSetIds: ['10368', '10344', '10343', '10316', '10333', '42172'],
     id: 'adult-sets',
-    subtitle: 'Rivendell, modulaire panden en Technic voor op de plank.',
     title: 'LEGO voor volwassenen',
+    visual: catalogDiscoveryVisualVariants.adultSets,
   },
   {
     href: '/lego-sets-onder-50-euro',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg',
     imageThemeSlugs: ['speed-champions', 'botanicals', 'star-wars'],
     imageSetIds: ['77244', '75405', '72035', '10344'],
     id: 'budget-sets',
-    subtitle: 'Kleine starfighters, auto’s en cadeaus die makkelijk kiezen.',
     title: 'LEGO sets onder €50',
+    visual: catalogDiscoveryVisualVariants.budgetSets,
   },
   {
     href: '/retiring-lego-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
     imageThemeSlugs: ['icons', 'star-wars', 'harry-potter'],
     imageSetIds: ['75329', '10255', '76441', '75313'],
     id: 'retiring-sets',
-    subtitle: 'Check populaire dozen voordat voorraad onrustig wordt.',
     title: 'Binnenkort uit handel',
+    visual: catalogDiscoveryVisualVariants.retiringSets,
   },
   {
     href: '/deals',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg',
     imageThemeSlugs: ['speed-champions', 'city', 'super-mario', 'star-wars'],
     imageSetIds: ['77245', '72036', '60443', '72035'],
     id: 'deals',
-    subtitle: 'Waar de prijs nu echt opvalt, zonder coupongevoel.',
     title: 'Interessante deals',
+    visual: catalogDiscoveryVisualVariants.deals,
   },
   {
     href: '/themes',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg',
     imageThemeSlugs: ['star-wars', 'icons', 'technic'],
     imageSetIds: [],
     id: 'themes',
-    subtitle: 'Begin bij Star Wars, Icons, Technic of je vaste thema.',
     title: 'Populaire thema’s',
+    visual: catalogDiscoveryVisualVariants.themes,
   },
-] as const;
+] as const satisfies readonly HomepageDiscoveryTileConfig[];
 
-type HomepageDiscoveryTile = (typeof homepageDiscoveryTileConfigs)[number] & {
+type HomepageDiscoveryTile = HomepageDiscoveryTileConfig & {
   imageUrl?: string;
 };
 
@@ -244,7 +267,9 @@ function buildHomepageDiscoveryTiles(
   const usedImageUrls = new Set<string>();
 
   return homepageDiscoveryTileConfigs.map((tileConfig) => {
+    const curatedImageUrl: string | undefined = tileConfig.imageUrl;
     const imageUrl =
+      curatedImageUrl ??
       getSetImageUrl(setCardsById, tileConfig.imageSetIds, usedImageUrls) ??
       getThemeImageUrl(
         themeItemsBySlug,
@@ -949,50 +974,25 @@ export default async function HomePage() {
           <div className={styles.discoveryTileViewport}>
             <div className={styles.discoveryTileTrack}>
               {homepageDiscoveryTiles.map((tile, index) => (
-                <article
+                <CatalogVisualTile
                   className={styles.discoveryTile}
-                  data-discovery-tile={tile.id}
+                  dataTile={tile.id}
+                  href={tile.href}
+                  imageUrl={tile.imageUrl}
                   key={tile.id}
-                >
-                  <ActionLink
-                    className={styles.discoveryTileLink}
-                    href={tile.href}
-                    tone="card"
-                    {...buildBrickhuntAnalyticsAttributes({
-                      event: 'theme_tile_click',
-                      properties: {
-                        pageSurface: 'homepage',
-                        rankPosition: index + 1,
-                        sectionId: HOMEPAGE_DISCOVERY_SECTION_ID,
-                        tileType: 'discovery',
-                        tileId: tile.id,
-                      },
-                    })}
-                  >
-                    {tile.imageUrl ? (
-                      <Image
-                        alt=""
-                        className={styles.discoveryTileImage}
-                        fill
-                        loading="lazy"
-                        sizes="(min-width: 1200px) 15vw, (min-width: 768px) 13rem, 78vw"
-                        src={tile.imageUrl}
-                      />
-                    ) : null}
-                    <span
-                      className={styles.discoveryTileOverlay}
-                      aria-hidden="true"
-                    />
-                    <span className={styles.discoveryTileBody}>
-                      <span className={styles.discoveryTileTitle}>
-                        {tile.title}
-                      </span>
-                      <span className={styles.discoveryTileSubtitle}>
-                        {tile.subtitle}
-                      </span>
-                    </span>
-                  </ActionLink>
-                </article>
+                  title={tile.title}
+                  trackingEvent={{
+                    event: 'theme_tile_click',
+                    properties: {
+                      pageSurface: 'homepage',
+                      rankPosition: index + 1,
+                      sectionId: HOMEPAGE_DISCOVERY_SECTION_ID,
+                      tileType: 'discovery',
+                      tileId: tile.id,
+                    },
+                  }}
+                  visual={tile.visual}
+                />
               ))}
             </div>
           </div>

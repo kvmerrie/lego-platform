@@ -164,7 +164,7 @@ describe('buildCurrentSetCardPriceContext', () => {
     expect(result?.merchantLabel).toBe('Nu het laagst bij Goodbricks');
   });
 
-  it('does not promote a Shire-like weak LEGO saving to a deal', () => {
+  it('shows weak LEGO savings as comparison copy without promoting to a deal', () => {
     const legoOffer = {
       ...createOffer({
         merchant: 'lego',
@@ -187,8 +187,35 @@ describe('buildCurrentSetCardPriceContext', () => {
     });
 
     expect(result?.decisionLabel).toBe('Actuele prijs binnen');
-    expect(result?.discountMetric).toBeUndefined();
+    expect(result?.discountMetric).toBe('€ 10,00 goedkoper dan LEGO');
     expect(result?.dealReason).toBe('Beste marktprijs');
+  });
+
+  it('shows LEGO comparison for a non-topdeal valid Rakuten reference price', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 7_499,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({
+            merchantName: 'Toyshop',
+            priceCents: 6_899,
+          }),
+          legoOffer,
+        ],
+      }),
+      theme: 'Icons',
+    });
+
+    expect(result?.discountMetric).toBe('€ 6,00 goedkoper dan LEGO');
+    expect(result?.decisionLabel).toBe('Actuele prijs binnen');
+    expect(result?.merchantLabel).toBe('Nu het laagst bij Toyshop');
   });
 
   it('promotes a Trevi-like LEGO saving to a top deal', () => {

@@ -11,6 +11,7 @@ import {
   CatalogSetProductFeatures,
   CatalogSetProductDescription,
   CatalogThemeHighlight,
+  CatalogVisualTile,
 } from './catalog-ui';
 import {
   SET_CARD_MOBILE_VIEW_STORAGE_KEY,
@@ -2277,6 +2278,29 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain(
       'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     );
+  });
+
+  it('renders a generic visual tile with the same portrait theme tile structure', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogVisualTile
+        dataTile="new-sets"
+        href="/nieuwe-lego-sets"
+        imageUrl="https://images.example/new-set.jpg"
+        title="Nieuwe sets"
+        visual={{
+          backgroundColor: '#5573b5',
+          textColor: '#ffffff',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/nieuwe-lego-sets"');
+    expect(markup).toContain('data-visual-tile="new-sets"');
+    expect(markup).toContain('src="https://images.example/new-set.jpg"');
+    expect(markup).toContain('Nieuwe sets');
+    expect(markup).toContain('--theme-surface:#5573b5');
+    expect(markup).toContain('--theme-text:#ffffff');
+    expect(markup).not.toContain('themePortraitMeta');
   });
 
   it('keeps theme tile surface colors stronger than shared Surface tone classes', () => {

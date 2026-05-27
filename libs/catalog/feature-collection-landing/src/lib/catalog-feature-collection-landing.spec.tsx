@@ -42,6 +42,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
 
     expect(markup).toContain('<h1');
     expect(markup).toContain('LEGO voor volwassenen');
+    expect(markup).toContain('--collection-page-surface:#171717');
+    expect(markup).toContain('--collection-page-text:#ffffff');
     expect(markup).toContain('X-wing Starfighter');
     expect(markup).toContain('data-catalog-set-card-collection="true"');
     expect(markup).toContain(
@@ -56,6 +58,27 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('?sort=newest');
     expect(markup).toContain('href="/lego-voor-volwassenen?page=2"');
     expect(markup).toContain('aria-current="page"');
+  });
+
+  it('carries the discovery tile color onto the destination hero', () => {
+    const config = getCatalogCollectionLandingPageConfig('nieuwe-lego-sets');
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="newest"
+        config={config}
+        setCards={[]}
+        totalSetCount={0}
+      />,
+    );
+
+    expect(markup).toContain('--collection-page-surface:#5573b5');
+    expect(markup).toContain('--collection-page-text:#ffffff');
+    expect(markup).toContain('Nieuwe LEGO sets');
   });
 
   it('renders a compact empty state when collection data is missing', () => {

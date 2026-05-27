@@ -1,5 +1,6 @@
 import { CatalogFeatureThemeIndex } from '@lego-platform/catalog/feature-theme-page';
 import { listCatalogThemeDirectoryItems } from '@lego-platform/catalog/data-access-web';
+import { catalogDiscoveryVisualVariants } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildCanonicalUrl,
@@ -43,7 +44,10 @@ export default async function ThemesPage() {
 
   return (
     <ShellWeb>
-      <CatalogFeatureThemeIndex themeDirectoryItems={themeDirectoryItems} />
+      <CatalogFeatureThemeIndex
+        themeDirectoryItems={themeDirectoryItems}
+        visual={catalogDiscoveryVisualVariants.themes}
+      />
     </ShellWeb>
   );
 }

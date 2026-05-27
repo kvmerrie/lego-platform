@@ -269,6 +269,10 @@ describe('CatalogFeatureThemeIndex', () => {
   it('renders a calm theme directory without set rows', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemeIndex
+        visual={{
+          backgroundColor: '#234bcd',
+          textColor: '#ffffff',
+        }}
         themeDirectoryItems={[
           {
             imageUrl: 'https://images.example/icons.jpg',
@@ -308,6 +312,8 @@ describe('CatalogFeatureThemeIndex', () => {
     );
 
     expect(markup).toContain('Alle thema');
+    expect(markup).toContain('--theme-index-surface:#234bcd');
+    expect(markup).toContain('--theme-index-text:#ffffff');
     expect(markup).toContain('Paginapad');
     expect(markup).toContain('href="/"');
     expect(markup).toContain('3 themapagina');

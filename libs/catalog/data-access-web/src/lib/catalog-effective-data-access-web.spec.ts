@@ -1958,6 +1958,179 @@ describe('catalog effective data access web', () => {
     expect(result.totalSetCount).toBe(3);
   });
 
+  test('finds new releases beyond the default created-at catalog window', async () => {
+    const olderCatalogRows = Array.from({ length: 1_000 }, (_, index) => {
+      const setId = String(20_000 + index);
+
+      return {
+        created_at: `2026-05-${String((index % 20) + 1).padStart(2, '0')}T08:00:00.000Z`,
+        image_url: `https://cdn.example.com/${setId}.jpg`,
+        name: `Older Catalog Window Set ${setId}`,
+        piece_count: 100 + index,
+        primary_theme_id: 'theme:city',
+        release_date: '2024-01-01',
+        release_date_precision: 'year',
+        release_year: 2024,
+        set_id: setId,
+        slug: `older-catalog-window-set-${setId}`,
+        source: 'rebrickable',
+        source_set_number: `${setId}-1`,
+        status: 'active',
+        updated_at: '2026-05-26T08:00:00.000Z',
+      };
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        ...olderCatalogRows,
+        {
+          created_at: '2024-01-01T08:00:00.000Z',
+          image_url:
+            'https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg',
+          name: 'Toy Story Slinky Dog Bookends',
+          piece_count: 1297,
+          primary_theme_id: 'theme:disney',
+          release_date: '2026-06-01',
+          release_date_precision: 'month',
+          release_year: 2026,
+          set_id: '43301',
+          slug: 'toy-story-slinky-dog-bookends-43301',
+          source: 'rebrickable',
+          source_set_number: '43301-1',
+          status: 'active',
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'City',
+          id: 'theme:city',
+          slug: 'city',
+        },
+        {
+          display_name: 'Disney',
+          id: 'theme:disney',
+          slug: 'disney',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Nieuwe sets.',
+      browseEyebrow: 'Net uit',
+      browseTitle: 'Nieuwe dozen',
+      canonicalPath: '/nieuwe-lego-sets',
+      description: 'Nieuwe LEGO sets.',
+      filters: {
+        recentRelease: true,
+      },
+      h1: 'Nieuwe LEGO sets',
+      intro: 'Kijk naar sets die net uit zijn of eraan komen.',
+      links: {},
+      metaDescription: 'Bekijk nieuwe LEGO sets.',
+      metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+      signalLabel: 'nieuwe sets',
+      slug: 'nieuwe-lego-sets',
+      sort: {
+        default: 'newest',
+        options: ['newest'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      now: new Date('2026-05-27T12:00:00.000Z'),
+      sortKey: 'newest',
+      supabaseClient,
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toContain('43301');
+  });
+
+  test('uses Brickset launch dates for recent release collection matching when metadata exists', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2025-01-01T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/10280.jpg',
+          name: 'Flower Bouquet',
+          piece_count: 756,
+          primary_theme_id: 'theme:botanicals',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2025,
+          set_id: '10280',
+          slug: 'flower-bouquet-10280',
+          source: 'rebrickable',
+          source_set_number: '10280-1',
+          status: 'active',
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Botanicals',
+          id: 'theme:botanicals',
+          slug: 'botanicals',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10280',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            bricksetSetId: 31025,
+            launchDate: '2026-05-15',
+          },
+          policy: 'metadata_only_pending_rights_review',
+          source: 'brickset',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Nieuwe sets.',
+      browseEyebrow: 'Net uit',
+      browseTitle: 'Nieuwe dozen',
+      canonicalPath: '/nieuwe-lego-sets',
+      description: 'Nieuwe LEGO sets.',
+      filters: {
+        recentRelease: true,
+      },
+      h1: 'Nieuwe LEGO sets',
+      intro: 'Kijk naar sets die net uit zijn of eraan komen.',
+      links: {},
+      metaDescription: 'Bekijk nieuwe LEGO sets.',
+      metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+      signalLabel: 'nieuwe sets',
+      slug: 'nieuwe-lego-sets',
+      sort: {
+        default: 'newest',
+        options: ['newest'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      now: new Date('2026-05-27T12:00:00.000Z'),
+      sortKey: 'newest',
+      supabaseClient,
+    });
+
+    expect(result.setCards).toEqual([
+      expect.objectContaining({
+        id: '10280',
+        releaseDate: '2026-05-15',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+      }),
+    ]);
+  });
+
   test('uses current-offer snapshots for price-filtered collection pages', async () => {
     const selectedTables: string[] = [];
     const supabaseClient = createCatalogSupabaseClientMock({
@@ -2077,7 +2250,7 @@ describe('catalog effective data access web', () => {
     expect(selectedTables).toContain('commerce_current_offer_snapshots');
   });
 
-  test('skips live offer reconstruction for large price-filtered collection pages with stale snapshots', async () => {
+  test('uses stale snapshot prices for large price-filtered collection pages without live reconstruction', async () => {
     const selectedTables: string[] = [];
     const catalogRows = Array.from({ length: 500 }, (_, index) => {
       const setId = String(10_000 + index);
@@ -2206,8 +2379,9 @@ describe('catalog effective data access web', () => {
       supabaseClient,
     });
 
-    expect(result.setCards).toEqual([]);
-    expect(result.bestPriceMinorBySetId.size).toBe(0);
+    expect(result.setCards).toHaveLength(40);
+    expect(result.bestPriceMinorBySetId.size).toBe(500);
+    expect(result.bestPriceMinorBySetId.get('10000')).toBe(4999);
     expect(supabaseClient.from).toHaveBeenCalledWith(
       'commerce_current_offer_snapshots',
     );

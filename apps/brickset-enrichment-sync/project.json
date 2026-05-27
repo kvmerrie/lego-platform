@@ -1,0 +1,41 @@
+{
+  "name": "brickset-enrichment-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/brickset-enrichment-sync/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/brickset-enrichment-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/brickset-enrichment-sync/src/main.ts",
+        "tsConfig": "apps/brickset-enrichment-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/brickset-enrichment-sync/main.cjs"
+      }
+    }
+  }
+}

@@ -238,11 +238,51 @@ describe('home metadata', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('data-visual-tile="new-sets"');
+    expect(markup).toContain('--theme-surface:#5573b5');
+    expect(markup).toContain('--theme-surface:#171717');
+    expect(markup).toContain('--theme-surface:#e0b84f');
+    expect(markup).toContain('--theme-surface:#d85a50');
+    expect(markup).toContain('--theme-surface:#6bbf59');
+    expect(markup).toContain('--theme-surface:#234bcd');
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg"',
+    );
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg"',
+    );
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg"',
+    );
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg"',
+    );
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg"',
+    );
+    expect(markup).toContain(
+      'src="https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg"',
+    );
     expect(markup).toContain('href="/nieuwe-lego-sets"');
     expect(markup).toContain('href="/lego-voor-volwassenen"');
     expect(markup).toContain('href="/lego-sets-onder-50-euro"');
     expect(markup).toContain('href="/retiring-lego-sets"');
     expect(markup).toContain('href="/themes"');
+    expect(markup).not.toContain(
+      'Net uit: schepen, auto’s en displaymodellen.',
+    );
+    expect(markup).not.toContain(
+      'Begin bij Star Wars, Icons, Technic of je vaste thema.',
+    );
+    expect(markup).not.toContain('#d9e4f2');
+    expect(markup).not.toContain('#e7d4b5');
+    expect(markup).not.toContain('#c9e2de');
+    expect(markup).not.toContain('#dde0e5');
+    expect(markup).not.toContain('#dbe8bf');
+    expect(markup).not.toContain('#d8d1ee');
+    expect(markup).not.toContain('#00a8e8');
+    expect(markup).not.toContain('#6d28d9');
+    expect(markup).not.toContain('#e43d12');
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',

@@ -91,6 +91,10 @@ const LEGO_NL_DISPLAY_TITLE_SOURCE = 'rakuten-lego-eu' as const;
 const LEGO_NL_DISPLAY_TITLE_LOCALE = 'nl-NL';
 const LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE = 'exact_set_number';
 const LEGO_NL_DISPLAY_TITLE_POLICY = 'metadata_only_pending_audit';
+const BRICKSET_SOURCE_METADATA_SOURCE = 'brickset';
+const BRICKSET_SOURCE_METADATA_LOCALE = 'en-US';
+const BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE = 'exact_set_number';
+const BRICKSET_SOURCE_METADATA_POLICY = 'metadata_only_pending_rights_review';
 
 function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
@@ -1038,10 +1042,12 @@ function toCatalogCurrentOfferSummaryFromSnapshotRow(
 }
 
 async function listCatalogCurrentOfferSnapshotSummariesBySetIds({
+  allowStaleSnapshots = false,
   setIds,
   signal,
   supabaseClient,
 }: {
+  allowStaleSnapshots?: boolean;
   setIds: readonly string[];
   signal?: AbortSignal;
   supabaseClient: CatalogSupabaseClient;
@@ -1092,7 +1098,10 @@ async function listCatalogCurrentOfferSnapshotSummariesBySetIds({
 
       const invalidReason = getCurrentOfferSnapshotInvalidReason(row);
 
-      if (invalidReason) {
+      if (
+        invalidReason &&
+        !(allowStaleSnapshots && invalidReason === 'stale_snapshot')
+      ) {
         if (invalidReason === 'stale_snapshot') {
           snapshotStaleCount += 1;
         }
@@ -1426,6 +1435,114 @@ function readLegoNlProductFeatures(
     .filter((feature): feature is CatalogProductFeature => feature != null);
 
   return safeFeatures.length >= 2 ? safeFeatures : undefined;
+}
+
+function readBricksetLaunchDate(metadataJson: unknown): string | undefined {
+  if (
+    !metadataJson ||
+    typeof metadataJson !== 'object' ||
+    Array.isArray(metadataJson)
+  ) {
+    return undefined;
+  }
+
+  const sourceMetadata = metadataJson as {
+    dateFirstAvailable?: unknown;
+    launchDate?: unknown;
+  };
+  const rawDate =
+    typeof sourceMetadata.launchDate === 'string'
+      ? sourceMetadata.launchDate
+      : typeof sourceMetadata.dateFirstAvailable === 'string'
+        ? sourceMetadata.dateFirstAvailable
+        : undefined;
+
+  if (!rawDate || !/^\d{4}-\d{2}-\d{2}$/u.test(rawDate)) {
+    return undefined;
+  }
+
+  return rawDate;
+}
+
+async function listBricksetLaunchDateBySetId({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, string>> {
+  const launchDateBySetId = new Map<string, string>();
+
+  if (!setIds.length) {
+    return launchDateBySetId;
+  }
+
+  for (const setIdChunk of chunkCatalogValues(setIds, 100)) {
+    const { data, error } = await supabaseClient
+      .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+      .select('catalog_set_id, metadata_json')
+      .eq('source', BRICKSET_SOURCE_METADATA_SOURCE)
+      .eq('locale', BRICKSET_SOURCE_METADATA_LOCALE)
+      .eq('match_confidence', BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE)
+      .eq('policy', BRICKSET_SOURCE_METADATA_POLICY)
+      .in('catalog_set_id', setIdChunk);
+
+    if (error) {
+      throw new Error('Unable to load Brickset release metadata.');
+    }
+
+    for (const row of (data as CatalogSetSourceMetadataRow[] | null) ?? []) {
+      const launchDate = readBricksetLaunchDate(row.metadata_json);
+
+      if (launchDate) {
+        launchDateBySetId.set(row.catalog_set_id, launchDate);
+      }
+    }
+  }
+
+  return launchDateBySetId;
+}
+
+async function applyBricksetReleaseDatesToSetCards({
+  setCards,
+  supabaseClient,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogHomepageSetCard[]> {
+  const launchDateBySetId = await listBricksetLaunchDateBySetId({
+    setIds: setCards.map((setCard) => setCard.id),
+    supabaseClient,
+  });
+
+  if (!launchDateBySetId.size) {
+    return [...setCards];
+  }
+
+  return setCards.map((setCard) => {
+    const launchDate = launchDateBySetId.get(setCard.id);
+
+    if (!launchDate) {
+      return setCard;
+    }
+
+    const existingPrecision = resolveCatalogReleaseDatePrecision({
+      releaseDate: setCard.releaseDate,
+      releaseDatePrecision: setCard.releaseDatePrecision,
+      releaseYear: setCard.releaseYear,
+    });
+
+    if (existingPrecision === 'day' || existingPrecision === 'month') {
+      return setCard;
+    }
+
+    return {
+      ...setCard,
+      releaseDate: launchDate,
+      releaseDatePrecision: 'day',
+      releaseYear: Number(launchDate.slice(0, 4)) || setCard.releaseYear,
+    };
+  });
 }
 
 async function getLegoNlProductDescriptionBySetId({
@@ -2792,15 +2909,19 @@ async function listCatalogSetCardsFromSupabase({
 
 async function listAllCatalogSetCards({
   allowFullCatalogRead = false,
+  ascending,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   limit = CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT,
+  orderBy,
   offset = 0,
   signal,
   supabaseClient,
 }: {
   allowFullCatalogRead?: boolean;
+  ascending?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   limit?: number;
+  orderBy?: 'created_at' | 'name' | 'release_year' | 'updated_at';
   offset?: number;
   signal?: AbortSignal;
   supabaseClient?: CatalogSupabaseClient;
@@ -2810,7 +2931,9 @@ async function listAllCatalogSetCards({
     !allowFullCatalogRead
   ) {
     return listCatalogSetCardsFromSupabase({
+      ascending,
       limit,
+      orderBy,
       offset,
       signal,
       supabaseClient,
@@ -3020,19 +3143,25 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
 }
 
 export async function listCatalogSetCards({
+  ascending,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   limit = CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
+  orderBy,
   offset = 0,
   supabaseClient,
 }: {
+  ascending?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   limit?: number;
+  orderBy?: 'created_at' | 'name' | 'release_year' | 'updated_at';
   offset?: number;
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   return listAllCatalogSetCards({
+    ascending,
     listCanonicalCatalogSetsFn,
     limit,
+    orderBy,
     offset,
     supabaseClient,
   });
@@ -3289,10 +3418,14 @@ function toCatalogCollectionBestPriceMinorBySetId(
 }
 
 async function listCatalogCollectionCandidateSetCards({
+  ascending,
   listCanonicalCatalogSetsFn,
+  orderBy,
   supabaseClient,
 }: {
+  ascending?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  orderBy?: 'created_at' | 'name' | 'release_year' | 'updated_at';
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogHomepageSetCard[]> {
   const pages: CatalogHomepageSetCard[][] = [];
@@ -3303,8 +3436,10 @@ async function listCatalogCollectionCandidateSetCards({
     offset += CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE
   ) {
     const pageSetCards = await listCatalogSetCards({
+      ascending,
       limit: CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE,
       listCanonicalCatalogSetsFn,
+      orderBy,
       offset,
       supabaseClient,
     });
@@ -3350,6 +3485,8 @@ export async function getCatalogCollectionLandingPage({
 }): Promise<CatalogCollectionLandingPageResult> {
   const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
   const safeOffset = normalizeCatalogReadOffset(offset);
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
   const scopedSetCards = config.filters.maxBestPriceMinor
     ? await listCatalogSetCardsByIds({
         canonicalIds: await listCatalogCurrentOfferCandidateSetIds({
@@ -3360,14 +3497,19 @@ export async function getCatalogCollectionLandingPage({
               }
             : undefined,
           limit: CATALOG_COLLECTION_CANDIDATE_LIMIT,
-          supabaseClient,
+          supabaseClient: activeSupabaseClient,
         }),
         listCanonicalCatalogSetsFn,
-        supabaseClient,
+        supabaseClient: activeSupabaseClient,
       })
     : await listCatalogCollectionCandidateSetCards({
+        ...(config.filters.recentRelease
+          ? {
+              orderBy: 'release_year' as const,
+            }
+          : {}),
         listCanonicalCatalogSetsFn,
-        supabaseClient,
+        supabaseClient: activeSupabaseClient,
       });
   const statusOverlaySetCards = config.filters.setStatuses?.length
     ? await listCatalogSetCardsByIds({
@@ -3378,17 +3520,25 @@ export async function getCatalogCollectionLandingPage({
             !scopedSetCards.some((setCard) => setCard.id === canonicalId),
         ),
         listCanonicalCatalogSetsFn,
-        supabaseClient,
+        supabaseClient: activeSupabaseClient,
       })
     : [];
-  const candidateSetCards = [...scopedSetCards, ...statusOverlaySetCards];
+  const rawCandidateSetCards = [...scopedSetCards, ...statusOverlaySetCards];
+  const candidateSetCards =
+    config.filters.recentRelease && activeSupabaseClient
+      ? await applyBricksetReleaseDatesToSetCards({
+          setCards: rawCandidateSetCards,
+          supabaseClient: activeSupabaseClient,
+        })
+      : rawCandidateSetCards;
   const currentOfferSummaryBySetId = config.filters.maxBestPriceMinor
     ? await listCatalogCurrentOfferSummariesBySetIds({
+        allowStaleSnapshots: true,
         cacheOptions,
         liveFallbackSetIdLimit:
           CATALOG_COLLECTION_LIVE_OFFER_FALLBACK_SET_LIMIT,
         setIds: candidateSetCards.map((setCard) => setCard.id),
-        supabaseClient,
+        supabaseClient: activeSupabaseClient,
       })
     : new Map<string, CatalogCurrentOfferSummary>();
   const bestPriceMinorBySetId = toCatalogCollectionBestPriceMinorBySetId(
@@ -8158,6 +8308,7 @@ async function listCatalogCurrentOfferSummariesViaApi({
 }
 
 export async function listCatalogCurrentOfferSummariesBySetIds({
+  allowStaleSnapshots = false,
   apiBaseUrl,
   cacheOptions,
   fetchImpl,
@@ -8166,6 +8317,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   signal,
   supabaseClient,
 }: {
+  allowStaleSnapshots?: boolean;
   apiBaseUrl?: string;
   cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
@@ -8204,6 +8356,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
     const startedAt = Date.now();
     const snapshotResult =
       await listCatalogCurrentOfferSnapshotSummariesBySetIds({
+        allowStaleSnapshots,
         signal,
         setIds: uniqueSetIds,
         supabaseClient: activeSupabaseClient,

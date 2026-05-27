@@ -24,6 +24,30 @@ describe('collection landing page configs', () => {
     expect(
       configs.every((config) => config.h1 && config.metaTitle && config.intro),
     ).toBe(true);
+    expect(configs.every((config) => config.visual?.backgroundColor)).toBe(
+      true,
+    );
+  });
+
+  it('uses stable discovery colors that match the theme visual palette', () => {
+    expect(
+      getCatalogCollectionLandingPageConfig('nieuwe-lego-sets')?.visual,
+    ).toEqual({
+      backgroundColor: '#5573b5',
+      textColor: '#ffffff',
+    });
+    expect(
+      getCatalogCollectionLandingPageConfig('lego-sets-onder-50-euro')?.visual,
+    ).toEqual({
+      backgroundColor: '#e0b84f',
+      textColor: '#171a22',
+    });
+    expect(
+      getCatalogCollectionLandingPageConfig('retiring-lego-sets')?.visual,
+    ).toEqual({
+      backgroundColor: '#d85a50',
+      textColor: '#ffffff',
+    });
   });
 
   it('keeps pure theme duplicates out of the indexable collection set', () => {

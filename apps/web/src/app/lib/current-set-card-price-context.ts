@@ -42,7 +42,8 @@ export interface ReliableDealDiscount {
   metricLabel: string;
 }
 
-interface OfficialLegoComparison extends ReliableDealDiscount {
+interface OfficialLegoComparison extends Omit<ReliableDealDiscount, 'label'> {
+  label?: DealQualityLabel;
   percentageLabel: string;
 }
 
@@ -263,6 +264,7 @@ function buildOfficialLegoComparison({
     !legoOffer ||
     isOfficialLegoOffer(bestOffer) ||
     !canBestOfferDriveDealClaims(bestOffer) ||
+    legoOffer.availability === 'out_of_stock' ||
     bestOffer.currency !== legoOffer.currency ||
     bestOffer.priceCents <= 0 ||
     legoOffer.priceCents <= 0 ||
@@ -274,10 +276,6 @@ function buildOfficialLegoComparison({
   const absoluteMinor = legoOffer.priceCents - bestOffer.priceCents;
   const percentage = (absoluteMinor / legoOffer.priceCents) * 100;
   const label = getDealQualityLabel({ absoluteMinor, percentage });
-
-  if (!label) {
-    return undefined;
-  }
 
   return {
     absoluteMinor,
@@ -585,7 +583,9 @@ export function buildCurrentSetCardPriceContext({
     bestOffer,
     currentOfferSummary,
   });
-  const dealQuality = officialLegoComparison ?? reliableDealDiscount;
+  const dealQuality = officialLegoComparison?.label
+    ? officialLegoComparison
+    : reliableDealDiscount;
   const decisionLabel = dealQuality
     ? dealQuality.label
     : decisionPresentation.cardLabel === 'Actuele prijzen binnen' ||

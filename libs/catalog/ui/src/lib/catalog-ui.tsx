@@ -2024,59 +2024,20 @@ export function CatalogThemeHighlight({
   visual?: CatalogThemeVisual;
 }) {
   if (variant === 'portrait') {
-    const portraitVisualStyle = getCatalogThemeStyleVariables({
-      visual,
-    });
-    const portraitImageUrl = visual?.imageUrl ?? imageUrl;
-    const portraitContent = (
-      <>
-        {portraitImageUrl ? (
-          <div className={styles.themePortraitVisual}>
-            <img
-              alt={`${themeSnapshot.signatureSet} LEGO-set`}
-              className={styles.themePortraitImage}
-              decoding="async"
-              height={420}
-              loading="lazy"
-              src={portraitImageUrl}
-              width={420}
-            />
-          </div>
-        ) : null}
-        <div className={styles.themePortraitBody}>
-          <h3 className={styles.themePortraitTitle}>
-            <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
-          </h3>
-          <p className={styles.themePortraitMeta}>
-            {themeSnapshot.setCount} sets
-          </p>
-        </div>
-      </>
-    );
-
     return (
-      <Surface
-        as="article"
-        className={`${styles.themeCard} ${styles.themePortraitCard}${
-          className ? ` ${className}` : ''
-        }`}
-        data-theme={themeSnapshot.slug}
-        style={portraitVisualStyle}
-        tone="muted"
-      >
-        {href ? (
-          <ActionLink
-            className={styles.themePortraitLink}
-            href={href}
-            tone="card"
-            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
-          >
-            {portraitContent}
-          </ActionLink>
-        ) : (
-          portraitContent
-        )}
-      </Surface>
+      <CatalogVisualTile
+        className={className}
+        dataTheme={themeSnapshot.slug}
+        href={href}
+        imageAlt={`${themeSnapshot.signatureSet} LEGO-set`}
+        imageUrl={visual?.imageUrl ?? imageUrl}
+        meta={`${themeSnapshot.setCount} sets`}
+        title={
+          <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
+        }
+        trackingEvent={trackingEvent}
+        visual={visual}
+      />
     );
   }
 
@@ -2167,6 +2128,82 @@ export function CatalogThemeHighlight({
       </div>
       <p className={styles.mutedCopy}>{themeSnapshot.momentum}</p>
       <Badge tone="info">{themeSnapshot.setCount} gevolgde sets</Badge>
+    </Surface>
+  );
+}
+
+export function CatalogVisualTile({
+  className,
+  dataTile,
+  dataTheme,
+  href,
+  imageAlt = '',
+  imageUrl,
+  meta,
+  title,
+  trackingEvent,
+  visual,
+}: {
+  className?: string;
+  dataTile?: string;
+  dataTheme?: string;
+  href?: string;
+  imageAlt?: string;
+  imageUrl?: string;
+  meta?: ReactNode;
+  title: ReactNode;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
+  visual?: CatalogThemeVisual;
+}) {
+  const visualStyle = getCatalogThemeStyleVariables({
+    visual,
+  });
+  const tileImageUrl = imageUrl ?? visual?.imageUrl;
+  const tileContent = (
+    <>
+      {tileImageUrl ? (
+        <div className={styles.themePortraitVisual}>
+          <img
+            alt={imageAlt}
+            className={styles.themePortraitImage}
+            decoding="async"
+            height={420}
+            loading="lazy"
+            src={tileImageUrl}
+            width={420}
+          />
+        </div>
+      ) : null}
+      <div className={styles.themePortraitBody}>
+        <h3 className={styles.themePortraitTitle}>{title}</h3>
+        {meta ? <p className={styles.themePortraitMeta}>{meta}</p> : null}
+      </div>
+    </>
+  );
+
+  return (
+    <Surface
+      as="article"
+      className={`${styles.themeCard} ${styles.themePortraitCard}${
+        className ? ` ${className}` : ''
+      }`}
+      data-theme={dataTheme}
+      data-visual-tile={dataTile}
+      style={visualStyle}
+      tone="muted"
+    >
+      {href ? (
+        <ActionLink
+          className={styles.themePortraitLink}
+          href={href}
+          tone="card"
+          {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+        >
+          {tileContent}
+        </ActionLink>
+      ) : (
+        tileContent
+      )}
     </Surface>
   );
 }

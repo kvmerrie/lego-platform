@@ -1,4 +1,9 @@
-import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
+import type { CSSProperties } from 'react';
+import {
+  getCatalogThemeMutedTextColor,
+  type CatalogThemeDirectoryItem,
+  type CatalogThemeVisual,
+} from '@lego-platform/catalog/util';
 import {
   CatalogPageIntro,
   CatalogSectionShell,
@@ -14,12 +19,33 @@ import styles from './catalog-feature-theme-index.module.css';
 
 export function CatalogFeatureThemeIndex({
   themeDirectoryItems = [],
+  visual,
 }: {
   themeDirectoryItems?: readonly CatalogThemeDirectoryItem[];
+  visual?: CatalogThemeVisual;
 }) {
   if (!themeDirectoryItems.length) {
     return null;
   }
+
+  const introStyle =
+    visual?.backgroundColor || visual?.textColor
+      ? ({
+          ...(visual.backgroundColor
+            ? {
+                '--theme-index-surface': visual.backgroundColor,
+              }
+            : {}),
+          ...(visual.textColor
+            ? {
+                '--theme-index-muted': getCatalogThemeMutedTextColor(
+                  visual.textColor,
+                ),
+                '--theme-index-text': visual.textColor,
+              }
+            : {}),
+        } as CSSProperties)
+      : undefined;
 
   return (
     <div className={styles.page}>
@@ -37,6 +63,7 @@ export function CatalogFeatureThemeIndex({
         }}
         className={styles.intro}
         contentClassName={styles.introContent}
+        style={introStyle}
       >
         <SectionHeading
           description="Weet je al waar je naar zoekt? Begin hier en duik direct een thema in"

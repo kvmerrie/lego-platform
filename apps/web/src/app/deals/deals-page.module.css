@@ -4,14 +4,26 @@
 }
 
 .intro {
+  --lego-section-heading-description: var(--deals-page-muted);
+  --lego-section-heading-eyebrow: var(--deals-page-text);
+  --lego-section-heading-text: var(--deals-page-text);
+  --deals-page-surface: var(--lego-surface-subtle);
+  --deals-page-text: var(--lego-text);
+  --deals-page-muted: var(--lego-text-muted);
+  background: var(--deals-page-surface);
+  border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--deals-page-text) 10%, transparent);
+  color: var(--deals-page-text);
   display: grid;
   gap: var(--lego-space-4);
   max-width: min(52rem, 100%);
+  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
 .introMeta {
-  color: var(--lego-text-muted);
+  color: var(--deals-page-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
@@ -27,9 +39,9 @@
 }
 
 .merchandisingGroup {
-  background: var(--lego-surface-subtle);
+  background: color-mix(in srgb, var(--deals-page-text) 12%, transparent);
   border-radius: var(--lego-radius-pill);
-  color: var(--lego-text);
+  color: var(--deals-page-text);
   font-size: var(--lego-text-role-meta-size);
   font-weight: var(--lego-font-weight-semibold);
   line-height: 1.2;

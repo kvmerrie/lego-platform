@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type CSSProperties, type ReactNode } from 'react';
 import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
@@ -17,7 +17,11 @@ import {
   type CatalogSetCardCtaMode,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
+import {
+  catalogDiscoveryVisualVariants,
+  getCatalogThemeMutedTextColor,
+  type CatalogHomepageSetCard,
+} from '@lego-platform/catalog/util';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import {
   buildCanonicalUrl,
@@ -62,6 +66,14 @@ export const metadata: Metadata = {
 
 const DEALS_RAIL_LIMIT = 20;
 const DEALS_MIN_OPTIONAL_RAIL_ITEMS = 4;
+const dealsHeroVisual = catalogDiscoveryVisualVariants.deals;
+const dealsHeroStyle = {
+  '--deals-page-surface': dealsHeroVisual.backgroundColor,
+  '--deals-page-muted': getCatalogThemeMutedTextColor(
+    dealsHeroVisual.textColor,
+  ),
+  '--deals-page-text': dealsHeroVisual.textColor,
+} as CSSProperties;
 
 function getPublicMerchandisingRotationSeed(): number {
   return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
@@ -564,7 +576,7 @@ export default async function DealsPage() {
   return (
     <ShellWeb>
       <div className={styles.page}>
-        <section className={styles.intro}>
+        <section className={styles.intro} style={dealsHeroStyle}>
           <SectionHeading
             description="Alleen sets met actuele prijzen en kooplinks. Hier draait het om wat je vandaag echt kunt kopen."
             eyebrow="Deals"

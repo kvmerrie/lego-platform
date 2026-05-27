@@ -4,10 +4,19 @@
 }
 
 .intro {
-  background: var(--lego-surface-subtle);
+  --lego-section-heading-description: var(--theme-index-muted);
+  --lego-section-heading-eyebrow: var(--theme-index-text);
+  --lego-section-heading-text: var(--theme-index-text);
+  --theme-index-surface: var(--lego-surface-subtle);
+  --theme-index-text: var(--lego-text);
+  --theme-index-muted: var(--lego-text-muted);
+  background: var(--theme-index-surface);
   border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+  color: var(--theme-index-text);
   padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--theme-index-text) 10%, transparent);
 }
 
 .introContent {
@@ -16,7 +25,7 @@
 }
 
 .introMeta {
-  color: var(--lego-text-muted);
+  color: var(--theme-index-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: 1.45;
   margin: 0;
