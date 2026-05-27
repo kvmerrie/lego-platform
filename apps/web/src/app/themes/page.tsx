@@ -4,11 +4,18 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildCanonicalUrl,
   buildWebPath,
+  cacheTags,
   webPathnames,
 } from '@lego-platform/shared/config';
 import type { Metadata } from 'next';
+import { getCachedPublicLandingPageData } from '../lib/public-landing-page-cache';
 
-export const revalidate = 21_600;
+export const revalidate = false;
+const THEME_INDEX_CACHE_TAGS = [
+  cacheTags.catalog(),
+  cacheTags.sets(),
+  cacheTags.themes(),
+] as const;
 
 export const metadata: Metadata = {
   title: 'Brickhunt – LEGO thema’s ontdekken',
@@ -27,7 +34,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ThemesPage() {
-  const themeDirectoryItems = await listCatalogThemeDirectoryItems();
+  const themeDirectoryItems = await getCachedPublicLandingPageData({
+    load: () => listCatalogThemeDirectoryItems(),
+    page: 'theme-index',
+    revalidateSeconds: revalidate,
+    tags: THEME_INDEX_CACHE_TAGS,
+  });
 
   return (
     <ShellWeb>

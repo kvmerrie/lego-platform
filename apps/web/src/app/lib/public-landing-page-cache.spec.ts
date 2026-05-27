@@ -46,4 +46,26 @@ describe('public landing page cache helper', () => {
       },
     );
   });
+
+  it('supports event-driven cache entries without a time TTL', async () => {
+    const { getCachedPublicLandingPageData } = await import(
+      './public-landing-page-cache'
+    );
+
+    await getCachedPublicLandingPageData({
+      load: async () => ({ ok: true }),
+      page: 'deals',
+      revalidateSeconds: false,
+      tags: ['deals', 'prices'],
+    });
+
+    expect(publicLandingPageCacheMocks.unstableCache).toHaveBeenCalledWith(
+      expect.any(Function),
+      ['public-landing-page', 'deals'],
+      {
+        revalidate: false,
+        tags: ['deals', 'prices'],
+      },
+    );
+  });
 });

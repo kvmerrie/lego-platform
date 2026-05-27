@@ -8,6 +8,7 @@ export type PublicBrowsePageCacheParam =
   | number
   | string
   | undefined;
+export type PublicBrowsePageRevalidate = false | number;
 
 export interface SerializablePublicBrowsePageResult<TSetCard> {
   readonly setCards: readonly TSetCard[];
@@ -52,7 +53,7 @@ export async function getCachedPublicBrowsePageData<TData>({
   load: () => Promise<TData>;
   pageType: PublicBrowsePageType;
   params?: readonly PublicBrowsePageCacheParam[];
-  revalidateSeconds: number;
+  revalidateSeconds: PublicBrowsePageRevalidate;
   slug: string;
   tags: readonly string[];
 }): Promise<TData> {

@@ -6,6 +6,7 @@ export type PublicLandingPageCacheParam =
   | number
   | string
   | undefined;
+export type PublicLandingPageRevalidate = false | number;
 
 export function buildPublicLandingPageCacheKeyParts({
   page,
@@ -31,7 +32,7 @@ export async function getCachedPublicLandingPageData<TData>({
   load: () => Promise<TData>;
   page: string;
   params?: readonly PublicLandingPageCacheParam[];
-  revalidateSeconds: number;
+  revalidateSeconds: PublicLandingPageRevalidate;
   tags: readonly string[];
 }): Promise<TData> {
   return unstable_cache(

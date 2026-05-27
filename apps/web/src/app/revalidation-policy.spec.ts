@@ -23,10 +23,9 @@ const allowedRevalidateZeroFiles = new Set([
 const allowedNoStoreFiles = new Set([
   'apps/web/src/app/sets/[slug]/page.tsx',
   'libs/catalog/data-access-web/src/lib/catalog-effective-data-access-browser.ts',
-  'libs/collection/data-access/src/lib/collection-data-access.ts',
+  'libs/shared/data-access-auth/src/lib/shared-data-access-auth.ts',
   'libs/shell/web/src/lib/shell-web-search-form.tsx',
   'libs/user/data-access/src/lib/user-data-access.ts',
-  'libs/wishlist/data-access/src/lib/wishlist-data-access.ts',
 ]);
 
 function findPolicyMatches(pattern: RegExp): string[] {

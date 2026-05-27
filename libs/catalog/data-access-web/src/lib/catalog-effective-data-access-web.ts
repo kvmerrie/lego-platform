@@ -475,7 +475,7 @@ export interface CatalogPrimaryOfferAvailabilityState {
 }
 
 export interface CatalogApiReadCacheOptions {
-  revalidateSeconds?: number;
+  revalidateSeconds?: false | number;
   tags?: readonly string[];
 }
 
@@ -7009,7 +7009,7 @@ export async function listCatalogSetLiveOffersBySetId({
           headers: {
             accept: 'application/json',
           },
-          ...(typeof cacheOptions?.revalidateSeconds === 'number'
+          ...(cacheOptions?.revalidateSeconds !== undefined
             ? {
                 next: {
                   revalidate: cacheOptions.revalidateSeconds,
@@ -7102,7 +7102,7 @@ async function listCatalogDiscoverySignalsViaApi({
           accept: 'application/json',
         },
         signal,
-        ...(typeof cacheOptions?.revalidateSeconds === 'number'
+        ...(cacheOptions?.revalidateSeconds !== undefined
           ? {
               next: {
                 revalidate: cacheOptions.revalidateSeconds,
@@ -7666,7 +7666,7 @@ async function listCatalogCurrentOfferSummariesViaApi({
           accept: 'application/json',
         },
         signal,
-        ...(typeof cacheOptions?.revalidateSeconds === 'number'
+        ...(cacheOptions?.revalidateSeconds !== undefined
           ? {
               next: {
                 revalidate: cacheOptions.revalidateSeconds,
@@ -7858,7 +7858,10 @@ export async function listCachedCatalogCurrentOfferSummaries({
     },
     ['catalog-current-offer-summaries-v2', String(limit)],
     {
-      revalidate: cacheOptions.revalidateSeconds ?? 21_600,
+      revalidate:
+        cacheOptions.revalidateSeconds === undefined
+          ? 21_600
+          : cacheOptions.revalidateSeconds,
       tags: [...cacheOptions.tags],
     },
   );
@@ -8171,7 +8174,10 @@ export async function listCatalogCurrentOfferCandidateSetIds({
     loadCandidateSetIds,
     ['catalog-current-offer-candidate-set-ids-v1', String(limit)],
     {
-      revalidate: cacheOptions.revalidateSeconds ?? 21_600,
+      revalidate:
+        cacheOptions.revalidateSeconds === undefined
+          ? 21_600
+          : cacheOptions.revalidateSeconds,
       tags: [...cacheOptions.tags],
     },
   );

@@ -82,4 +82,30 @@ describe('public browse page cache helper', () => {
       '10307': 62999,
     });
   });
+
+  it('supports event-driven cache entries without a time TTL', async () => {
+    const { getCachedPublicBrowsePageData } = await import(
+      './public-browse-page-cache'
+    );
+
+    await getCachedPublicBrowsePageData({
+      load: async () => ({
+        setCards: [],
+        totalSetCount: 0,
+      }),
+      pageType: 'collection',
+      revalidateSeconds: false,
+      slug: 'lego-sets-onder-100-euro',
+      tags: ['collections', 'collection:lego-sets-onder-100-euro'],
+    });
+
+    expect(publicBrowsePageCacheMocks.unstableCache).toHaveBeenCalledWith(
+      expect.any(Function),
+      ['public-browse-page', 'collection', 'lego-sets-onder-100-euro'],
+      {
+        revalidate: false,
+        tags: ['collections', 'collection:lego-sets-onder-100-euro'],
+      },
+    );
+  });
 });

@@ -45,7 +45,7 @@ import {
 } from '../../lib/structured-data';
 
 export const dynamicParams = true;
-export const revalidate = 21_600;
+export const revalidate = false;
 const THEME_DISCOVERY_RAIL_LIMIT = 6;
 const THEME_SET_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 const THEME_RELATED_ARTICLE_LIMIT = 3;

@@ -147,7 +147,7 @@ describe('deals page discovery signals', () => {
       dealsPageMocks.listCatalogDiscoverySignalsBySetId,
     ).toHaveBeenCalledWith({
       cacheOptions: {
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         tags: ['deals', 'prices'],
       },
       setIds: ['42177', '75398'],

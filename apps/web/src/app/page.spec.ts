@@ -233,7 +233,7 @@ describe('home metadata', () => {
       expect.objectContaining({
         page: 'homepage',
         params: ['delivery'],
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         tags: ['homepage', 'catalog', 'sets', 'themes', 'prices', 'deals'],
       }),
     );
@@ -439,7 +439,7 @@ describe('home metadata', () => {
 
     expect(pageMocks.listCatalogDiscoverySignalsBySetId).toHaveBeenCalledWith({
       cacheOptions: {
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         tags: ['homepage', 'prices'],
       },
       setIds: ['10316', '42177'],
@@ -498,7 +498,7 @@ describe('home metadata', () => {
       pageMocks.listCatalogCurrentOfferSummariesBySetIds,
     ).toHaveBeenCalledWith({
       cacheOptions: {
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         tags: ['homepage', 'prices', 'set:75355'],
       },
       setIds: ['75355'],

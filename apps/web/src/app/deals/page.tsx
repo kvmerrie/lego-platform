@@ -41,7 +41,7 @@ import {
 } from '../lib/current-set-card-price-context';
 import styles from './deals-page.module.css';
 
-export const revalidate = 21_600;
+export const revalidate = false;
 
 const dealsMetadataTitle = 'LEGO deals en actuele prijzen';
 const dealsMetadataDescription =

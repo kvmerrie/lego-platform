@@ -145,7 +145,7 @@ describe('theme page JSON-LD', () => {
     expect(themePageMocks.getCachedPublicBrowsePageData).toHaveBeenCalledWith(
       expect.objectContaining({
         pageType: 'theme-metadata',
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         slug: 'star-wars',
         tags: ['catalog', 'sets', 'themes', 'theme:star-wars', 'prices'],
       }),
@@ -203,7 +203,7 @@ describe('theme page JSON-LD', () => {
       expect.objectContaining({
         pageType: 'theme',
         params: ['limit', CATALOG_BROWSE_PAGE_SIZE, 'offset', 0],
-        revalidateSeconds: 21_600,
+        revalidateSeconds: false,
         slug: 'star-wars',
         tags: ['catalog', 'sets', 'themes', 'theme:star-wars', 'prices'],
       }),

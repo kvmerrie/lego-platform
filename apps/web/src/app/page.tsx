@@ -60,11 +60,11 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import type { Metadata } from 'next';
 import Image from 'next/image';
 
-export const revalidate = 21_600;
+export const revalidate = false;
 const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT = 20;
-const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 21_600;
+const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = false;
 const HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS = 2;
 const HOMEPAGE_PRIMARY_DEAL_SECTION_ID = 'best-current-deals';
 const HOMEPAGE_SOFT_DEAL_SECTION_ID = 'soft-price-opportunities';

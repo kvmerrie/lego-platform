@@ -9627,6 +9627,39 @@ describe('catalog effective data access web', () => {
     );
   });
 
+  test('supports event-driven API fetch caching when a public route disables time TTL', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await getCatalogCurrentOfferSummaryBySetId({
+      cacheOptions: {
+        revalidateSeconds: false,
+        tags: ['prices', 'set:71411'],
+      },
+      fetchImpl,
+      setId: '71411',
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/sets/71411/live-offers',
+      expect.objectContaining({
+        headers: {
+          accept: 'application/json',
+        },
+        next: {
+          revalidate: false,
+          tags: ['prices', 'set:71411'],
+        },
+      }),
+    );
+  });
+
   test('keeps live-offer API reads ISR-friendly by default when no cache options are provided', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify([]), {
