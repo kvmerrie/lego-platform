@@ -10,6 +10,7 @@ import {
   listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards,
   listDiscoverRecentPriceChangeSetCards,
+  rankCatalogPartnerOfferSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogSetCardRailSection,
@@ -34,10 +35,8 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import {
   buildCurrentSetCardPriceContextBySetId,
-  compareReliableDealDiscounts,
   buildReliableDealDiscount,
   getCurrentOfferRailDiagnostics,
-  selectCurrentOfferSetCards,
 } from '../lib/current-set-card-price-context';
 import styles from './deals-page.module.css';
 
@@ -63,6 +62,10 @@ export const metadata: Metadata = {
 
 const DEALS_RAIL_LIMIT = 20;
 const DEALS_MIN_OPTIONAL_RAIL_ITEMS = 4;
+
+function getPublicMerchandisingRotationSeed(): number {
+  return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
+}
 
 type CurrentOfferSummaryBySetId = Awaited<
   ReturnType<typeof listCatalogCurrentOfferSummaries>
@@ -361,62 +364,6 @@ function selectDealBudgetSetCards({
     .slice(0, DEALS_RAIL_LIMIT);
 }
 
-function selectReliableDiscountSetCards({
-  currentOfferSummaryBySetId,
-  excludedSetIds = [],
-  setCards,
-}: {
-  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
-  excludedSetIds?: readonly string[];
-  setCards: readonly CatalogHomepageSetCard[];
-}): CatalogHomepageSetCard[] {
-  const excludedSetIdSet = new Set(excludedSetIds);
-
-  return [...setCards]
-    .filter((setCard) => {
-      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
-      const bestOffer = currentOfferSummary?.bestOffer;
-
-      return (
-        !excludedSetIdSet.has(setCard.id) &&
-        Boolean(bestOffer?.url) &&
-        bestOffer?.availability !== 'out_of_stock' &&
-        Boolean(
-          buildReliableDealDiscount({
-            currentOfferSummary,
-            pricePanelSnapshot: getFeaturedSetPriceContext(setCard.id),
-          }),
-        )
-      );
-    })
-    .sort((left, right) => {
-      const leftDiscount = buildReliableDealDiscount({
-        currentOfferSummary: currentOfferSummaryBySetId.get(left.id),
-        pricePanelSnapshot: getFeaturedSetPriceContext(left.id),
-      });
-      const rightDiscount = buildReliableDealDiscount({
-        currentOfferSummary: currentOfferSummaryBySetId.get(right.id),
-        pricePanelSnapshot: getFeaturedSetPriceContext(right.id),
-      });
-
-      return (
-        compareReliableDealDiscounts({
-          left: leftDiscount,
-          leftMerchantCount:
-            currentOfferSummaryBySetId.get(left.id)?.offers.length ?? 0,
-          right: rightDiscount,
-          rightMerchantCount:
-            currentOfferSummaryBySetId.get(right.id)?.offers.length ?? 0,
-        }) ||
-        right.releaseYear - left.releaseYear ||
-        right.pieces - left.pieces ||
-        left.name.localeCompare(right.name) ||
-        left.id.localeCompare(right.id)
-      );
-    })
-    .slice(0, DEALS_RAIL_LIMIT);
-}
-
 function selectDealDisplaySetCards({
   catalogDiscoverySignalBySetId,
   currentOfferSummaryBySetId,
@@ -496,7 +443,7 @@ export default async function DealsPage() {
       },
       setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
     });
-  const commerceRailRotationSeed = 0;
+  const commerceRailRotationSeed = getPublicMerchandisingRotationSeed();
   const getCatalogDiscoverySignalFn = (setId: string) =>
     catalogDiscoverySignalBySetId.get(setId);
   const bestDealCandidateSetCards = await listDiscoverBestDealSetCards({
@@ -511,9 +458,13 @@ export default async function DealsPage() {
     sectionId: 'deals-best-deals',
     setCards: bestDealCandidateSetCards,
   });
-  const goodPricedCandidateSetCards = selectReliableDiscountSetCards({
+  const goodPricedCandidateSetCards = rankCatalogPartnerOfferSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     excludedSetIds: getUniqueSetIds([bestDealSetCards]),
+    limit: DEALS_RAIL_LIMIT,
+    requirePrimaryDealQuality: true,
+    rotationSeed: commerceRailRotationSeed,
     setCards: commerceCandidateSetCards,
   });
   const goodPricedSetCards = toDealsRailSetCards({
@@ -522,10 +473,12 @@ export default async function DealsPage() {
     sectionId: 'deals-good-priced',
     setCards: goodPricedCandidateSetCards,
   });
-  const currentOfferCandidateSetCards = selectCurrentOfferSetCards({
+  const currentOfferCandidateSetCards = rankCatalogPartnerOfferSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     excludedSetIds: getUniqueSetIds([bestDealSetCards, goodPricedSetCards]),
     limit: DEALS_RAIL_LIMIT,
+    rotationSeed: commerceRailRotationSeed,
     setCards: commerceCandidateSetCards,
   });
   const currentOfferSetCards = toDealsRailSetCards({

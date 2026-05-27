@@ -68,6 +68,7 @@ import {
   rankCatalogRecentPriceChangeSetCards,
   rankCatalogRecentlyReleasedSetCards,
   rankCatalogSimilarSetCards,
+  scoreCatalogPublicDealMerchandisingCandidate,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
   resolveHomepageFollowRailDiagnostics,
@@ -3640,13 +3641,13 @@ describe('catalog effective data access web', () => {
       getCatalogDiscoverySignalFn,
       limit: 2,
       listCanonicalCatalogSetsFn,
-      rotationSeed: 1,
+      rotationSeed: 0,
     });
     const secondSeedResult = await listHomepageSetCards({
       getCatalogDiscoverySignalFn,
       limit: 2,
       listCanonicalCatalogSetsFn,
-      rotationSeed: 2,
+      rotationSeed: 1,
     });
 
     expect(
@@ -5236,19 +5237,19 @@ describe('catalog effective data access web', () => {
       createCatalogDiscoverySignal({
         merchantCount: 4,
         priceSpreadMinor: 5000,
-        referenceDeltaMinor: -2000,
+        referenceDeltaMinor: -5000,
       });
 
     const firstRefresh = rankCatalogBestDealSetCards({
       getCatalogDiscoverySignalFn,
       limit: 3,
-      rotationSeed: 1,
+      rotationSeed: 0,
       setCards,
     }).map((catalogSetCard) => catalogSetCard.id);
     const secondRefresh = rankCatalogBestDealSetCards({
       getCatalogDiscoverySignalFn,
       limit: 3,
-      rotationSeed: 2,
+      rotationSeed: 1,
       setCards,
     }).map((catalogSetCard) => catalogSetCard.id);
 
@@ -5453,6 +5454,213 @@ describe('catalog effective data access web', () => {
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '76269',
     ]);
+  });
+
+  test('limits repeated themes in public commerce rails before relaxing diversity', () => {
+    const setCards = [
+      {
+        id: '75355',
+        imageUrl: undefined,
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75367',
+        imageUrl: undefined,
+        name: 'Venator-Class Republic Attack Cruiser',
+        pieces: 5374,
+        releaseYear: 2023,
+        slug: 'venator-class-republic-attack-cruiser-75367',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75397',
+        imageUrl: undefined,
+        name: 'Jabba’s Sail Barge',
+        pieces: 3942,
+        releaseYear: 2024,
+        slug: 'jabbas-sail-barge-75397',
+        theme: 'Star Wars',
+      },
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map(
+      setCards.map((setCard) => [
+        setCard.id,
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            merchantName: 'Goodbricks',
+            priceCents: 9999,
+            setId: setCard.id,
+            url: `https://partner.example/${setCard.id}`,
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'Goodbricks',
+              priceCents: 9999,
+              setId: setCard.id,
+              url: `https://partner.example/${setCard.id}`,
+            }),
+            createCatalogOffer({
+              merchantName: 'Brickfever',
+              priceCents: 10999,
+              setId: setCard.id,
+              url: `https://brickfever.example/${setCard.id}`,
+            }),
+          ],
+          setId: setCard.id,
+        },
+      ]),
+    );
+    const catalogDiscoverySignalBySetId = new Map(
+      setCards.map((setCard) => [
+        setCard.id,
+        createCatalogDiscoverySignal({
+          bestPriceMinor: 9999,
+          merchantCount: 2,
+          priceSpreadMinor: 1000,
+          referenceDeltaMinor: setCard.theme === 'Star Wars' ? -4000 : -1500,
+        }),
+      ]),
+    );
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      limit: 3,
+      maxPerTheme: 2,
+      rotationSeed: 4,
+      setCards,
+    });
+
+    expect(result).toHaveLength(3);
+    expect(
+      result.filter((setCard) => setCard.theme === 'Star Wars'),
+    ).toHaveLength(2);
+    expect(result.map((setCard) => setCard.id)).toContain('10316');
+  });
+
+  test('excludes recently featured sets from public commerce rail selection', () => {
+    const setCards = [
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+      {
+        id: '76269',
+        imageUrl: undefined,
+        name: 'Avengers Tower',
+        pieces: 5201,
+        releaseYear: 2023,
+        slug: 'avengers-tower-76269',
+        theme: 'Marvel',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map(
+      setCards.map((setCard) => [
+        setCard.id,
+        {
+          bestOffer: createCatalogOffer({
+            merchantName: 'Goodbricks',
+            priceCents: 9999,
+            setId: setCard.id,
+            url: `https://partner.example/${setCard.id}`,
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'Goodbricks',
+              priceCents: 9999,
+              setId: setCard.id,
+              url: `https://partner.example/${setCard.id}`,
+            }),
+          ],
+          setId: setCard.id,
+        },
+      ]),
+    );
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map(),
+      currentOfferSummaryBySetId,
+      limit: 2,
+      recentlyFeaturedSetIds: ['10316'],
+      setCards,
+    });
+
+    expect(result.map((setCard) => setCard.id)).toEqual(['76269']);
+  });
+
+  test('boosts offers that are clearly cheaper than official LEGO pricing', () => {
+    const setCard = {
+      id: '10316',
+      imageUrl: undefined,
+      name: 'Rivendell',
+      pieces: 6167,
+      releaseYear: 2023,
+      slug: 'rivendell-10316',
+      theme: 'Icons',
+    };
+    const baseSummary = {
+      bestOffer: createCatalogOffer({
+        merchantName: 'Goodbricks',
+        priceCents: 39999,
+        setId: '10316',
+      }),
+      offers: [
+        createCatalogOffer({
+          merchantName: 'Goodbricks',
+          priceCents: 39999,
+          setId: '10316',
+        }),
+      ],
+      setId: '10316',
+    };
+    const withLegoSummary = {
+      ...baseSummary,
+      offers: [
+        ...baseSummary.offers,
+        {
+          ...createCatalogOffer({
+            merchant: 'lego',
+            merchantName: 'LEGO EU',
+            priceCents: 49999,
+            setId: '10316',
+          }),
+          merchantSlug: 'rakuten-lego-eu',
+        },
+      ],
+    };
+
+    const withoutLego = scoreCatalogPublicDealMerchandisingCandidate({
+      currentOfferSummary: baseSummary,
+      rotationSeed: 0,
+      setCard,
+    });
+    const withLego = scoreCatalogPublicDealMerchandisingCandidate({
+      currentOfferSummary: withLegoSummary,
+      rotationSeed: 0,
+      setCard,
+    });
+
+    expect(withLego.legoComparisonScore).toBeGreaterThan(0);
+    expect(withLego.total).toBeGreaterThan(withoutLego.total);
   });
 
   test('includes buyable sets in the good-priced commerce rail without requiring a discount', () => {
@@ -5708,8 +5916,8 @@ describe('catalog effective data access web', () => {
     expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([]);
     expect(goodPriced.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '10311',
-      '75446',
       '43247',
+      '75446',
     ]);
   });
 
@@ -5840,6 +6048,140 @@ describe('catalog effective data access web', () => {
       strong_deal_candidates: 1,
     });
     expect(currentOfferSummaryBySetId.get('71050')?.offers).toHaveLength(2);
+  });
+
+  test('does not accept Shire-like weak LEGO savings as primary deal quality', () => {
+    const setCards = [
+      {
+        id: '10354',
+        imageUrl: undefined,
+        name: 'The Shire',
+        pieces: 2017,
+        releaseYear: 2025,
+        slug: 'the-shire-10354',
+        theme: 'Icons',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '10354',
+        {
+          bestOffer: createCatalogOffer({
+            merchantName: 'Top1Toys',
+            priceCents: 25_999,
+            setId: '10354',
+            url: 'https://top1toys.example/10354',
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'Top1Toys',
+              priceCents: 25_999,
+              setId: '10354',
+              url: 'https://top1toys.example/10354',
+            }),
+            {
+              ...createCatalogOffer({
+                merchant: 'lego',
+                merchantName: 'LEGO EU',
+                priceCents: 26_999,
+                setId: '10354',
+                url: 'https://lego.example/10354',
+              }),
+              merchantSlug: 'rakuten-lego-eu',
+            },
+          ],
+          setId: '10354',
+        },
+      ],
+    ]);
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map([
+        [
+          '10354',
+          createCatalogDiscoverySignal({
+            bestPriceMinor: 25_999,
+            merchantCount: 2,
+            nextBestPriceMinor: 26_999,
+            priceSpreadMinor: 1_000,
+            referenceDeltaMinor: -1_000,
+          }),
+        ],
+      ]),
+      currentOfferSummaryBySetId,
+      requirePrimaryDealQuality: true,
+      setCards,
+    });
+
+    expect(result).toHaveLength(0);
+  });
+
+  test('accepts Trevi-like LEGO savings as primary deal quality', () => {
+    const setCards = [
+      {
+        id: '21062',
+        imageUrl: undefined,
+        name: 'Trevi Fountain',
+        pieces: 1880,
+        releaseYear: 2025,
+        slug: 'trevi-fountain-21062',
+        theme: 'Architecture',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '21062',
+        {
+          bestOffer: createCatalogOffer({
+            merchantName: 'MediaMarkt',
+            priceCents: 10_900,
+            setId: '21062',
+            url: 'https://mediamarkt.example/21062',
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'MediaMarkt',
+              priceCents: 10_900,
+              setId: '21062',
+              url: 'https://mediamarkt.example/21062',
+            }),
+            {
+              ...createCatalogOffer({
+                merchant: 'lego',
+                merchantName: 'LEGO EU',
+                priceCents: 15_999,
+                setId: '21062',
+                url: 'https://lego.example/21062',
+              }),
+              merchantSlug: 'rakuten-lego-eu',
+            },
+          ],
+          setId: '21062',
+        },
+      ],
+    ]);
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map([
+        [
+          '21062',
+          createCatalogDiscoverySignal({
+            bestPriceMinor: 10_900,
+            merchantCount: 2,
+            nextBestPriceMinor: 15_999,
+            priceSpreadMinor: 5_099,
+            referenceDeltaMinor: undefined,
+          }),
+        ],
+      ]),
+      currentOfferSummaryBySetId,
+      requirePrimaryDealQuality: true,
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '21062',
+    ]);
   });
 
   test('can rank commerce candidates outside the initial homepage set list', () => {

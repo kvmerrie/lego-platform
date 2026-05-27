@@ -179,15 +179,24 @@ function isOfferAvailableForComparison(offer: CatalogOfferItem): boolean {
   return stockState === 'available' || stockState === 'limited';
 }
 
-function buildCompactOfferComparisonContext(
+export function buildCompactOfferComparisonContext(
   offers: readonly CatalogOfferItem[],
 ): CompactOfferComparisonContext {
-  const bestPriceMinor = parseDisplayedPriceMinor(offers[0]?.price ?? '');
   const availableOffers = offers.filter(isOfferAvailableForComparison);
-  const nextBestAvailablePriceMinor = availableOffers
-    .filter((offer) => !offer.isBest)
+  const availablePrices = availableOffers
     .map((offer) => parseDisplayedPriceMinor(offer.price))
-    .find((priceMinor): priceMinor is number => typeof priceMinor === 'number');
+    .filter(
+      (priceMinor): priceMinor is number => typeof priceMinor === 'number',
+    )
+    .sort((left, right) => left - right);
+  const bestPriceMinor = availablePrices[0];
+  const nextBestAvailablePriceMinor = availableOffers
+    .map((offer) => parseDisplayedPriceMinor(offer.price))
+    .filter(
+      (priceMinor): priceMinor is number =>
+        typeof priceMinor === 'number' && priceMinor > (bestPriceMinor ?? 0),
+    )
+    .sort((left, right) => left - right)[0];
 
   return {
     bestPriceMinor,
@@ -239,6 +248,13 @@ function getCompactDeltaPresentation({
     }
 
     if (deltaMinor === 0) {
+      if (offer.rankingLabel?.toLowerCase().includes('laagste prijs')) {
+        return {
+          deltaLabel: 'Laagste prijs',
+          priceComparisonState: 'same',
+        };
+      }
+
       return {
         deltaLabel: 'Zelfde prijs',
         priceComparisonState: 'same',
@@ -288,6 +304,18 @@ function getBestOfferConfidenceLabel({
 }): string | undefined {
   if (!offer.isBest) {
     return undefined;
+  }
+
+  const offerPriceMinor = parseDisplayedPriceMinor(offer.price);
+
+  if (
+    typeof bestPriceMinor === 'number' &&
+    typeof offerPriceMinor === 'number' &&
+    offerPriceMinor > bestPriceMinor
+  ) {
+    return `${formatCompactEuroAmount(
+      offerPriceMinor - bestPriceMinor,
+    )} boven laagste prijs`;
   }
 
   if (reviewedInStockOfferCount <= 1) {

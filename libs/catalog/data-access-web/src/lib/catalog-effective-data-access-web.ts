@@ -4013,7 +4013,7 @@ function isCatalogBestDealCandidate(
 
 const HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT = 2;
 const HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 1000;
-const HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.03;
+const HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.1;
 const HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_RATIO = 4;
 const HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_MINOR = 2500;
 
@@ -4094,6 +4094,29 @@ function canCatalogOfferDrivePrimaryDealClaims(
   );
 }
 
+function getCatalogPrimaryDealEligibleOffers(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): CatalogResolvedOffer[] {
+  return [
+    ...(currentOfferSummary?.offers ?? []),
+    currentOfferSummary?.bestOffer,
+  ]
+    .filter((catalogOffer): catalogOffer is CatalogResolvedOffer =>
+      canCatalogOfferDrivePrimaryDealClaims(catalogOffer),
+    )
+    .sort(
+      (left, right) =>
+        left.priceCents - right.priceCents ||
+        compareCatalogOfferCheckedAtDescending(left, right),
+    );
+}
+
+function getCatalogPrimaryDealBestOffer(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): CatalogResolvedOffer | undefined {
+  return getCatalogPrimaryDealEligibleOffers(currentOfferSummary)[0];
+}
+
 function isCatalogPrimaryDealCandidate({
   catalogDiscoverySignal,
   currentOfferSummary,
@@ -4106,8 +4129,9 @@ function isCatalogPrimaryDealCandidate({
       HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT &&
     getCatalogOfferMerchantCount(currentOfferSummary) >=
       HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT &&
-    canCatalogOfferDrivePrimaryDealClaims(currentOfferSummary?.bestOffer) &&
-    hasReliableCatalogReferenceDiscount(catalogDiscoverySignal) &&
+    Boolean(getCatalogPrimaryDealBestOffer(currentOfferSummary)) &&
+    (hasCatalogMeaningfulOfficialLegoDiscount(currentOfferSummary) ||
+      hasReliableCatalogReferenceDiscount(catalogDiscoverySignal)) &&
     !hasSuspiciousCatalogDealSpread(catalogDiscoverySignal) &&
     !hasCatalogComparableUnitMismatch(currentOfferSummary)
   );
@@ -4116,6 +4140,28 @@ function isCatalogPrimaryDealCandidate({
 const HOMEPAGE_SOFT_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 500;
 const HOMEPAGE_SOFT_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.015;
 const HOMEPAGE_SOFT_DEAL_MIN_RECENT_DROP_MINOR = 250;
+const CATALOG_PUBLIC_DEAL_SCORE_BAND_SIZE = 18;
+const CATALOG_PUBLIC_DEAL_DEFAULT_MAX_PER_THEME = 3;
+const CATALOG_PUBLIC_DEAL_DEFAULT_COOLDOWN_BUCKET_COUNT = 5;
+
+export interface CatalogPublicDealMerchandisingScore {
+  absoluteSavingsScore: number;
+  competitionScore: number;
+  discountScore: number;
+  freshnessScore: number;
+  legoComparisonScore: number;
+  merchantReliabilityScore: number;
+  rotationScore: number;
+  stockConfidenceScore: number;
+  total: number;
+}
+
+interface CatalogPublicDealMerchandisingCandidate {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+  score: CatalogPublicDealMerchandisingScore;
+  setCard: CatalogHomepageSetCard;
+}
 
 function hasSoftCatalogReferenceSignal(
   catalogDiscoverySignal?: CatalogDiscoverySignal,
@@ -4197,6 +4243,366 @@ function getCatalogRailRotationScore({
   }
 
   return hash;
+}
+
+function getCatalogRailRotationRatio({
+  rotationSeed,
+  setId,
+}: {
+  rotationSeed?: number;
+  setId: string;
+}): number {
+  return (
+    getCatalogRailRotationScore({
+      rotationSeed,
+      setId,
+    }) / 9973
+  );
+}
+
+function getCatalogMerchandisingThemeKey(theme: string): string {
+  return buildCatalogThemeSlug(theme) || theme.toLowerCase();
+}
+
+function isCatalogOfficialLegoOffer(
+  catalogOffer?: CatalogResolvedOffer,
+): boolean {
+  if (!catalogOffer) {
+    return false;
+  }
+
+  const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
+  const publicMerchantKey = getCatalogOfferPublicMerchantKey(catalogOffer);
+
+  return (
+    merchantSlug === 'rakuten-lego-eu' ||
+    merchantSlug === 'lego' ||
+    catalogOffer.merchant === 'lego' ||
+    publicMerchantKey === 'lego'
+  );
+}
+
+function getCatalogOfficialLegoOffer(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): CatalogResolvedOffer | undefined {
+  return [
+    ...(currentOfferSummary?.offers ?? []),
+    currentOfferSummary?.bestOffer,
+  ]
+    .filter((offer): offer is CatalogResolvedOffer => Boolean(offer))
+    .filter(isCatalogOfficialLegoOffer)
+    .sort(
+      (left, right) =>
+        getCatalogOfferAvailabilityRank(left.availability) -
+          getCatalogOfferAvailabilityRank(right.availability) ||
+        compareCatalogOfferCheckedAtDescending(left, right) ||
+        right.priceCents - left.priceCents,
+    )[0];
+}
+
+function getCatalogOfficialLegoDiscountMinor(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): number | undefined {
+  const bestOffer = getCatalogPrimaryDealBestOffer(currentOfferSummary);
+  const legoOffer = getCatalogOfficialLegoOffer(currentOfferSummary);
+
+  if (
+    !bestOffer ||
+    !legoOffer ||
+    bestOffer.priceCents <= 0 ||
+    legoOffer.priceCents <= 0 ||
+    bestOffer.priceCents >= legoOffer.priceCents
+  ) {
+    return undefined;
+  }
+
+  return legoOffer.priceCents - bestOffer.priceCents;
+}
+
+function hasCatalogMeaningfulOfficialLegoDiscount(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): boolean {
+  const bestOffer = getCatalogPrimaryDealBestOffer(currentOfferSummary);
+  const legoDiscountMinor =
+    getCatalogOfficialLegoDiscountMinor(currentOfferSummary);
+
+  if (!bestOffer || !legoDiscountMinor || legoDiscountMinor <= 0) {
+    return false;
+  }
+
+  const legoPriceMinor = bestOffer.priceCents + legoDiscountMinor;
+
+  return (
+    legoPriceMinor > 0 &&
+    legoDiscountMinor >= HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_MINOR &&
+    legoDiscountMinor / legoPriceMinor >=
+      HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_RATIO
+  );
+}
+
+function getCatalogReferenceDiscountMinor(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): number {
+  return typeof catalogDiscoverySignal?.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0
+    ? Math.abs(catalogDiscoverySignal.referenceDeltaMinor)
+    : 0;
+}
+
+function getCatalogRecentDropScore(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): number {
+  if (
+    typeof catalogDiscoverySignal?.recentReferencePriceChangeMinor !==
+      'number' ||
+    catalogDiscoverySignal.recentReferencePriceChangeMinor >= 0
+  ) {
+    return 0;
+  }
+
+  const ageHours = getCatalogSignalAgeHours(
+    catalogDiscoverySignal.recentReferencePriceChangedAt,
+  );
+  const recencyMultiplier = ageHours <= 24 ? 1 : ageHours <= 72 ? 0.55 : 0.15;
+
+  return Math.min(
+    (Math.abs(catalogDiscoverySignal.recentReferencePriceChangeMinor) / 90) *
+      recencyMultiplier,
+    56,
+  );
+}
+
+function getCatalogMerchantReliabilityScore(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): number {
+  const bestOffer = currentOfferSummary?.bestOffer;
+
+  if (!bestOffer) {
+    return 0;
+  }
+
+  const merchantKey = getCatalogOfferMerchantReliabilityKey(bestOffer);
+
+  if (merchantKey === 'rakuten-lego-eu') {
+    return 34;
+  }
+
+  if (isCommerceMerchantProductionFeed(merchantKey)) {
+    return 28;
+  }
+
+  return 8;
+}
+
+function getCatalogStockConfidenceScore(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): number {
+  const bestOffer = currentOfferSummary?.bestOffer;
+
+  if (!bestOffer?.url || bestOffer.priceCents <= 0) {
+    return 0;
+  }
+
+  if (bestOffer.availability === 'in_stock') {
+    return 34;
+  }
+
+  if (bestOffer.availability === 'unknown') {
+    return 12;
+  }
+
+  return 0;
+}
+
+export function scoreCatalogPublicDealMerchandisingCandidate({
+  catalogDiscoverySignal,
+  currentOfferSummary,
+  rotationSeed,
+  setCard,
+}: {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+  rotationSeed?: number;
+  setCard: CatalogHomepageSetCard;
+}): CatalogPublicDealMerchandisingScore {
+  const bestOffer = currentOfferSummary?.bestOffer;
+  const referenceDiscountMinor = getCatalogReferenceDiscountMinor(
+    catalogDiscoverySignal,
+  );
+  const legoDiscountMinor =
+    getCatalogOfficialLegoDiscountMinor(currentOfferSummary) ?? 0;
+  const bestReferencePriceMinor =
+    catalogDiscoverySignal?.bestPriceMinor && referenceDiscountMinor
+      ? catalogDiscoverySignal.bestPriceMinor + referenceDiscountMinor
+      : undefined;
+  const referenceDiscountRatio =
+    bestReferencePriceMinor && bestReferencePriceMinor > 0
+      ? referenceDiscountMinor / bestReferencePriceMinor
+      : 0;
+  const legoDiscountRatio =
+    bestOffer && legoDiscountMinor > 0
+      ? legoDiscountMinor / (bestOffer.priceCents + legoDiscountMinor)
+      : 0;
+  const merchantCount = Math.max(
+    getCatalogOfferMerchantCount(currentOfferSummary),
+    catalogDiscoverySignal?.merchantCount ?? 0,
+  );
+  const discountScore =
+    Math.min(referenceDiscountRatio * 260, 54) +
+    Math.min(legoDiscountRatio * 220, 46);
+  const absoluteSavingsScore =
+    Math.min(referenceDiscountMinor / 180, 50) +
+    Math.min(legoDiscountMinor / 180, 42);
+  const competitionScore =
+    Math.min(merchantCount, 6) * 8 +
+    (merchantCount >= 2 ? 18 : 0) +
+    Math.min(
+      Math.max(
+        catalogDiscoverySignal?.priceSpreadMinor ?? 0,
+        getCatalogCurrentOfferPriceSpreadMinor(currentOfferSummary),
+      ) / 450,
+      28,
+    );
+  const freshnessScore =
+    getCatalogRecentDropScore(catalogDiscoverySignal) +
+    (catalogDiscoverySignal
+      ? getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) *
+        0.45
+      : 0);
+  const merchantReliabilityScore =
+    getCatalogMerchantReliabilityScore(currentOfferSummary);
+  const stockConfidenceScore =
+    getCatalogStockConfidenceScore(currentOfferSummary);
+  const legoComparisonScore =
+    legoDiscountMinor > 0 ? Math.min(20 + legoDiscountMinor / 220, 50) : 0;
+  const rotationScore =
+    getCatalogRailRotationRatio({
+      rotationSeed,
+      setId: setCard.id,
+    }) * 16;
+
+  return {
+    absoluteSavingsScore,
+    competitionScore,
+    discountScore,
+    freshnessScore,
+    legoComparisonScore,
+    merchantReliabilityScore,
+    rotationScore,
+    stockConfidenceScore,
+    total:
+      discountScore +
+      absoluteSavingsScore +
+      competitionScore +
+      freshnessScore +
+      merchantReliabilityScore +
+      stockConfidenceScore +
+      legoComparisonScore +
+      rotationScore,
+  };
+}
+
+function compareCatalogPublicDealCandidates(
+  left: CatalogPublicDealMerchandisingCandidate,
+  right: CatalogPublicDealMerchandisingCandidate,
+): number {
+  const leftBand = Math.floor(
+    left.score.total / CATALOG_PUBLIC_DEAL_SCORE_BAND_SIZE,
+  );
+  const rightBand = Math.floor(
+    right.score.total / CATALOG_PUBLIC_DEAL_SCORE_BAND_SIZE,
+  );
+
+  return (
+    rightBand - leftBand ||
+    right.score.freshnessScore - left.score.freshnessScore ||
+    right.score.rotationScore - left.score.rotationScore ||
+    right.score.total - left.score.total ||
+    (right.currentOfferSummary?.offers.length ?? 0) -
+      (left.currentOfferSummary?.offers.length ?? 0) ||
+    right.setCard.releaseYear - left.setCard.releaseYear ||
+    right.setCard.pieces - left.setCard.pieces ||
+    left.setCard.name.localeCompare(right.setCard.name) ||
+    left.setCard.id.localeCompare(right.setCard.id)
+  );
+}
+
+function selectCatalogDiversePublicDealSetCards({
+  candidates,
+  limit,
+  maxPerTheme = CATALOG_PUBLIC_DEAL_DEFAULT_MAX_PER_THEME,
+  recentlyFeaturedSetIds = [],
+  rotationSeed,
+}: {
+  candidates: readonly CatalogPublicDealMerchandisingCandidate[];
+  limit: number;
+  maxPerTheme?: number;
+  recentlyFeaturedSetIds?: readonly string[];
+  rotationSeed?: number;
+}): CatalogHomepageSetCard[] {
+  const recentlyFeaturedSetIdSet = new Set(recentlyFeaturedSetIds);
+  const selectedSetIds = new Set<string>();
+  const selectedSetCards: CatalogHomepageSetCard[] = [];
+  const selectedCountByTheme = new Map<string, number>();
+  const currentCooldownBucket =
+    Math.abs(getCatalogRailRotationSeed(rotationSeed)) %
+    CATALOG_PUBLIC_DEAL_DEFAULT_COOLDOWN_BUCKET_COUNT;
+  const sortedCandidates = [...candidates].sort(
+    compareCatalogPublicDealCandidates,
+  );
+
+  const trySelect = ({
+    enforceThemeLimit,
+    enforceCooldown,
+  }: {
+    enforceCooldown: boolean;
+    enforceThemeLimit: boolean;
+  }) => {
+    for (const candidate of sortedCandidates) {
+      if (selectedSetCards.length >= limit) {
+        return;
+      }
+
+      if (
+        selectedSetIds.has(candidate.setCard.id) ||
+        recentlyFeaturedSetIdSet.has(candidate.setCard.id)
+      ) {
+        continue;
+      }
+
+      const themeKey = getCatalogMerchandisingThemeKey(candidate.setCard.theme);
+      const selectedThemeCount = selectedCountByTheme.get(themeKey) ?? 0;
+
+      if (enforceThemeLimit && selectedThemeCount >= maxPerTheme) {
+        continue;
+      }
+
+      if (enforceCooldown) {
+        const setCooldownBucket =
+          getCatalogRailRotationScore({
+            rotationSeed: 0,
+            setId: candidate.setCard.id,
+          }) % CATALOG_PUBLIC_DEAL_DEFAULT_COOLDOWN_BUCKET_COUNT;
+
+        if (
+          setCooldownBucket === currentCooldownBucket &&
+          candidate.score.freshnessScore < 18
+        ) {
+          continue;
+        }
+      }
+
+      selectedSetIds.add(candidate.setCard.id);
+      selectedSetCards.push(candidate.setCard);
+      selectedCountByTheme.set(themeKey, selectedThemeCount + 1);
+    }
+  };
+
+  trySelect({ enforceCooldown: true, enforceThemeLimit: true });
+  trySelect({ enforceCooldown: false, enforceThemeLimit: true });
+  trySelect({ enforceCooldown: false, enforceThemeLimit: false });
+
+  return selectedSetCards;
 }
 
 function sortCatalogRailCandidatesWithRotation<
@@ -4429,6 +4835,8 @@ export function rankCatalogPartnerOfferSetCards({
   currentOfferSummaryBySetId,
   excludedSetIds = [],
   limit = 6,
+  maxPerTheme,
+  recentlyFeaturedSetIds = [],
   requirePrimaryDealQuality = false,
   rotationSeed,
   setCards,
@@ -4437,49 +4845,54 @@ export function rankCatalogPartnerOfferSetCards({
   currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
   excludedSetIds?: readonly string[];
   limit?: number;
+  maxPerTheme?: number;
+  recentlyFeaturedSetIds?: readonly string[];
   requirePrimaryDealQuality?: boolean;
   rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
 
-  return [...setCards]
-    .filter((setCard) => {
-      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
-      const catalogDiscoverySignal = catalogDiscoverySignalBySetId.get(
-        setCard.id,
-      );
+  const candidates = [...setCards].flatMap((setCard) => {
+    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+    const catalogDiscoverySignal = catalogDiscoverySignalBySetId.get(
+      setCard.id,
+    );
 
-      return (
-        !excludedSetIdSet.has(setCard.id) &&
-        hasCatalogCurrentPartnerOffer(currentOfferSummary) &&
-        (!requirePrimaryDealQuality ||
-          isCatalogPrimaryDealCandidate({
-            catalogDiscoverySignal,
-            currentOfferSummary,
-          }))
-      );
-    })
-    .sort(
-      (left, right) =>
-        getCatalogPartnerOfferScore({
-          catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(right.id),
-          currentOfferSummary: currentOfferSummaryBySetId.get(right.id),
+    if (
+      excludedSetIdSet.has(setCard.id) ||
+      !hasCatalogCurrentPartnerOffer(currentOfferSummary) ||
+      (requirePrimaryDealQuality &&
+        !isCatalogPrimaryDealCandidate({
+          catalogDiscoverySignal,
+          currentOfferSummary,
+        }))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        catalogDiscoverySignal,
+        currentOfferSummary,
+        score: scoreCatalogPublicDealMerchandisingCandidate({
+          catalogDiscoverySignal,
+          currentOfferSummary,
           rotationSeed,
-          setCard: right,
-        }) -
-          getCatalogPartnerOfferScore({
-            catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(left.id),
-            currentOfferSummary: currentOfferSummaryBySetId.get(left.id),
-            rotationSeed,
-            setCard: left,
-          }) ||
-        right.releaseYear - left.releaseYear ||
-        right.pieces - left.pieces ||
-        left.name.localeCompare(right.name) ||
-        left.id.localeCompare(right.id),
-    )
-    .slice(0, limit);
+          setCard,
+        }),
+        setCard,
+      },
+    ];
+  });
+
+  return selectCatalogDiversePublicDealSetCards({
+    candidates,
+    limit,
+    maxPerTheme,
+    recentlyFeaturedSetIds,
+    rotationSeed,
+  });
 }
 
 export function selectCatalogFirstCommerceRailSetCards({
@@ -5004,6 +5417,7 @@ export function rankCatalogComparisonDiscoverySetCards({
   excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  rotationSeed,
   setCards,
 }: {
   excludedSetIds?: readonly string[];
@@ -5011,6 +5425,7 @@ export function rankCatalogComparisonDiscoverySetCards({
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
@@ -5029,6 +5444,7 @@ export function rankCatalogComparisonDiscoverySetCards({
 
       return catalogDiscoverySignal;
     },
+    rotationSeed,
     scoreCatalogDiscoverySignal: getCatalogComparisonDiscoveryScore,
     setCards,
   }).slice(0, limit);
@@ -5233,6 +5649,8 @@ export function rankCatalogBestDealSetCards({
   excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  maxPerTheme,
+  recentlyFeaturedSetIds = [],
   rotationSeed,
   setCards,
 }: {
@@ -5242,46 +5660,57 @@ export function rankCatalogBestDealSetCards({
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  maxPerTheme?: number;
+  recentlyFeaturedSetIds?: readonly string[];
   rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
 
-  return sortCatalogRailCandidatesWithRotation({
-    candidates: [...setCards].flatMap((setCard) => {
-      if (excludedSetIdSet.has(setCard.id)) {
-        return [];
-      }
+  const candidates = [...setCards].flatMap((setCard) => {
+    if (excludedSetIdSet.has(setCard.id)) {
+      return [];
+    }
 
-      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
-      const currentOfferSummary = currentOfferSummaryBySetId?.get(setCard.id);
+    const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+    const currentOfferSummary = currentOfferSummaryBySetId?.get(setCard.id);
 
-      if (
-        !catalogDiscoverySignal ||
-        catalogDiscoverySignal.merchantCount <
-          HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT ||
-        !isCatalogBestDealCandidate(catalogDiscoverySignal) ||
-        (currentOfferSummaryBySetId &&
-          !isCatalogPrimaryDealCandidate({
-            catalogDiscoverySignal,
-            currentOfferSummary,
-          }))
-      ) {
-        return [];
-      }
-
-      return [
-        {
+    if (
+      !catalogDiscoverySignal ||
+      catalogDiscoverySignal.merchantCount <
+        HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT ||
+      !isCatalogBestDealCandidate(catalogDiscoverySignal) ||
+      (currentOfferSummaryBySetId &&
+        !isCatalogPrimaryDealCandidate({
           catalogDiscoverySignal,
-          score: getCatalogBestDealDiscoveryScore(catalogDiscoverySignal),
+          currentOfferSummary,
+        }))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        catalogDiscoverySignal,
+        currentOfferSummary,
+        score: scoreCatalogPublicDealMerchandisingCandidate({
+          catalogDiscoverySignal,
+          currentOfferSummary,
+          rotationSeed,
           setCard,
-        },
-      ];
-    }),
+        }),
+        setCard,
+      },
+    ];
+  });
+
+  return selectCatalogDiversePublicDealSetCards({
+    candidates,
+    limit,
+    maxPerTheme,
+    recentlyFeaturedSetIds,
     rotationSeed,
-  })
-    .slice(0, limit)
-    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+  });
 }
 
 export function rankCatalogNowInterestingSetCards({
@@ -5289,6 +5718,8 @@ export function rankCatalogNowInterestingSetCards({
   excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  maxPerTheme,
+  recentlyFeaturedSetIds = [],
   rotationSeed,
   setCards,
 }: {
@@ -5298,45 +5729,56 @@ export function rankCatalogNowInterestingSetCards({
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  maxPerTheme?: number;
+  recentlyFeaturedSetIds?: readonly string[];
   rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
 
-  return sortCatalogRailCandidatesWithRotation({
-    candidates: [...setCards].flatMap((setCard) => {
-      if (excludedSetIdSet.has(setCard.id)) {
-        return [];
-      }
+  const candidates = [...setCards].flatMap((setCard) => {
+    if (excludedSetIdSet.has(setCard.id)) {
+      return [];
+    }
 
-      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
-      const currentOfferSummary = currentOfferSummaryBySetId?.get(setCard.id);
+    const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+    const currentOfferSummary = currentOfferSummaryBySetId?.get(setCard.id);
 
-      if (
-        !catalogDiscoverySignal ||
-        !isCatalogInterestingNowCandidate(catalogDiscoverySignal) ||
-        (currentOfferSummaryBySetId &&
-          !canCatalogSetDriveSoftPriceOpportunity({
-            catalogDiscoverySignal,
-            currentOfferSummary,
-            setCard,
-          }))
-      ) {
-        return [];
-      }
-
-      return [
-        {
+    if (
+      !catalogDiscoverySignal ||
+      !isCatalogInterestingNowCandidate(catalogDiscoverySignal) ||
+      (currentOfferSummaryBySetId &&
+        !canCatalogSetDriveSoftPriceOpportunity({
           catalogDiscoverySignal,
-          score: getCatalogNowInterestingScore(catalogDiscoverySignal),
+          currentOfferSummary,
           setCard,
-        },
-      ];
-    }),
+        }))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        catalogDiscoverySignal,
+        currentOfferSummary,
+        score: scoreCatalogPublicDealMerchandisingCandidate({
+          catalogDiscoverySignal,
+          currentOfferSummary,
+          rotationSeed,
+          setCard,
+        }),
+        setCard,
+      },
+    ];
+  });
+
+  return selectCatalogDiversePublicDealSetCards({
+    candidates,
+    limit,
+    maxPerTheme,
+    recentlyFeaturedSetIds,
     rotationSeed,
-  })
-    .slice(0, limit)
-    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+  });
 }
 
 export function rankCatalogRecentlyReleasedSetCards({

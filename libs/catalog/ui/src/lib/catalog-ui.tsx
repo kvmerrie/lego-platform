@@ -569,6 +569,10 @@ function getCardMerchantLabel(merchantLabel: string): string {
   return `Laagst bij ${trimmedMerchantLabel}`;
 }
 
+function isDuplicatePriceContextLine(left?: string, right?: string): boolean {
+  return Boolean(left && right && left.trim() === right.trim());
+}
+
 function getCardPrimaryActionConfig({
   href,
   trackingEvent,
@@ -1159,7 +1163,11 @@ export function CatalogSetCard({
                     {priceContext.discountMetric}
                   </p>
                 ) : null}
-                {priceContext.dealReason ? (
+                {priceContext.dealReason &&
+                !isDuplicatePriceContextLine(
+                  priceContext.dealReason,
+                  priceContext.discountMetric,
+                ) ? (
                   <p className={styles.dealReason}>{priceContext.dealReason}</p>
                 ) : null}
                 <p className={styles.cardCompactSupporting}>
@@ -1287,7 +1295,11 @@ export function CatalogSetCard({
               {priceContext.discountMetric}
             </p>
           ) : null}
-          {priceContext.dealReason ? (
+          {priceContext.dealReason &&
+          !isDuplicatePriceContextLine(
+            priceContext.dealReason,
+            priceContext.discountMetric,
+          ) ? (
             <p className={styles.dealReason}>{priceContext.dealReason}</p>
           ) : null}
           <p className={styles.priceMeta}>

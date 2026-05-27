@@ -458,7 +458,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(dialog?.textContent).toContain(
       'Coppenswarenhuis Met Een Extra Lange Winkelnaam',
     );
-    expect(dialog?.textContent).toContain('€1.144,57 goedkoper dan de rest');
+    expect(dialog?.textContent).toContain('€10 goedkoper dan de rest');
     expect(dialog?.textContent).toContain('€1.144,57 duurder');
   });
 

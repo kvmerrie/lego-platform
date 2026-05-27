@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { buildCompactOfferPresentation } from './catalog-offer-comparison-rail';
+import {
+  buildCompactOfferComparisonContext,
+  buildCompactOfferPresentation,
+} from './catalog-offer-comparison-rail';
 import {
   CatalogKeyFacts,
   CatalogOfferComparison,
@@ -476,6 +479,60 @@ describe('Catalog commerce UI', () => {
 
     expect(presentation.deltaLabel).toBe('Zelfde prijs');
     expect(presentation.priceComparisonState).toBe('same');
+  });
+
+  it('keeps lowest-price alternatives distinct from recommended best deals', () => {
+    const comparisonContext = buildCompactOfferComparisonContext([
+      {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/joybuy',
+        ctaLabel: 'Bekijk bij Joybuy',
+        merchantLabel: 'Joybuy',
+        price: '€ 58,40',
+        rankingLabel: 'Laagste prijs',
+        stockLabel: 'Op voorraad',
+      },
+      {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/lidl',
+        ctaLabel: 'Bekijk bij Lidl',
+        isBest: true,
+        merchantLabel: 'Lidl',
+        price: '€ 61,99',
+        rankingLabel: '€ 3,59 boven laagste prijs',
+        stockLabel: 'Op voorraad',
+      },
+    ]);
+    const joybuyPresentation = buildCompactOfferPresentation({
+      comparisonContext,
+      offer: {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/joybuy',
+        ctaLabel: 'Bekijk bij Joybuy',
+        merchantLabel: 'Joybuy',
+        price: '€ 58,40',
+        rankingLabel: 'Laagste prijs',
+        stockLabel: 'Op voorraad',
+      },
+    });
+    const lidlPresentation = buildCompactOfferPresentation({
+      comparisonContext,
+      offer: {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/lidl',
+        ctaLabel: 'Bekijk bij Lidl',
+        isBest: true,
+        merchantLabel: 'Lidl',
+        price: '€ 61,99',
+        rankingLabel: '€ 3,59 boven laagste prijs',
+        stockLabel: 'Op voorraad',
+      },
+    });
+
+    expect(joybuyPresentation.deltaLabel).toBe('Laagste prijs');
+    expect(joybuyPresentation.priceComparisonState).toBe('same');
+    expect(lidlPresentation.confidenceLabel).toBe('€3,59 boven laagste prijs');
+    expect(lidlPresentation.priceComparisonState).toBe('best');
   });
 
   it('shows the savings versus the next-best reviewed offer on the best card without an extra label', () => {

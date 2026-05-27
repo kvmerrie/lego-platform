@@ -80,7 +80,10 @@ import {
   type CatalogReleaseDatePrecision,
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
-import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
+import {
+  buildCurrentSetCardPriceContext,
+  buildCurrentSetCardPriceContextBySetId,
+} from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import {
   buildSetBreadcrumbJsonLd,
@@ -756,6 +759,16 @@ function getNextBestOfferPriceDeltaMinor(
     : undefined;
 }
 
+function getLowestComparableCatalogOffer(
+  offers: readonly CatalogOffer[],
+): CatalogOffer | undefined {
+  return sortCatalogOffers(dedupeCatalogOffersByPublicMerchant(offers)).find(
+    (catalogOffer) =>
+      catalogOffer.availability === 'in_stock' ||
+      catalogOffer.availability === 'unknown',
+  );
+}
+
 function getCatalogOfferMerchantSlug(
   catalogOffer: CatalogOffer,
 ): string | undefined {
@@ -1121,14 +1134,23 @@ function buildOfferSummaryLabel({
 function buildBestOfferRankingLabel({
   availability,
   currencyCode,
+  lowestPriceDeltaMinor,
   merchantCount,
   nextBestPriceDeltaMinor,
 }: {
   availability: CatalogOffer['availability'];
   currencyCode: string;
+  lowestPriceDeltaMinor?: number;
   merchantCount?: number;
   nextBestPriceDeltaMinor?: number;
 }): string {
+  if (typeof lowestPriceDeltaMinor === 'number' && lowestPriceDeltaMinor > 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: lowestPriceDeltaMinor,
+    })} boven laagste prijs`;
+  }
+
   if (
     typeof nextBestPriceDeltaMinor === 'number' &&
     nextBestPriceDeltaMinor > 0
@@ -1168,21 +1190,43 @@ function shortenCommerceHeroDecisionHelper(explanation: string): string {
 function buildOfferRankingLabel({
   bestOffer,
   catalogOffer,
+  lowestOffer,
 }: {
   bestOffer?: CatalogOffer | null;
   catalogOffer: CatalogOffer;
+  lowestOffer?: CatalogOffer;
 }): string | undefined {
   if (!bestOffer) {
     return undefined;
   }
 
+  if (
+    lowestOffer?.url === catalogOffer.url &&
+    bestOffer.url !== catalogOffer.url
+  ) {
+    return 'Laagste prijs';
+  }
+
   if (bestOffer.url === catalogOffer.url) {
+    if (lowestOffer && lowestOffer.url !== catalogOffer.url) {
+      const lowestPriceDeltaMinor =
+        catalogOffer.priceCents - lowestOffer.priceCents;
+
+      if (lowestPriceDeltaMinor > 0) {
+        return `${formatPriceMinor({
+          currencyCode: catalogOffer.currency,
+          minorUnits: lowestPriceDeltaMinor,
+        })} boven laagste prijs`;
+      }
+    }
+
     return bestOffer.availability === 'in_stock'
       ? 'Laagste prijs op voorraad'
       : 'Laagste nagekeken prijs';
   }
 
-  const priceDeltaMinor = catalogOffer.priceCents - bestOffer.priceCents;
+  const comparisonOffer = lowestOffer ?? bestOffer;
+  const priceDeltaMinor = catalogOffer.priceCents - comparisonOffer.priceCents;
 
   if (priceDeltaMinor < 0) {
     const lowerPriceLabel = formatPriceMinor({
@@ -1202,7 +1246,9 @@ function buildOfferRankingLabel({
   }
 
   if (priceDeltaMinor === 0) {
-    return 'Zelfde prijs als de beste optie';
+    return comparisonOffer.url === catalogOffer.url
+      ? 'Laagste prijs'
+      : 'Zelfde prijs als de beste optie';
   }
 
   return `${formatPriceMinor({
@@ -1210,6 +1256,13 @@ function buildOfferRankingLabel({
     minorUnits: priceDeltaMinor,
   })} hoger dan de beste optie`;
 }
+
+type SetDetailDealVerdict = Omit<
+  ReturnType<typeof buildSetDealVerdict>,
+  'label'
+> & {
+  label: string;
+};
 
 function buildBestDeal({
   catalogOffer,
@@ -1224,7 +1277,7 @@ function buildBestDeal({
   catalogOffer?: CatalogOffer | null;
   catalogOffers?: readonly CatalogOffer[];
   decisionPresentation: ReturnType<typeof buildSetDecisionPresentation>;
-  dealVerdict: ReturnType<typeof buildSetDealVerdict>;
+  dealVerdict: SetDetailDealVerdict;
   merchantCount?: number;
   setId: string;
   pricePanelSnapshot?: PricePanelSnapshot;
@@ -1264,6 +1317,13 @@ function buildBestDeal({
 
   const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
   const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
+  const lowestComparableOffer = getLowestComparableCatalogOffer(
+    catalogOffers ?? [catalogOffer],
+  );
+  const lowestPriceDeltaMinor =
+    lowestComparableOffer && lowestComparableOffer.url !== catalogOffer.url
+      ? catalogOffer.priceCents - lowestComparableOffer.priceCents
+      : undefined;
   const nextBestPriceDeltaMinor = getNextBestOfferPriceDeltaMinor(
     catalogOffers ?? [catalogOffer],
     catalogOffer,
@@ -1286,6 +1346,7 @@ function buildBestDeal({
     rankingLabel: buildBestOfferRankingLabel({
       availability: catalogOffer.availability,
       currencyCode: catalogOffer.currency,
+      lowestPriceDeltaMinor,
       merchantCount,
       nextBestPriceDeltaMinor,
     }),
@@ -1325,6 +1386,8 @@ function buildOfferList(
   },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
+  const lowestOffer = getLowestComparableCatalogOffer(catalogOffers);
+
   return sortCatalogOffers(
     dedupeCatalogOffersByPublicMerchant(catalogOffers),
   ).map((catalogOffer, index) => {
@@ -1340,6 +1403,7 @@ function buildOfferList(
       rankingLabel: buildOfferRankingLabel({
         bestOffer,
         catalogOffer,
+        lowestOffer,
       }),
       stockLabel: getOfferStockLabel(catalogOffer.availability),
       trackingEvent: {
@@ -2141,11 +2205,34 @@ export default async function SetDetailPage({
       theme: catalogSetDetail.theme,
     },
   );
+  const currentDealPriceContext =
+    currentOfferSummary && !hasTrackedAvailabilityFallback
+      ? buildCurrentSetCardPriceContext({
+          catalogDiscoverySignal,
+          currentOfferSummary,
+          pricePanelSnapshot: effectiveDealPricePanelSnapshot,
+          theme: catalogSetDetail.theme,
+        })
+      : undefined;
+  const effectiveDealVerdict =
+    currentDealPriceContext?.decisionLabel &&
+    currentDealPriceContext.decisionLabel !== defaultDealVerdict.label
+      ? {
+          ...defaultDealVerdict,
+          label: currentDealPriceContext.decisionLabel,
+          tone:
+            currentDealPriceContext.decisionLabel === 'Goede deal' ||
+            currentDealPriceContext.decisionLabel === 'Sterke deal' ||
+            currentDealPriceContext.decisionLabel === 'Topdeal'
+              ? 'positive'
+              : defaultDealVerdict.tone,
+        }
+      : defaultDealVerdict;
   const dealVerdict: CatalogSetDetailVerdict = hasTrackedAvailabilityFallback
     ? buildTrackedAvailabilityFallbackDealVerdict({
         state: availabilityFallbackState,
       })
-    : defaultDealVerdict;
+    : effectiveDealVerdict;
   const trackedMerchantCount = localizedSetDetailOffers.length;
   const unavailableCheckedAt =
     primaryOfferAvailability.latestPrimaryOfferCheckedAt ??
@@ -2220,7 +2307,7 @@ export default async function SetDetailPage({
                 catalogOffer: bestOffer,
                 catalogOffers: localizedSetDetailOffers,
                 decisionPresentation: defaultDecisionPresentation,
-                dealVerdict: defaultDealVerdict,
+                dealVerdict: effectiveDealVerdict,
                 merchantCount:
                   trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
                 setId: catalogSetDetail.id,

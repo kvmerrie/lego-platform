@@ -138,6 +138,7 @@ describe('home metadata', () => {
     pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
     pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
     pageMocks.listHomepageSetCards.mockResolvedValue([]);
+    pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
     pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -194,6 +195,24 @@ describe('home metadata', () => {
       ]),
     );
     pageMocks.listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '42177',
+        name: 'Mercedes-AMG F1 W14 E Performance',
+        pieces: 1642,
+        releaseYear: 2024,
+        slug: 'mercedes-amg-f1-w14-e-performance-42177',
+        theme: 'Technic',
+      },
+      {
+        id: '75355',
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ]);
+    pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([
       {
         id: '42177',
         name: 'Mercedes-AMG F1 W14 E Performance',

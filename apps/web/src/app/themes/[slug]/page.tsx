@@ -54,6 +54,10 @@ const THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let themePagePerfLogCount = 0;
 
+function getPublicMerchandisingRotationSeed(): number {
+  return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
+}
+
 function isThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
 }
@@ -340,6 +344,7 @@ async function loadThemeDealSetCards({
     getCatalogDiscoverySignalFn: (setId) =>
       catalogDiscoverySignalBySetId.get(setId),
     limit: THEME_DISCOVERY_RAIL_LIMIT,
+    rotationSeed: getPublicMerchandisingRotationSeed(),
     setCards: themePage.setCards,
   });
 

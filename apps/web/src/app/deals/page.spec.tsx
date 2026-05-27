@@ -70,6 +70,7 @@ describe('deals page discovery signals', () => {
     vi.clearAllMocks();
     dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
     dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
+    dealsPageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
     dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -108,6 +109,18 @@ describe('deals page discovery signals', () => {
         theme: 'Technic',
       },
     ]);
+    dealsPageMocks.rankCatalogPartnerOfferSetCards
+      .mockReturnValueOnce([])
+      .mockReturnValueOnce([
+        {
+          id: '42177',
+          name: 'Mercedes-AMG F1 W14 E Performance',
+          pieces: 1642,
+          releaseYear: 2024,
+          slug: 'mercedes-amg-f1-w14-e-performance-42177',
+          theme: 'Technic',
+        },
+      ]);
     dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
     );

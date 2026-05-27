@@ -10,12 +10,14 @@ import {
   compareReliableDealDiscounts,
 } from './current-set-card-price-context';
 
+const RECENT_CHECKED_AT = new Date().toISOString();
+
 function createOffer(
   overrides: Partial<CatalogResolvedOffer> = {},
 ): CatalogResolvedOffer {
   return {
     availability: 'in_stock',
-    checkedAt: '2026-05-11T07:01:00.000Z',
+    checkedAt: RECENT_CHECKED_AT,
     condition: 'new',
     commercialUnitType: 'full_set',
     currency: 'EUR',
@@ -92,7 +94,7 @@ describe('buildCurrentSetCardPriceContext', () => {
       theme: 'Icons',
     });
 
-    expect(result?.dealReason).toBeUndefined();
+    expect(result?.dealReason).toBe('Laagste prijs');
     expect(result?.discountMetric).toBeUndefined();
   });
 
@@ -113,7 +115,7 @@ describe('buildCurrentSetCardPriceContext', () => {
     expect(result?.discountMetric).toBeUndefined();
   });
 
-  it('renders a discount metric when the reference discount is reliable', () => {
+  it('does not render a deal metric for a weak three percent reference discount', () => {
     const result = buildCurrentSetCardPriceContext({
       currentOfferSummary: createCurrentOfferSummary({
         offers: [
@@ -128,8 +130,164 @@ describe('buildCurrentSetCardPriceContext', () => {
       theme: 'Icons',
     });
 
-    expect(result?.discountMetric).toContain('€ 15,00 goedkoper');
-    expect(result?.discountMetric).toContain('3% lager');
+    expect(result?.discountMetric).toBeUndefined();
+    expect(result?.dealReason).toBe('Beste marktprijs');
+    expect(result?.decisionLabel).toBe('Actuele prijs binnen');
+  });
+
+  it('uses official LEGO pricing as a public comparison when available', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 49_999,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({
+            merchantName: 'Goodbricks',
+            priceCents: 39_999,
+          }),
+          legoOffer,
+        ],
+      }),
+      theme: 'Icons',
+    });
+
+    expect(result?.discountMetric).toBe('€ 100,00 goedkoper dan LEGO');
+    expect(result?.discountMetric).not.toContain('20%');
+    expect(result?.dealReason).toBe('Beste marktprijs');
+    expect(result?.decisionLabel).toBe('Sterke deal');
+    expect(result?.merchantLabel).toBe('Nu het laagst bij Goodbricks');
+  });
+
+  it('does not promote a Shire-like weak LEGO saving to a deal', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 26_999,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({
+            merchantName: 'Goodbricks',
+            priceCents: 25_999,
+          }),
+          legoOffer,
+        ],
+      }),
+      theme: 'Icons',
+    });
+
+    expect(result?.decisionLabel).toBe('Actuele prijs binnen');
+    expect(result?.discountMetric).toBeUndefined();
+    expect(result?.dealReason).toBe('Beste marktprijs');
+  });
+
+  it('promotes a Trevi-like LEGO saving to a top deal', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 15_999,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({
+            merchantName: 'Goodbricks',
+            priceCents: 10_900,
+          }),
+          legoOffer,
+        ],
+      }),
+      theme: 'Architecture',
+    });
+
+    expect(result?.decisionLabel).toBe('Topdeal');
+    expect(result?.discountMetric).toBe('€ 50,99 goedkoper dan LEGO');
+    expect(result?.dealReason).toBe('Beste marktprijs');
+  });
+
+  it('does not turn a one euro market spread into a deal claim', () => {
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({ merchantName: 'Goodbricks', priceCents: 9_999 }),
+          createOffer({ merchantName: 'Toyshop', priceCents: 10_099 }),
+        ],
+      }),
+      theme: 'Icons',
+    });
+
+    expect(result?.decisionLabel).toBe('Actuele prijs binnen');
+    expect(result?.discountMetric).toBeUndefined();
+    expect(result?.dealReason).toBe('Laagste prijs');
+  });
+
+  it('ignores an out-of-stock cheapest offer for deal quality', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 15_999,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: {
+        bestOffer: createOffer({
+          availability: 'out_of_stock',
+          merchantName: 'Old cheapest',
+          priceCents: 8_000,
+        }),
+        offers: [
+          createOffer({
+            availability: 'out_of_stock',
+            merchantName: 'Old cheapest',
+            priceCents: 8_000,
+          }),
+          createOffer({ merchantName: 'Goodbricks', priceCents: 10_900 }),
+          legoOffer,
+        ],
+        setId: '21062',
+      },
+      theme: 'Architecture',
+    });
+
+    expect(result?.currentPrice).toBe('€ 109,00');
+    expect(result?.decisionLabel).toBe('Topdeal');
+    expect(result?.merchantLabel).toBe('Nu het laagst bij Goodbricks');
+  });
+
+  it('does not compare LEGO against itself', () => {
+    const legoOffer = {
+      ...createOffer({
+        merchant: 'lego',
+        merchantName: 'LEGO EU',
+        priceCents: 49_999,
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: {
+        bestOffer: legoOffer,
+        offers: [legoOffer],
+        setId: '10316',
+      },
+      theme: 'Icons',
+    });
+
+    expect(result?.discountMetric).toBeUndefined();
     expect(result?.dealReason).toBeUndefined();
   });
 
@@ -174,12 +332,19 @@ describe('buildCurrentSetCardPriceContext', () => {
         priceSpreadMinor: 1_000,
       },
       currentOfferSummary: createCurrentOfferSummary({
-        offers: [createOffer(), createOffer({ merchantName: 'LEGO' })],
+        offers: [
+          createOffer(),
+          createOffer({
+            merchantName: 'LEGO',
+            priceCents: 5_999,
+            url: 'https://example.com/lego',
+          }),
+        ],
       }),
       theme: 'Icons',
     });
 
-    expect(result?.dealReason).toBe('€ 10,00 goedkoper dan de rest');
+    expect(result?.dealReason).toBe('Beste marktprijs');
   });
 
   it('sorts reliable discounts by percentage, absolute discount, then coverage', () => {

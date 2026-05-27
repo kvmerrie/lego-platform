@@ -4,7 +4,6 @@ import { getCachedPublicLandingPageData } from './lib/public-landing-page-cache'
 import {
   buildCurrentSetCardPriceContextBySetId,
   getCurrentOfferRailDiagnostics,
-  selectCurrentOfferSetCards,
 } from './lib/current-set-card-price-context';
 import styles from './page.module.css';
 import React from 'react';
@@ -32,6 +31,7 @@ import {
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
+  rankCatalogPartnerOfferSetCards,
   resolveHomepageFollowRailDiagnostics,
 } from '@lego-platform/catalog/data-access-web';
 import type {
@@ -79,6 +79,10 @@ const HOMEPAGE_CACHE_TAGS = [
   cacheTags.prices(),
   cacheTags.deals(),
 ] as const;
+
+function getPublicMerchandisingRotationSeed(): number {
+  return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
+}
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -609,7 +613,7 @@ async function loadHomepageLandingPageData({
     listHomepageThemeDirectoryItems(),
     listHomepageThemeSpotlightItems(),
   ]);
-  const commerceRailRotationSeed = 0;
+  const commerceRailRotationSeed = getPublicMerchandisingRotationSeed();
   const commerceCandidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
     cacheOptions: {
       revalidateSeconds: revalidate,
@@ -769,7 +773,7 @@ export default async function HomePage() {
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
   } = await getHomepageLandingPageData({ queryMode });
-  const commerceRailRotationSeed = 0;
+  const commerceRailRotationSeed = getPublicMerchandisingRotationSeed();
   const currentOfferSummaryBySetId = new Map(currentOfferSummaryEntries);
   const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
     ? await getCatalogCommerceRailRuntimeDiagnostics({
@@ -809,15 +813,19 @@ export default async function HomePage() {
     homepageSoftDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
       ? homepageSoftDealCandidates
       : [];
-  const homepageCurrentOfferCandidateSetCards = selectCurrentOfferSetCards({
-    currentOfferSummaryBySetId,
-    excludedSetIds: getUniqueCatalogSetIds([
-      homepageStrongDealSetCards,
-      homepageSoftDealSetCards,
-    ]),
-    limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
-    setCards: commerceCandidateSetCards,
-  });
+  const homepageCurrentOfferCandidateSetCards = rankCatalogPartnerOfferSetCards(
+    {
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      excludedSetIds: getUniqueCatalogSetIds([
+        homepageStrongDealSetCards,
+        homepageSoftDealSetCards,
+      ]),
+      limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+      rotationSeed: commerceRailRotationSeed,
+      setCards: commerceCandidateSetCards,
+    },
+  );
   const homepageCurrentOfferCandidates = toFeatureSetListItems(
     homepageCurrentOfferCandidateSetCards,
     currentOfferSummaryBySetId,

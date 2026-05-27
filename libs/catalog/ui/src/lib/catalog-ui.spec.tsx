@@ -759,6 +759,35 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('€ 60,00 goedkoper · 11% lager');
   });
 
+  it('renders duplicate deal context only once', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+          currentPrice: '€ 399,99',
+          dealReason: '€ 66,99 goedkoper dan LEGO',
+          discountMetric: '€ 66,99 goedkoper dan LEGO',
+          merchantLabel: 'Nu het laagst bij MediaMarkt',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup.match(/€ 66,99 goedkoper dan LEGO/g) ?? []).toHaveLength(1);
+    expect(markup).toContain('Laagst bij MediaMarkt');
+  });
+
   it('does not render an empty deal reason fallback', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
@@ -818,6 +847,35 @@ describe('CatalogSetCard', () => {
     expect(discountMetricRule).toContain('text-overflow: ellipsis;');
     expect(discountMetricRule).toContain('white-space: nowrap;');
     expect(discountMetricRule).toContain('min-width: 0;');
+  });
+
+  it('does not rely on ambiguous truncated LEGO percentage copy', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+          currentPrice: '€ 399,99',
+          discountMetric: '€ 66,99 goedkoper dan LEGO',
+          merchantLabel: 'Actuele prijs bij MediaMarkt',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('€ 66,99 goedkoper dan LEGO');
+    expect(markup).not.toContain('22%');
+    expect(markup).not.toContain('22% …');
   });
 
   it('keeps the homepage follow-later action lighter than the primary set click', () => {

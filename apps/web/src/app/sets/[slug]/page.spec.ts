@@ -73,6 +73,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     offerList?: readonly {
       ctaLabel?: string;
       merchantLabel?: string;
+      rankingLabel?: string;
     }[];
     recentlyViewedRail?: unknown;
     setNewsRail?: unknown;
@@ -117,6 +118,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
                 { key: index },
                 offer.ctaLabel,
                 offer.merchantLabel,
+                offer.rankingLabel,
               ),
             ),
           )
@@ -383,7 +385,7 @@ describe('set detail static generation', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-05T10:00:00.000Z',
+            checkedAt: '2099-05-05T10:00:00.000Z',
             currency: 'EUR',
             merchant: 'other',
             merchantName: 'Goodbricks',
@@ -1027,7 +1029,7 @@ describe('set detail page JSON-LD', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-05T10:00:00.000Z',
+            checkedAt: '2099-05-05T10:00:00.000Z',
             currency: 'EUR',
             merchant: 'bol',
             merchantName: 'bol',
@@ -1236,6 +1238,7 @@ describe('set detail page JSON-LD', () => {
           {
             availability: 'in_stock',
             checkedAt: '2026-05-05T10:00:00.000Z',
+            commercialUnitType: 'full_set',
             currency: 'EUR',
             merchant: 'other',
             merchantName: 'Wehkamp',
@@ -1245,6 +1248,7 @@ describe('set detail page JSON-LD', () => {
           {
             availability: 'in_stock',
             checkedAt: '2026-05-05T10:00:00.000Z',
+            commercialUnitType: 'full_set',
             currency: 'EUR',
             merchant: 'lego',
             merchantName: 'LEGO',
@@ -1268,8 +1272,90 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('data-testid="best-deal"');
     expect(html).toContain('data-tone="positive"');
-    expect(html).toContain('Goede deal');
+    expect(html).toContain('Sterke deal');
     expect(html).toContain('€ 50,00 goedkoper dan de rest');
+  });
+
+  it('keeps a cheaper excluded merchant as lowest price while recommending a trusted best deal', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '60443',
+      imageUrl: 'https://cdn.example.com/60443.jpg',
+      name: 'F1 Pit Stop and Pit Crew with Ferrari Car',
+      pieces: 322,
+      releaseYear: 2025,
+      slug: 'f1-pit-stop-and-pit-crew-with-ferrari-car-60443',
+      theme: 'City',
+    });
+    const joybuyOffer = {
+      availability: 'in_stock',
+      checkedAt: '2026-05-25T10:00:00.000Z',
+      condition: 'new',
+      currency: 'EUR',
+      market: 'NL',
+      merchant: 'other',
+      merchantName: 'Joybuy',
+      merchantSlug: 'joybuy',
+      priceCents: 5840,
+      setId: '60443',
+      url: 'https://joybuy.example/60443',
+    };
+    const lidlOffer = {
+      availability: 'in_stock',
+      checkedAt: '2026-05-25T10:00:00.000Z',
+      condition: 'new',
+      currency: 'EUR',
+      market: 'NL',
+      merchant: 'other',
+      merchantName: 'Lidl',
+      merchantSlug: 'lidl',
+      priceCents: 6199,
+      setId: '60443',
+      url: 'https://lidl.example/60443',
+    };
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
+      joybuyOffer,
+      lidlOffer,
+    ]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 2,
+        primarySeedCount: 2,
+        validPrimaryOfferCount: 2,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map([
+        [
+          '60443',
+          {
+            bestOffer: lidlOffer,
+            offers: [lidlOffer, joybuyOffer],
+            setId: '60443',
+          },
+        ],
+      ]),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'f1-pit-stop-and-pit-crew-with-ferrari-car-60443',
+        }),
+      }),
+    );
+
+    expect(html).toContain('Bekijk deal bij Lidl');
+    expect(html).toContain('Bij Lidl');
+    expect(html).toContain('€ 3,59 boven laagste prijs');
+    expect(html).toContain('Joybuy');
+    expect(html).toContain('Laagste prijs');
+    expect(html).not.toContain('Zelfde prijs als de beste optie');
   });
 
   it('omits Product structured data when no valid offer is available', async () => {

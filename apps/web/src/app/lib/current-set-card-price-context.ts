@@ -19,14 +19,31 @@ import {
 } from '@lego-platform/shared/config';
 
 const DEAL_REASON_MIN_MERCHANT_COUNT = 2;
-const DEAL_REASON_MIN_PRICE_SPREAD_MINOR = 100;
-const DEAL_REASON_MIN_REFERENCE_DISCOUNT_MINOR = 1000;
-const DEAL_REASON_MIN_REFERENCE_DISCOUNT_RATIO = 0.03;
+const MARKET_POSITION_MIN_SPREAD_MINOR = 1000;
+const MARKET_POSITION_MIN_SPREAD_RATIO = 0.05;
+const GOOD_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 1000;
+const GOOD_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.1;
+const STRONG_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 2500;
+const STRONG_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.2;
+const TOP_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 4000;
+const TOP_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.3;
+const MAX_DEAL_CLAIM_OFFER_AGE_DAYS = 30;
+
+type DealQualityLabel = 'Goede deal' | 'Sterke deal' | 'Topdeal';
+type DealReferencePriceContext = Pick<
+  FeaturedSetPriceContext,
+  'deltaMinor' | 'merchantCount' | 'referencePriceMinor'
+>;
 
 export interface ReliableDealDiscount {
   absoluteMinor: number;
+  label: DealQualityLabel;
   percentage: number;
   metricLabel: string;
+}
+
+interface OfficialLegoComparison extends ReliableDealDiscount {
+  percentageLabel: string;
 }
 
 export interface CurrentOfferRailDiagnostics {
@@ -78,6 +95,82 @@ function canBestOfferDriveDealClaims(
   );
 }
 
+function isOfferRecentEnough(
+  offer?: CatalogCurrentOfferSummary['bestOffer'],
+): boolean {
+  if (!offer?.checkedAt) {
+    return false;
+  }
+
+  const checkedAtTime = Date.parse(offer.checkedAt);
+
+  if (!Number.isFinite(checkedAtTime)) {
+    return false;
+  }
+
+  const ageMs = Date.now() - checkedAtTime;
+
+  if (ageMs < 0) {
+    return true;
+  }
+
+  return ageMs <= MAX_DEAL_CLAIM_OFFER_AGE_DAYS * 24 * 60 * 60 * 1000;
+}
+
+function isEligibleCurrentDealOffer(
+  offer?: CatalogCurrentOfferSummary['bestOffer'],
+): offer is NonNullable<CatalogCurrentOfferSummary['bestOffer']> {
+  return Boolean(
+    offer &&
+      offer.availability === 'in_stock' &&
+      offer.currency === 'EUR' &&
+      offer.priceCents > 0 &&
+      offer.url &&
+      isOfferRecentEnough(offer),
+  );
+}
+
+function getComparableInStockOffers(
+  currentOfferSummary: CatalogCurrentOfferSummary,
+): NonNullable<CatalogCurrentOfferSummary['bestOffer']>[] {
+  const offerByKey = new Map<
+    string,
+    NonNullable<CatalogCurrentOfferSummary['bestOffer']>
+  >();
+
+  for (const offer of [
+    ...currentOfferSummary.offers,
+    currentOfferSummary.bestOffer,
+  ]) {
+    if (!isEligibleCurrentDealOffer(offer)) {
+      continue;
+    }
+
+    offerByKey.set(
+      [
+        'merchantSlug' in offer && typeof offer.merchantSlug === 'string'
+          ? offer.merchantSlug
+          : offer.merchant,
+        offer.url,
+        offer.priceCents,
+      ].join('|'),
+      offer,
+    );
+  }
+
+  return [...offerByKey.values()].sort(
+    (left, right) =>
+      left.priceCents - right.priceCents ||
+      right.checkedAt.localeCompare(left.checkedAt),
+  );
+}
+
+function getBestComparableInStockOffer(
+  currentOfferSummary: CatalogCurrentOfferSummary,
+): NonNullable<CatalogCurrentOfferSummary['bestOffer']> | undefined {
+  return getComparableInStockOffers(currentOfferSummary)[0];
+}
+
 function getPublicBestOfferMerchantName(
   bestOffer: NonNullable<CatalogCurrentOfferSummary['bestOffer']>,
 ): string {
@@ -88,6 +181,114 @@ function getPublicBestOfferMerchantName(
         ? bestOffer.merchantSlug
         : undefined,
   });
+}
+
+function getDealQualityLabel({
+  absoluteMinor,
+  percentage,
+}: {
+  absoluteMinor: number;
+  percentage: number;
+}): DealQualityLabel | undefined {
+  if (
+    absoluteMinor >= TOP_DEAL_MIN_REFERENCE_DISCOUNT_MINOR &&
+    percentage >= TOP_DEAL_MIN_REFERENCE_DISCOUNT_RATIO * 100
+  ) {
+    return 'Topdeal';
+  }
+
+  if (
+    absoluteMinor >= STRONG_DEAL_MIN_REFERENCE_DISCOUNT_MINOR &&
+    percentage >= STRONG_DEAL_MIN_REFERENCE_DISCOUNT_RATIO * 100
+  ) {
+    return 'Sterke deal';
+  }
+
+  if (
+    absoluteMinor >= GOOD_DEAL_MIN_REFERENCE_DISCOUNT_MINOR &&
+    percentage >= GOOD_DEAL_MIN_REFERENCE_DISCOUNT_RATIO * 100
+  ) {
+    return 'Goede deal';
+  }
+
+  return undefined;
+}
+
+function isOfficialLegoOffer(
+  offer?: CatalogCurrentOfferSummary['bestOffer'],
+): boolean {
+  if (!offer) {
+    return false;
+  }
+
+  const merchantSlug =
+    'merchantSlug' in offer && typeof offer.merchantSlug === 'string'
+      ? offer.merchantSlug
+      : undefined;
+
+  return (
+    merchantSlug === 'rakuten-lego-eu' ||
+    merchantSlug === 'lego' ||
+    offer.merchant === 'lego' ||
+    resolvePublicMerchantDisplayName({
+      merchantName: offer.merchantName,
+      merchantSlug,
+    }) === 'LEGO®'
+  );
+}
+
+function getOfficialLegoOffer(
+  currentOfferSummary: CatalogCurrentOfferSummary,
+): CatalogCurrentOfferSummary['bestOffer'] | undefined {
+  return [...currentOfferSummary.offers, currentOfferSummary.bestOffer]
+    .filter((offer): offer is NonNullable<typeof offer> => Boolean(offer))
+    .filter(isOfficialLegoOffer)
+    .sort(
+      (left, right) =>
+        right.checkedAt.localeCompare(left.checkedAt) ||
+        right.priceCents - left.priceCents,
+    )[0];
+}
+
+function buildOfficialLegoComparison({
+  bestOffer,
+  currentOfferSummary,
+}: {
+  bestOffer: NonNullable<CatalogCurrentOfferSummary['bestOffer']>;
+  currentOfferSummary: CatalogCurrentOfferSummary;
+}): OfficialLegoComparison | undefined {
+  const legoOffer = getOfficialLegoOffer(currentOfferSummary);
+
+  if (
+    !legoOffer ||
+    isOfficialLegoOffer(bestOffer) ||
+    !canBestOfferDriveDealClaims(bestOffer) ||
+    bestOffer.currency !== legoOffer.currency ||
+    bestOffer.priceCents <= 0 ||
+    legoOffer.priceCents <= 0 ||
+    bestOffer.priceCents >= legoOffer.priceCents
+  ) {
+    return undefined;
+  }
+
+  const absoluteMinor = legoOffer.priceCents - bestOffer.priceCents;
+  const percentage = (absoluteMinor / legoOffer.priceCents) * 100;
+  const label = getDealQualityLabel({ absoluteMinor, percentage });
+
+  if (!label) {
+    return undefined;
+  }
+
+  return {
+    absoluteMinor,
+    label,
+    percentage,
+    metricLabel: `${formatPriceMinor({
+      currencyCode: bestOffer.currency,
+      minorUnits: absoluteMinor,
+    })} goedkoper dan LEGO`,
+    percentageLabel: `${Math.round(percentage)}% onder LEGO prijs`,
+  };
 }
 
 function getCurrentOfferRejectionReason({
@@ -221,17 +422,23 @@ export function buildReliableDealDiscount({
   pricePanelSnapshot,
 }: {
   currentOfferSummary?: CatalogCurrentOfferSummary;
-  pricePanelSnapshot?: FeaturedSetPriceContext;
+  pricePanelSnapshot?: DealReferencePriceContext;
 }): ReliableDealDiscount | undefined {
-  const bestOffer = currentOfferSummary?.bestOffer;
   const referencePriceMinor = pricePanelSnapshot?.referencePriceMinor;
+
+  if (
+    !currentOfferSummary ||
+    typeof referencePriceMinor !== 'number' ||
+    referencePriceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  const bestOffer = getBestComparableInStockOffer(currentOfferSummary);
 
   if (
     !bestOffer ||
     !canBestOfferDriveDealClaims(bestOffer) ||
-    !currentOfferSummary ||
-    typeof referencePriceMinor !== 'number' ||
-    referencePriceMinor <= 0 ||
     bestOffer.priceCents <= 0 ||
     bestOffer.priceCents >= referencePriceMinor
   ) {
@@ -249,16 +456,15 @@ export function buildReliableDealDiscount({
 
   const absoluteMinor = referencePriceMinor - bestOffer.priceCents;
   const percentage = (absoluteMinor / referencePriceMinor) * 100;
+  const label = getDealQualityLabel({ absoluteMinor, percentage });
 
-  if (
-    absoluteMinor < DEAL_REASON_MIN_REFERENCE_DISCOUNT_MINOR ||
-    percentage < DEAL_REASON_MIN_REFERENCE_DISCOUNT_RATIO * 100
-  ) {
+  if (!label) {
     return undefined;
   }
 
   return {
     absoluteMinor,
+    label,
     percentage,
     metricLabel: `${formatPriceMinor({
       currencyCode: bestOffer.currency,
@@ -315,60 +521,52 @@ function getCoverageLabel(
 }
 
 function buildDealReason({
-  catalogDiscoverySignal,
   currentOfferSummary,
 }: {
-  catalogDiscoverySignal?: CatalogDiscoverySignal;
   currentOfferSummary: CatalogCurrentOfferSummary;
 }): string | undefined {
-  const bestOffer = currentOfferSummary.bestOffer;
+  const comparableOffers = getComparableInStockOffers(currentOfferSummary);
+  const [bestOffer, nextBestOffer] = comparableOffers;
 
-  if (!bestOffer) {
+  if (
+    comparableOffers.length < DEAL_REASON_MIN_MERCHANT_COUNT ||
+    !bestOffer ||
+    !nextBestOffer
+  ) {
     return undefined;
   }
+
+  const spreadMinor = nextBestOffer.priceCents - bestOffer.priceCents;
+  const spreadRatio =
+    nextBestOffer.priceCents > 0 ? spreadMinor / nextBestOffer.priceCents : 0;
 
   if (!canBestOfferDriveDealClaims(bestOffer)) {
     return undefined;
   }
 
-  const hasReviewedMarket =
-    currentOfferSummary.offers.length >= DEAL_REASON_MIN_MERCHANT_COUNT;
-
   if (
-    hasReviewedMarket &&
-    typeof catalogDiscoverySignal?.priceSpreadMinor === 'number' &&
-    catalogDiscoverySignal.priceSpreadMinor >=
-      DEAL_REASON_MIN_PRICE_SPREAD_MINOR
+    spreadMinor >= MARKET_POSITION_MIN_SPREAD_MINOR ||
+    spreadRatio >= MARKET_POSITION_MIN_SPREAD_RATIO
   ) {
-    return `${formatPriceMinor({
-      currencyCode: bestOffer.currency,
-      minorUnits: catalogDiscoverySignal.priceSpreadMinor,
-    })} goedkoper dan de rest`;
+    return 'Beste marktprijs';
   }
 
-  if (
-    hasReviewedMarket &&
-    typeof catalogDiscoverySignal?.priceSpreadMinor === 'number' &&
-    catalogDiscoverySignal.priceSpreadMinor === 0
-  ) {
-    return 'Laagste prijs nu';
-  }
-
-  return undefined;
+  return 'Laagste prijs';
 }
 
 export function buildCurrentSetCardPriceContext({
-  catalogDiscoverySignal,
   currentOfferSummary,
   pricePanelSnapshot,
   theme,
 }: {
   catalogDiscoverySignal?: CatalogDiscoverySignal;
   currentOfferSummary?: CatalogCurrentOfferSummary;
-  pricePanelSnapshot?: FeaturedSetPriceContext;
+  pricePanelSnapshot?: DealReferencePriceContext;
   theme: string;
 }): CatalogSetCardPriceContext | undefined {
-  const bestOffer = currentOfferSummary?.bestOffer;
+  const bestOffer = currentOfferSummary
+    ? getBestComparableInStockOffer(currentOfferSummary)
+    : undefined;
 
   if (!bestOffer || !currentOfferSummary) {
     return undefined;
@@ -383,10 +581,16 @@ export function buildCurrentSetCardPriceContext({
     currentOfferSummary,
     pricePanelSnapshot,
   });
-  const decisionLabel = reliableDealDiscount
-    ? 'Goede deal'
+  const officialLegoComparison = buildOfficialLegoComparison({
+    bestOffer,
+    currentOfferSummary,
+  });
+  const dealQuality = officialLegoComparison ?? reliableDealDiscount;
+  const decisionLabel = dealQuality
+    ? dealQuality.label
     : decisionPresentation.cardLabel === 'Actuele prijzen binnen' ||
-        decisionPresentation.cardLabel === 'Prijsdata nog beperkt'
+        decisionPresentation.cardLabel === 'Prijsdata nog beperkt' ||
+        decisionPresentation.cardLabel === 'Goede deal'
       ? 'Actuele prijs binnen'
       : decisionPresentation.cardLabel;
   const decisionNote = decisionPresentation.cardSupportingCopy?.includes(
@@ -401,9 +605,9 @@ export function buildCurrentSetCardPriceContext({
       currencyCode: bestOffer.currency,
       minorUnits: bestOffer.priceCents,
     }),
-    discountMetric: reliableDealDiscount?.metricLabel,
+    discountMetric:
+      officialLegoComparison?.metricLabel ?? reliableDealDiscount?.metricLabel,
     dealReason: buildDealReason({
-      catalogDiscoverySignal,
       currentOfferSummary,
     }),
     decisionLabel,
@@ -455,7 +659,7 @@ export function buildCurrentSearchReviewedPriceContext({
   pricePanelSnapshot,
 }: {
   currentOfferSummary?: CatalogCurrentOfferSummary;
-  pricePanelSnapshot?: FeaturedSetPriceContext;
+  pricePanelSnapshot?: DealReferencePriceContext;
 }): CatalogFeatureSearchReviewedPriceContext | undefined {
   const bestOffer = currentOfferSummary?.bestOffer;
 
