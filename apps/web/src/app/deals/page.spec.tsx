@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const dealsPageMocks = vi.hoisted(() => ({
   catalogSetCardRailSection: vi.fn(),
@@ -137,7 +139,7 @@ describe('deals page discovery signals', () => {
     );
   });
 
-  it('keeps the standalone deals hero independent from discovery tile variants', async () => {
+  it('uses the default light-blue hero instead of discovery tile variants', async () => {
     dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
     dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
     dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
@@ -147,8 +149,15 @@ describe('deals page discovery signals', () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default());
 
-    expect(markup).toContain('--deals-page-surface:#6bbf59');
+    expect(markup).not.toContain('--deals-page-surface:');
     expect(markup).not.toContain('--deals-page-surface:#00a99d');
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/deals/deals-page.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('--deals-page-surface: var(--lego-surface-accent);');
   });
 
   it('scopes discovery signals to current commerce candidate cards', async () => {

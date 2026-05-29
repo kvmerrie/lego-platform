@@ -136,6 +136,9 @@ function createPromotionSupabaseClient({
 
 describe('catalog promotion server', () => {
   test('upserts merchants by slug and offer seeds by set plus merchant without overwriting production ids', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
         catalog_source_themes: [
@@ -210,6 +213,41 @@ describe('catalog promotion server', () => {
             policy: 'metadata_only_pending_audit',
             set_number: '10316',
             source: 'rakuten-lego-eu',
+          },
+          {
+            catalog_set_id: '10316',
+            last_seen_at: '2026-05-27T08:00:00.000Z',
+            locale: 'en-US',
+            match_confidence: 'exact_set_number',
+            metadata_json: {
+              bricksetSetId: 12345,
+              imageRightsPolicy: 'render_publicly_with_attribution',
+              images: [
+                {
+                  attributionRequired: true,
+                  imageUrl:
+                    'https://images.brickset.com/sets/images/10316-1.jpg',
+                  type: 'primary',
+                },
+              ],
+              pieces: 6167,
+              theme: 'Icons',
+            },
+            policy: 'render_publicly_with_attribution',
+            set_number: '10316',
+            source: 'brickset',
+          },
+          {
+            catalog_set_id: '10316',
+            last_seen_at: '2026-05-27T08:00:00.000Z',
+            locale: 'en-US',
+            match_confidence: 'exact_set_number',
+            metadata_json: {
+              title: 'Should not promote',
+            },
+            policy: 'metadata_only_pending_audit',
+            set_number: '10316',
+            source: 'other-source',
           },
         ],
         commerce_merchants: [
@@ -291,11 +329,13 @@ describe('catalog promotion server', () => {
       upsertedCount: 1,
     });
     expect(result.tables.catalog_set_source_metadata).toEqual({
-      insertedCount: 1,
-      readCount: 1,
+      insertedCount: 2,
+      readCount: 2,
       updatedCount: 0,
-      upsertedCount: 1,
+      upsertedCount: 2,
     });
+    expect(result.bricksetSourceMetadataPromotedCount).toBe(1);
+    expect(result.skippedSourceMetadataCount).toBe(1);
     expect(result.tables.commerce_merchants).toEqual({
       insertedCount: 0,
       readCount: 1,
@@ -365,6 +405,28 @@ describe('catalog promotion server', () => {
           set_number: '10316',
           source: 'rakuten-lego-eu',
         },
+        {
+          catalog_set_id: '10316',
+          last_seen_at: '2026-05-27T08:00:00.000Z',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            bricksetSetId: 12345,
+            imageRightsPolicy: 'render_publicly_with_attribution',
+            images: [
+              {
+                attributionRequired: true,
+                imageUrl: 'https://images.brickset.com/sets/images/10316-1.jpg',
+                type: 'primary',
+              },
+            ],
+            pieces: 6167,
+            theme: 'Icons',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '10316',
+          source: 'brickset',
+        },
       ],
       {
         onConflict: 'catalog_set_id,source,locale',
@@ -386,6 +448,16 @@ describe('catalog promotion server', () => {
         onConflict: 'set_id,merchant_id',
       },
     );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] promote_metadata_rows_copied',
+      expect.objectContaining({
+        brickset_source_metadata_promoted_count: 1,
+        promote_metadata_rows_copied: 2,
+        skipped_source_metadata_count: 1,
+        table: 'catalog_set_source_metadata',
+      }),
+    );
+    consoleInfoSpy.mockRestore();
   });
 
   test('refreshes catalog theme summaries once after successful catalog promotion writes', async () => {

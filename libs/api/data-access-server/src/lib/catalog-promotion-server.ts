@@ -20,6 +20,10 @@ const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+const BRICKSET_SOURCE_METADATA_SOURCE = 'brickset';
+const RAKUTEN_LEGO_SOURCE_METADATA_SOURCE = 'rakuten-lego-eu';
+const RAKUTEN_LEGO_SOURCE_METADATA_LOCALE = 'nl-NL';
+const EXACT_SET_NUMBER_MATCH_CONFIDENCE = 'exact_set_number';
 const CATALOG_PROMOTION_PAGE_SIZE = 1000;
 const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
@@ -351,10 +355,12 @@ export interface CatalogPromotionTableSummary {
 }
 
 export interface CatalogPromotionResult {
+  bricksetSourceMetadataPromotedCount?: number;
   changedThemeSlugs: string[];
   durationMs: number;
   promotedMetadataSetIds?: string[];
   promotedMetadataSetSlugs?: string[];
+  skippedSourceMetadataCount?: number;
   startedAt: string;
   status: 'ok';
   tables: {
@@ -1972,10 +1978,18 @@ export async function promoteCatalogFromStagingToProduction({
     );
     const normalizedCatalogSetSourceMetadata = catalogSetSourceMetadata.filter(
       (row) =>
-        row.source === 'rakuten-lego-eu' &&
-        row.locale === 'nl-NL' &&
-        row.match_confidence === 'exact_set_number',
+        (row.source === RAKUTEN_LEGO_SOURCE_METADATA_SOURCE &&
+          row.locale === RAKUTEN_LEGO_SOURCE_METADATA_LOCALE &&
+          row.match_confidence === EXACT_SET_NUMBER_MATCH_CONFIDENCE) ||
+        row.source === BRICKSET_SOURCE_METADATA_SOURCE,
     );
+    const bricksetSourceMetadataPromotedCount =
+      normalizedCatalogSetSourceMetadata.filter(
+        (row) => row.source === BRICKSET_SOURCE_METADATA_SOURCE,
+      ).length;
+    const skippedSourceMetadataCount =
+      catalogSetSourceMetadata.length -
+      normalizedCatalogSetSourceMetadata.length;
     logCatalogSetStatusNormalization({
       rowsAfter: normalizedCatalogSets as unknown as Readonly<
         Record<string, unknown>
@@ -2240,9 +2254,11 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     console.info('[catalog-promotion] promote_metadata_rows_copied', {
+      brickset_source_metadata_promoted_count:
+        bricksetSourceMetadataPromotedCount,
       promote_metadata_rows_copied:
         tables.catalog_set_source_metadata.upsertedCount,
-      source: 'rakuten-lego-eu',
+      skipped_source_metadata_count: skippedSourceMetadataCount,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
     });
 
@@ -2275,10 +2291,12 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     return {
+      bricksetSourceMetadataPromotedCount,
       changedThemeSlugs,
       durationMs: now().getTime() - startedAt.getTime(),
       promotedMetadataSetIds,
       promotedMetadataSetSlugs,
+      skippedSourceMetadataCount,
       startedAt: startedAtIso,
       status: 'ok',
       tables: tables as CatalogPromotionResult['tables'],

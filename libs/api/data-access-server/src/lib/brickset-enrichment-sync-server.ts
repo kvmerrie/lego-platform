@@ -1,4 +1,5 @@
 import {
+  listCatalogSetSourceMetadataSetIds,
   listCanonicalCatalogSets,
   upsertCatalogSetSourceMetadata,
   type CatalogSetSourceMetadataInput,
@@ -126,8 +127,11 @@ export interface BricksetEnrichmentSyncOptions {
   bricksetApiKey?: string;
   dryRun?: boolean;
   fetchFn?: typeof fetch;
+  listCatalogSetSourceMetadataSetIdsFn?: typeof listCatalogSetSourceMetadataSetIds;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   maxSets?: number;
+  missingOnly?: boolean;
+  offset?: number;
   setNumbers?: readonly string[];
   upsertCatalogSetSourceMetadataFn?: typeof upsertCatalogSetSourceMetadata;
 }
@@ -138,8 +142,13 @@ export interface BricksetEnrichmentSyncResult {
   fetchedSetCount: number;
   imageReferenceCount: number;
   matchedCatalogSetCount: number;
+  maxSets?: number;
   metadataRecords: readonly BricksetEnrichmentRecord[];
+  missingOnly: boolean;
+  offset: number;
+  selectedCandidateCount: number;
   skippedMissingSetNumberCount: number;
+  sourceMetadataExistingCount?: number;
   sourceMetadataUpsertedCount: number;
   unmatchedCatalogSets: readonly {
     name: string;
@@ -304,34 +313,44 @@ async function fetchBricksetAdditionalImages({
 
 function selectCatalogSetsForBricksetEnrichment({
   catalogSets,
+  existingSourceMetadataSetIds,
   maxSets,
+  missingOnly = false,
+  offset = 0,
   setNumbers,
 }: {
   catalogSets: readonly CatalogCanonicalSet[];
+  existingSourceMetadataSetIds?: ReadonlySet<string>;
   maxSets?: number;
+  missingOnly?: boolean;
+  offset?: number;
   setNumbers?: readonly string[];
 }): CatalogCanonicalSet[] {
   const normalizedRequestedSetNumbers = new Set(
     (setNumbers ?? []).map(normalizeBricksetNumber).filter(Boolean),
   );
 
+  const setNumbersTakePrecedence = normalizedRequestedSetNumbers.size > 0;
   const selectedCatalogSets = catalogSets.filter((catalogSet) => {
     if (!catalogSet.sourceSetNumber) {
       return false;
     }
 
-    if (!normalizedRequestedSetNumbers.size) {
-      return true;
+    if (setNumbersTakePrecedence) {
+      return normalizedRequestedSetNumbers.has(
+        normalizeBricksetNumber(catalogSet.sourceSetNumber),
+      );
     }
 
-    return normalizedRequestedSetNumbers.has(
-      normalizeBricksetNumber(catalogSet.sourceSetNumber),
-    );
+    return !missingOnly || !existingSourceMetadataSetIds?.has(catalogSet.setId);
   });
+  const offsetSelectedCatalogSets = setNumbersTakePrecedence
+    ? selectedCatalogSets
+    : selectedCatalogSets.slice(Math.max(0, Math.floor(offset)));
 
   return typeof maxSets === 'number'
-    ? selectedCatalogSets.slice(0, maxSets)
-    : selectedCatalogSets;
+    ? offsetSelectedCatalogSets.slice(0, maxSets)
+    : offsetSelectedCatalogSets;
 }
 
 function buildBricksetImageReferences({
@@ -465,8 +484,11 @@ export async function syncBricksetEnrichmentMetadata({
   bricksetApiKey = process.env.BRICKSET_API_KEY,
   dryRun = true,
   fetchFn = fetch,
+  listCatalogSetSourceMetadataSetIdsFn = listCatalogSetSourceMetadataSetIds,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   maxSets,
+  missingOnly = false,
+  offset = 0,
   setNumbers,
   upsertCatalogSetSourceMetadataFn = upsertCatalogSetSourceMetadata,
 }: BricksetEnrichmentSyncOptions = {}): Promise<BricksetEnrichmentSyncResult> {
@@ -475,9 +497,22 @@ export async function syncBricksetEnrichmentMetadata({
   }
 
   const allCatalogSets = await listCanonicalCatalogSetsFn();
+  const existingSourceMetadataSetIds =
+    missingOnly && !setNumbers?.length
+      ? new Set(
+          await listCatalogSetSourceMetadataSetIdsFn({
+            locale: BRICKSET_LOCALE,
+            matchConfidence: BRICKSET_MATCH_CONFIDENCE,
+            source: BRICKSET_SOURCE,
+          }),
+        )
+      : undefined;
   const catalogSets = selectCatalogSetsForBricksetEnrichment({
     catalogSets: allCatalogSets,
+    existingSourceMetadataSetIds,
     maxSets,
+    missingOnly,
+    offset,
     setNumbers,
   });
   const catalogSetBySourceSetNumber = new Map(
@@ -541,16 +576,17 @@ export async function syncBricksetEnrichmentMetadata({
     metadataRecords.map((record) => record.catalogSetId),
   );
   const now = new Date();
-  const sourceMetadataUpsertedCount = dryRun
-    ? 0
-    : await upsertCatalogSetSourceMetadataFn({
-        inputs: metadataRecords.map((record) =>
-          toCatalogSetSourceMetadataInput({
-            now,
-            record,
-          }),
-        ),
-      });
+  const sourceMetadataUpsertedCount =
+    dryRun || metadataRecords.length === 0
+      ? 0
+      : await upsertCatalogSetSourceMetadataFn({
+          inputs: metadataRecords.map((record) =>
+            toCatalogSetSourceMetadataInput({
+              now,
+              record,
+            }),
+          ),
+        });
 
   return {
     additionalImageMatches,
@@ -561,10 +597,15 @@ export async function syncBricksetEnrichmentMetadata({
       0,
     ),
     matchedCatalogSetCount: metadataRecords.length,
+    maxSets,
     metadataRecords,
+    missingOnly,
+    offset,
+    selectedCandidateCount: catalogSets.length,
     skippedMissingSetNumberCount: allCatalogSets.filter(
       (catalogSet) => !catalogSet.sourceSetNumber,
     ).length,
+    sourceMetadataExistingCount: existingSourceMetadataSetIds?.size,
     sourceMetadataUpsertedCount,
     unmatchedCatalogSets: catalogSets
       .filter((catalogSet) => !matchedCatalogSetIds.has(catalogSet.setId))

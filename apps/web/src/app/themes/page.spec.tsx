@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -52,27 +54,27 @@ describe('themes index page', () => {
     );
   });
 
-  it('keeps the themes hub visual independent from discovery tile variants', async () => {
+  it('uses the default light-blue hero instead of discovery tile variants', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('data-testid="theme-index"');
-    expect(themeIndexPageMocks.catalogFeatureThemeIndex).toHaveBeenCalledWith(
-      expect.objectContaining({
-        visual: {
-          backgroundColor: '#234bcd',
-          textColor: '#ffffff',
-        },
-      }),
-    );
+    expect(themeIndexPageMocks.catalogFeatureThemeIndex).toHaveBeenCalled();
     expect(
-      themeIndexPageMocks.catalogFeatureThemeIndex,
-    ).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        visual: expect.objectContaining({
-          backgroundColor: '#8758d8',
-        }),
-      }),
+      themeIndexPageMocks.catalogFeatureThemeIndex.mock.calls[0]?.[0] as {
+        visual?: unknown;
+      },
+    ).not.toHaveProperty('visual');
+    expect(markup).not.toContain('--theme-index-surface:');
+
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-theme-page/src/lib/catalog-feature-theme-index.module.css',
+      ),
+      'utf-8',
     );
+
+    expect(css).toContain('--theme-index-surface: var(--lego-surface-accent);');
   });
 });

@@ -8,6 +8,7 @@ import {
   getCanonicalCatalogSetBySlug,
   getCatalogSetBySlugWithOverlay,
   listCatalogDiscoverySignals,
+  listCatalogSetSourceMetadataSetIds,
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
@@ -3606,5 +3607,51 @@ describe('catalog data access server', () => {
         onConflict: 'catalog_set_id,source,locale',
       },
     );
+  });
+
+  test('lists source metadata set ids across all pages for exact source locale and match confidence', async () => {
+    const sourceMetadataRows = [
+      ...Array.from({ length: 1001 }, (_, index) => ({
+        catalog_set_id: String(10_000 + index),
+        locale: 'en-US',
+        match_confidence: 'exact_set_number',
+        source: 'brickset',
+      })),
+      {
+        catalog_set_id: 'wrong-locale',
+        locale: 'nl-NL',
+        match_confidence: 'exact_set_number',
+        source: 'brickset',
+      },
+      {
+        catalog_set_id: 'wrong-source',
+        locale: 'en-US',
+        match_confidence: 'exact_set_number',
+        source: 'rakuten-lego-eu',
+      },
+      {
+        catalog_set_id: 'wrong-match',
+        locale: 'en-US',
+        match_confidence: 'fuzzy_title',
+        source: 'brickset',
+      },
+    ];
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      sourceMetadataRows,
+    });
+
+    const result = await listCatalogSetSourceMetadataSetIds({
+      locale: 'en-US',
+      matchConfidence: 'exact_set_number',
+      source: 'brickset',
+      supabaseClient,
+    });
+
+    expect(result).toHaveLength(1001);
+    expect(result[0]).toBe('10000');
+    expect(result[1000]).toBe('11000');
+    expect(result).not.toContain('wrong-locale');
+    expect(result).not.toContain('wrong-source');
+    expect(result).not.toContain('wrong-match');
   });
 });

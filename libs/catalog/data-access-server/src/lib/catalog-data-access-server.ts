@@ -33,6 +33,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_TABLE = 'catalog_sets';
 export const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
+const CATALOG_SET_SOURCE_METADATA_PAGE_SIZE = 1000;
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
@@ -2650,6 +2651,51 @@ export async function upsertCatalogSetSourceMetadata({
   }
 
   return upsertedCount;
+}
+
+export async function listCatalogSetSourceMetadataSetIds({
+  locale,
+  matchConfidence,
+  source,
+  supabaseClient,
+}: {
+  locale: string;
+  matchConfidence: string;
+  source: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<string[]> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return [];
+  }
+
+  const client = supabaseClient ?? getServerSupabaseAdminClient();
+  const setIds: string[] = [];
+
+  for (let from = 0; ; from += CATALOG_SET_SOURCE_METADATA_PAGE_SIZE) {
+    const { data, error } = await client
+      .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+      .select('catalog_set_id')
+      .eq('source', source)
+      .eq('locale', locale)
+      .eq('match_confidence', matchConfidence)
+      .range(from, from + CATALOG_SET_SOURCE_METADATA_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error('Unable to load catalog set source metadata set ids.');
+    }
+
+    const pageSetIds = ((data ?? []) as { catalog_set_id?: string | null }[])
+      .map((row) => row.catalog_set_id?.trim())
+      .filter((setId): setId is string => Boolean(setId));
+
+    setIds.push(...pageSetIds);
+
+    if ((data ?? []).length < CATALOG_SET_SOURCE_METADATA_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return setIds;
 }
 
 function buildCatalogSetSourceMetadataSetNumberVariants(

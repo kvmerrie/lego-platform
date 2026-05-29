@@ -57,6 +57,31 @@ function parseOptionalPositiveIntegerFlag({
   return parsedValue;
 }
 
+function parseOptionalNonNegativeIntegerFlag({
+  argv,
+  flag,
+}: {
+  argv: readonly string[];
+  flag: `--${string}`;
+}): number | undefined {
+  const rawValue = getFlagValue({
+    argv,
+    flag,
+  });
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+    throw new Error(`Use ${flag} <non-negative-integer>.`);
+  }
+
+  return parsedValue;
+}
+
 function parseOptionalStringFlag({
   argv,
   flag,
@@ -103,6 +128,14 @@ async function main() {
     argv,
     flag: '--max-sets',
   });
+  const offset = parseOptionalNonNegativeIntegerFlag({
+    argv,
+    flag: '--offset',
+  });
+  const missingOnly = hasBooleanFlag({
+    argv,
+    flag: '--missing-only',
+  });
   const batchSize = parseOptionalPositiveIntegerFlag({
     argv,
     flag: '--batch-size',
@@ -117,18 +150,20 @@ async function main() {
   });
 
   console.log(
-    `[brickset-enrichment-sync] start source=brickset mode=${write ? 'write' : 'dry-run'} max_sets=${maxSets ?? 0} batch_size=${batchSize ?? 0} set_numbers=${setNumbers?.join(',') ?? 'none'} report_path=${JSON.stringify(reportPath ?? '')}`,
+    `[brickset-enrichment-sync] start source=brickset mode=${write ? 'write' : 'dry-run'} max_sets=${maxSets ?? 0} offset=${offset ?? 0} missing_only=${missingOnly} batch_size=${batchSize ?? 0} set_numbers=${setNumbers?.join(',') ?? 'none'} selection_precedence=${setNumbers?.length ? 'set-numbers' : 'catalog'} report_path=${JSON.stringify(reportPath ?? '')}`,
   );
 
   const result = await syncBricksetEnrichmentMetadata({
     batchSize,
     dryRun: !write,
     maxSets,
+    missingOnly,
+    offset,
     setNumbers,
   });
 
   console.log(
-    `[brickset-enrichment-sync] summary dry_run=${result.dryRun} fetched_sets=${result.fetchedSetCount} matched_catalog_sets=${result.matchedCatalogSetCount} unmatched_catalog_sets=${result.unmatchedCatalogSets.length} additional_image_matches=${result.additionalImageMatches} image_references=${result.imageReferenceCount} source_metadata_upserted=${result.sourceMetadataUpsertedCount}`,
+    `[brickset-enrichment-sync] summary dry_run=${result.dryRun} max_sets=${result.maxSets ?? 0} offset=${result.offset} missing_only=${result.missingOnly} selected_candidate_count=${result.selectedCandidateCount} source_metadata_existing_count=${result.sourceMetadataExistingCount ?? 'not_loaded'} fetched_sets=${result.fetchedSetCount} matched_catalog_sets=${result.matchedCatalogSetCount} unmatched_catalog_sets=${result.unmatchedCatalogSets.length} additional_image_matches=${result.additionalImageMatches} image_references=${result.imageReferenceCount} source_metadata_upserted=${result.sourceMetadataUpsertedCount}`,
   );
 
   console.log(
@@ -139,6 +174,11 @@ async function main() {
           fetchedSetCount: result.fetchedSetCount,
           imageReferenceCount: result.imageReferenceCount,
           matchedCatalogSetCount: result.matchedCatalogSetCount,
+          maxSets: result.maxSets,
+          missingOnly: result.missingOnly,
+          offset: result.offset,
+          selectedCandidateCount: result.selectedCandidateCount,
+          sourceMetadataExistingCount: result.sourceMetadataExistingCount,
           sourceMetadataUpsertedCount: result.sourceMetadataUpsertedCount,
           unmatchedCatalogSetCount: result.unmatchedCatalogSets.length,
         },

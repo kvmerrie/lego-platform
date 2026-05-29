@@ -103,6 +103,82 @@ function createBricksetFetchMock() {
   });
 }
 
+function createCatalogSets(count: number): CatalogCanonicalSet[] {
+  return Array.from({ length: count }, (_, index) => {
+    const setId = String(10_000 + index);
+
+    return createCatalogSet({
+      name: `Set ${setId}`,
+      setId,
+      slug: `set-${setId}`,
+      sourceSetNumber: `${setId}-1`,
+    });
+  });
+}
+
+function createPagedBricksetFetchMock() {
+  const requestedSetNumberBatches: string[][] = [];
+  const fetchFn = vi.fn(async (url: string | URL, init?: RequestInit) => {
+    const normalizedUrl = String(url);
+
+    if (normalizedUrl.endsWith('/getSets')) {
+      const body = new URLSearchParams(init?.body as string);
+      const params = JSON.parse(body.get('params') ?? '{}') as {
+        setNumber?: string;
+      };
+      const requestedSetNumbers = (params.setNumber ?? '')
+        .split(',')
+        .map((setNumber) => setNumber.trim())
+        .filter(Boolean);
+
+      requestedSetNumberBatches.push(requestedSetNumbers);
+
+      return new Response(
+        JSON.stringify({
+          matches: requestedSetNumbers.length,
+          sets: requestedSetNumbers.map((setNumber) => {
+            const [number, variant = '1'] = setNumber.split('-');
+
+            return {
+              bricksetURL: `https://brickset.com/sets/${setNumber}`,
+              image: {
+                imageURL: `https://images.brickset.com/sets/images/${setNumber}.jpg`,
+              },
+              name: `Set ${number}`,
+              number,
+              numberVariant: Number(variant),
+              pieces: 100,
+              setID: Number(number),
+              theme: 'Icons',
+              year: 2026,
+            };
+          }),
+          status: 'success',
+        }),
+      );
+    }
+
+    if (normalizedUrl.endsWith('/getAdditionalImages')) {
+      return new Response(
+        JSON.stringify({
+          additionalImages: [],
+          matches: 0,
+          status: 'success',
+        }),
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ message: 'unknown', status: 'error' }),
+    );
+  });
+
+  return {
+    fetchFn,
+    requestedSetNumberBatches,
+  };
+}
+
 describe('syncBricksetEnrichmentMetadata', () => {
   test('dry-run builds Brickset source metadata without writes', async () => {
     const fetchFn = createBricksetFetchMock();
@@ -176,5 +252,200 @@ describe('syncBricksetEnrichmentMetadata', () => {
         }),
       ],
     });
+  });
+
+  test('selects the first max-sets page by default', async () => {
+    const { fetchFn, requestedSetNumberBatches } =
+      createPagedBricksetFetchMock();
+
+    const result = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue(createCatalogSets(4)),
+      maxSets: 2,
+      upsertCatalogSetSourceMetadataFn: vi.fn(),
+    });
+
+    expect(result.selectedCandidateCount).toBe(2);
+    expect(result.maxSets).toBe(2);
+    expect(result.offset).toBe(0);
+    expect(result.missingOnly).toBe(false);
+    expect(requestedSetNumberBatches[0]).toEqual(['10000-1', '10001-1']);
+  });
+
+  test('selects the second page when offset is provided', async () => {
+    const { fetchFn, requestedSetNumberBatches } =
+      createPagedBricksetFetchMock();
+
+    const result = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue(createCatalogSets(5)),
+      maxSets: 2,
+      offset: 2,
+      upsertCatalogSetSourceMetadataFn: vi.fn(),
+    });
+
+    expect(result.selectedCandidateCount).toBe(2);
+    expect(result.offset).toBe(2);
+    expect(requestedSetNumberBatches[0]).toEqual(['10002-1', '10003-1']);
+  });
+
+  test('missing-only excludes already enriched exact Brickset metadata rows', async () => {
+    const { fetchFn, requestedSetNumberBatches } =
+      createPagedBricksetFetchMock();
+    const listCatalogSetSourceMetadataSetIdsFn = vi
+      .fn()
+      .mockResolvedValue(['10000', '10002']);
+
+    const result = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue(createCatalogSets(4)),
+      listCatalogSetSourceMetadataSetIdsFn,
+      maxSets: 2,
+      missingOnly: true,
+      upsertCatalogSetSourceMetadataFn: vi.fn(),
+    });
+
+    expect(listCatalogSetSourceMetadataSetIdsFn).toHaveBeenCalledWith({
+      locale: 'en-US',
+      matchConfidence: 'exact_set_number',
+      source: 'brickset',
+    });
+    expect(result.selectedCandidateCount).toBe(2);
+    expect(result.sourceMetadataExistingCount).toBe(2);
+    expect(requestedSetNumberBatches[0]).toEqual(['10001-1', '10003-1']);
+  });
+
+  test('missing-only excludes rows immediately after a successful write run', async () => {
+    const existingSetIds = new Set<string>();
+    const listCatalogSetSourceMetadataSetIdsFn = vi.fn(async () => [
+      ...existingSetIds,
+    ]);
+    const upsertCatalogSetSourceMetadataFn = vi.fn(async ({ inputs }) => {
+      for (const input of inputs) {
+        existingSetIds.add(input.catalogSetId);
+      }
+
+      return inputs.length;
+    });
+    const catalogSets = createCatalogSets(3);
+    const firstFetch = createPagedBricksetFetchMock();
+
+    const firstResult = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      dryRun: false,
+      fetchFn: firstFetch.fetchFn,
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
+      listCatalogSetSourceMetadataSetIdsFn,
+      missingOnly: true,
+      upsertCatalogSetSourceMetadataFn,
+    });
+
+    const secondFetch = createPagedBricksetFetchMock();
+    const secondResult = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      dryRun: false,
+      fetchFn: secondFetch.fetchFn,
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
+      listCatalogSetSourceMetadataSetIdsFn,
+      missingOnly: true,
+      upsertCatalogSetSourceMetadataFn,
+    });
+
+    expect(firstResult.selectedCandidateCount).toBe(3);
+    expect(firstResult.sourceMetadataUpsertedCount).toBe(3);
+    expect(firstFetch.requestedSetNumberBatches[0]).toEqual([
+      '10000-1',
+      '10001-1',
+      '10002-1',
+    ]);
+    expect(secondResult.selectedCandidateCount).toBe(0);
+    expect(secondResult.sourceMetadataExistingCount).toBe(3);
+    expect(secondResult.sourceMetadataUpsertedCount).toBe(0);
+    expect(secondFetch.requestedSetNumberBatches).toEqual([]);
+    expect(upsertCatalogSetSourceMetadataFn).toHaveBeenCalledTimes(1);
+  });
+
+  test('missing-only retries unmatched candidates because no negative cache is written', async () => {
+    const fetchFn = vi.fn(async (url: string | URL) => {
+      if (String(url).endsWith('/getSets')) {
+        return new Response(
+          JSON.stringify({
+            matches: 0,
+            sets: [],
+            status: 'success',
+          }),
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          additionalImages: [],
+          matches: 0,
+          status: 'success',
+        }),
+      );
+    });
+    const upsertCatalogSetSourceMetadataFn = vi.fn();
+    const catalogSets = [createCatalogSet({})];
+
+    const firstResult = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      dryRun: false,
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
+      listCatalogSetSourceMetadataSetIdsFn: vi.fn().mockResolvedValue([]),
+      missingOnly: true,
+      upsertCatalogSetSourceMetadataFn,
+    });
+    const secondResult = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      dryRun: false,
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
+      listCatalogSetSourceMetadataSetIdsFn: vi.fn().mockResolvedValue([]),
+      missingOnly: true,
+      upsertCatalogSetSourceMetadataFn,
+    });
+
+    expect(firstResult.selectedCandidateCount).toBe(1);
+    expect(firstResult.matchedCatalogSetCount).toBe(0);
+    expect(firstResult.unmatchedCatalogSets).toHaveLength(1);
+    expect(secondResult.selectedCandidateCount).toBe(1);
+    expect(secondResult.unmatchedCatalogSets).toHaveLength(1);
+    expect(upsertCatalogSetSourceMetadataFn).not.toHaveBeenCalled();
+  });
+
+  test('explicit set-numbers take precedence over offset and missing-only', async () => {
+    const { fetchFn, requestedSetNumberBatches } =
+      createPagedBricksetFetchMock();
+    const listCatalogSetSourceMetadataSetIdsFn = vi.fn();
+
+    const result = await syncBricksetEnrichmentMetadata({
+      bricksetApiKey: 'brickset-test-key',
+      fetchFn,
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue(createCatalogSets(5)),
+      listCatalogSetSourceMetadataSetIdsFn,
+      maxSets: 2,
+      missingOnly: true,
+      offset: 2,
+      setNumbers: ['10000-1', '10004-1'],
+      upsertCatalogSetSourceMetadataFn: vi.fn(),
+    });
+
+    expect(listCatalogSetSourceMetadataSetIdsFn).not.toHaveBeenCalled();
+    expect(result.selectedCandidateCount).toBe(2);
+    expect(result.sourceMetadataExistingCount).toBeUndefined();
+    expect(requestedSetNumberBatches[0]).toEqual(['10000-1', '10004-1']);
   });
 });

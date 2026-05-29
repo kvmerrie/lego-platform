@@ -7,7 +7,7 @@
   --lego-section-heading-description: var(--deals-page-muted);
   --lego-section-heading-eyebrow: var(--deals-page-text);
   --lego-section-heading-text: var(--deals-page-text);
-  --deals-page-surface: var(--lego-surface-subtle);
+  --deals-page-surface: var(--lego-surface-accent);
   --deals-page-text: var(--lego-text);
   --deals-page-muted: var(--lego-text-muted);
   background: var(--deals-page-surface);
