@@ -139,6 +139,24 @@
   width: 100%;
 }
 
+.swipeStaticMedia {
+  display: contents;
+}
+
+.swipeViewport {
+  display: none;
+}
+
+.swipeTrack {
+  display: none;
+}
+
+.swipeSlidePlaceholder {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
 .galleryImage {
   display: block;
   height: 100%;
@@ -318,6 +336,7 @@
 
 .detailGalleryCounter,
 .detailGalleryShowAllButton {
+  gap: var(--lego-space-1);
   border-radius: var(--lego-radius-pill);
   padding: 0.62rem 0.82rem;
 }
@@ -343,6 +362,11 @@
 .detailGalleryNavButton:disabled {
   color: rgba(255, 255, 255, 0.45);
   cursor: default;
+}
+
+.detailMainButton,
+.lightboxMediaFrame {
+  touch-action: pan-y;
 }
 
 @media (max-width: 47.999rem) {
@@ -809,7 +833,22 @@
   }
 
   .detailGalleryControls {
-    inset: var(--lego-space-3) var(--lego-space-3) auto var(--lego-space-3);
+    bottom: var(--lego-space-3);
+    display: block;
+    inset: var(--lego-space-3) var(--lego-space-3) var(--lego-space-3)
+      var(--lego-space-3);
+  }
+
+  .detailGalleryCounter {
+    left: 0;
+    position: absolute;
+    top: 0;
+  }
+
+  .detailGalleryActions {
+    bottom: 0;
+    position: absolute;
+    right: 0;
   }
 
   .detailGalleryShowAllButton {
@@ -819,12 +858,56 @@
     white-space: nowrap;
   }
 
+  .detailGalleryNavButton,
+  .lightboxNavButton {
+    display: none;
+  }
+
   .detailMainFrame {
     border-block-end: var(--lego-border-width-1) solid var(--lego-border-subtle);
     border-block-start: 0;
     border-inline: 0;
     box-sizing: border-box;
     padding: var(--lego-space-3);
+  }
+
+  .swipeStaticMedia {
+    display: none;
+  }
+
+  .swipeViewport {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .swipeTrack {
+    display: flex;
+    height: 100%;
+    width: 300%;
+    will-change: transform;
+  }
+
+  .swipeTrack[data-swipe-phase='dragging'],
+  .swipeTrack[data-swipe-phase='resetting'] {
+    transition: none;
+  }
+
+  .swipeTrack[data-swipe-phase='idle'],
+  .swipeTrack[data-swipe-phase='settling'] {
+    transition: transform 240ms ease-out;
+  }
+
+  .swipeSlide {
+    align-items: center;
+    display: flex;
+    flex: 0 0 33.333333%;
+    height: 100%;
+    justify-content: center;
+    min-width: 0;
+    position: relative;
   }
 
   .lightboxThumbStrip {

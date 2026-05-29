@@ -19,6 +19,35 @@ vi.mock('next/image', () => ({
   }) => <img alt={alt} className={className} src={src} />,
 }));
 
+function dispatchPointerEvent(
+  element: Element | null,
+  type: string,
+  options: {
+    clientX: number;
+    clientY: number;
+    pointerId?: number;
+    pointerType?: string;
+  },
+) {
+  if (!element) {
+    return;
+  }
+
+  const event = new Event(type, {
+    bubbles: true,
+    cancelable: true,
+  });
+
+  Object.assign(event, {
+    clientX: options.clientX,
+    clientY: options.clientY,
+    pointerId: options.pointerId ?? 1,
+    pointerType: options.pointerType ?? 'touch',
+  });
+
+  element.dispatchEvent(event);
+}
+
 describe('ImageGallery', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -693,6 +722,11 @@ describe('ImageGallery', () => {
       ),
     ).not.toBeNull();
     expect(
+      container.querySelector(
+        'button[aria-label="Alle afbeeldingen weergeven"] svg',
+      ),
+    ).not.toBeNull();
+    expect(
       container.querySelector<HTMLButtonElement>(
         'button[aria-label="Vorige afbeelding"]',
       )?.disabled,
@@ -742,6 +776,371 @@ describe('ImageGallery', () => {
       document.body.querySelector('[data-lightbox-mode="overview"]'),
     ).not.toBeNull();
     expect(document.body.textContent).toContain('Alle afbeeldingen');
+  });
+
+  it('renders adjacent images and slides the mobile detail track while dragging', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Rivendell LEGO-set hoofdbeeld',
+              src: 'https://images.example/rivendell-1.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set detailbeeld',
+              src: 'https://images.example/rivendell-2.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set achterzijde',
+              src: 'https://images.example/rivendell-3.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const mainButton = container.querySelector('[class*="detailMainButton"]');
+    const swipeTrack = container.querySelector<HTMLElement>(
+      '[data-swipe-track="detail"]',
+    );
+
+    expect(
+      container.querySelector('[data-swipe-slide="next"] img'),
+    ).not.toBeNull();
+
+    act(() => {
+      dispatchPointerEvent(mainButton, 'pointerdown', {
+        clientX: 240,
+        clientY: 120,
+      });
+      dispatchPointerEvent(mainButton, 'pointermove', {
+        clientX: 156,
+        clientY: 124,
+      });
+    });
+
+    expect(swipeTrack?.dataset['swipePhase']).toBe('dragging');
+    expect(swipeTrack?.style.transform).toContain('-84px');
+  });
+
+  it('animates a valid mobile detail swipe before changing the selected image', () => {
+    vi.useFakeTimers();
+    const animationFrames: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        animationFrames.push(callback);
+        return animationFrames.length;
+      });
+    const cancelAnimationFrameSpy = vi
+      .spyOn(window, 'cancelAnimationFrame')
+      .mockImplementation(() => undefined);
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Rivendell LEGO-set hoofdbeeld',
+                src: 'https://images.example/rivendell-1.jpg',
+              },
+              {
+                alt: 'Rivendell LEGO-set detailbeeld',
+                src: 'https://images.example/rivendell-2.jpg',
+              },
+              {
+                alt: 'Rivendell LEGO-set achterzijde',
+                src: 'https://images.example/rivendell-3.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      const mainButton = container.querySelector('[class*="detailMainButton"]');
+
+      act(() => {
+        dispatchPointerEvent(mainButton, 'pointerdown', {
+          clientX: 240,
+          clientY: 120,
+        });
+        dispatchPointerEvent(mainButton, 'pointermove', {
+          clientX: 156,
+          clientY: 124,
+        });
+        dispatchPointerEvent(mainButton, 'pointerup', {
+          clientX: 150,
+          clientY: 124,
+        });
+      });
+
+      const swipeTrack = container.querySelector<HTMLElement>(
+        '[data-swipe-track="detail"]',
+      );
+
+      expect(container.textContent).toContain('1/3');
+      expect(swipeTrack?.dataset['swipePhase']).toBe('settling');
+      expect(swipeTrack?.dataset['swipeDirection']).toBe('1');
+      expect(swipeTrack?.style.transform).toContain('-66.666667%');
+
+      act(() => {
+        vi.advanceTimersByTime(240);
+      });
+
+      expect(swipeTrack?.dataset['swipePhase']).toBe('resetting');
+      expect(swipeTrack?.dataset['swipeDirection']).toBe('0');
+      expect(swipeTrack?.style.transform).toContain('-33.333333%');
+      expect(container.textContent).toContain('2/3');
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+
+      act(() => {
+        animationFrames.shift()?.(performance.now());
+      });
+
+      expect(swipeTrack?.dataset['swipePhase']).toBe('idle');
+
+      act(() => {
+        dispatchPointerEvent(mainButton, 'pointerdown', {
+          clientX: 150,
+          clientY: 120,
+        });
+        dispatchPointerEvent(mainButton, 'pointermove', {
+          clientX: 238,
+          clientY: 122,
+        });
+        dispatchPointerEvent(mainButton, 'pointerup', {
+          clientX: 242,
+          clientY: 122,
+        });
+      });
+
+      expect(container.textContent).toContain('2/3');
+
+      act(() => {
+        vi.advanceTimersByTime(240);
+      });
+
+      expect(swipeTrack?.dataset['swipePhase']).toBe('resetting');
+      expect(swipeTrack?.dataset['swipeDirection']).toBe('0');
+      expect(swipeTrack?.style.transform).toContain('-33.333333%');
+      expect(container.textContent).toContain('1/3');
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+      cancelAnimationFrameSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
+  it('snaps short and vertical detail gallery gestures back without changing images', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Rivendell LEGO-set hoofdbeeld',
+                src: 'https://images.example/rivendell-1.jpg',
+              },
+              {
+                alt: 'Rivendell LEGO-set detailbeeld',
+                src: 'https://images.example/rivendell-2.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      const mainButton = container.querySelector('[class*="detailMainButton"]');
+
+      act(() => {
+        dispatchPointerEvent(mainButton, 'pointerdown', {
+          clientX: 200,
+          clientY: 120,
+        });
+        dispatchPointerEvent(mainButton, 'pointermove', {
+          clientX: 174,
+          clientY: 122,
+        });
+        dispatchPointerEvent(mainButton, 'pointerup', {
+          clientX: 172,
+          clientY: 122,
+        });
+      });
+
+      const swipeTrack = container.querySelector<HTMLElement>(
+        '[data-swipe-track="detail"]',
+      );
+
+      expect(container.textContent).toContain('1/2');
+      expect(swipeTrack?.dataset['swipePhase']).toBe('settling');
+      expect(swipeTrack?.dataset['swipeDirection']).toBe('0');
+
+      act(() => {
+        vi.advanceTimersByTime(240);
+      });
+
+      expect(container.textContent).toContain('1/2');
+
+      act(() => {
+        dispatchPointerEvent(mainButton, 'pointerdown', {
+          clientX: 200,
+          clientY: 120,
+        });
+        dispatchPointerEvent(mainButton, 'pointermove', {
+          clientX: 178,
+          clientY: 190,
+        });
+        dispatchPointerEvent(mainButton, 'pointerup', {
+          clientX: 150,
+          clientY: 230,
+        });
+      });
+
+      expect(container.textContent).toContain('1/2');
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('supports swipe gestures in the detail lightbox viewer', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Eiffeltoren hoofdbeeld',
+                src: 'https://images.example/10307-main.jpg',
+              },
+              {
+                alt: 'Eiffeltoren detail 1',
+                src: 'https://images.example/10307-alt1.jpg',
+              },
+              {
+                alt: 'Eiffeltoren detail 2',
+                src: 'https://images.example/10307-alt2.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>(
+            'button[aria-label="Alle afbeeldingen weergeven"]',
+          )
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+      act(() => {
+        document.body
+          .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector(
+        '[data-swipe-target="lightbox"]',
+      );
+
+      expect(
+        document.body.querySelector('[data-swipe-track="lightbox"]'),
+      ).not.toBeNull();
+
+      act(() => {
+        dispatchPointerEvent(mediaFrame, 'pointerdown', {
+          clientX: 240,
+          clientY: 120,
+        });
+        dispatchPointerEvent(mediaFrame, 'pointermove', {
+          clientX: 140,
+          clientY: 124,
+        });
+        dispatchPointerEvent(mediaFrame, 'pointerup', {
+          clientX: 132,
+          clientY: 124,
+        });
+      });
+
+      const swipeTrack = document.body.querySelector<HTMLElement>(
+        '[data-swipe-track="lightbox"]',
+      );
+
+      expect(
+        document.body.querySelector('[data-lightbox-active-index="0"]'),
+      ).not.toBeNull();
+      expect(swipeTrack?.dataset['swipePhase']).toBe('settling');
+
+      act(() => {
+        vi.advanceTimersByTime(240);
+      });
+
+      expect(
+        document.body.querySelector('[data-lightbox-active-index="1"]'),
+      ).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps short and vertical detail gallery gestures from changing images', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Rivendell LEGO-set hoofdbeeld',
+              src: 'https://images.example/rivendell-1.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set detailbeeld',
+              src: 'https://images.example/rivendell-2.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const mainButton = container.querySelector('[class*="detailMainButton"]');
+
+    act(() => {
+      dispatchPointerEvent(mainButton, 'pointerdown', {
+        clientX: 200,
+        clientY: 120,
+      });
+      dispatchPointerEvent(mainButton, 'pointermove', {
+        clientX: 178,
+        clientY: 190,
+      });
+      dispatchPointerEvent(mainButton, 'pointerup', {
+        clientX: 150,
+        clientY: 230,
+      });
+    });
+
+    expect(container.textContent).toContain('1/2');
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('opens multi-image detail galleries into an all-images overview first', async () => {
@@ -958,6 +1357,15 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailGalleryControls {');
     expect(css).toContain('position: absolute;');
     expect(css).toContain('background: rgba(12, 18, 32, 0.68);');
+    expect(css).toContain('.detailMainButton,\n.lightboxMediaFrame {');
+    expect(css).toContain('touch-action: pan-y;');
+    expect(css).toContain('.swipeViewport {');
+    expect(css).toContain('.swipeTrack {');
+    expect(css).toContain("data-swipe-phase='dragging'");
+    expect(css).toContain("data-swipe-phase='resetting'");
+    expect(css).toContain('transition: transform 240ms ease-out;');
+    expect(css).toContain('width: 300%;');
+    expect(css).toContain('flex: 0 0 33.333333%;');
     expect(css).toContain('.detailGalleryNavButton {');
     expect(css).toContain(
       ".detailGallery[data-has-multiple-images='true'] .detailGalleryControls {",
@@ -970,6 +1378,10 @@ describe('ImageGallery', () => {
     expect(css).toContain('height: 508px;');
     expect(css).toContain('@media (max-width: 47.99rem)');
     expect(css).toContain('.detailThumbRow {\n    display: none;');
+    expect(css).toContain('.detailGalleryCounter {\n    left: 0;');
+    expect(css).toContain('.detailGalleryActions {\n    bottom: 0;');
+    expect(css).toContain('.detailGalleryNavButton,\n  .lightboxNavButton {');
+    expect(css).toContain('display: none;');
     expect(css).toContain('border-inline: 0;');
     expect(css).toContain('border-block-end: var(--lego-border-width-1) solid');
     expect(css).toContain('box-sizing: border-box;');

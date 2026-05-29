@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Images, X, ZoomIn } from 'lucide-react';
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -33,6 +33,25 @@ type GalleryImageMediaKind =
   | 'overview'
   | 'thumbnail';
 type LightboxMode = 'overview' | 'viewer';
+type SwipeTarget = 'detail' | 'lightbox';
+type SwipePhase = 'idle' | 'dragging' | 'resetting' | 'settling';
+
+const SWIPE_AXIS_LOCK_THRESHOLD_PX = 8;
+const SWIPE_DISTANCE_THRESHOLD_PX = 56;
+const SWIPE_VELOCITY_THRESHOLD_PX_PER_MS = 0.42;
+const SWIPE_TRACK_TRANSITION_MS = 240;
+
+const INITIAL_SWIPE_VISUAL_STATE = {
+  delta: 0,
+  direction: 0,
+  phase: 'idle',
+} satisfies SwipeVisualState;
+
+interface SwipeVisualState {
+  delta: number;
+  direction: -1 | 0 | 1;
+  phase: SwipePhase;
+}
 
 function joinClasses(
   ...classNames: Array<string | false | null | undefined>
@@ -193,9 +212,54 @@ export function ImageGallery({
   >({});
   const lightboxPrimaryButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxDialogRef = useRef<HTMLDivElement>(null);
-  const lightboxPointerStartX = useRef<number | null>(null);
+  const swipeStateRef = useRef<{
+    mode: 'horizontal' | 'vertical' | null;
+    pointerId: number | null;
+    startedAt: number;
+    target: SwipeTarget | null;
+    x: number;
+    y: number;
+  } | null>(null);
+  const suppressDetailClickRef = useRef(false);
   const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
+  const swipeSettleTimersRef = useRef<Record<SwipeTarget, number | null>>({
+    detail: null,
+    lightbox: null,
+  });
+  const swipeResetAnimationFramesRef = useRef<
+    Record<SwipeTarget, number | null>
+  >({
+    detail: null,
+    lightbox: null,
+  });
+  const [detailSwipeState, setDetailSwipeState] = useState<SwipeVisualState>(
+    INITIAL_SWIPE_VISUAL_STATE,
+  );
+  const [lightboxSwipeState, setLightboxSwipeState] =
+    useState<SwipeVisualState>(INITIAL_SWIPE_VISUAL_STATE);
+
+  const clearSwipeSettleTimer = useCallback((target: SwipeTarget) => {
+    const activeTimer = swipeSettleTimersRef.current[target];
+
+    if (activeTimer === null) {
+      return;
+    }
+
+    window.clearTimeout(activeTimer);
+    swipeSettleTimersRef.current[target] = null;
+  }, []);
+
+  const clearSwipeResetAnimationFrame = useCallback((target: SwipeTarget) => {
+    const activeFrame = swipeResetAnimationFramesRef.current[target];
+
+    if (activeFrame === null) {
+      return;
+    }
+
+    window.cancelAnimationFrame(activeFrame);
+    swipeResetAnimationFramesRef.current[target] = null;
+  }, []);
 
   const rememberLightboxTrigger = useCallback(
     (trigger?: HTMLElement | null) => {
@@ -214,13 +278,16 @@ export function ImageGallery({
   );
 
   const closeLightbox = useCallback(() => {
+    clearSwipeSettleTimer('lightbox');
+    clearSwipeResetAnimationFrame('lightbox');
+    setLightboxSwipeState(INITIAL_SWIPE_VISUAL_STATE);
     setLightboxImageIndex(null);
     setLightboxMode('viewer');
 
     window.requestAnimationFrame(() => {
       lightboxTriggerRef.current?.focus({ preventScroll: true });
     });
-  }, []);
+  }, [clearSwipeResetAnimationFrame, clearSwipeSettleTimer]);
 
   useEffect(() => {
     if (!resolvedImages.length) {
@@ -374,6 +441,22 @@ export function ImageGallery({
     });
   }, [lightboxMode]);
 
+  useEffect(
+    () => () => {
+      Object.values(swipeSettleTimersRef.current).forEach((timer) => {
+        if (timer !== null) {
+          window.clearTimeout(timer);
+        }
+      });
+      Object.values(swipeResetAnimationFramesRef.current).forEach((frame) => {
+        if (frame !== null) {
+          window.cancelAnimationFrame(frame);
+        }
+      });
+    },
+    [],
+  );
+
   if (!resolvedImages.length) {
     return null;
   }
@@ -449,31 +532,284 @@ export function ImageGallery({
     setLightboxMode('overview');
   }
 
-  function handleLightboxPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    lightboxPointerStartX.current = event.clientX;
+  function getSwipeDeltaForBounds({
+    delta,
+    imageIndex,
+  }: {
+    delta: number;
+    imageIndex: number;
+  }): number {
+    const isAtFirstImage = imageIndex <= 0;
+    const isAtLastImage = imageIndex >= resolvedImages.length - 1;
+
+    if ((isAtFirstImage && delta > 0) || (isAtLastImage && delta < 0)) {
+      return delta * 0.28;
+    }
+
+    return delta;
   }
 
-  function handleLightboxPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    const startClientX = lightboxPointerStartX.current;
+  function updateSwipeState(target: SwipeTarget, nextState: SwipeVisualState) {
+    clearSwipeSettleTimer(target);
+    clearSwipeResetAnimationFrame(target);
 
-    lightboxPointerStartX.current = null;
-
-    if (!hasMultipleImages || startClientX === null) {
+    if (target === 'detail') {
+      setDetailSwipeState(nextState);
       return;
     }
 
-    const pointerDelta = event.clientX - startClientX;
+    setLightboxSwipeState(nextState);
+  }
 
-    if (Math.abs(pointerDelta) < 42) {
+  function setSwipeDelta(target: SwipeTarget, delta: number) {
+    updateSwipeState(target, {
+      delta,
+      direction: 0,
+      phase: 'dragging',
+    });
+  }
+
+  function setSwipeState(target: SwipeTarget, nextState: SwipeVisualState) {
+    if (target === 'detail') {
+      setDetailSwipeState(nextState);
       return;
     }
 
-    if (pointerDelta < 0) {
-      goToLightboxImage((safeLightboxImageIndex ?? 0) + 1);
+    setLightboxSwipeState(nextState);
+  }
+
+  function resetSwipeState(
+    target: SwipeTarget,
+    { withoutTransition = false }: { withoutTransition?: boolean } = {},
+  ) {
+    clearSwipeSettleTimer(target);
+    clearSwipeResetAnimationFrame(target);
+
+    if (!withoutTransition) {
+      setSwipeState(target, INITIAL_SWIPE_VISUAL_STATE);
       return;
     }
 
-    goToLightboxImage((safeLightboxImageIndex ?? 0) - 1);
+    setSwipeState(target, {
+      delta: 0,
+      direction: 0,
+      phase: 'resetting',
+    });
+
+    swipeResetAnimationFramesRef.current[target] = window.requestAnimationFrame(
+      () => {
+        swipeResetAnimationFramesRef.current[target] = null;
+        setSwipeState(target, INITIAL_SWIPE_VISUAL_STATE);
+      },
+    );
+  }
+
+  function getSwipeTrackTransform(swipeState: SwipeVisualState): string {
+    if (swipeState.phase === 'settling' && swipeState.direction === -1) {
+      return 'translate3d(0%, 0, 0)';
+    }
+
+    if (swipeState.phase === 'settling' && swipeState.direction === 1) {
+      return 'translate3d(-66.666667%, 0, 0)';
+    }
+
+    return `translate3d(calc(-33.333333% + ${swipeState.delta}px), 0, 0)`;
+  }
+
+  function settleSwipe({
+    direction,
+    target,
+  }: {
+    direction: -1 | 0 | 1;
+    target: SwipeTarget;
+  }) {
+    updateSwipeState(target, {
+      delta: 0,
+      direction,
+      phase: 'settling',
+    });
+
+    swipeSettleTimersRef.current[target] = window.setTimeout(() => {
+      swipeSettleTimersRef.current[target] = null;
+
+      if (direction === 0) {
+        resetSwipeState(target);
+        return;
+      }
+
+      if (target === 'detail') {
+        setDetailImageIndex((currentIndex) =>
+          clampIndex(currentIndex + direction, resolvedImages.length),
+        );
+      } else {
+        setLightboxImageIndex((currentIndex) =>
+          currentIndex === null
+            ? 0
+            : clampIndex(currentIndex + direction, resolvedImages.length),
+        );
+      }
+
+      resetSwipeState(target, { withoutTransition: true });
+    }, SWIPE_TRACK_TRANSITION_MS);
+  }
+
+  function endSwipe({
+    delta,
+    durationMs,
+    target,
+  }: {
+    delta: number;
+    durationMs: number;
+    target: SwipeTarget;
+  }) {
+    const velocity = Math.abs(delta) / Math.max(durationMs, 1);
+    const shouldNavigate =
+      Math.abs(delta) >= SWIPE_DISTANCE_THRESHOLD_PX ||
+      (Math.abs(delta) >= SWIPE_DISTANCE_THRESHOLD_PX * 0.7 &&
+        velocity >= SWIPE_VELOCITY_THRESHOLD_PX_PER_MS);
+
+    if (!shouldNavigate) {
+      settleSwipe({ direction: 0, target });
+      return;
+    }
+
+    if (target === 'detail') {
+      const direction = delta < 0 ? 1 : -1;
+      const nextIndex = safeDetailImageIndex + direction;
+
+      settleSwipe({
+        direction:
+          nextIndex >= 0 && nextIndex < resolvedImages.length ? direction : 0,
+        target,
+      });
+      return;
+    }
+
+    const currentLightboxIndex = safeLightboxImageIndex ?? 0;
+    const direction = delta < 0 ? 1 : -1;
+    const nextIndex = currentLightboxIndex + direction;
+
+    settleSwipe({
+      direction:
+        nextIndex >= 0 && nextIndex < resolvedImages.length ? direction : 0,
+      target,
+    });
+  }
+
+  function handleSwipePointerDown({
+    event,
+    target,
+  }: {
+    event: ReactPointerEvent<HTMLElement>;
+    target: SwipeTarget;
+  }) {
+    if (!hasMultipleImages || event.pointerType === 'mouse') {
+      return;
+    }
+
+    swipeStateRef.current = {
+      mode: null,
+      pointerId: event.pointerId,
+      startedAt: performance.now(),
+      target,
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }
+
+  function handleSwipePointerMove(event: ReactPointerEvent<HTMLElement>) {
+    const swipeState = swipeStateRef.current;
+
+    if (
+      !swipeState ||
+      swipeState.pointerId !== event.pointerId ||
+      !swipeState.target
+    ) {
+      return;
+    }
+
+    const deltaX = event.clientX - swipeState.x;
+    const deltaY = event.clientY - swipeState.y;
+    const absoluteDeltaX = Math.abs(deltaX);
+    const absoluteDeltaY = Math.abs(deltaY);
+
+    if (swipeState.mode === null) {
+      if (
+        absoluteDeltaX < SWIPE_AXIS_LOCK_THRESHOLD_PX &&
+        absoluteDeltaY < SWIPE_AXIS_LOCK_THRESHOLD_PX
+      ) {
+        return;
+      }
+
+      swipeState.mode =
+        absoluteDeltaX > absoluteDeltaY * 1.25 ? 'horizontal' : 'vertical';
+
+      if (swipeState.mode === 'horizontal') {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      }
+    }
+
+    if (swipeState.mode !== 'horizontal') {
+      return;
+    }
+
+    event.preventDefault();
+
+    const imageIndex =
+      swipeState.target === 'detail'
+        ? safeDetailImageIndex
+        : (safeLightboxImageIndex ?? 0);
+
+    setSwipeDelta(
+      swipeState.target,
+      getSwipeDeltaForBounds({
+        delta: deltaX,
+        imageIndex,
+      }),
+    );
+  }
+
+  function handleSwipePointerEnd(event: ReactPointerEvent<HTMLElement>) {
+    const swipeState = swipeStateRef.current;
+
+    if (
+      !swipeState ||
+      swipeState.pointerId !== event.pointerId ||
+      !swipeState.target
+    ) {
+      return;
+    }
+
+    swipeStateRef.current = null;
+
+    if (swipeState.mode !== 'horizontal') {
+      resetSwipeState(swipeState.target);
+      return;
+    }
+
+    const delta = event.clientX - swipeState.x;
+
+    if (Math.abs(delta) > SWIPE_AXIS_LOCK_THRESHOLD_PX) {
+      suppressDetailClickRef.current = swipeState.target === 'detail';
+    }
+
+    endSwipe({
+      delta,
+      durationMs: performance.now() - swipeState.startedAt,
+      target: swipeState.target,
+    });
+  }
+
+  function handleSwipePointerCancel() {
+    const swipeState = swipeStateRef.current;
+
+    swipeStateRef.current = null;
+
+    if (!swipeState?.target) {
+      return;
+    }
+
+    settleSwipe({ direction: 0, target: swipeState.target });
   }
 
   function handleGalleryKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
@@ -498,6 +834,77 @@ export function ImageGallery({
 
   function goToDetailImage(nextIndex: number) {
     setDetailImageIndex(clampIndex(nextIndex, resolvedImages.length));
+  }
+
+  function renderSwipeableMedia({
+    currentIndex,
+    kind,
+    swipeState,
+    target,
+  }: {
+    currentIndex: number;
+    kind: Extract<GalleryImageMediaKind, 'detail' | 'lightbox'>;
+    swipeState: SwipeVisualState;
+    target: SwipeTarget;
+  }) {
+    const slideIndexes = [currentIndex - 1, currentIndex, currentIndex + 1];
+
+    return (
+      <>
+        <span className={styles.swipeStaticMedia}>
+          <GalleryImageMedia
+            image={resolvedImages[currentIndex]}
+            imageIndex={currentIndex}
+            kind={kind}
+            isFallbackVisible={Boolean(failedImageIndexes[currentIndex])}
+            onImageError={handleImageError}
+          />
+        </span>
+        <span className={styles.swipeViewport} aria-hidden="true">
+          <span
+            className={styles.swipeTrack}
+            data-swipe-direction={swipeState.direction}
+            data-swipe-phase={swipeState.phase}
+            data-swipe-track={target}
+            style={{
+              transform: getSwipeTrackTransform(swipeState),
+            }}
+          >
+            {slideIndexes.map((imageIndex, slideIndex) => {
+              const image = resolvedImages[imageIndex];
+              const slideName =
+                slideIndex === 0
+                  ? 'previous'
+                  : slideIndex === 1
+                    ? 'current'
+                    : 'next';
+
+              return (
+                <span
+                  className={styles.swipeSlide}
+                  data-swipe-slide={slideName}
+                  key={`${target}-${slideName}-${image?.src ?? imageIndex}`}
+                >
+                  {image ? (
+                    <GalleryImageMedia
+                      image={image}
+                      imageIndex={imageIndex}
+                      kind={kind}
+                      isFallbackVisible={Boolean(
+                        failedImageIndexes[imageIndex],
+                      )}
+                      onImageError={handleImageError}
+                    />
+                  ) : (
+                    <span className={styles.swipeSlidePlaceholder} />
+                  )}
+                </span>
+              );
+            })}
+          </span>
+        </span>
+      </>
+    );
   }
 
   const lightbox =
@@ -619,18 +1026,23 @@ export function ImageGallery({
               <div
                 className={styles.lightboxMediaFrame}
                 data-lightbox-media-surface="light"
-                onPointerDown={handleLightboxPointerDown}
-                onPointerUp={handleLightboxPointerUp}
+                data-swipe-target="lightbox"
+                onPointerCancel={handleSwipePointerCancel}
+                onPointerDown={(event) =>
+                  handleSwipePointerDown({
+                    event,
+                    target: 'lightbox',
+                  })
+                }
+                onPointerMove={handleSwipePointerMove}
+                onPointerUp={handleSwipePointerEnd}
               >
-                <GalleryImageMedia
-                  image={lightboxImage}
-                  imageIndex={safeLightboxImageIndex}
-                  kind="lightbox"
-                  isFallbackVisible={Boolean(
-                    failedImageIndexes[safeLightboxImageIndex],
-                  )}
-                  onImageError={handleImageError}
-                />
+                {renderSwipeableMedia({
+                  currentIndex: safeLightboxImageIndex,
+                  kind: 'lightbox',
+                  swipeState: lightboxSwipeState,
+                  target: 'lightbox',
+                })}
               </div>
 
               {hasMultipleImages ? (
@@ -794,21 +1206,36 @@ export function ImageGallery({
                   safeDetailImageIndex,
                 )} in volledig scherm`}
                 className={styles.detailMainButton}
-                onClick={(event) =>
-                  openLightbox(safeDetailImageIndex, event.currentTarget)
+                onClick={(event) => {
+                  if (suppressDetailClickRef.current) {
+                    suppressDetailClickRef.current = false;
+                    event.preventDefault();
+                    return;
+                  }
+
+                  openLightbox(safeDetailImageIndex, event.currentTarget);
+                }}
+                onPointerCancel={handleSwipePointerCancel}
+                onPointerDown={(event) =>
+                  handleSwipePointerDown({
+                    event,
+                    target: 'detail',
+                  })
                 }
+                onPointerMove={handleSwipePointerMove}
+                onPointerUp={handleSwipePointerEnd}
                 type="button"
               >
-                <div className={styles.detailMainFrame}>
-                  <GalleryImageMedia
-                    image={resolvedImages[safeDetailImageIndex]}
-                    imageIndex={safeDetailImageIndex}
-                    kind="detail"
-                    isFallbackVisible={Boolean(
-                      failedImageIndexes[safeDetailImageIndex],
-                    )}
-                    onImageError={handleImageError}
-                  />
+                <div
+                  className={styles.detailMainFrame}
+                  data-swipe-target="detail"
+                >
+                  {renderSwipeableMedia({
+                    currentIndex: safeDetailImageIndex,
+                    kind: 'detail',
+                    swipeState: detailSwipeState,
+                    target: 'detail',
+                  })}
                 </div>
               </button>
               {hasMultipleImages ? (
@@ -828,6 +1255,7 @@ export function ImageGallery({
                       }
                       type="button"
                     >
+                      <Images aria-hidden="true" size={16} strokeWidth={2.2} />
                       Alles weergeven
                     </button>
                     <button
