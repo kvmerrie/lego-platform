@@ -245,6 +245,23 @@ export function createAdminPromoteRoutes({
           request.log.info(
             {
               durationMs: result.durationMs,
+              sourceMetadata: {
+                bricksetPromoted:
+                  result.brickset_source_metadata_promoted_count ??
+                  result.bricksetSourceMetadataPromotedCount,
+                eligible:
+                  result.source_metadata_eligible_count ??
+                  result.sourceMetadataEligibleCount,
+                rakutenPromoted:
+                  result.rakuten_source_metadata_promoted_count ??
+                  result.rakutenSourceMetadataPromotedCount,
+                read:
+                  result.source_metadata_read_count ??
+                  result.sourceMetadataReadCount,
+                skipped:
+                  result.skipped_source_metadata_count ??
+                  result.skippedSourceMetadataCount,
+              },
               revalidation: {
                 attempted: revalidation?.attempted ?? false,
                 pathCount: revalidation?.pathCount ?? revalidationPaths.length,

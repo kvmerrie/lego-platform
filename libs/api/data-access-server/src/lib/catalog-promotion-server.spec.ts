@@ -334,7 +334,15 @@ describe('catalog promotion server', () => {
       updatedCount: 0,
       upsertedCount: 2,
     });
+    expect(result.brickset_source_metadata_promoted_count).toBe(1);
     expect(result.bricksetSourceMetadataPromotedCount).toBe(1);
+    expect(result.rakuten_source_metadata_promoted_count).toBe(1);
+    expect(result.rakutenSourceMetadataPromotedCount).toBe(1);
+    expect(result.source_metadata_eligible_count).toBe(2);
+    expect(result.sourceMetadataEligibleCount).toBe(2);
+    expect(result.source_metadata_read_count).toBe(3);
+    expect(result.sourceMetadataReadCount).toBe(3);
+    expect(result.skipped_source_metadata_count).toBe(1);
     expect(result.skippedSourceMetadataCount).toBe(1);
     expect(result.tables.commerce_merchants).toEqual({
       insertedCount: 0,
@@ -453,6 +461,9 @@ describe('catalog promotion server', () => {
       expect.objectContaining({
         brickset_source_metadata_promoted_count: 1,
         promote_metadata_rows_copied: 2,
+        rakuten_source_metadata_promoted_count: 1,
+        source_metadata_eligible_count: 2,
+        source_metadata_read_count: 3,
         skipped_source_metadata_count: 1,
         table: 'catalog_set_source_metadata',
       }),
@@ -517,6 +528,69 @@ describe('catalog promotion server', () => {
     expect(productionClient.rpc).toHaveBeenCalledWith(
       'refresh_catalog_theme_summaries',
     );
+  });
+
+  test('promotes paginated Brickset source metadata beyond the first Supabase page', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
+    const bricksetMetadataRows = Array.from({ length: 1001 }, (_, index) => {
+      const setId = String(30_000 + index);
+
+      return {
+        catalog_set_id: setId,
+        last_seen_at: '2026-05-27T08:00:00.000Z',
+        locale: 'en-US',
+        match_confidence: 'exact_set_number',
+        metadata_json: {
+          bricksetSetId: 100_000 + index,
+          sourceSeen: true,
+        },
+        policy: 'render_publicly_with_attribution',
+        set_number: setId,
+        source: 'brickset',
+      };
+    });
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_source_metadata: bricksetMetadataRows,
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+    });
+
+    expect(result.tables.catalog_set_source_metadata).toEqual({
+      insertedCount: 1001,
+      readCount: 1001,
+      updatedCount: 0,
+      upsertedCount: 1001,
+    });
+    expect(result.brickset_source_metadata_promoted_count).toBe(1001);
+    expect(result.bricksetSourceMetadataPromotedCount).toBe(1001);
+    expect(result.rakuten_source_metadata_promoted_count).toBe(0);
+    expect(result.rakutenSourceMetadataPromotedCount).toBe(0);
+    expect(result.source_metadata_eligible_count).toBe(1001);
+    expect(result.sourceMetadataEligibleCount).toBe(1001);
+    expect(result.source_metadata_read_count).toBe(1001);
+    expect(result.sourceMetadataReadCount).toBe(1001);
+    expect(result.skipped_source_metadata_count).toBe(0);
+    expect(result.skippedSourceMetadataCount).toBe(0);
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] promote_metadata_rows_copied',
+      expect.objectContaining({
+        brickset_source_metadata_promoted_count: 1001,
+        rakuten_source_metadata_promoted_count: 0,
+        source_metadata_eligible_count: 1001,
+        source_metadata_read_count: 1001,
+      }),
+    );
+    consoleInfoSpy.mockRestore();
   });
 
   test('defaults null catalog source theme timestamps before production upsert', async () => {

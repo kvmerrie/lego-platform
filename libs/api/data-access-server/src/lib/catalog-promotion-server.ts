@@ -355,11 +355,19 @@ export interface CatalogPromotionTableSummary {
 }
 
 export interface CatalogPromotionResult {
+  brickset_source_metadata_promoted_count?: number;
   bricksetSourceMetadataPromotedCount?: number;
   changedThemeSlugs: string[];
   durationMs: number;
   promotedMetadataSetIds?: string[];
   promotedMetadataSetSlugs?: string[];
+  rakuten_source_metadata_promoted_count?: number;
+  rakutenSourceMetadataPromotedCount?: number;
+  skipped_source_metadata_count?: number;
+  source_metadata_eligible_count?: number;
+  source_metadata_read_count?: number;
+  sourceMetadataEligibleCount?: number;
+  sourceMetadataReadCount?: number;
   skippedSourceMetadataCount?: number;
   startedAt: string;
   status: 'ok';
@@ -1987,6 +1995,10 @@ export async function promoteCatalogFromStagingToProduction({
       normalizedCatalogSetSourceMetadata.filter(
         (row) => row.source === BRICKSET_SOURCE_METADATA_SOURCE,
       ).length;
+    const rakutenSourceMetadataPromotedCount =
+      normalizedCatalogSetSourceMetadata.filter(
+        (row) => row.source === RAKUTEN_LEGO_SOURCE_METADATA_SOURCE,
+      ).length;
     const skippedSourceMetadataCount =
       catalogSetSourceMetadata.length -
       normalizedCatalogSetSourceMetadata.length;
@@ -2258,6 +2270,10 @@ export async function promoteCatalogFromStagingToProduction({
         bricksetSourceMetadataPromotedCount,
       promote_metadata_rows_copied:
         tables.catalog_set_source_metadata.upsertedCount,
+      rakuten_source_metadata_promoted_count:
+        rakutenSourceMetadataPromotedCount,
+      source_metadata_eligible_count: normalizedCatalogSetSourceMetadata.length,
+      source_metadata_read_count: catalogSetSourceMetadata.length,
       skipped_source_metadata_count: skippedSourceMetadataCount,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
     });
@@ -2291,11 +2307,21 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     return {
+      brickset_source_metadata_promoted_count:
+        bricksetSourceMetadataPromotedCount,
       bricksetSourceMetadataPromotedCount,
       changedThemeSlugs,
       durationMs: now().getTime() - startedAt.getTime(),
       promotedMetadataSetIds,
       promotedMetadataSetSlugs,
+      rakuten_source_metadata_promoted_count:
+        rakutenSourceMetadataPromotedCount,
+      rakutenSourceMetadataPromotedCount,
+      skipped_source_metadata_count: skippedSourceMetadataCount,
+      source_metadata_eligible_count: normalizedCatalogSetSourceMetadata.length,
+      source_metadata_read_count: catalogSetSourceMetadata.length,
+      sourceMetadataEligibleCount: normalizedCatalogSetSourceMetadata.length,
+      sourceMetadataReadCount: catalogSetSourceMetadata.length,
       skippedSourceMetadataCount,
       startedAt: startedAtIso,
       status: 'ok',
