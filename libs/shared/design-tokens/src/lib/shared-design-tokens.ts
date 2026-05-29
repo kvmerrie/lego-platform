@@ -20,6 +20,7 @@ const baseTokens: ThemeTokenMap = {
     "var(--font-plus-jakarta-sans, 'Plus Jakarta Sans'), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-mono': "'SFMono-Regular', 'Cascadia Code', monospace",
   'lego-font-size-caption': '0.75rem',
+  'lego-caption-font-size': '0.78rem',
   'lego-font-size-sm': '0.875rem',
   'lego-font-size-base': '1rem',
   'lego-font-size-body': '1rem',

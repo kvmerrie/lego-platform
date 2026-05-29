@@ -3,13 +3,16 @@ import {
   upsertCatalogSetSourceMetadata,
   type CatalogSetSourceMetadataInput,
 } from '@lego-platform/catalog/data-access-server';
-import type { CatalogCanonicalSet } from '@lego-platform/catalog/util';
+import {
+  bricksetGalleryAttributionText,
+  type CatalogCanonicalSet,
+} from '@lego-platform/catalog/util';
 
 const BRICKSET_API_BASE_URL = 'https://brickset.com/api/v3.asmx';
 const BRICKSET_SOURCE = 'brickset';
 const BRICKSET_LOCALE = 'en-US';
 const BRICKSET_MATCH_CONFIDENCE = 'exact_set_number';
-const BRICKSET_METADATA_POLICY = 'metadata_only_pending_rights_review';
+const BRICKSET_METADATA_POLICY = 'render_publicly_with_attribution';
 const BRICKSET_DEFAULT_BATCH_SIZE = 100;
 
 interface BricksetApiSetImage {
@@ -76,7 +79,7 @@ interface BricksetApiAdditionalImageResponse {
 export interface BricksetEnrichmentImageReference {
   attributionRequired: boolean;
   imageUrl: string;
-  rightsPolicy: 'metadata_only_pending_rights_review';
+  rightsPolicy: 'render_publicly_with_attribution';
   sourceField: 'additionalImages' | 'image.imageURL';
   sourceUrl?: string;
   thumbnailUrl?: string;
@@ -96,13 +99,14 @@ export interface BricksetEnrichmentMetadataJson
   imageRights: {
     attributionText: string;
     officialLegoImagesRequireFairPlayCompliance: boolean;
-    policy: 'metadata_only_pending_rights_review';
-    renderPublicly: false;
+    policy: 'render_publicly_with_attribution';
+    renderPublicly: true;
   };
   images: BricksetEnrichmentImageReference[];
   lastUpdated?: string;
   launchDate?: string;
   modelDimensions?: Record<string, number>;
+  pieces?: number;
   sourceSeen: true;
   subtheme?: string;
   tags?: string[];
@@ -392,10 +396,10 @@ function buildBricksetMetadataJson({
   const metadataJson: BricksetEnrichmentMetadataJson = {
     bricksetSetId: set.setID,
     imageRights: {
-      attributionText: 'Image(s) courtesy of Brickset.com',
+      attributionText: bricksetGalleryAttributionText,
       officialLegoImagesRequireFairPlayCompliance: true,
       policy: BRICKSET_METADATA_POLICY,
-      renderPublicly: false,
+      renderPublicly: true,
     },
     images: buildBricksetImageReferences({
       additionalImages,
@@ -425,6 +429,9 @@ function buildBricksetMetadataJson({
       ? { modelDimensions: normalizeBricksetDimensionMap(set.modelDimensions) }
       : {}),
     ...(set.barcode?.EAN ? { ean: set.barcode.EAN } : {}),
+    ...(typeof set.pieces === 'number' && set.pieces > 0
+      ? { pieces: Math.floor(set.pieces) }
+      : {}),
     ...(set.subtheme ? { subtheme: set.subtheme } : {}),
     ...(tags.length ? { tags } : {}),
     ...(set.theme ? { theme: set.theme } : {}),

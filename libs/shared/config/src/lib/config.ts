@@ -142,6 +142,30 @@ export const publicSiteIndexingEnvKeys = {
   allowIndexing: 'BRICKHUNT_ALLOW_INDEXING',
 } as const;
 
+export const bricksetGalleryRenderModes = [
+  'disabled',
+  'attribution_required',
+] as const;
+
+export type BricksetGalleryRenderMode =
+  (typeof bricksetGalleryRenderModes)[number];
+
+export const bricksetGalleryEnvKeys = {
+  renderMode: 'BRICKSET_GALLERY_RENDER_MODE',
+} as const;
+
+export function getBricksetGalleryRenderMode(
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
+): BricksetGalleryRenderMode {
+  const renderMode = environment[bricksetGalleryEnvKeys.renderMode]
+    ?.trim()
+    .toLowerCase();
+
+  return renderMode === 'attribution_required'
+    ? 'attribution_required'
+    : 'disabled';
+}
+
 const canonicalProductionHost = 'www.brickhunt.nl';
 const productionEnvironmentNames = new Set(['production', 'prod']);
 

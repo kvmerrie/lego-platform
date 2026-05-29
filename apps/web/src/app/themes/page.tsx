@@ -1,7 +1,8 @@
 import { CatalogFeatureThemeIndex } from '@lego-platform/catalog/feature-theme-page';
 import { listCatalogThemeDirectoryItems } from '@lego-platform/catalog/data-access-web';
-import { catalogDiscoveryVisualVariants } from '@lego-platform/catalog/util';
+import type { CatalogThemeVisual } from '@lego-platform/catalog/util';
 import { ShellWeb } from '@lego-platform/shell/web';
+import React from 'react';
 import {
   buildCanonicalUrl,
   buildWebPath,
@@ -17,6 +18,10 @@ const THEME_INDEX_CACHE_TAGS = [
   cacheTags.sets(),
   cacheTags.themes(),
 ] as const;
+const themeIndexVisual = {
+  backgroundColor: '#234bcd',
+  textColor: '#ffffff',
+} as const satisfies CatalogThemeVisual;
 
 export const metadata: Metadata = {
   title: 'Brickhunt – LEGO thema’s ontdekken',
@@ -46,7 +51,7 @@ export default async function ThemesPage() {
     <ShellWeb>
       <CatalogFeatureThemeIndex
         themeDirectoryItems={themeDirectoryItems}
-        visual={catalogDiscoveryVisualVariants.themes}
+        visual={themeIndexVisual}
       />
     </ShellWeb>
   );

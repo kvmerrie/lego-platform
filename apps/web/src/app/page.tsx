@@ -125,7 +125,7 @@ const homepageDiscoveryTileConfigs = [
     imageSetIds: ['60445', '60443', '60462', '75405'],
     id: 'new-sets',
     title: 'Nieuwe sets',
-    visual: catalogDiscoveryVisualVariants.newSets,
+    visual: catalogDiscoveryVisualVariants.newReleases,
   },
   {
     href: '/lego-voor-volwassenen',
@@ -134,7 +134,7 @@ const homepageDiscoveryTileConfigs = [
     imageSetIds: ['10368', '10344', '10343', '10316', '10333', '42172'],
     id: 'adult-sets',
     title: 'LEGO voor volwassenen',
-    visual: catalogDiscoveryVisualVariants.adultSets,
+    visual: catalogDiscoveryVisualVariants.adultCollectors,
   },
   {
     href: '/lego-sets-onder-50-euro',
@@ -143,7 +143,7 @@ const homepageDiscoveryTileConfigs = [
     imageSetIds: ['77244', '75405', '72035', '10344'],
     id: 'budget-sets',
     title: 'LEGO sets onder €50',
-    visual: catalogDiscoveryVisualVariants.budgetSets,
+    visual: catalogDiscoveryVisualVariants.under50,
   },
   {
     href: '/retiring-lego-sets',
@@ -152,7 +152,7 @@ const homepageDiscoveryTileConfigs = [
     imageSetIds: ['75329', '10255', '76441', '75313'],
     id: 'retiring-sets',
     title: 'Binnenkort uit handel',
-    visual: catalogDiscoveryVisualVariants.retiringSets,
+    visual: catalogDiscoveryVisualVariants.retiringSoon,
   },
   {
     href: '/deals',
@@ -170,7 +170,7 @@ const homepageDiscoveryTileConfigs = [
     imageSetIds: [],
     id: 'themes',
     title: 'Populaire thema’s',
-    visual: catalogDiscoveryVisualVariants.themes,
+    visual: catalogDiscoveryVisualVariants.popularThemes,
   },
 ] as const satisfies readonly HomepageDiscoveryTileConfig[];
 

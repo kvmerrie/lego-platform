@@ -50,7 +50,9 @@ export interface CatalogSetSummary {
 export type CatalogSetImageType = 'hero' | 'detail' | 'minifig';
 
 export interface CatalogSetImage {
+  attributionText?: string;
   order?: number;
+  thumbnailUrl?: string;
   type?: CatalogSetImageType;
   url: string;
 }
@@ -527,6 +529,7 @@ export interface CatalogCanonicalSet {
   createdAt: string;
   displayTitle?: string;
   displayTitleSource?: CatalogSetDisplayTitleSource;
+  images?: readonly CatalogSetImage[];
   imageUrl?: string;
   legoProductDescription?: string;
   legoProductFeatures?: readonly CatalogProductFeature[];
@@ -1226,13 +1229,24 @@ function toCatalogSetImageSeed(
   }
 
   const normalizedUrl = normalizeCatalogImageUrl(image.url);
+  const normalizedThumbnailUrl = normalizeCatalogImageUrl(image.thumbnailUrl);
 
   if (!normalizedUrl) {
     return undefined;
   }
 
   return {
+    ...(image.attributionText
+      ? {
+          attributionText: image.attributionText,
+        }
+      : {}),
     ...(typeof image.order === 'number' ? { order: image.order } : {}),
+    ...(normalizedThumbnailUrl
+      ? {
+          thumbnailUrl: normalizedThumbnailUrl,
+        }
+      : {}),
     ...(image.type
       ? {
           type: image.type,
@@ -1318,10 +1332,16 @@ export function normalizeCatalogSetImages({
       isPrimary:
         existingCatalogSetImage.isPrimary ||
         normalizedCatalogSetImage.url === normalizedPrimaryImage,
+      attributionText:
+        existingCatalogSetImage.attributionText ??
+        normalizedCatalogSetImage.attributionText,
       order:
         typeof existingCatalogSetImage.order === 'number'
           ? existingCatalogSetImage.order
           : normalizedCatalogSetImage.order,
+      thumbnailUrl:
+        existingCatalogSetImage.thumbnailUrl ??
+        normalizedCatalogSetImage.thumbnailUrl,
       type: existingCatalogSetImage.type ?? normalizedCatalogSetImage.type,
       url: normalizedCatalogSetImage.url,
     });
@@ -1341,6 +1361,16 @@ export function normalizeCatalogSetImages({
         typeof catalogSetImage.order === 'number'
           ? catalogSetImage.order
           : index,
+      ...(catalogSetImage.attributionText
+        ? {
+            attributionText: catalogSetImage.attributionText,
+          }
+        : {}),
+      ...(catalogSetImage.thumbnailUrl
+        ? {
+            thumbnailUrl: catalogSetImage.thumbnailUrl,
+          }
+        : {}),
       ...(catalogSetImage.type
         ? {
             type: catalogSetImage.type,

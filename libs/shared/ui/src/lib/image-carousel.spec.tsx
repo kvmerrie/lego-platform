@@ -94,6 +94,9 @@ describe('ImageGallery', () => {
     );
 
     expect(gallery).not.toBeNull();
+    expect(
+      gallery?.querySelector('[data-has-multiple-images="false"]'),
+    ).not.toBeNull();
     expect(gallery?.querySelector('[class*="detailThumbRow"]')).toBeNull();
 
     const css = readFileSync(
@@ -519,12 +522,17 @@ describe('ImageGallery', () => {
     expect(document.documentElement.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(closeButton);
 
-    const lastThumbnail = document.body.querySelector(
-      '[data-lightbox-thumb-index="1"]',
+    expect(dialog?.getAttribute('data-lightbox-mode')).toBe('overview');
+    expect(
+      document.body.querySelectorAll('[data-lightbox-grid-index]'),
+    ).toHaveLength(2);
+
+    const lastOverviewImage = document.body.querySelector(
+      '[data-lightbox-grid-index="1"]',
     ) as HTMLButtonElement | null;
 
     act(() => {
-      lastThumbnail?.focus();
+      lastOverviewImage?.focus();
       window.dispatchEvent(
         new KeyboardEvent('keydown', {
           bubbles: true,
@@ -547,7 +555,7 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(document.activeElement).toBe(lastThumbnail);
+    expect(document.activeElement).toBe(lastOverviewImage);
 
     act(() => {
       window.dispatchEvent(
@@ -622,11 +630,287 @@ describe('ImageGallery', () => {
 
     expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
+      document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelectorAll('[data-lightbox-grid-index]'),
+    ).toHaveLength(2);
+    expect(
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
+    ).toBeNull();
+
+    const secondGridImage = document.body.querySelector(
+      '[data-lightbox-grid-index="1"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      secondGridImage?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="viewer"]'),
+    ).not.toBeNull();
+    expect(
       document.body.querySelector('[data-lightbox-media-surface="light"]'),
     ).not.toBeNull();
     expect(
       document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
+  });
+
+  it('shows persistent detail gallery controls and updates the main image without opening the lightbox', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Rivendell LEGO-set hoofdbeeld',
+              src: 'https://images.example/rivendell-1.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set detailbeeld',
+              src: 'https://images.example/rivendell-2.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set achterzijde',
+              src: 'https://images.example/rivendell-3.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('1/3');
+    expect(
+      container.querySelector(
+        'button[aria-label="Alle afbeeldingen weergeven"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Vorige afbeelding"]',
+      )?.disabled,
+    ).toBe(true);
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Volgende afbeelding"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(container.textContent).toContain('2/3');
+    expect(
+      container.querySelector(
+        'button[aria-label="Bekijk afbeelding 2"][data-active="true"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        'button[aria-label^="Open Rivendell LEGO-set detailbeeld"]',
+      ),
+    ).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Alle afbeeldingen weergeven"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    expect(document.body.textContent).toContain('Alle afbeeldingen');
+  });
+
+  it('opens multi-image detail galleries into an all-images overview first', async () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Eiffeltoren hoofdbeeld',
+              src: 'https://images.example/10307-main.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 1',
+              caption: 'Image(s) courtesy of Brickset.com',
+              src: 'https://images.example/10307-alt1.jpg',
+              thumbnailSrc: 'https://images.example/tn_10307-alt1.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 2',
+              src: 'https://images.example/10307-alt2.jpg',
+              thumbnailSrc: 'https://images.example/tn_10307-alt2.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 3',
+              src: 'https://images.example/10307-alt3.jpg',
+              thumbnailSrc: 'https://images.example/tn_10307-alt3.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    expect(document.body.textContent).toContain('Alle afbeeldingen');
+    expect(document.body.textContent).toContain(
+      'Image(s) courtesy of Brickset.com',
+    );
+    expect(
+      document.body.querySelector('[class*="lightboxFooter"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector(
+        '[class*="lightboxFooter"] [class*="lightboxAttribution"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelectorAll('[data-lightbox-grid-index]'),
+    ).toHaveLength(4);
+    expect(
+      document.body.querySelector('button[aria-label="Bekijk afbeelding 3"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
+    ).toBeNull();
+
+    const gridImages = document.body.querySelectorAll<HTMLImageElement>(
+      '[class*="lightboxOverviewFrame"] img',
+    );
+
+    expect(gridImages[1]?.getAttribute('src')).toBe(
+      'https://images.example/10307-alt1.jpg',
+    );
+    expect(gridImages[1]?.getAttribute('src')).not.toContain('tn_');
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="2"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="viewer"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
+    ).not.toBeNull();
+    expect(document.body.textContent).toContain('3/4');
+    expect(
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-thumb-index]'),
+    ).toBeNull();
+    expect(
+      document.body.querySelector(
+        '[data-lightbox-mode="viewer"] button[aria-label="Volgende afbeelding"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector(
+        'button[aria-label="Terug naar alle afbeeldingen"]',
+      ),
+    ).not.toBeNull();
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>(
+          '[data-lightbox-mode="viewer"] button[aria-label="Volgende afbeelding"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(document.body.textContent).toContain('4/4');
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="3"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>(
+          '[data-lightbox-mode="viewer"] button[aria-label="Vorige afbeelding"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(document.body.textContent).toContain('3/4');
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Terug naar alle afbeeldingen"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    await flushAnimationFrame();
+    expect(document.activeElement).toBe(
+      document.body.querySelector('[data-lightbox-grid-index="2"]'),
+    );
   });
 
   it('keeps set detail gallery images on a white contained product surface', () => {
@@ -649,22 +933,178 @@ describe('ImageGallery', () => {
     );
     expect(css).toContain('.galleryImageDetail {');
     expect(css).toContain('object-fit: contain;');
+    expect(css).toContain('.galleryImageThumbnail {\n  object-fit: contain;');
     expect(css).toContain('@media (min-width: 48rem)');
+    expect(css).toContain(".detailGallery[data-has-multiple-images='true'] {");
+    expect(css).toContain('gap: 0;');
+    expect(css).toContain('grid-template-columns: 160px minmax(0, 1fr);');
+    expect(css).toContain('background: #f3f4f6;');
+    expect(css).toContain('border: var(--lego-border-width-1) solid');
+    expect(css).toContain('overflow: hidden;');
+    expect(css).toContain('padding: var(--lego-space-3);');
+    expect(css).toContain('aspect-ratio: auto;');
+    expect(css).toContain('border: 0;');
+    expect(css).toContain('height: 76px;');
+    expect(css).toContain('width: min(130px, 100%);');
+    expect(css).toContain('grid-auto-flow: row;');
+    expect(css).toContain('overflow-y: auto;');
+    expect(css).toContain('box-shadow: 0 0 0 3px var(--lego-accent);');
+    expect(css).toContain(
+      ".detailGallery[data-has-multiple-images='true'] .detailMainButton {",
+    );
+    expect(css).toContain(
+      'border-radius: 0 var(--lego-radius-lg) var(--lego-radius-lg) 0;',
+    );
+    expect(css).toContain('.detailGalleryControls {');
+    expect(css).toContain('position: absolute;');
+    expect(css).toContain('background: rgba(12, 18, 32, 0.68);');
+    expect(css).toContain('.detailGalleryNavButton {');
+    expect(css).toContain(
+      ".detailGallery[data-has-multiple-images='true'] .detailGalleryControls {",
+    );
+    expect(css).toContain('left: calc(160px + var(--lego-space-3));');
+    expect(css).not.toContain(
+      ".detailGallery[data-has-multiple-images='true'] .articleZoomOverlay {",
+    );
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
     expect(css).toContain('height: 508px;');
     expect(css).toContain('@media (max-width: 47.99rem)');
+    expect(css).toContain('.detailThumbRow {\n    display: none;');
     expect(css).toContain('border-inline: 0;');
     expect(css).toContain('border-block-end: var(--lego-border-width-1) solid');
     expect(css).toContain('box-sizing: border-box;');
     expect(css).toContain('padding: var(--lego-space-3);');
     expect(css).toContain('border-radius: 0;');
+    expect(css).toContain('--lego-caption-font-size');
     expect(css).toContain('.lightboxBackdrop {');
     expect(css).toContain('position: fixed;');
     expect(css).toContain('inset: 0;');
     expect(css).toContain('z-index: 1400;');
+    expect(css).toContain('height: 92vh;');
+    expect(css).toContain('width: 90vw;');
+    expect(css).toContain('max-width: min(90vw, 92rem);');
+    expect(css).toContain(".lightboxDialog[data-lightbox-variant='detail']");
+    expect(css).toContain('.lightboxViewerHeaderStart {');
+    expect(css).toContain('.lightboxOverviewBody {');
+    expect(css).toContain('overflow-y: auto;');
+    expect(css).toContain('.lightboxOverview {');
+    expect(css).toContain('max-width: 920px;');
+    expect(css).toContain('margin-inline: auto;');
+    expect(css).toContain('grid-auto-rows: auto;');
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+    expect(css).toContain('.lightboxOverviewFrame {');
+    expect(css).toContain('min-height: clamp(9rem, 38vw, 14rem);');
+    expect(css).not.toContain(
+      '.lightboxOverviewFrame {\n  align-items: center;\n  aspect-ratio: 16 / 10;\n  background: #ffffff;\n  display: flex;\n  justify-content: center;\n  min-height: 14rem;\n  overflow: hidden;\n  padding:',
+    );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'] .lightboxViewport {",
+    );
+    expect(css).toContain('align-items: stretch;');
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'] .lightboxMediaFrame {",
+    );
+    expect(css).toContain('height: 100%;');
+    expect(css).toContain('max-height: 100%;');
+    expect(css).toContain('.lightboxOverviewButton:nth-child(3n)');
+    expect(css).toContain('grid-column: 1 / -1;');
+    expect(css).toContain('min-height: clamp(14rem, 54vw, 20rem);');
+    expect(css).toContain('@media (max-width: 22.49rem)');
+    expect(css).toContain('grid-template-columns: minmax(0, 1fr);');
+    expect(css).toContain('grid-column: auto;');
+    expect(css).toContain('.galleryImageOverview');
+    expect(css).toContain('.lightboxMediaFrame {\n  aspect-ratio: 16 / 10;');
+    expect(css).toContain('border: 0;');
+    expect(css).toContain('.lightboxFooter {');
+    expect(css).toContain('.lightboxAttribution');
+    expect(css).toContain('font-size: var(--lego-caption-font-size);');
+    expect(css).toContain('.lightboxBackButton');
+    expect(css).toContain('@media (max-width: 47.99rem)');
+    expect(css).toContain('align-items: flex-end;');
+    expect(css).toContain('height: min(92vh, 100dvh);');
+    expect(css).toContain('max-height: 100dvh;');
+    expect(css).toContain('max-width: 100vw;');
+    expect(css).toContain('width: 100vw;');
+    expect(css).toContain(
+      'border-radius: var(--lego-radius-lg) var(--lego-radius-lg) 0 0;',
+    );
   });
 
-  it('gives the set detail main image the same zoom affordance as article galleries', () => {
+  it('uses thumbnailSrc for set detail thumbnails while keeping src for main images', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'LEGO Icons Eiffeltoren',
+              src: 'https://cdn.example.com/10307-main.jpg',
+            },
+            {
+              alt: 'LEGO Icons Eiffeltoren detail',
+              src: 'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_alt1.jpg',
+              thumbnailSrc:
+                'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_alt1_jpg.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const mainImage = container.querySelector<HTMLImageElement>(
+      '[class*="detailMainFrame"] img',
+    );
+    const gallery = container.querySelector(
+      '[data-has-multiple-images="true"]',
+    );
+    const thumbnails = container.querySelectorAll<HTMLImageElement>(
+      '[class*="detailThumbFrame"] img',
+    );
+
+    expect(gallery).not.toBeNull();
+    expect(mainImage?.getAttribute('src')).toBe(
+      'https://cdn.example.com/10307-main.jpg',
+    );
+    expect(thumbnails).toHaveLength(2);
+    expect(thumbnails[1]?.getAttribute('src')).toBe(
+      'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_alt1_jpg.jpg',
+    );
+    expect(thumbnails[1]?.getAttribute('src')).not.toContain('10307_alt1.jpg');
+  });
+
+  it('does not allocate the desktop thumbnail sidebar for single-image detail galleries', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'LEGO Icons Bloemenboeket',
+              src: 'https://cdn.example.com/10280-main.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    expect(
+      container.querySelector('[data-has-multiple-images="false"]'),
+    ).not.toBeNull();
+    expect(container.querySelector('[class*="detailThumbRow"]')).toBeNull();
+    expect(
+      container.querySelector('[class*="detailGalleryControls"]'),
+    ).toBeNull();
+    expect(
+      container.querySelector(
+        'button[aria-label="Alle afbeeldingen weergeven"]',
+      ),
+    ).toBeNull();
+    expect(
+      container.querySelector('[class*="detailMainFrame"] img'),
+    ).not.toBeNull();
+  });
+
+  it('keeps the set detail main image stable without the article hover zoom treatment', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -689,12 +1129,15 @@ describe('ImageGallery', () => {
 
     expect(
       container.querySelector('[data-detail-main-zoom-overlay="true"]'),
-    ).not.toBeNull();
+    ).toBeNull();
+    expect(
+      container.querySelector('[class*="detailGalleryControls"]'),
+    ).toBeNull();
     expect(css).toContain('.articleZoomOverlay {');
     expect(css).toContain('.articleZoomIconShell {');
     expect(css).toContain('.articleImageButton:hover .articleZoomOverlay,');
-    expect(css).toContain('.detailMainButton:hover .articleZoomOverlay,');
-    expect(css).toContain(
+    expect(css).not.toContain('.detailMainButton:hover .articleZoomOverlay');
+    expect(css).not.toContain(
       '.detailMainButton:focus-visible .articleZoomOverlay',
     );
     expect(css).toContain('@media (hover: none), (pointer: coarse)');
@@ -730,6 +1173,12 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-mode="viewer"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-grid-index]'),
+    ).toBeNull();
   });
 
   it('keeps rounded focus rings aligned with gallery trigger radii', () => {

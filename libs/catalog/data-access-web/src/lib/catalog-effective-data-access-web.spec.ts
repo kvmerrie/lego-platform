@@ -835,6 +835,291 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('renders attributed Brickset additional images for 10307 only when render mode opts in', async () => {
+    vi.spyOn(sharedConfig, 'getBricksetGalleryRenderMode').mockReturnValue(
+      'attribution_required',
+    );
+
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url:
+            'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+          name: 'Eiffel Tower',
+          piece_count: 10001,
+          primary_theme_id: 'theme:icons',
+          release_year: 2022,
+          set_id: '10307',
+          slug: 'eiffel-tower-10307',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10307-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10307',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            imageRights: {
+              policy: 'render_publicly_with_attribution',
+            },
+            images: [
+              {
+                attributionRequired: false,
+                imageUrl: 'https://images.brickset.com/sets/images/10307-1.jpg',
+                rightsPolicy: 'render_publicly_with_attribution',
+                sourceField: 'image.imageURL',
+                type: 'primary',
+              },
+              {
+                attributionRequired: true,
+                imageUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_Lifestyle_alt1.jpg',
+                rightsPolicy: 'render_publicly_with_attribution',
+                sourceField: 'additionalImages',
+                thumbnailUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_Lifestyle_alt1_jpg.jpg',
+                type: 'additional',
+              },
+              {
+                attributionRequired: true,
+                imageUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_Box_prod.jpg',
+                rightsPolicy: 'render_publicly_with_attribution',
+                sourceField: 'additionalImages',
+                thumbnailUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_Box_prod_jpg.jpg',
+                type: 'additional',
+              },
+              {
+                attributionRequired: true,
+                imageUrl:
+                  'https://images.brickset.com/minifigs/BrickLink/10307-minifig.jpg',
+                rightsPolicy: 'render_publicly_with_attribution',
+                sourceField: 'brickLinkMinifigImage',
+                type: 'minifig',
+              },
+            ],
+          },
+          policy: 'render_publicly_with_attribution',
+          source: 'brickset',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'Icons',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'eiffel-tower-10307',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail?.primaryImage).toBe(
+      'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+    );
+    expect(catalogSetDetail?.images).toEqual([
+      {
+        order: 0,
+        type: 'hero',
+        url: 'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+      },
+      {
+        attributionText: 'Image(s) courtesy of Brickset.com',
+        order: 101,
+        thumbnailUrl:
+          'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_Box_prod_jpg.jpg',
+        type: 'detail',
+        url: 'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_Box_prod.jpg',
+      },
+      {
+        attributionText: 'Image(s) courtesy of Brickset.com',
+        order: 103,
+        thumbnailUrl:
+          'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_Lifestyle_alt1_jpg.jpg',
+        type: 'detail',
+        url: 'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_Lifestyle_alt1.jpg',
+      },
+    ]);
+  });
+
+  test('keeps Brickset gallery disabled by default', async () => {
+    vi.spyOn(sharedConfig, 'getBricksetGalleryRenderMode').mockReturnValue(
+      'disabled',
+    );
+
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10280-1/1000.jpg',
+          name: 'Flower Bouquet',
+          piece_count: 756,
+          primary_theme_id: 'theme:icons',
+          release_year: 2021,
+          set_id: '10280',
+          slug: 'flower-bouquet-10280',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10280-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10280',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            imageRights: {
+              policy: 'render_publicly_with_attribution',
+            },
+            images: [
+              {
+                attributionRequired: true,
+                imageUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10280-1/10280_alt1.jpg',
+                rightsPolicy: 'render_publicly_with_attribution',
+                sourceField: 'additionalImages',
+                type: 'additional',
+              },
+            ],
+          },
+          policy: 'render_publicly_with_attribution',
+          source: 'brickset',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'Icons',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'flower-bouquet-10280',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail?.images).toEqual([
+      {
+        order: 0,
+        type: 'hero',
+        url: 'https://cdn.rebrickable.com/media/sets/10280-1/1000.jpg',
+      },
+    ]);
+  });
+
+  test('uses Brickset piece count as display fallback when catalog pieces are zero', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-05-27T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/11380.jpg',
+          name: 'Future Display Set',
+          piece_count: 0,
+          primary_theme_id: 'theme:icons',
+          release_year: 2026,
+          set_id: '11380',
+          slug: 'future-display-set-11380',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '11380-1',
+          status: 'active',
+          updated_at: '2026-05-27T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '11380',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            bricksetSetId: 11380,
+            pieces: 2194,
+          },
+          policy: 'metadata_only_pending_rights_review',
+          source: 'brickset',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'Icons',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+    });
+
+    const [setCard, catalogSetDetail] = await Promise.all([
+      listCatalogSetCards({
+        limit: 1,
+        supabaseClient,
+      }).then((setCards) => setCards[0]),
+      getCatalogSetBySlug({
+        slug: 'future-display-set-11380',
+        supabaseClient,
+      }),
+    ]);
+
+    expect(setCard?.pieces).toBe(2194);
+    expect(catalogSetDetail?.pieces).toBe(2194);
+  });
+
   test('loads public catalog SSR reads through service-role Supabase config when available', async () => {
     const createClientSpy = vi.mocked(supabaseSdk.createClient).mockReturnValue(
       createCatalogSupabaseClientMock({
@@ -1951,11 +2236,189 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.setCards.map((setCard) => setCard.id)).toEqual([
-      '10354',
       '75417',
+      '10354',
       '60499',
     ]);
     expect(result.totalSetCount).toBe(3);
+  });
+
+  test('keeps zero-piece future placeholders out of new collection pages', async () => {
+    const config = {
+      browseDescription: 'Nieuwe sets.',
+      browseEyebrow: 'Net uit',
+      browseTitle: 'Nieuwe dozen',
+      canonicalPath: '/nieuwe-lego-sets',
+      description: 'Nieuwe LEGO sets.',
+      filters: {
+        recentRelease: true,
+      },
+      h1: 'Nieuwe LEGO sets',
+      intro: 'Kijk naar sets die net uit zijn of eraan komen.',
+      links: {},
+      metaDescription: 'Bekijk nieuwe LEGO sets.',
+      metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+      signalLabel: 'nieuwe sets',
+      slug: 'nieuwe-lego-sets',
+      sort: {
+        default: 'newest',
+        options: ['newest'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Advent Calendar Placeholder',
+          pieceCount: 0,
+          primaryTheme: 'Star Wars',
+          releaseDate: '2026-06-15',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          setId: '75499',
+          slug: 'advent-calendar-placeholder-75499',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Toy Story Slinky Dog Bookends',
+          pieceCount: 1311,
+          primaryTheme: 'Disney',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          setId: '43301',
+          slug: 'toy-story-slinky-dog-bookends-43301',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Far Future Year Only Placeholder',
+          pieceCount: 300,
+          primaryTheme: 'City',
+          releaseYear: 2027,
+          setId: '60499',
+          slug: 'far-future-year-only-placeholder-60499',
+        }),
+      ],
+      now: new Date('2026-05-27T12:00:00.000Z'),
+      sortKey: 'newest',
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual(['43301']);
+    expect(result.totalSetCount).toBe(1);
+  });
+
+  test('includes announced new sets when Brickset supplies release metadata and pieces', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-05-20T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/11380.jpg',
+          name: 'Future Announced Set',
+          piece_count: 0,
+          primary_theme_id: 'theme:icons',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2026,
+          set_id: '11380',
+          slug: 'future-announced-set-11380',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '11380-1',
+          status: 'active',
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-05-20T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/11381.jpg',
+          name: 'Placeholder Without Pieces',
+          piece_count: 0,
+          primary_theme_id: 'theme:icons',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2026,
+          set_id: '11381',
+          slug: 'placeholder-without-pieces-11381',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '11381-1',
+          status: 'active',
+          updated_at: '2026-05-26T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '11380',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            bricksetSetId: 11380,
+            launchDate: '2026-06-20',
+            pieces: 2194,
+          },
+          policy: 'metadata_only_pending_rights_review',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '11381',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            bricksetSetId: 11381,
+            launchDate: '2026-06-20',
+          },
+          policy: 'metadata_only_pending_rights_review',
+          source: 'brickset',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Nieuwe sets.',
+      browseEyebrow: 'Net uit',
+      browseTitle: 'Nieuwe dozen',
+      canonicalPath: '/nieuwe-lego-sets',
+      description: 'Nieuwe LEGO sets.',
+      filters: {
+        recentRelease: true,
+      },
+      h1: 'Nieuwe LEGO sets',
+      intro: 'Kijk naar sets die net uit zijn of eraan komen.',
+      links: {},
+      metaDescription: 'Bekijk nieuwe LEGO sets.',
+      metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+      signalLabel: 'nieuwe sets',
+      slug: 'nieuwe-lego-sets',
+      sort: {
+        default: 'newest',
+        options: ['newest'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      now: new Date('2026-05-27T12:00:00.000Z'),
+      sortKey: 'newest',
+      supabaseClient,
+    });
+
+    expect(result.setCards).toEqual([
+      expect.objectContaining({
+        id: '11380',
+        pieces: 2194,
+        releaseDate: '2026-06-20',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+      }),
+    ]);
+    expect(result.totalSetCount).toBe(1);
   });
 
   test('finds new releases beyond the default created-at catalog window', async () => {

@@ -20,12 +20,19 @@ export interface GalleryImage {
   ctaHref?: string;
   ctaLabel?: string;
   src: string;
+  thumbnailSrc?: string;
 }
 
 export type CarouselImage = GalleryImage;
 
 type ImageGalleryVariant = 'article' | 'detail';
-type GalleryImageMediaKind = 'article' | 'detail' | 'lightbox' | 'thumbnail';
+type GalleryImageMediaKind =
+  | 'article'
+  | 'detail'
+  | 'lightbox'
+  | 'overview'
+  | 'thumbnail';
+type LightboxMode = 'overview' | 'viewer';
 
 function joinClasses(
   ...classNames: Array<string | false | null | undefined>
@@ -60,6 +67,9 @@ function GalleryImageMedia({
   isFallbackVisible: boolean;
   onImageError: (imageIndex: number) => void;
 }) {
+  const imageSource =
+    kind === 'thumbnail' && image.thumbnailSrc ? image.thumbnailSrc : image.src;
+
   if (isFallbackVisible) {
     return (
       <div className={styles.imageFallback}>
@@ -69,13 +79,13 @@ function GalleryImageMedia({
           nog niet toegevoegd.
         </p>
         {process.env.NODE_ENV === 'production' ? null : (
-          <p className={styles.imageFallbackCopy}>{image.src}</p>
+          <p className={styles.imageFallbackCopy}>{imageSource}</p>
         )}
       </div>
     );
   }
 
-  if (isLocalImageSource(image.src)) {
+  if (isLocalImageSource(imageSource)) {
     return (
       <Image
         alt={image.alt}
@@ -85,21 +95,25 @@ function GalleryImageMedia({
             ? styles.galleryImageArticle
             : kind === 'thumbnail'
               ? styles.galleryImageThumbnail
-              : styles.galleryImageDetail,
+              : kind === 'overview'
+                ? styles.galleryImageOverview
+                : styles.galleryImageDetail,
         )}
         fill
         onError={() => onImageError(imageIndex)}
-        priority={imageIndex === 0}
+        priority={imageIndex === 0 && kind !== 'overview'}
         sizes={
           kind === 'detail'
             ? '(max-width: 1024px) calc(100vw - 2rem), 900px'
             : kind === 'lightbox'
               ? '(max-width: 1280px) 100vw, 1400px'
-              : kind === 'thumbnail'
-                ? '96px'
-                : '(max-width: 768px) calc(100vw - 2rem), 1120px'
+              : kind === 'overview'
+                ? '(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 640px'
+                : kind === 'thumbnail'
+                  ? '96px'
+                  : '(max-width: 768px) calc(100vw - 2rem), 1120px'
         }
-        src={image.src}
+        src={imageSource}
       />
     );
   }
@@ -113,15 +127,25 @@ function GalleryImageMedia({
           ? styles.galleryImageArticle
           : kind === 'thumbnail'
             ? styles.galleryImageThumbnail
-            : styles.galleryImageDetail,
+            : kind === 'overview'
+              ? styles.galleryImageOverview
+              : styles.galleryImageDetail,
       )}
       decoding="async"
       fetchPriority={kind === 'detail' && imageIndex === 0 ? 'high' : 'auto'}
       height={kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1000}
-      loading={imageIndex === 0 ? 'eager' : 'lazy'}
+      loading={
+        kind === 'overview'
+          ? imageIndex < 3
+            ? 'eager'
+            : 'lazy'
+          : imageIndex === 0
+            ? 'eager'
+            : 'lazy'
+      }
       onError={() => onImageError(imageIndex)}
-      src={image.src}
-      width={kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1600}
+      src={imageSource}
+      width={kind === 'thumbnail' ? 224 : kind === 'detail' ? 900 : 1600}
     />
   );
 }
@@ -163,9 +187,14 @@ export function ImageGallery({
   const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(
     null,
   );
-  const lightboxCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const [lightboxMode, setLightboxMode] = useState<LightboxMode>('viewer');
+  const overviewImageButtonRefs = useRef<
+    Record<number, HTMLButtonElement | null>
+  >({});
+  const lightboxPrimaryButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxDialogRef = useRef<HTMLDivElement>(null);
   const lightboxPointerStartX = useRef<number | null>(null);
+  const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
 
   const rememberLightboxTrigger = useCallback(
@@ -186,6 +215,7 @@ export function ImageGallery({
 
   const closeLightbox = useCallback(() => {
     setLightboxImageIndex(null);
+    setLightboxMode('viewer');
 
     window.requestAnimationFrame(() => {
       lightboxTriggerRef.current?.focus({ preventScroll: true });
@@ -215,6 +245,7 @@ export function ImageGallery({
     }
 
     rememberLightboxTrigger();
+    setLightboxMode('viewer');
     setLightboxImageIndex(
       clampIndex(lightboxRequest.index, resolvedImages.length),
     );
@@ -232,7 +263,7 @@ export function ImageGallery({
     document.documentElement.style.overflow = 'hidden';
 
     window.requestAnimationFrame(() => {
-      lightboxCloseButtonRef.current?.focus({ preventScroll: true });
+      lightboxPrimaryButtonRef.current?.focus({ preventScroll: true });
     });
 
     function getFocusableDialogElements() {
@@ -291,7 +322,7 @@ export function ImageGallery({
         }
       }
 
-      if (resolvedImages.length <= 1) {
+      if (resolvedImages.length <= 1 || lightboxMode !== 'viewer') {
         return;
       }
 
@@ -321,7 +352,27 @@ export function ImageGallery({
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousDocumentOverflow;
     };
-  }, [closeLightbox, lightboxImageIndex, resolvedImages.length]);
+  }, [closeLightbox, lightboxImageIndex, lightboxMode, resolvedImages.length]);
+
+  useEffect(() => {
+    if (lightboxMode !== 'overview') {
+      return;
+    }
+
+    const focusIndex = pendingOverviewFocusIndexRef.current;
+
+    if (focusIndex === null) {
+      return;
+    }
+
+    pendingOverviewFocusIndexRef.current = null;
+
+    window.requestAnimationFrame(() => {
+      overviewImageButtonRefs.current[focusIndex]?.focus({
+        preventScroll: true,
+      });
+    });
+  }, [lightboxMode]);
 
   if (!resolvedImages.length) {
     return null;
@@ -354,6 +405,15 @@ export function ImageGallery({
         ? '5-plus'
         : resolvedImages.length.toString()
       : undefined;
+  const lightboxAttributionTexts = [
+    ...new Set(
+      resolvedImages.flatMap((image) =>
+        image.caption?.toLowerCase().includes('courtesy')
+          ? [image.caption]
+          : [],
+      ),
+    ),
+  ];
 
   function handleImageError(imageIndex: number) {
     setFailedImageIndexes((currentIndexes) =>
@@ -373,11 +433,20 @@ export function ImageGallery({
     }
 
     rememberLightboxTrigger(trigger);
+    setLightboxMode(
+      variant === 'detail' && resolvedImages.length > 1 ? 'overview' : 'viewer',
+    );
     setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
   }
 
   function goToLightboxImage(nextIndex: number) {
+    setLightboxMode('viewer');
     setLightboxImageIndex(clampIndex(nextIndex, resolvedImages.length));
+  }
+
+  function returnToLightboxOverview() {
+    pendingOverviewFocusIndexRef.current = safeLightboxImageIndex;
+    setLightboxMode('overview');
   }
 
   function handleLightboxPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -427,11 +496,17 @@ export function ImageGallery({
     }
   }
 
+  function goToDetailImage(nextIndex: number) {
+    setDetailImageIndex(clampIndex(nextIndex, resolvedImages.length));
+  }
+
   const lightbox =
     lightboxImage && safeLightboxImageIndex !== null ? (
       <div
         className={styles.lightboxBackdrop}
         data-lightbox-backdrop="true"
+        data-lightbox-mode={lightboxMode}
+        data-lightbox-variant={variant}
         onClick={closeLightbox}
         role="presentation"
       >
@@ -440,13 +515,36 @@ export function ImageGallery({
           aria-modal="true"
           className={styles.lightboxDialog}
           data-lightbox-active-index={safeLightboxImageIndex}
+          data-lightbox-mode={lightboxMode}
+          data-lightbox-variant={variant}
           onClick={(event) => event.stopPropagation()}
           ref={lightboxDialogRef}
           role="dialog"
           tabIndex={-1}
         >
           <div className={styles.lightboxHeader}>
-            {hasMultipleImages ? (
+            {lightboxMode === 'viewer' &&
+            variant === 'detail' &&
+            hasMultipleImages ? (
+              <div className={styles.lightboxViewerHeaderStart}>
+                <button
+                  aria-label="Terug naar alle afbeeldingen"
+                  className={styles.lightboxBackButton}
+                  onClick={returnToLightboxOverview}
+                  ref={lightboxPrimaryButtonRef}
+                  type="button"
+                >
+                  <ChevronLeft aria-hidden="true" size={20} strokeWidth={2.3} />
+                </button>
+                <p aria-live="polite" className={styles.lightboxIndicator}>
+                  {safeLightboxImageIndex + 1}/{resolvedImages.length}
+                </p>
+              </div>
+            ) : lightboxMode === 'overview' ? (
+              <p aria-live="polite" className={styles.lightboxIndicator}>
+                Alle afbeeldingen
+              </p>
+            ) : hasMultipleImages ? (
               <p aria-live="polite" className={styles.lightboxIndicator}>
                 {safeLightboxImageIndex + 1} / {resolvedImages.length}
               </p>
@@ -457,69 +555,121 @@ export function ImageGallery({
               aria-label="Sluit galerij"
               className={styles.lightboxCloseButton}
               onClick={closeLightbox}
-              ref={lightboxCloseButtonRef}
+              ref={
+                lightboxMode === 'viewer' &&
+                variant === 'detail' &&
+                hasMultipleImages
+                  ? undefined
+                  : lightboxPrimaryButtonRef
+              }
               type="button"
             >
               <X aria-hidden="true" size={18} strokeWidth={2.2} />
             </button>
           </div>
 
-          <div className={styles.lightboxViewport}>
-            {hasMultipleImages ? (
-              <button
-                aria-label="Vorige afbeelding"
-                className={joinClasses(
-                  styles.lightboxNavButton,
-                  styles.lightboxNavButtonPrev,
-                )}
-                data-lightbox-control="previous"
-                disabled={safeLightboxImageIndex === 0}
-                onClick={() => goToLightboxImage(safeLightboxImageIndex - 1)}
-                type="button"
-              >
-                <ChevronLeft aria-hidden="true" size={18} strokeWidth={2.2} />
-              </button>
-            ) : null}
-
-            <div
-              className={styles.lightboxMediaFrame}
-              data-lightbox-media-surface="light"
-              onPointerDown={handleLightboxPointerDown}
-              onPointerUp={handleLightboxPointerUp}
-            >
-              <GalleryImageMedia
-                image={lightboxImage}
-                imageIndex={safeLightboxImageIndex}
-                kind="lightbox"
-                isFallbackVisible={Boolean(
-                  failedImageIndexes[safeLightboxImageIndex],
-                )}
-                onImageError={handleImageError}
-              />
+          {lightboxMode === 'overview' ? (
+            <div className={styles.lightboxOverviewBody}>
+              <div className={styles.lightboxOverview}>
+                {resolvedImages.map((image, imageIndex) => (
+                  <button
+                    aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
+                    className={styles.lightboxOverviewButton}
+                    data-lightbox-grid-index={imageIndex}
+                    key={`${image.src}-lightbox-grid-${imageIndex}`}
+                    onClick={() => goToLightboxImage(imageIndex)}
+                    ref={(element) => {
+                      overviewImageButtonRefs.current[imageIndex] = element;
+                    }}
+                    type="button"
+                  >
+                    <span className={styles.lightboxOverviewFrame}>
+                      <GalleryImageMedia
+                        image={image}
+                        imageIndex={imageIndex}
+                        kind="overview"
+                        isFallbackVisible={Boolean(
+                          failedImageIndexes[imageIndex],
+                        )}
+                        onImageError={handleImageError}
+                      />
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
+          ) : (
+            <div className={styles.lightboxViewport}>
+              {hasMultipleImages ? (
+                <button
+                  aria-label="Vorige afbeelding"
+                  className={joinClasses(
+                    styles.lightboxNavButton,
+                    styles.lightboxNavButtonPrev,
+                  )}
+                  data-lightbox-control="previous"
+                  disabled={safeLightboxImageIndex === 0}
+                  onClick={() => goToLightboxImage(safeLightboxImageIndex - 1)}
+                  type="button"
+                >
+                  <ChevronLeft aria-hidden="true" size={18} strokeWidth={2.2} />
+                </button>
+              ) : null}
 
-            {hasMultipleImages ? (
-              <button
-                aria-label="Volgende afbeelding"
-                className={joinClasses(
-                  styles.lightboxNavButton,
-                  styles.lightboxNavButtonNext,
-                )}
-                data-lightbox-control="next"
-                disabled={safeLightboxImageIndex === resolvedImages.length - 1}
-                onClick={() => goToLightboxImage(safeLightboxImageIndex + 1)}
-                type="button"
+              <div
+                className={styles.lightboxMediaFrame}
+                data-lightbox-media-surface="light"
+                onPointerDown={handleLightboxPointerDown}
+                onPointerUp={handleLightboxPointerUp}
               >
-                <ChevronRight aria-hidden="true" size={18} strokeWidth={2.2} />
-              </button>
-            ) : null}
-          </div>
+                <GalleryImageMedia
+                  image={lightboxImage}
+                  imageIndex={safeLightboxImageIndex}
+                  kind="lightbox"
+                  isFallbackVisible={Boolean(
+                    failedImageIndexes[safeLightboxImageIndex],
+                  )}
+                  onImageError={handleImageError}
+                />
+              </div>
 
-          {lightboxImage.caption ? (
+              {hasMultipleImages ? (
+                <button
+                  aria-label="Volgende afbeelding"
+                  className={joinClasses(
+                    styles.lightboxNavButton,
+                    styles.lightboxNavButtonNext,
+                  )}
+                  data-lightbox-control="next"
+                  disabled={
+                    safeLightboxImageIndex === resolvedImages.length - 1
+                  }
+                  onClick={() => goToLightboxImage(safeLightboxImageIndex + 1)}
+                  type="button"
+                >
+                  <ChevronRight
+                    aria-hidden="true"
+                    size={18}
+                    strokeWidth={2.2}
+                  />
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {lightboxMode === 'overview' && lightboxAttributionTexts.length ? (
+            <div className={styles.lightboxFooter}>
+              <p className={styles.lightboxAttribution}>
+                {lightboxAttributionTexts.join(' · ')}
+              </p>
+            </div>
+          ) : null}
+
+          {lightboxMode === 'viewer' && lightboxImage.caption ? (
             <p className={styles.lightboxCaption}>{lightboxImage.caption}</p>
           ) : null}
 
-          {lightboxImage.ctaHref ? (
+          {lightboxMode === 'viewer' && lightboxImage.ctaHref ? (
             <div className={styles.lightboxMetaActions}>
               <a
                 className={styles.lightboxMetaLink}
@@ -530,7 +680,9 @@ export function ImageGallery({
             </div>
           ) : null}
 
-          {hasMultipleImages ? (
+          {lightboxMode === 'viewer' &&
+          variant !== 'detail' &&
+          hasMultipleImages ? (
             <div className={styles.lightboxThumbStrip}>
               {resolvedImages.map((image, imageIndex) => (
                 <button
@@ -632,7 +784,10 @@ export function ImageGallery({
               ))}
             </div>
           ) : (
-            <div className={styles.detailGallery}>
+            <div
+              className={styles.detailGallery}
+              data-has-multiple-images={hasMultipleImages ? 'true' : 'false'}
+            >
               <button
                 aria-label={`Open ${getGalleryImageLabel(
                   resolvedImages[safeDetailImageIndex],
@@ -654,21 +809,58 @@ export function ImageGallery({
                     )}
                     onImageError={handleImageError}
                   />
-                  <span
-                    aria-hidden="true"
-                    className={styles.articleZoomOverlay}
-                    data-detail-main-zoom-overlay="true"
-                  >
-                    <span className={styles.articleZoomIconShell}>
-                      <ZoomIn
-                        aria-hidden="true"
-                        className={styles.articleZoomIcon}
-                        strokeWidth={2.2}
-                      />
-                    </span>
-                  </span>
                 </div>
               </button>
+              {hasMultipleImages ? (
+                <div
+                  aria-label="Galerijbediening"
+                  className={styles.detailGalleryControls}
+                >
+                  <span className={styles.detailGalleryCounter}>
+                    {safeDetailImageIndex + 1}/{resolvedImages.length}
+                  </span>
+                  <div className={styles.detailGalleryActions}>
+                    <button
+                      aria-label="Alle afbeeldingen weergeven"
+                      className={styles.detailGalleryShowAllButton}
+                      onClick={(event) =>
+                        openLightbox(safeDetailImageIndex, event.currentTarget)
+                      }
+                      type="button"
+                    >
+                      Alles weergeven
+                    </button>
+                    <button
+                      aria-label="Vorige afbeelding"
+                      className={styles.detailGalleryNavButton}
+                      disabled={safeDetailImageIndex === 0}
+                      onClick={() => goToDetailImage(safeDetailImageIndex - 1)}
+                      type="button"
+                    >
+                      <ChevronLeft
+                        aria-hidden="true"
+                        size={18}
+                        strokeWidth={2.3}
+                      />
+                    </button>
+                    <button
+                      aria-label="Volgende afbeelding"
+                      className={styles.detailGalleryNavButton}
+                      disabled={
+                        safeDetailImageIndex === resolvedImages.length - 1
+                      }
+                      onClick={() => goToDetailImage(safeDetailImageIndex + 1)}
+                      type="button"
+                    >
+                      <ChevronRight
+                        aria-hidden="true"
+                        size={18}
+                        strokeWidth={2.3}
+                      />
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               {hasMultipleImages ? (
                 <div className={styles.detailThumbRow} role="tablist">
                   {resolvedImages.map((image, imageIndex) => (

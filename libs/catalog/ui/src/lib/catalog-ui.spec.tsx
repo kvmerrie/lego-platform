@@ -1203,7 +1203,9 @@ describe('CatalogSetCard', () => {
               url: 'https://images.example/rivendell-1.jpg',
             },
             {
+              attributionText: 'Image(s) courtesy of Brickset.com',
               order: 1,
+              thumbnailUrl: 'https://images.example/rivendell-2-thumb.jpg',
               type: 'detail',
               url: 'https://images.example/rivendell-2.jpg',
             },
@@ -1357,6 +1359,8 @@ describe('CatalogSetCard', () => {
       'Als je een grote Middle-earth-set wilt, pak je deze.',
     );
     expect(markup).toContain('Bekijk afbeelding 2');
+    expect(markup).toContain('https://images.example/rivendell-2-thumb.jpg');
+    expect(markup).toContain('Image(s) courtesy of Brickset.com');
     expect(markup).toContain('In collectie zetten');
     expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('10316');
@@ -1375,6 +1379,21 @@ describe('CatalogSetCard', () => {
       'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
     );
     expect(markup).not.toContain('$499 to $569');
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    expect(css).toContain('.setImageGalleryWithAttribution {');
+    expect(css).toContain('gap: var(--lego-space-1);');
+    expect(css).toContain('.setImageGalleryAttribution {');
+    expect(css).toContain('font-size: var(--lego-caption-font-size);');
+    expect(css).toContain('.bestDealAffiliateNote {');
+    expect(css).toContain('.bestDealCard {');
+    expect(css).toContain('border-radius: var(--lego-radius-md);');
+    expect(css).toContain('.alertCard {');
+    expect(css).toContain('.detailDecisionSupport {');
+    expect(css).toContain('.offerListCard {');
   });
 
   it('does not render the LEGO product description section without description', () => {
@@ -1647,6 +1666,26 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('@media (min-width: 72rem)');
     expect(css).toContain('justify-content: flex-start;');
     expect(css).toContain('display: grid;');
+  });
+
+  it('keeps the set-detail hero hierarchy image-led on desktop', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      'grid-template-columns: minmax(0, 1fr) clamp(19rem, 28vw, 23rem);',
+    );
+    expect(css).toContain(
+      'grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 23.5rem);',
+    );
+    expect(css).toContain('max-width: 23.5rem;');
+    expect(css).toContain('font-size: clamp(2.05rem, 2.8vw, 2.85rem);');
+    expect(css).toContain('font-size: clamp(2.2rem, 2.45vw, 2.9rem);');
+    expect(css).toContain('.detailHero .bestDealPrice {');
+    expect(css).toContain('font-size: clamp(1.95rem, 4.6vw, 2.75rem);');
+    expect(css).toContain('gap: var(--lego-space-12);');
   });
 
   it('keeps the theme logo non-clickable when the theme href is not valid', () => {

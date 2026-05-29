@@ -239,12 +239,12 @@ describe('home metadata', () => {
 
     expect(markup).toContain('Ontdek LEGO op jouw manier');
     expect(markup).toContain('data-visual-tile="new-sets"');
-    expect(markup).toContain('--theme-surface:#5573b5');
-    expect(markup).toContain('--theme-surface:#171717');
-    expect(markup).toContain('--theme-surface:#e0b84f');
-    expect(markup).toContain('--theme-surface:#d85a50');
-    expect(markup).toContain('--theme-surface:#6bbf59');
-    expect(markup).toContain('--theme-surface:#234bcd');
+    expect(markup).toContain('--theme-surface:#3aaee8');
+    expect(markup).toContain('--theme-surface:#08636f');
+    expect(markup).toContain('--theme-surface:#35b765');
+    expect(markup).toContain('--theme-surface:#f28c28');
+    expect(markup).toContain('--theme-surface:#00a99d');
+    expect(markup).toContain('--theme-surface:#8758d8');
     expect(markup).toContain(
       'src="https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg"',
     );
@@ -283,6 +283,18 @@ describe('home metadata', () => {
     expect(markup).not.toContain('#00a8e8');
     expect(markup).not.toContain('#6d28d9');
     expect(markup).not.toContain('#e43d12');
+    expect(markup).not.toContain('--theme-surface:#5573b5');
+    expect(markup).not.toContain('--theme-surface:#171717');
+    expect(markup).not.toContain('--theme-surface:#e0b84f');
+    expect(markup).not.toContain('--theme-surface:#d85a50');
+    expect(markup).not.toContain('--theme-surface:#6bbf59');
+    expect(markup).not.toContain('--theme-surface:#234bcd');
+    expect(markup).not.toContain('--theme-surface:#79b7d8');
+    expect(markup).not.toContain('--theme-surface:#202b3d');
+    expect(markup).not.toContain('--theme-surface:#4fa37a');
+    expect(markup).not.toContain('--theme-surface:#b96b36');
+    expect(markup).not.toContain('--theme-surface:#247f6d');
+    expect(markup).not.toContain('--theme-surface:#6a5a9f');
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',

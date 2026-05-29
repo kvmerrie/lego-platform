@@ -10,6 +10,7 @@ import type {
   CatalogProductFeature,
   CatalogSearchMatch,
   CatalogSetDetail,
+  CatalogSetImage,
   CatalogSetSummary,
   CatalogThemeDirectoryItem,
   CatalogThemeLandingPage,
@@ -31,6 +32,7 @@ import {
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
   resolveCatalogReleaseDatePrecision,
+  resolveBricksetGalleryImagePolicy,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
@@ -47,6 +49,7 @@ import {
   compareCommerceCommercialUnitPreference,
   type CommerceCommercialUnitType,
   getBrowserSupabaseConfig,
+  getBricksetGalleryRenderMode,
   getCommerceCommercialUnitComparisonGroup,
   getCommerceMerchantReliabilityTier,
   isCommerceCommercialUnitComparableForDeals,
@@ -94,7 +97,10 @@ const LEGO_NL_DISPLAY_TITLE_POLICY = 'metadata_only_pending_audit';
 const BRICKSET_SOURCE_METADATA_SOURCE = 'brickset';
 const BRICKSET_SOURCE_METADATA_LOCALE = 'en-US';
 const BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE = 'exact_set_number';
-const BRICKSET_SOURCE_METADATA_POLICY = 'metadata_only_pending_rights_review';
+const BRICKSET_SOURCE_METADATA_POLICIES = [
+  'metadata_only_pending_rights_review',
+  'render_publicly_with_attribution',
+] as const;
 
 function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
@@ -294,6 +300,7 @@ interface CatalogSetRow {
 interface CatalogSetSourceMetadataRow {
   catalog_set_id: string;
   metadata_json: unknown;
+  policy?: string;
 }
 
 interface CatalogSetMinifigSummaryRow {
@@ -1464,17 +1471,216 @@ function readBricksetLaunchDate(metadataJson: unknown): string | undefined {
   return rawDate;
 }
 
-async function listBricksetLaunchDateBySetId({
+function readBricksetPieceCount(metadataJson: unknown): number | undefined {
+  if (
+    !metadataJson ||
+    typeof metadataJson !== 'object' ||
+    Array.isArray(metadataJson)
+  ) {
+    return undefined;
+  }
+
+  const pieces = (metadataJson as { pieces?: unknown }).pieces;
+
+  return typeof pieces === 'number' && Number.isFinite(pieces) && pieces > 0
+    ? Math.floor(pieces)
+    : undefined;
+}
+
+function getBricksetGalleryImageOrderingRank(imageReference: {
+  imageUrl?: unknown;
+  sourceField?: unknown;
+  type?: unknown;
+}): number {
+  if (
+    imageReference.type === 'primary' ||
+    imageReference.sourceField === 'image.imageURL'
+  ) {
+    return 0;
+  }
+
+  const imageUrl =
+    typeof imageReference.imageUrl === 'string'
+      ? imageReference.imageUrl.toLowerCase()
+      : '';
+
+  if (/(^|[_/-])(prod|product|box|packshot|render)([_./-]|$)/u.test(imageUrl)) {
+    return 1;
+  }
+
+  if (/(^|[_/-])(lifestyle|build|detail|alt)([_./-]|$)/u.test(imageUrl)) {
+    return 3;
+  }
+
+  return 2;
+}
+
+function sortBricksetGalleryImageReferences(
+  images: readonly unknown[],
+): unknown[] {
+  const rankedImages = images.map((image, index) => {
+    const imageReference =
+      image && typeof image === 'object' && !Array.isArray(image)
+        ? (image as {
+            imageUrl?: unknown;
+            sourceField?: unknown;
+            type?: unknown;
+          })
+        : {};
+
+    return {
+      image,
+      index,
+      rank: getBricksetGalleryImageOrderingRank(imageReference),
+    };
+  });
+
+  const hasReliableOrderingSignal = rankedImages.some(
+    (rankedImage) => rankedImage.rank !== 2,
+  );
+
+  if (!hasReliableOrderingSignal) {
+    return [...images];
+  }
+
+  return rankedImages
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map((rankedImage) => rankedImage.image);
+}
+
+function readBricksetGalleryImages({
+  metadataJson,
+  renderMode,
+  rowPolicy,
+}: {
+  metadataJson: unknown;
+  renderMode: ReturnType<typeof getBricksetGalleryRenderMode>;
+  rowPolicy?: string;
+}): CatalogSetImage[] | undefined {
+  if (
+    !metadataJson ||
+    typeof metadataJson !== 'object' ||
+    Array.isArray(metadataJson)
+  ) {
+    return undefined;
+  }
+
+  const sourceMetadata = metadataJson as {
+    imageRights?: {
+      policy?: unknown;
+    };
+    images?: unknown;
+  };
+
+  if (!Array.isArray(sourceMetadata.images)) {
+    return undefined;
+  }
+
+  const imageRightsPolicy =
+    rowPolicy === 'render_publicly_with_attribution' ||
+    rowPolicy === 'public_rendering_approved' ||
+    rowPolicy === 'metadata_only_pending_rights_review'
+      ? rowPolicy
+      : sourceMetadata.imageRights?.policy ===
+            'render_publicly_with_attribution' ||
+          sourceMetadata.imageRights?.policy === 'public_rendering_approved' ||
+          sourceMetadata.imageRights?.policy ===
+            'metadata_only_pending_rights_review'
+        ? sourceMetadata.imageRights.policy
+        : 'metadata_only_pending_rights_review';
+
+  const galleryImages = sortBricksetGalleryImageReferences(
+    sourceMetadata.images,
+  )
+    .map((image, index): CatalogSetImage | undefined => {
+      if (!image || typeof image !== 'object' || Array.isArray(image)) {
+        return undefined;
+      }
+
+      const imageReference = image as {
+        attributionRequired?: unknown;
+        imageUrl?: unknown;
+        rightsPolicy?: unknown;
+        sourceField?: unknown;
+        thumbnailUrl?: unknown;
+        type?: unknown;
+      };
+      const imageUrl =
+        typeof imageReference.imageUrl === 'string'
+          ? imageReference.imageUrl.trim()
+          : '';
+
+      if (!imageUrl) {
+        return undefined;
+      }
+
+      const sourceField =
+        typeof imageReference.sourceField === 'string'
+          ? imageReference.sourceField
+          : undefined;
+      const type =
+        imageReference.type === 'primary' ||
+        imageReference.type === 'additional' ||
+        imageReference.type === 'minifig' ||
+        imageReference.type === 'unknown'
+          ? imageReference.type
+          : undefined;
+      const referencePolicy =
+        imageReference.rightsPolicy === 'render_publicly_with_attribution' ||
+        imageReference.rightsPolicy === 'public_rendering_approved' ||
+        imageReference.rightsPolicy === 'metadata_only_pending_rights_review'
+          ? imageReference.rightsPolicy
+          : imageRightsPolicy;
+      const policyDecision = resolveBricksetGalleryImagePolicy({
+        attributionRequired: imageReference.attributionRequired === true,
+        imageRightsPolicy: referencePolicy,
+        renderMode,
+        sourceField,
+        type,
+      });
+
+      if (!policyDecision.canRenderPublicly) {
+        return undefined;
+      }
+
+      return {
+        ...(policyDecision.attributionText
+          ? {
+              attributionText: policyDecision.attributionText,
+            }
+          : {}),
+        order: 100 + index,
+        ...(typeof imageReference.thumbnailUrl === 'string' &&
+        imageReference.thumbnailUrl.trim().length > 0
+          ? {
+              thumbnailUrl: imageReference.thumbnailUrl.trim(),
+            }
+          : {}),
+        type: 'detail',
+        url: imageUrl,
+      };
+    })
+    .filter((image): image is CatalogSetImage => image != null);
+
+  return galleryImages.length ? galleryImages : undefined;
+}
+
+interface BricksetCatalogSetMetadata {
+  launchDate?: string;
+  pieceCount?: number;
+}
+
+async function listBricksetCatalogSetMetadataBySetId({
   setIds,
   supabaseClient,
 }: {
   setIds: readonly string[];
   supabaseClient: CatalogSupabaseClient;
-}): Promise<Map<string, string>> {
-  const launchDateBySetId = new Map<string, string>();
+}): Promise<Map<string, BricksetCatalogSetMetadata>> {
+  const metadataBySetId = new Map<string, BricksetCatalogSetMetadata>();
 
   if (!setIds.length) {
-    return launchDateBySetId;
+    return metadataBySetId;
   }
 
   for (const setIdChunk of chunkCatalogValues(setIds, 100)) {
@@ -1484,7 +1690,7 @@ async function listBricksetLaunchDateBySetId({
       .eq('source', BRICKSET_SOURCE_METADATA_SOURCE)
       .eq('locale', BRICKSET_SOURCE_METADATA_LOCALE)
       .eq('match_confidence', BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE)
-      .eq('policy', BRICKSET_SOURCE_METADATA_POLICY)
+      .in('policy', [...BRICKSET_SOURCE_METADATA_POLICIES])
       .in('catalog_set_id', setIdChunk);
 
     if (error) {
@@ -1493,56 +1699,171 @@ async function listBricksetLaunchDateBySetId({
 
     for (const row of (data as CatalogSetSourceMetadataRow[] | null) ?? []) {
       const launchDate = readBricksetLaunchDate(row.metadata_json);
+      const pieceCount = readBricksetPieceCount(row.metadata_json);
 
-      if (launchDate) {
-        launchDateBySetId.set(row.catalog_set_id, launchDate);
+      if (launchDate || typeof pieceCount === 'number') {
+        metadataBySetId.set(row.catalog_set_id, {
+          ...(launchDate ? { launchDate } : {}),
+          ...(typeof pieceCount === 'number' ? { pieceCount } : {}),
+        });
       }
     }
   }
 
-  return launchDateBySetId;
+  return metadataBySetId;
 }
 
-async function applyBricksetReleaseDatesToSetCards({
+function applyBricksetCatalogSetMetadata({
+  bricksetMetadataBySetId,
+  canonicalCatalogSets,
+}: {
+  bricksetMetadataBySetId: ReadonlyMap<string, BricksetCatalogSetMetadata>;
+  canonicalCatalogSets: readonly CatalogCanonicalSet[];
+}): CatalogCanonicalSet[] {
+  return canonicalCatalogSets.map((canonicalCatalogSet) => {
+    const bricksetMetadata = bricksetMetadataBySetId.get(
+      canonicalCatalogSet.setId,
+    );
+    const pieceCount =
+      canonicalCatalogSet.pieceCount > 0
+        ? canonicalCatalogSet.pieceCount
+        : bricksetMetadata?.pieceCount;
+
+    return typeof pieceCount === 'number' && pieceCount > 0
+      ? {
+          ...canonicalCatalogSet,
+          pieceCount,
+        }
+      : canonicalCatalogSet;
+  });
+}
+
+async function enrichCanonicalCatalogSetsWithBricksetMetadata({
+  canonicalCatalogSets,
+  supabaseClient,
+}: {
+  canonicalCatalogSets: readonly CatalogCanonicalSet[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogCanonicalSet[]> {
+  if (!canonicalCatalogSets.length) {
+    return [];
+  }
+
+  try {
+    const bricksetMetadataBySetId = await listBricksetCatalogSetMetadataBySetId(
+      {
+        setIds: canonicalCatalogSets.map(
+          (canonicalCatalogSet) => canonicalCatalogSet.setId,
+        ),
+        supabaseClient,
+      },
+    );
+
+    return applyBricksetCatalogSetMetadata({
+      bricksetMetadataBySetId,
+      canonicalCatalogSets,
+    });
+  } catch {
+    console.warn('[catalog-brickset-metadata]', {
+      message: 'Falling back to catalog metadata after Brickset lookup failed.',
+      setCount: canonicalCatalogSets.length,
+    });
+
+    return [...canonicalCatalogSets];
+  }
+}
+
+async function applyBricksetReleaseMetadataToSetCards({
   setCards,
   supabaseClient,
 }: {
   setCards: readonly CatalogHomepageSetCard[];
   supabaseClient: CatalogSupabaseClient;
 }): Promise<CatalogHomepageSetCard[]> {
-  const launchDateBySetId = await listBricksetLaunchDateBySetId({
+  const bricksetMetadataBySetId = await listBricksetCatalogSetMetadataBySetId({
     setIds: setCards.map((setCard) => setCard.id),
     supabaseClient,
   });
 
-  if (!launchDateBySetId.size) {
+  if (!bricksetMetadataBySetId.size) {
     return [...setCards];
   }
 
   return setCards.map((setCard) => {
-    const launchDate = launchDateBySetId.get(setCard.id);
-
-    if (!launchDate) {
-      return setCard;
-    }
+    const bricksetMetadata = bricksetMetadataBySetId.get(setCard.id);
+    const launchDate = bricksetMetadata?.launchDate;
+    const pieceCount =
+      setCard.pieces > 0 ? setCard.pieces : bricksetMetadata?.pieceCount;
 
     const existingPrecision = resolveCatalogReleaseDatePrecision({
       releaseDate: setCard.releaseDate,
       releaseDatePrecision: setCard.releaseDatePrecision,
       releaseYear: setCard.releaseYear,
     });
+    const releaseDatePatch =
+      launchDate && existingPrecision !== 'day' && existingPrecision !== 'month'
+        ? {
+            releaseDate: launchDate,
+            releaseDatePrecision: 'day' as const,
+            releaseYear: Number(launchDate.slice(0, 4)) || setCard.releaseYear,
+          }
+        : {};
+    const pieceCountPatch =
+      typeof pieceCount === 'number' && pieceCount > 0
+        ? {
+            pieces: pieceCount,
+          }
+        : {};
 
-    if (existingPrecision === 'day' || existingPrecision === 'month') {
+    if (
+      !Object.keys(releaseDatePatch).length &&
+      !Object.keys(pieceCountPatch).length
+    ) {
       return setCard;
     }
 
     return {
       ...setCard,
-      releaseDate: launchDate,
-      releaseDatePrecision: 'day',
-      releaseYear: Number(launchDate.slice(0, 4)) || setCard.releaseYear,
+      ...releaseDatePatch,
+      ...pieceCountPatch,
     };
   });
+}
+
+async function getBricksetGalleryImagesBySetId({
+  renderMode = getBricksetGalleryRenderMode(),
+  setId,
+  supabaseClient,
+}: {
+  renderMode?: ReturnType<typeof getBricksetGalleryRenderMode>;
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogSetImage[] | undefined> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+    .select('metadata_json, policy')
+    .eq('catalog_set_id', setId)
+    .eq('source', BRICKSET_SOURCE_METADATA_SOURCE)
+    .eq('locale', BRICKSET_SOURCE_METADATA_LOCALE)
+    .eq('match_confidence', BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load Brickset gallery metadata.');
+  }
+
+  const sourceMetadata = data as Pick<
+    CatalogSetSourceMetadataRow,
+    'metadata_json' | 'policy'
+  > | null;
+
+  return sourceMetadata
+    ? readBricksetGalleryImages({
+        metadataJson: sourceMetadata.metadata_json,
+        renderMode,
+        rowPolicy: sourceMetadata.policy,
+      })
+    : undefined;
 }
 
 async function getLegoNlProductDescriptionBySetId({
@@ -1726,6 +2047,25 @@ async function enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
   }
 }
 
+async function enrichCanonicalCatalogSetsWithPublicMetadata({
+  canonicalCatalogSets,
+  supabaseClient,
+}: {
+  canonicalCatalogSets: readonly CatalogCanonicalSet[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogCanonicalSet[]> {
+  const withDisplayTitles =
+    await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+      canonicalCatalogSets,
+      supabaseClient,
+    });
+
+  return enrichCanonicalCatalogSetsWithBricksetMetadata({
+    canonicalCatalogSets: withDisplayTitles,
+    supabaseClient,
+  });
+}
+
 function toCatalogSummaryFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetSummary {
@@ -1868,16 +2208,25 @@ function toCatalogSetDetailFromCanonicalSet(
           subtheme,
         }
       : {}),
-    ...(canonicalCatalogSet.imageUrl
+    ...(canonicalCatalogSet.imageUrl || canonicalCatalogSet.images?.length
       ? {
           images: [
-            {
-              order: 0,
-              type: 'hero',
-              url: canonicalCatalogSet.imageUrl,
-            },
+            ...(canonicalCatalogSet.imageUrl
+              ? [
+                  {
+                    order: 0,
+                    type: 'hero' as const,
+                    url: canonicalCatalogSet.imageUrl,
+                  },
+                ]
+              : []),
+            ...(canonicalCatalogSet.images ?? []),
           ],
-          primaryImage: canonicalCatalogSet.imageUrl,
+          ...(canonicalCatalogSet.imageUrl
+            ? {
+                primaryImage: canonicalCatalogSet.imageUrl,
+              }
+            : {}),
         }
       : {}),
   };
@@ -2644,7 +2993,7 @@ export async function listCanonicalCatalogSets({
       ),
     );
 
-    return enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+    return enrichCanonicalCatalogSetsWithPublicMetadata({
       canonicalCatalogSets,
       supabaseClient: activeSupabaseClient,
     });
@@ -2709,7 +3058,7 @@ async function getCanonicalCatalogSetByColumn({
     });
 
     return (
-      await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+      await enrichCanonicalCatalogSetsWithPublicMetadata({
         canonicalCatalogSets: [canonicalCatalogSet],
         supabaseClient: activeSupabaseClient,
       })
@@ -2892,7 +3241,7 @@ async function listCatalogSetCardsFromSupabase({
       }),
     );
     const enrichedCatalogSets =
-      await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+      await enrichCanonicalCatalogSetsWithPublicMetadata({
         canonicalCatalogSets,
         supabaseClient: activeSupabaseClient,
       });
@@ -3127,7 +3476,7 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
       }),
     );
     const enrichedCatalogSets =
-      await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+      await enrichCanonicalCatalogSetsWithPublicMetadata({
         canonicalCatalogSets,
         supabaseClient: activeSupabaseClient,
       });
@@ -3210,7 +3559,7 @@ const CATALOG_COLLECTION_CANDIDATE_LIMIT = 1_000;
 const CATALOG_COLLECTION_CANDIDATE_PAGE_SIZE = 500;
 const CATALOG_COLLECTION_LIVE_OFFER_FALLBACK_SET_LIMIT = 50;
 const CATALOG_COLLECTION_RECENT_RELEASE_LOOKBACK_DAYS = 210;
-const CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS = 120;
+const CATALOG_COLLECTION_RECENT_RELEASE_LOOKAHEAD_DAYS = 45;
 
 function getCatalogCollectionThemeSlug(
   setCard: Pick<CatalogHomepageSetCard, 'publicTheme' | 'theme'>,
@@ -3248,6 +3597,10 @@ function matchesCatalogCollectionRecentRelease({
   now: Date;
   setCard: CatalogHomepageSetCard;
 }): boolean {
+  if (setCard.pieces <= 0) {
+    return false;
+  }
+
   const releaseTimestamp = getCatalogCollectionReleaseTimestamp(setCard);
 
   const lowerBound =
@@ -3268,11 +3621,29 @@ function matchesCatalogCollectionRecentRelease({
   });
   const currentYear = now.getUTCFullYear();
 
-  return (
-    releaseDatePrecision === 'year' &&
-    setCard.releaseYear >= currentYear &&
-    setCard.releaseYear <= currentYear + 1
-  );
+  return releaseDatePrecision === 'year' && setCard.releaseYear === currentYear;
+}
+
+function getCatalogCollectionRecentReleaseSortTimestamp({
+  now,
+  setCard,
+}: {
+  now: Date;
+  setCard: CatalogHomepageSetCard;
+}): number {
+  const releaseTimestamp =
+    getCatalogCollectionReleaseTimestamp(setCard) ??
+    Date.UTC(setCard.releaseYear, 0, 1);
+
+  if (releaseTimestamp > now.getTime()) {
+    const daysUntilRelease = Math.ceil(
+      (releaseTimestamp - now.getTime()) / 86_400_000,
+    );
+
+    return releaseTimestamp - Math.max(daysUntilRelease, 1) * 86_400_000 * 4;
+  }
+
+  return releaseTimestamp;
 }
 
 function matchesCatalogCollectionAdultCollector(
@@ -3355,9 +3726,11 @@ function matchesCatalogCollectionLandingPageConfig({
 
 function compareCatalogCollectionLandingPageSetCards({
   bestPriceMinorBySetId,
+  now,
   sortKey,
 }: {
   bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  now: Date;
   sortKey: CatalogCollectionLandingPageSortKey;
 }): (left: CatalogHomepageSetCard, right: CatalogHomepageSetCard) => number {
   return (left, right) => {
@@ -3374,10 +3747,14 @@ function compareCatalogCollectionLandingPageSetCards({
 
     if (sortKey === 'newest') {
       return (
-        (getCatalogCollectionReleaseTimestamp(right) ??
-          Date.UTC(right.releaseYear, 0, 1)) -
-          (getCatalogCollectionReleaseTimestamp(left) ??
-            Date.UTC(left.releaseYear, 0, 1)) ||
+        getCatalogCollectionRecentReleaseSortTimestamp({
+          now,
+          setCard: right,
+        }) -
+          getCatalogCollectionRecentReleaseSortTimestamp({
+            now,
+            setCard: left,
+          }) ||
         right.pieces - left.pieces ||
         left.name.localeCompare(right.name) ||
         left.id.localeCompare(right.id)
@@ -3526,7 +3903,7 @@ export async function getCatalogCollectionLandingPage({
   const rawCandidateSetCards = [...scopedSetCards, ...statusOverlaySetCards];
   const candidateSetCards =
     config.filters.recentRelease && activeSupabaseClient
-      ? await applyBricksetReleaseDatesToSetCards({
+      ? await applyBricksetReleaseMetadataToSetCards({
           setCards: rawCandidateSetCards,
           supabaseClient: activeSupabaseClient,
         })
@@ -3556,6 +3933,7 @@ export async function getCatalogCollectionLandingPage({
     .sort(
       compareCatalogCollectionLandingPageSetCards({
         bestPriceMinorBySetId,
+        now,
         sortKey,
       }),
     );
@@ -6828,7 +7206,7 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
             }),
           );
           const enrichedCatalogSets =
-            await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+            await enrichCanonicalCatalogSetsWithPublicMetadata({
               canonicalCatalogSets,
               supabaseClient: activeSupabaseClient,
             });
@@ -6998,7 +7376,7 @@ export async function listCatalogSetCardsByIds({
         }),
       );
       const enrichedCatalogSets =
-        await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+        await enrichCanonicalCatalogSetsWithPublicMetadata({
           canonicalCatalogSets,
           supabaseClient: activeSupabaseClient,
         });
@@ -9303,9 +9681,18 @@ export async function getCatalogSetBySlug({
     setId: canonicalCatalogSet.setId,
     supabaseClient: activeSupabaseClient,
   });
+  const bricksetGalleryImages = await getBricksetGalleryImagesBySetId({
+    setId: canonicalCatalogSet.setId,
+    supabaseClient: activeSupabaseClient,
+  });
 
   return toCatalogSetDetailFromCanonicalSet({
     ...canonicalCatalogSet,
+    ...(bricksetGalleryImages?.length
+      ? {
+          images: bricksetGalleryImages,
+        }
+      : {}),
     ...(legoProductMetadata?.description
       ? {
           legoProductDescription: legoProductMetadata.description,
@@ -9486,7 +9873,7 @@ async function listCatalogSearchMatchesFromSupabase({
     );
     const enrichedCatalogSetBySetId = new Map(
       (
-        await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+        await enrichCanonicalCatalogSetsWithPublicMetadata({
           canonicalCatalogSets,
           supabaseClient: activeSupabaseClient,
         })
@@ -9968,7 +10355,7 @@ export async function getCatalogThemePageBySlug({
         }),
       );
       const enrichedCatalogSets =
-        await enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
+        await enrichCanonicalCatalogSetsWithPublicMetadata({
           canonicalCatalogSets,
           supabaseClient: activeSupabaseClient,
         });

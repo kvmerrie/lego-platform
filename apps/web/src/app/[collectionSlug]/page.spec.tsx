@@ -253,5 +253,12 @@ describe('collection landing page route', () => {
         totalSetCount: 1,
       }),
     );
+    expect(
+      (
+        collectionPageMocks.featureCollectionLandingPage.mock.calls[0]?.[0] as {
+          config?: { visual?: unknown };
+        }
+      ).config,
+    ).not.toHaveProperty('visual');
   });
 });

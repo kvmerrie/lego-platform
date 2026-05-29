@@ -16,6 +16,7 @@ const setPageMocks = vi.hoisted(() => ({
   listCatalogSetSlugs: vi.fn(),
   listCatalogSimilarSetCards: vi.fn(),
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
+  unstableCache: vi.fn((callback: () => unknown) => callback),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -23,7 +24,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('next/cache', () => ({
-  unstable_cache: (callback: () => unknown) => callback,
+  unstable_cache: setPageMocks.unstableCache,
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
@@ -242,6 +243,7 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   delete process.env['NEXT_PHASE'];
+  delete process.env['BRICKSET_GALLERY_RENDER_MODE'];
   delete process.env['SET_DETAIL_STATIC_PARAMS_LIMIT'];
   delete process.env['SKIP_SET_DETAIL_SSG_OPTIONAL_RAILS'];
 });
@@ -450,6 +452,77 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain('--article-theme-surface:#112244');
     expect(railHtml).toContain('--article-theme-surface-text:#ffffff');
     expect(setPageMocks.listCatalogSimilarSetCards).toHaveBeenCalled();
+  });
+
+  it('keys set detail cache by Brickset gallery render mode', async () => {
+    process.env['BRICKSET_GALLERY_RENDER_MODE'] = 'attribution_required';
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '10307',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+      images: [
+        {
+          order: 0,
+          type: 'hero',
+          url: 'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+        },
+        {
+          attributionText: 'Image(s) courtesy of Brickset.com',
+          order: 100,
+          type: 'detail',
+          url: 'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_alt1.jpg',
+        },
+      ],
+      name: 'Eiffeltoren',
+      pieces: 10001,
+      publicTheme: {
+        accentColor: '#123456',
+        name: 'Icons',
+        slug: 'icons',
+        surfaceColor: '#112244',
+        surfaceTextColor: '#ffffff',
+      },
+      releaseYear: 2022,
+      slug: 'eiffel-tower-10307',
+      theme: 'Icons',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 0,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'eiffel-tower-10307',
+        }),
+      }),
+    );
+
+    expect(setPageMocks.unstableCache).toHaveBeenCalledWith(
+      expect.any(Function),
+      [
+        'catalog-set-detail',
+        expect.any(String),
+        'eiffel-tower-10307',
+        'attribution_required',
+      ],
+      expect.objectContaining({
+        tags: [expect.any(String)],
+      }),
+    );
   });
 
   it('selects one same-theme internal-link rail without duplicate set links', async () => {

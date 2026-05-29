@@ -42,8 +42,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
 
     expect(markup).toContain('<h1');
     expect(markup).toContain('LEGO voor volwassenen');
-    expect(markup).toContain('--collection-page-surface:#171717');
-    expect(markup).toContain('--collection-page-text:#ffffff');
+    expect(markup).not.toContain('--collection-page-surface:');
+    expect(markup).not.toContain('--collection-page-text:');
     expect(markup).toContain('X-wing Starfighter');
     expect(markup).toContain('data-catalog-set-card-collection="true"');
     expect(markup).toContain(
@@ -60,7 +60,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('aria-current="page"');
   });
 
-  it('carries the discovery tile color onto the destination hero', () => {
+  it('keeps the destination hero on the default Brickhunt styling', () => {
     const config = getCatalogCollectionLandingPageConfig('nieuwe-lego-sets');
 
     if (!config) {
@@ -76,8 +76,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
       />,
     );
 
-    expect(markup).toContain('--collection-page-surface:#5573b5');
-    expect(markup).toContain('--collection-page-text:#ffffff');
+    expect(markup).not.toContain('--collection-page-surface:');
+    expect(markup).not.toContain('--collection-page-text:');
     expect(markup).toContain('Nieuwe LEGO sets');
   });
 

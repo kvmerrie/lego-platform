@@ -62,6 +62,7 @@ import {
   buildSetDetailPath,
   cacheTags,
   getDefaultFormattingLocale,
+  getBricksetGalleryRenderMode,
   getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
   resolvePublicMerchantDisplayName,
@@ -351,9 +352,16 @@ function measureSetPageSync<T>({
 }
 
 async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
+  const bricksetGalleryRenderMode = getBricksetGalleryRenderMode();
+
   return unstable_cache(
     () => getCatalogSetBySlug({ slug }),
-    ['catalog-set-detail', SET_DETAIL_CACHE_VERSION, slug],
+    [
+      'catalog-set-detail',
+      SET_DETAIL_CACHE_VERSION,
+      slug,
+      bricksetGalleryRenderMode,
+    ],
     {
       revalidate,
       tags: [cacheTags.set(slug)],

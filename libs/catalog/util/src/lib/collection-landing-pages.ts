@@ -57,29 +57,29 @@ export interface CatalogCollectionLandingPageConfig {
 }
 
 export const catalogDiscoveryVisualVariants = {
-  adultSets: {
-    backgroundColor: '#171717',
+  adultCollectors: {
+    backgroundColor: '#08636f',
     textColor: '#ffffff',
-  },
-  budgetSets: {
-    backgroundColor: '#e0b84f',
-    textColor: '#171a22',
   },
   deals: {
-    backgroundColor: '#6bbf59',
-    textColor: '#10241f',
+    backgroundColor: '#00a99d',
+    textColor: '#062927',
   },
-  newSets: {
-    backgroundColor: '#5573b5',
+  newReleases: {
+    backgroundColor: '#3aaee8',
+    textColor: '#08243a',
+  },
+  popularThemes: {
+    backgroundColor: '#8758d8',
     textColor: '#ffffff',
   },
-  retiringSets: {
-    backgroundColor: '#d85a50',
-    textColor: '#ffffff',
+  retiringSoon: {
+    backgroundColor: '#f28c28',
+    textColor: '#281400',
   },
-  themes: {
-    backgroundColor: '#234bcd',
-    textColor: '#ffffff',
+  under50: {
+    backgroundColor: '#35b765',
+    textColor: '#062817',
   },
 } as const satisfies Record<string, CatalogThemeVisual>;
 
@@ -100,7 +100,6 @@ export const catalogCollectionLandingPageConfigs = [
     browseDescription:
       'Begin met sets die meteen herkenbaar zijn: een starfighter, racewagen of kleine displaybouw die niet je hele budget pakt.',
     signalLabel: 'sets onder 50 euro',
-    visual: catalogDiscoveryVisualVariants.budgetSets,
     filters: {
       maxBestPriceMinor: 5_000,
     },
@@ -133,7 +132,6 @@ export const catalogCollectionLandingPageConfigs = [
     browseDescription:
       'Kijk vooral naar sets met een duidelijk hoofdmodel: die blijven op een plank interessanter dan losse kleine builds.',
     signalLabel: 'sets onder 100 euro',
-    visual: catalogDiscoveryVisualVariants.budgetSets,
     filters: {
       maxBestPriceMinor: 10_000,
     },
@@ -166,7 +164,6 @@ export const catalogCollectionLandingPageConfigs = [
     browseDescription:
       'Kies deze lijst als je wilt zien welke builds net zijn toegevoegd of rond deze periode uitkomen.',
     signalLabel: 'nieuwe sets',
-    visual: catalogDiscoveryVisualVariants.newSets,
     filters: {
       recentRelease: true,
     },
@@ -199,7 +196,6 @@ export const catalogCollectionLandingPageConfigs = [
     browseDescription:
       'Let op vorm, hoogte en herkenbaarheid. Dat bepaalt of een set na het bouwen blijft trekken.',
     signalLabel: 'collector sets',
-    visual: catalogDiscoveryVisualVariants.adultSets,
     filters: {
       adultCollector: true,
     },
@@ -233,7 +229,6 @@ export const catalogCollectionLandingPageConfigs = [
     browseDescription:
       'Kies op wat je verzameling mist: een herkenbaar schip, een sterke minifigure-line-up of een groot displaymodel.',
     signalLabel: 'Star Wars sets',
-    visual: catalogDiscoveryVisualVariants.themes,
     filters: {
       themeSlugs: ['star-wars'],
     },
@@ -264,7 +259,6 @@ export const catalogCollectionLandingPageConfigs = [
     coverageNote:
       'Deze lijst gebruikt alleen sets met een expliciet retiring- of retired-signaal in onze catalogus. Zodra de feed meer betrouwbare EOL-data bevat, groeit deze pagina vanzelf mee.',
     signalLabel: 'retiring sets',
-    visual: catalogDiscoveryVisualVariants.retiringSets,
     filters: {
       setStatuses: ['retiring_soon', 'retired'],
     },

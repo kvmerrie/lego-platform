@@ -1402,7 +1402,17 @@ function createCatalogGalleryImageItems(
         index === 0
           ? `${catalogSetDetail.name} LEGO-set`
           : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`,
+      ...(catalogSetImage.attributionText
+        ? {
+            caption: catalogSetImage.attributionText,
+          }
+        : {}),
       src: catalogSetImage.url,
+      ...(catalogSetImage.thumbnailUrl
+        ? {
+            thumbnailSrc: catalogSetImage.thumbnailUrl,
+          }
+        : {}),
     }),
   );
 }
@@ -1412,7 +1422,15 @@ function CatalogSetImageGallery({
 }: {
   catalogSetDetail: CatalogSetDetail;
 }) {
+  const catalogGalleryImages = getCatalogGalleryImages(catalogSetDetail);
   const galleryImages = createCatalogGalleryImageItems(catalogSetDetail);
+  const attributionTexts = [
+    ...new Set(
+      catalogGalleryImages.flatMap((image) =>
+        image.attributionText ? [image.attributionText] : [],
+      ),
+    ),
+  ];
 
   if (!galleryImages.length) {
     return (
@@ -1427,12 +1445,19 @@ function CatalogSetImageGallery({
   }
 
   return (
-    <ImageGallery
-      ariaLabel={`Afbeeldingen van ${catalogSetDetail.name}`}
-      detailMobileFullBleed
-      images={galleryImages}
-      variant="detail"
-    />
+    <div className={styles.setImageGalleryWithAttribution}>
+      <ImageGallery
+        ariaLabel={`Afbeeldingen van ${catalogSetDetail.name}`}
+        detailMobileFullBleed
+        images={galleryImages}
+        variant="detail"
+      />
+      {attributionTexts.length ? (
+        <p className={styles.setImageGalleryAttribution}>
+          {attributionTexts.join(' · ')}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

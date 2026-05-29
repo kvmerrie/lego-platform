@@ -18,9 +18,9 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
-  catalogDiscoveryVisualVariants,
   getCatalogThemeMutedTextColor,
   type CatalogHomepageSetCard,
+  type CatalogThemeVisual,
 } from '@lego-platform/catalog/util';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import {
@@ -66,7 +66,10 @@ export const metadata: Metadata = {
 
 const DEALS_RAIL_LIMIT = 20;
 const DEALS_MIN_OPTIONAL_RAIL_ITEMS = 4;
-const dealsHeroVisual = catalogDiscoveryVisualVariants.deals;
+const dealsHeroVisual = {
+  backgroundColor: '#6bbf59',
+  textColor: '#10241f',
+} as const satisfies CatalogThemeVisual;
 const dealsHeroStyle = {
   '--deals-page-surface': dealsHeroVisual.backgroundColor,
   '--deals-page-muted': getCatalogThemeMutedTextColor(

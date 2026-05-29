@@ -382,6 +382,7 @@ describe('catalog snapshot helpers', () => {
         images: [
           'https://images.example/rivendell-side.jpg',
           {
+            thumbnailUrl: 'https://images.example/rivendell-council-thumb.jpg',
             type: 'detail',
             url: 'https://images.example/rivendell-council.jpg',
           },
@@ -409,6 +410,7 @@ describe('catalog snapshot helpers', () => {
         },
         {
           order: 2,
+          thumbnailUrl: 'https://images.example/rivendell-council-thumb.jpg',
           type: 'detail',
           url: 'https://images.example/rivendell-council.jpg',
         },

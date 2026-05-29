@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  catalogDiscoveryVisualVariants,
   getCatalogCollectionLandingPageConfig,
   listIndexableCatalogCollectionLandingPageConfigs,
   listCatalogCollectionLandingPageConfigs,
@@ -24,29 +25,53 @@ describe('collection landing page configs', () => {
     expect(
       configs.every((config) => config.h1 && config.metaTitle && config.intro),
     ).toBe(true);
-    expect(configs.every((config) => config.visual?.backgroundColor)).toBe(
-      true,
-    );
+    expect(configs.every((config) => config.visual === undefined)).toBe(true);
   });
 
-  it('uses stable discovery colors that match the theme visual palette', () => {
+  it('keeps discovery colors dedicated to homepage tiles instead of collection heroes', () => {
     expect(
       getCatalogCollectionLandingPageConfig('nieuwe-lego-sets')?.visual,
-    ).toEqual({
+    ).toBeUndefined();
+    expect(
+      getCatalogCollectionLandingPageConfig('lego-sets-onder-50-euro')?.visual,
+    ).toBeUndefined();
+    expect(
+      getCatalogCollectionLandingPageConfig('retiring-lego-sets')?.visual,
+    ).toBeUndefined();
+  });
+
+  it('uses vibrant dedicated discovery colors that do not reuse theme associations', () => {
+    expect(catalogDiscoveryVisualVariants.newReleases).toEqual({
+      backgroundColor: '#3aaee8',
+      textColor: '#08243a',
+    });
+    expect(catalogDiscoveryVisualVariants.adultCollectors).toEqual({
+      backgroundColor: '#08636f',
+      textColor: '#ffffff',
+    });
+    expect(catalogDiscoveryVisualVariants.under50).toEqual({
+      backgroundColor: '#35b765',
+      textColor: '#062817',
+    });
+    expect(catalogDiscoveryVisualVariants.retiringSoon).toEqual({
+      backgroundColor: '#f28c28',
+      textColor: '#281400',
+    });
+    expect(catalogDiscoveryVisualVariants.deals).toEqual({
+      backgroundColor: '#00a99d',
+      textColor: '#062927',
+    });
+    expect(catalogDiscoveryVisualVariants.popularThemes).toEqual({
+      backgroundColor: '#8758d8',
+      textColor: '#ffffff',
+    });
+    expect(Object.values(catalogDiscoveryVisualVariants)).not.toContainEqual({
       backgroundColor: '#5573b5',
       textColor: '#ffffff',
     });
-    expect(
-      getCatalogCollectionLandingPageConfig('lego-sets-onder-50-euro')?.visual,
-    ).toEqual({
-      backgroundColor: '#e0b84f',
-      textColor: '#171a22',
-    });
-    expect(
-      getCatalogCollectionLandingPageConfig('retiring-lego-sets')?.visual,
-    ).toEqual({
-      backgroundColor: '#d85a50',
-      textColor: '#ffffff',
+    expect(Object.values(catalogDiscoveryVisualVariants)).not.toContainEqual({
+      backgroundColor: '#6bbf59',
+      textColor: '#10241f',
     });
   });
 

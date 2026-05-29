@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   CatalogBrowsePagination,
   CatalogPageIntro,
@@ -8,11 +8,9 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
-  getCatalogThemeMutedTextColor,
   type CatalogCollectionLandingPageConfig,
   type CatalogCollectionLandingPageSortKey,
   type CatalogHomepageSetCard,
-  type CatalogThemeVisual,
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
@@ -38,30 +36,6 @@ const sortLabels: Record<CatalogCollectionLandingPageSortKey, string> = {
   newest: 'Nieuwste',
   'pieces-desc': 'Meeste stenen',
 };
-
-function getCollectionHeroStyleVariables(
-  visual?: CatalogThemeVisual,
-): CSSProperties | undefined {
-  if (!visual?.backgroundColor && !visual?.textColor) {
-    return undefined;
-  }
-
-  return {
-    ...(visual.backgroundColor
-      ? {
-          '--collection-page-surface': visual.backgroundColor,
-        }
-      : {}),
-    ...(visual.textColor
-      ? {
-          '--collection-page-muted': getCatalogThemeMutedTextColor(
-            visual.textColor,
-          ),
-          '--collection-page-text': visual.textColor,
-        }
-      : {}),
-  } as CSSProperties;
-}
 
 function getCollectionLandingPageSortHref({
   config,
@@ -131,7 +105,6 @@ export function CatalogFeatureCollectionLandingPage({
     normalizedPageSize > 0
       ? Math.max(1, Math.ceil(totalSetCount / normalizedPageSize))
       : 1;
-  const introStyle = getCollectionHeroStyleVariables(config.visual);
 
   return (
     <main className={styles.page}>
@@ -154,7 +127,6 @@ export function CatalogFeatureCollectionLandingPage({
         }}
         className={styles.intro}
         contentClassName={styles.introContent}
-        style={introStyle}
       >
         <p className={styles.eyebrow}>LEGO keuzehulp</p>
         <div className={styles.headingGroup}>

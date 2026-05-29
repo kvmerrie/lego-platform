@@ -1478,12 +1478,30 @@
     width: 100%;
   }
 
+  .setImageGalleryWithAttribution {
+    display: grid;
+    gap: var(--lego-space-1);
+  }
+
+  .setImageGalleryAttribution {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-caption-font-size);
+    line-height: 1.35;
+    margin: 0;
+    padding-inline: var(--lego-space-1);
+  }
+
   .detailTitle {
     font-size: var(--lego-text-role-hero-size);
     font-weight: var(--lego-text-role-hero-weight);
     letter-spacing: -0.05em;
     line-height: var(--lego-text-role-hero-line-height);
     margin: 0;
+  }
+
+  .detailHero .bestDealPrice,
+  .detailHero .bestDealFallbackValue {
+    letter-spacing: -0.04em;
   }
 
   .productDescriptionDisclosure {
@@ -1843,6 +1861,7 @@
 
   .bestDealCard {
     background: var(--lego-surface-default);
+    border-radius: var(--lego-radius-md);
     display: grid;
     gap: var(--lego-space-3);
     padding: var(--lego-space-5);
@@ -1987,7 +2006,7 @@
 
   .bestDealAffiliateNote {
     color: var(--lego-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--lego-caption-font-size);
     line-height: var(--lego-text-role-meta-line-height);
     margin: 0;
   }
@@ -2001,6 +2020,7 @@
   }
 
   .alertCard {
+    border-radius: var(--lego-radius-md);
     display: grid;
     gap: var(--lego-space-2);
     padding: var(--lego-space-3);
@@ -2049,6 +2069,7 @@
 
   .detailDecisionSupport {
     background: var(--lego-surface-subtle);
+    border-radius: var(--lego-radius-md);
     display: grid;
     gap: var(--lego-space-2);
     padding: var(--lego-space-3);
@@ -2094,6 +2115,7 @@
     --lego-surface-padding-md-block: 0.95rem;
     --lego-surface-padding-md-inline: 1rem;
     background: var(--lego-surface-accent);
+    border-radius: var(--lego-radius-md);
     gap: var(--lego-space-2);
   }
 
@@ -4057,8 +4079,8 @@
     .detailHeroMain {
       align-items: start;
       display: grid;
-      gap: var(--lego-space-6);
-      grid-template-columns: minmax(0, 1fr) clamp(20rem, 30vw, 24rem);
+      gap: var(--lego-space-8);
+      grid-template-columns: minmax(0, 1fr) clamp(19rem, 28vw, 23rem);
       grid-template-rows: auto auto;
     }
 
@@ -4074,16 +4096,21 @@
       align-content: start;
       align-self: start;
       display: grid;
-      gap: var(--lego-space-4);
+      gap: var(--lego-space-5);
     }
 
     .detailHeroContent {
       align-self: start;
+      gap: var(--lego-space-5);
       grid-column: 2;
       grid-row: 1;
       justify-self: stretch;
       max-width: none;
       width: 100%;
+    }
+
+    .detailHeroPrimary {
+      gap: var(--lego-space-5);
     }
 
     .detailHeroSupplementary {
@@ -4096,14 +4123,33 @@
     }
 
     .detailHeroMetaStrip {
+      align-items: center;
+      gap: var(--lego-space-10);
       grid-template-columns: repeat(5, max-content);
       justify-content: flex-start;
+      padding-block: var(--lego-space-2);
       width: 100%;
     }
 
     .detailHeroMetaStrip > [data-label-value-id='theme-logo'] {
       grid-column: auto;
       justify-self: start;
+    }
+
+    .detailTitle {
+      font-size: clamp(2.05rem, 2.8vw, 2.85rem);
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+    }
+
+    .detailHero .bestDealPrice {
+      font-size: clamp(1.95rem, 4.6vw, 2.75rem);
+      line-height: 0.96;
+    }
+
+    .detailHero .bestDealFallbackValue {
+      font-size: clamp(1.4rem, 4.8vw, 2rem);
+      line-height: 1.04;
     }
   }
 
@@ -4115,8 +4161,8 @@
     }
 
     .detailHeroMain {
-      gap: var(--lego-space-16);
-      grid-template-columns: minmax(0, 1fr) clamp(22rem, 26vw, 25rem);
+      gap: var(--lego-space-14);
+      grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 23.5rem);
     }
 
     .productDescriptionLayout {
@@ -4143,15 +4189,19 @@
 
     .detailHeroContent {
       justify-self: end;
-      max-width: 25rem;
+      max-width: 23.5rem;
       position: static;
       top: auto;
     }
 
     .detailHeroMetaStrip {
-      gap: var(--lego-space-14);
+      gap: var(--lego-space-12);
       justify-content: flex-start;
       width: 100%;
+    }
+
+    .detailTitle {
+      font-size: clamp(2.2rem, 2.45vw, 2.9rem);
     }
 
     .heroThemeLogoValue {

@@ -137,6 +137,20 @@ describe('deals page discovery signals', () => {
     );
   });
 
+  it('keeps the standalone deals hero independent from discovery tile variants', async () => {
+    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
+    dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
+    dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('--deals-page-surface:#6bbf59');
+    expect(markup).not.toContain('--deals-page-surface:#00a99d');
+  });
+
   it('scopes discovery signals to current commerce candidate cards', async () => {
     dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
       '42177',

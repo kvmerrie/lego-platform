@@ -8,6 +8,7 @@ const themePageMocks = vi.hoisted(() => ({
   getCatalogThemeMetadataBySlug: vi.fn(),
   getCatalogThemePageBySlug: vi.fn(),
   getCachedPublicBrowsePageData: vi.fn(),
+  catalogFeatureThemePage: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
   listCatalogThemePageSlugs: vi.fn(),
@@ -28,18 +29,20 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
-  CatalogFeatureThemePage: ({
-    dealRail,
-    relatedArticlesRail,
-  }: {
+  CatalogFeatureThemePage: (props: {
     dealRail?: React.ReactNode;
     relatedArticlesRail?: React.ReactNode;
-  }) => (
-    <div data-testid="theme-page">
-      {dealRail}
-      {relatedArticlesRail}
-    </div>
-  ),
+    themePage?: unknown;
+  }) => {
+    themePageMocks.catalogFeatureThemePage(props);
+
+    return (
+      <div data-testid="theme-page">
+        {props.dealRail}
+        {props.relatedArticlesRail}
+      </div>
+    );
+  },
   CatalogFeatureThemeDealRail: ({
     dealSetCards,
   }: {
@@ -172,6 +175,10 @@ describe('theme page JSON-LD', () => {
         setCount: 1,
         slug: 'star-wars',
       },
+      visual: {
+        backgroundColor: '#1f4f7a',
+        textColor: '#ffffff',
+      },
     });
     themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
@@ -206,6 +213,25 @@ describe('theme page JSON-LD', () => {
         revalidateSeconds: false,
         slug: 'star-wars',
         tags: ['catalog', 'sets', 'themes', 'theme:star-wars', 'prices'],
+      }),
+    );
+    expect(themePageMocks.catalogFeatureThemePage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themePage: expect.objectContaining({
+          visual: {
+            backgroundColor: '#1f4f7a',
+            textColor: '#ffffff',
+          },
+        }),
+      }),
+    );
+    expect(themePageMocks.catalogFeatureThemePage).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        themePage: expect.objectContaining({
+          visual: expect.objectContaining({
+            backgroundColor: '#3aaee8',
+          }),
+        }),
       }),
     );
     expect(

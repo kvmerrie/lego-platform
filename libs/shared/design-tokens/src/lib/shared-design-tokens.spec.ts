@@ -30,6 +30,7 @@ describe('shared design tokens', () => {
     expect(themeStyles).toContain(
       '--lego-text-role-display-support-line-height: var(--lego-text-role-support-line-height);',
     );
+    expect(themeStyles).toContain('--lego-caption-font-size: 0.78rem;');
     expect(themeStyles).toContain(
       '--lego-button-surface-default-primary-background: var(--lego-accent);',
     );

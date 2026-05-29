@@ -7,6 +7,7 @@ import {
   getAwinJoybuyFeedConfig,
   getAdminPromotionConfig,
   getBrickfeverFeedConfig,
+  getBricksetGalleryRenderMode,
   buildArticlePath,
   buildCanonicalUrl,
   buildPublicSiteRobotsPolicy,
@@ -74,6 +75,7 @@ import {
   isArticlePreviewEnabled,
   publicSiteIndexingEnvKeys,
   publicSiteRobotsPolicy,
+  bricksetGalleryEnvKeys,
   resolvePublicSiteAllowIndexing,
   brickfeverEnvKeys,
   misterBricksEnvKeys,
@@ -103,6 +105,25 @@ describe('platform config', () => {
         merchantName: 'LEGO EU',
       }),
     ).toBe('LEGO®');
+  });
+});
+
+describe('Brickset gallery config', () => {
+  test('defaults public Brickset gallery rendering to disabled', () => {
+    expect(getBricksetGalleryRenderMode({})).toBe('disabled');
+    expect(
+      getBricksetGalleryRenderMode({
+        [bricksetGalleryEnvKeys.renderMode]: 'unexpected',
+      }),
+    ).toBe('disabled');
+  });
+
+  test('enables attributed additional images only with explicit render mode', () => {
+    expect(
+      getBricksetGalleryRenderMode({
+        [bricksetGalleryEnvKeys.renderMode]: 'attribution_required',
+      }),
+    ).toBe('attribution_required');
   });
 });
 
