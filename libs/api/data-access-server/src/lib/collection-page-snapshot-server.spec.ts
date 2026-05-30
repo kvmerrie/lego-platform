@@ -128,12 +128,52 @@ describe('collection page snapshots', () => {
     expect(result.snapshots[0]?.items[0]?.pieces).toBe(123);
   });
 
-  test('includes retiring candidates from Brickset exitDate', async () => {
+  test('keeps retiring snapshots released, near-term, and signal-backed', async () => {
     listCanonicalCatalogSetsMock.mockResolvedValue([
       createCatalogSet({
         setId: '20000-1',
         slug: 'retiring-set-20000',
         sourceSetNumber: '20000',
+      }),
+      createCatalogSet({
+        releaseDate: '2026-09-01',
+        setId: '20001-1',
+        slug: 'future-retiring-placeholder-20001',
+        sourceSetNumber: '20001',
+      }),
+      createCatalogSet({
+        releaseDate: '2025-01-01',
+        setId: '20002-1',
+        slug: 'far-future-retiring-set-20002',
+        sourceSetNumber: '20002',
+      }),
+      createCatalogSet({
+        pieceCount: 0,
+        releaseDate: '2025-01-01',
+        setId: '20003-1',
+        slug: 'zero-piece-retiring-set-20003',
+        sourceSetNumber: '20003',
+      }),
+      createCatalogSet({
+        pieceCount: 0,
+        releaseDate: '2025-01-01',
+        setId: '20004-1',
+        slug: 'brickset-pieces-retiring-set-20004',
+        sourceSetNumber: '20004',
+      }),
+      createCatalogSet({
+        releaseDate: undefined,
+        releaseDatePrecision: 'year',
+        releaseYear: 2026,
+        setId: '20005-1',
+        slug: 'year-only-retiring-placeholder-20005',
+        sourceSetNumber: '20005',
+      }),
+      createCatalogSet({
+        releaseDate: '2023-10-01',
+        setId: '75355',
+        slug: 'ucs-x-wing-starfighter-75355',
+        sourceSetNumber: '75355',
       }),
     ]);
     const { client } = createSupabaseClient({
@@ -149,6 +189,64 @@ describe('collection page snapshots', () => {
           set_number: '20000',
           source: 'brickset',
         },
+        {
+          catalog_set_id: '20001-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            exitDate: '2027-01-01',
+            launchDate: '2026-09-01',
+            pieces: 120,
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '20001',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '20002-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            exitDate: '2028-01-01',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '20002',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '20003-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            exitDate: '2026-08-01',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '20003',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '20004-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            exitDate: '2026-07-01',
+            pieces: 500,
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '20004',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '20005-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            exitDate: '2026-10-01',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '20005',
+          source: 'brickset',
+        },
       ],
     });
 
@@ -160,7 +258,12 @@ describe('collection page snapshots', () => {
 
     expect(
       result.summaryByCollectionSlug['retiring-lego-sets']?.totalCount,
-    ).toBe(1);
+    ).toBe(3);
+    expect(result.snapshots[0]?.items.map((item) => item.id)).toEqual([
+      '20004-1',
+      '20000-1',
+      '75355',
+    ]);
   });
 
   test('uses commerce current offer snapshots for under 50 euro', async () => {

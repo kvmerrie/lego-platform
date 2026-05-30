@@ -24,8 +24,7 @@ const COLLECTION_SNAPSHOT_SOURCE = 'collection_snapshot_sync';
 const SNAPSHOT_PAGE_SIZE = 1000;
 const RECENT_RELEASE_LOOKBACK_DAYS = 210;
 const RECENT_RELEASE_LOOKAHEAD_DAYS = 45;
-const RETIRING_EXIT_LOOKBACK_DAYS = 120;
-const RETIRING_EXIT_LOOKAHEAD_DAYS = 420;
+const RETIRING_EXIT_LOOKAHEAD_DAYS = 365;
 
 type CollectionPageSnapshotSupabaseClient = Pick<
   SupabaseClient,
@@ -316,6 +315,28 @@ function getEffectiveReleaseDate({
   );
 }
 
+function getEffectiveReleaseTimestamp({
+  allowReleaseYearFallback = true,
+  bricksetMetadata,
+  setCard,
+}: {
+  allowReleaseYearFallback?: boolean;
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): number | undefined {
+  const releaseTimestamp = parseDateTimestamp(
+    getEffectiveReleaseDate({ bricksetMetadata, setCard }),
+  );
+
+  if (releaseTimestamp !== undefined || !allowReleaseYearFallback) {
+    return releaseTimestamp;
+  }
+
+  return Number.isFinite(setCard.releaseYear)
+    ? Date.UTC(setCard.releaseYear, 0, 1)
+    : undefined;
+}
+
 function isRecentReleaseCandidate({
   bricksetMetadata,
   now,
@@ -378,10 +399,32 @@ function isRetiringCandidate({
   setCard: CollectionPageSnapshotCard;
   statusBySetId: ReadonlyMap<string, string>;
 }): boolean {
+  const effectivePieces = setCard.effectivePieces ?? setCard.pieces;
+
+  if (effectivePieces <= 0) {
+    return false;
+  }
+
   const overlayStatus = statusBySetId.get(setCard.id);
 
-  if (overlayStatus === 'retiring_soon' || overlayStatus === 'retired') {
-    return true;
+  if (overlayStatus === 'retiring_soon') {
+    const releaseTimestamp = getEffectiveReleaseTimestamp({
+      allowReleaseYearFallback: true,
+      bricksetMetadata,
+      setCard,
+    });
+
+    return releaseTimestamp !== undefined && releaseTimestamp <= now.getTime();
+  }
+
+  const releaseTimestamp = getEffectiveReleaseTimestamp({
+    allowReleaseYearFallback: false,
+    bricksetMetadata,
+    setCard,
+  });
+
+  if (releaseTimestamp === undefined || releaseTimestamp > now.getTime()) {
+    return false;
   }
 
   const exitDate = readMetadataString(
@@ -394,19 +437,39 @@ function isRetiringCandidate({
     return false;
   }
 
-  const lowerBound = now.getTime() - RETIRING_EXIT_LOOKBACK_DAYS * 86_400_000;
+  const lowerBound = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+  );
   const upperBound = now.getTime() + RETIRING_EXIT_LOOKAHEAD_DAYS * 86_400_000;
 
   return exitTimestamp >= lowerBound && exitTimestamp <= upperBound;
 }
 
+function getRetiringSortTimestamp({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): number {
+  return (
+    parseDateTimestamp(
+      readMetadataString(bricksetMetadata?.metadata_json, 'exitDate'),
+    ) ?? Number.POSITIVE_INFINITY
+  );
+}
+
 function compareSnapshotCards({
   bricksetBySetId,
+  collectionSlug,
   priceBySetId,
   sortKey,
   now,
 }: {
   bricksetBySetId: ReadonlyMap<string, CatalogSetSourceMetadataRow>;
+  collectionSlug: CatalogCollectionPageSnapshotSlug;
   now: Date;
   priceBySetId: ReadonlyMap<string, CommerceCurrentOfferSnapshotRow>;
   sortKey: CatalogCollectionLandingPageSortKey;
@@ -415,6 +478,23 @@ function compareSnapshotCards({
     left: CollectionPageSnapshotCard,
     right: CollectionPageSnapshotCard,
   ): number => {
+    if (collectionSlug === 'retiring-lego-sets') {
+      return (
+        getRetiringSortTimestamp({
+          bricksetMetadata: bricksetBySetId.get(left.id),
+          setCard: left,
+        }) -
+          getRetiringSortTimestamp({
+            bricksetMetadata: bricksetBySetId.get(right.id),
+            setCard: right,
+          }) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    }
+
     if (sortKey === 'price-asc') {
       return (
         (priceBySetId.get(left.id)?.best_price_minor ??
@@ -591,6 +671,7 @@ export async function buildCollectionPageSnapshots({
       const sortedCandidates = [...candidates].sort(
         compareSnapshotCards({
           bricksetBySetId: sourceMetadata.bricksetBySetId,
+          collectionSlug,
           now,
           priceBySetId: priceSnapshots,
           sortKey,
@@ -620,6 +701,7 @@ export async function buildCollectionPageSnapshots({
     const defaultSortCandidates = [...candidates].sort(
       compareSnapshotCards({
         bricksetBySetId: sourceMetadata.bricksetBySetId,
+        collectionSlug,
         now,
         priceBySetId: priceSnapshots,
         sortKey: config.sort.default,
