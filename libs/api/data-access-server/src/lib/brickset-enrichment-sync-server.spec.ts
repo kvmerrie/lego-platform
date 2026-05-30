@@ -228,6 +228,16 @@ describe('syncBricksetEnrichmentMetadata', () => {
 
   test('write mode upserts only catalog source metadata', async () => {
     const upsertCatalogSetSourceMetadataFn = vi.fn().mockResolvedValue(1);
+    const syncCollectionPageSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-30T10:00:00.000Z',
+      snapshots: [
+        { collectionSlug: 'nieuwe-lego-sets' },
+        { collectionSlug: 'retiring-lego-sets' },
+      ],
+      summaryByCollectionSlug: {},
+      upsertedCount: 2,
+    });
 
     const result = await syncBricksetEnrichmentMetadata({
       bricksetApiKey: 'brickset-test-key',
@@ -236,10 +246,13 @@ describe('syncBricksetEnrichmentMetadata', () => {
       listCanonicalCatalogSetsFn: vi
         .fn()
         .mockResolvedValue([createCatalogSet({})]),
+      syncCollectionPageSnapshotsFn,
       upsertCatalogSetSourceMetadataFn,
     });
 
     expect(result.sourceMetadataUpsertedCount).toBe(1);
+    expect(result.collectionPageSnapshotCount).toBe(2);
+    expect(result.collectionPageSnapshotsUpsertedCount).toBe(2);
     expect(upsertCatalogSetSourceMetadataFn).toHaveBeenCalledWith({
       inputs: [
         expect.objectContaining({
@@ -251,6 +264,11 @@ describe('syncBricksetEnrichmentMetadata', () => {
           source: 'brickset',
         }),
       ],
+    });
+    expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
+      collectionSlugs: ['nieuwe-lego-sets', 'retiring-lego-sets'],
+      dryRun: false,
+      pageSize: 40,
     });
   });
 
@@ -336,6 +354,13 @@ describe('syncBricksetEnrichmentMetadata', () => {
 
       return inputs.length;
     });
+    const syncCollectionPageSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-30T10:00:00.000Z',
+      snapshots: [],
+      summaryByCollectionSlug: {},
+      upsertedCount: 0,
+    });
     const catalogSets = createCatalogSets(3);
     const firstFetch = createPagedBricksetFetchMock();
 
@@ -346,6 +371,7 @@ describe('syncBricksetEnrichmentMetadata', () => {
       listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
       listCatalogSetSourceMetadataSetIdsFn,
       missingOnly: true,
+      syncCollectionPageSnapshotsFn,
       upsertCatalogSetSourceMetadataFn,
     });
 
@@ -357,6 +383,7 @@ describe('syncBricksetEnrichmentMetadata', () => {
       listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue(catalogSets),
       listCatalogSetSourceMetadataSetIdsFn,
       missingOnly: true,
+      syncCollectionPageSnapshotsFn,
       upsertCatalogSetSourceMetadataFn,
     });
 
@@ -372,6 +399,7 @@ describe('syncBricksetEnrichmentMetadata', () => {
     expect(secondResult.sourceMetadataUpsertedCount).toBe(0);
     expect(secondFetch.requestedSetNumberBatches).toEqual([]);
     expect(upsertCatalogSetSourceMetadataFn).toHaveBeenCalledTimes(1);
+    expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledTimes(1);
   });
 
   test('missing-only retries unmatched candidates because no negative cache is written', async () => {

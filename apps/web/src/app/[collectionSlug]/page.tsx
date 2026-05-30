@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import React from 'react';
-import { getCatalogCollectionLandingPage } from '@lego-platform/catalog/data-access-web';
+import {
+  getCatalogCollectionLandingPage,
+  getCatalogCollectionLandingPageSnapshot,
+} from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureCollectionLandingPage } from '@lego-platform/catalog/feature-collection-landing';
 import {
   getCatalogCollectionLandingPageConfig,
   listCatalogCollectionLandingPageConfigs,
   normalizeCatalogCollectionLandingPageSortKey,
   CATALOG_BROWSE_PAGE_SIZE,
+  isCatalogCollectionPageSnapshotSlug,
   type CatalogCollectionLandingPageConfig,
   type CatalogCollectionLandingPageSortKey,
 } from '@lego-platform/catalog/util';
@@ -105,16 +109,30 @@ async function getCachedSerializableCollectionLandingPage({
   return getCachedPublicBrowsePageData({
     load: async () =>
       toSerializableCollectionLandingPageResult(
-        await getCatalogCollectionLandingPage({
-          cacheOptions: {
-            revalidateSeconds: revalidate,
-            tags,
-          },
-          config,
-          limit,
-          offset,
-          sortKey,
-        }),
+        isCatalogCollectionPageSnapshotSlug(config.slug)
+          ? await getCatalogCollectionLandingPageSnapshot({
+              config,
+              limit,
+              offset,
+              sortKey,
+            }).then(
+              (snapshot) =>
+                snapshot ?? {
+                  bestPriceMinorBySetId: new Map(),
+                  setCards: [],
+                  totalSetCount: 0,
+                },
+            )
+          : await getCatalogCollectionLandingPage({
+              cacheOptions: {
+                revalidateSeconds: revalidate,
+                tags,
+              },
+              config,
+              limit,
+              offset,
+              sortKey,
+            }),
       ),
     pageType: 'collection',
     params: ['sort', sortKey, 'limit', limit, 'offset', offset],

@@ -117,11 +117,19 @@ describe('admin promote routes', () => {
   test('returns structured promotion counts on a successful run', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 2,
-      paths: ['/', '/themes'],
+      pathCount: 4,
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       skipped: false,
-      tagCount: 5,
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tagCount: 7,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     }));
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
@@ -139,20 +147,36 @@ describe('admin promote routes', () => {
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes'],
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     });
     expect(response.json()).toEqual({
       changedThemeSlugs: [],
       durationMs: 421,
       revalidation: {
         attempted: true,
-        pathCount: 2,
-        paths: ['/', '/themes'],
+        pathCount: 4,
+        paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
         skipped: false,
-        tagCount: 5,
-        tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+        tagCount: 7,
+        tags: [
+          'homepage',
+          'themes',
+          'collections',
+          'collection:nieuwe-lego-sets',
+          'collection:retiring-lego-sets',
+          'catalog',
+          'sets',
+        ],
       },
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok',
@@ -174,11 +198,25 @@ describe('admin promote routes', () => {
   test('revalidates changed public theme detail paths after promotion', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 3,
-      paths: ['/', '/themes', '/themes/icons'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/themes/icons',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+      ],
       skipped: false,
-      tagCount: 5,
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tagCount: 7,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     }));
     const adminPromoteService: AdminPromoteService = {
       promoteCatalog: vi.fn(async () => ({
@@ -254,9 +292,23 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes', '/themes/icons'],
+      paths: [
+        '/',
+        '/themes',
+        '/themes/icons',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+      ],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     });
 
     await server.close();
@@ -265,11 +317,19 @@ describe('admin promote routes', () => {
   test('skips targeted theme detail revalidation when too many themes changed', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 2,
-      paths: ['/', '/themes'],
+      pathCount: 4,
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       skipped: false,
-      tagCount: 5,
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tagCount: 7,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     }));
     const adminPromoteService: AdminPromoteService = {
       promoteCatalog: vi.fn(async () => ({
@@ -348,9 +408,17 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes'],
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     });
 
     await server.close();
@@ -376,9 +444,17 @@ describe('admin promote routes', () => {
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes'],
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       reason: 'catalog_promote',
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     });
     expect(response.json()).toEqual(
       expect.objectContaining({
@@ -393,11 +469,19 @@ describe('admin promote routes', () => {
   test('keeps successful catalog promotion when revalidation is skipped as unconfigured', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: false,
-      pathCount: 2,
-      paths: ['/', '/themes'],
+      pathCount: 4,
+      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
       skipped: true,
-      tagCount: 5,
-      tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+      tagCount: 7,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'catalog',
+        'sets',
+      ],
     }));
     const { server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
@@ -417,11 +501,19 @@ describe('admin promote routes', () => {
       expect.objectContaining({
         revalidation: {
           attempted: false,
-          pathCount: 2,
-          paths: ['/', '/themes'],
+          pathCount: 4,
+          paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
           skipped: true,
-          tagCount: 5,
-          tags: ['homepage', 'themes', 'collections', 'catalog', 'sets'],
+          tagCount: 7,
+          tags: [
+            'homepage',
+            'themes',
+            'collections',
+            'collection:nieuwe-lego-sets',
+            'collection:retiring-lego-sets',
+            'catalog',
+            'sets',
+          ],
         },
         status: 'ok',
       }),

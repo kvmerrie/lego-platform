@@ -137,6 +137,32 @@ describe('public web revalidation server', () => {
     ]);
   });
 
+  test('adds explicit collection paths and tags to catalog revalidation requests', () => {
+    expect(
+      buildPublicCatalogRevalidationPaths({
+        additionalPaths: ['/lego-sets-onder-50-euro'],
+        includeDeals: false,
+        includeHome: false,
+        includeThemeDirectory: false,
+        targets: [],
+      }),
+    ).toEqual(['/lego-sets-onder-50-euro']);
+    expect(
+      buildPublicCatalogRevalidationTags({
+        additionalTags: ['collections', 'collection:lego-sets-onder-50-euro'],
+        includeDeals: false,
+        includeHome: false,
+        includeThemeDirectory: false,
+        targets: [],
+      }),
+    ).toEqual([
+      'prices',
+      'catalog',
+      'collections',
+      'collection:lego-sets-onder-50-euro',
+    ]);
+  });
+
   test('skips outbound revalidation when no secret is configured', async () => {
     delete process.env.WEB_REVALIDATE_SECRET;
     process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';

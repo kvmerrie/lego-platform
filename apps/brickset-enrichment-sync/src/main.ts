@@ -163,7 +163,7 @@ async function main() {
   });
 
   console.log(
-    `[brickset-enrichment-sync] summary dry_run=${result.dryRun} max_sets=${result.maxSets ?? 0} offset=${result.offset} missing_only=${result.missingOnly} selected_candidate_count=${result.selectedCandidateCount} source_metadata_existing_count=${result.sourceMetadataExistingCount ?? 'not_loaded'} fetched_sets=${result.fetchedSetCount} matched_catalog_sets=${result.matchedCatalogSetCount} unmatched_catalog_sets=${result.unmatchedCatalogSets.length} additional_image_matches=${result.additionalImageMatches} image_references=${result.imageReferenceCount} source_metadata_upserted=${result.sourceMetadataUpsertedCount}`,
+    `[brickset-enrichment-sync] summary dry_run=${result.dryRun} max_sets=${result.maxSets ?? 0} offset=${result.offset} missing_only=${result.missingOnly} selected_candidate_count=${result.selectedCandidateCount} source_metadata_existing_count=${result.sourceMetadataExistingCount ?? 'not_loaded'} fetched_sets=${result.fetchedSetCount} matched_catalog_sets=${result.matchedCatalogSetCount} unmatched_catalog_sets=${result.unmatchedCatalogSets.length} additional_image_matches=${result.additionalImageMatches} image_references=${result.imageReferenceCount} source_metadata_upserted=${result.sourceMetadataUpsertedCount} collection_page_snapshots=${result.collectionPageSnapshotCount} collection_page_snapshots_upserted=${result.collectionPageSnapshotsUpsertedCount}`,
   );
 
   console.log(
@@ -180,6 +180,9 @@ async function main() {
           selectedCandidateCount: result.selectedCandidateCount,
           sourceMetadataExistingCount: result.sourceMetadataExistingCount,
           sourceMetadataUpsertedCount: result.sourceMetadataUpsertedCount,
+          collectionPageSnapshotCount: result.collectionPageSnapshotCount,
+          collectionPageSnapshotsUpsertedCount:
+            result.collectionPageSnapshotsUpsertedCount,
           unmatchedCatalogSetCount: result.unmatchedCatalogSets.length,
         },
         samples: result.metadataRecords.slice(0, 5).map((record) => ({

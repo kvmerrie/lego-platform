@@ -1,0 +1,41 @@
+{
+  "name": "collection-page-snapshot-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/collection-page-snapshot-sync/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/collection-page-snapshot-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/collection-page-snapshot-sync/src/main.ts",
+        "tsConfig": "apps/collection-page-snapshot-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/collection-page-snapshot-sync/main.cjs"
+      }
+    }
+  }
+}

@@ -27,6 +27,7 @@ const collectionPageMocks = vi.hoisted(() => ({
   },
   featureCollectionLandingPage: vi.fn(),
   getCatalogCollectionLandingPage: vi.fn(),
+  getCatalogCollectionLandingPageSnapshot: vi.fn(),
   getCachedPublicBrowsePageData: vi.fn(),
   loadedCacheResults: [] as unknown[],
   notFound: vi.fn(),
@@ -36,6 +37,8 @@ const collectionPageMocks = vi.hoisted(() => ({
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogCollectionLandingPage:
     collectionPageMocks.getCatalogCollectionLandingPage,
+  getCatalogCollectionLandingPageSnapshot:
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
 }));
 
 vi.mock('@lego-platform/catalog/feature-collection-landing', () => ({
@@ -59,7 +62,21 @@ vi.mock('@lego-platform/catalog/util', () => ({
   getCatalogCollectionLandingPageConfig: (slug: string) =>
     slug === collectionPageMocks.collectionConfig.slug
       ? collectionPageMocks.collectionConfig
-      : undefined,
+      : slug === 'lego-sets-onder-50-euro'
+        ? {
+            ...collectionPageMocks.collectionConfig,
+            canonicalPath: '/lego-sets-onder-50-euro',
+            h1: 'LEGO sets onder 50 euro',
+            metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
+            slug: 'lego-sets-onder-50-euro',
+          }
+        : undefined,
+  isCatalogCollectionPageSnapshotSlug: (slug: string) =>
+    [
+      'nieuwe-lego-sets',
+      'retiring-lego-sets',
+      'lego-sets-onder-50-euro',
+    ].includes(slug),
   listCatalogCollectionLandingPageConfigs: () => [
     collectionPageMocks.collectionConfig,
   ],
@@ -140,6 +157,28 @@ describe('collection landing page route', () => {
       ],
       totalSetCount: 1,
     });
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      {
+        bestPriceMinorBySetId: new Map(),
+        setCards: [
+          {
+            id: '60430',
+            imageUrl: 'https://cdn.example.com/60430.jpg',
+            name: 'Ruimteschip',
+            pieces: 240,
+            priceContext: {
+              coverageLabel: 'Actuele prijs gevonden',
+              currentPrice: 'Vanaf € 39,99',
+              merchantLabel: 'Laagst bij Brickfever',
+            },
+            releaseYear: 2026,
+            slug: 'spaceship-60430',
+            theme: 'City',
+          },
+        ],
+        totalSetCount: 1,
+      },
+    );
   });
 
   it('uses the shared browse cache with a serializable collection result shape', async () => {
@@ -260,5 +299,45 @@ describe('collection landing page route', () => {
         }
       ).config,
     ).not.toHaveProperty('visual');
+  });
+
+  it('reads phase 1 collection pages from collection_page_snapshots without runtime candidate building', async () => {
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-sets-onder-50-euro',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 40,
+        offset: 0,
+        sortKey: 'price-asc',
+      }),
+    );
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [
+          expect.objectContaining({
+            id: '60430',
+            priceContext: expect.objectContaining({
+              currentPrice: 'Vanaf € 39,99',
+            }),
+          }),
+        ],
+      }),
+    );
   });
 });

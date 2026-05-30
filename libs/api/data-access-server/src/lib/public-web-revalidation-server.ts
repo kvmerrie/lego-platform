@@ -500,11 +500,13 @@ async function sendPublicWebRevalidationRequest({
 }
 
 export function buildPublicCatalogRevalidationPaths({
+  additionalPaths = [],
   includeDeals = true,
   includeHome = true,
   includeThemeDirectory = true,
   targets,
 }: {
+  additionalPaths?: readonly string[];
   includeDeals?: boolean;
   includeHome?: boolean;
   includeThemeDirectory?: boolean;
@@ -522,6 +524,14 @@ export function buildPublicCatalogRevalidationPaths({
 
   if (includeDeals) {
     dedupedPaths.add(webPathnames.deals);
+  }
+
+  for (const additionalPath of additionalPaths) {
+    const normalizedPath = normalizeRevalidationPath(additionalPath);
+
+    if (normalizedPath) {
+      dedupedPaths.add(normalizedPath);
+    }
   }
 
   for (const target of targets) {
@@ -543,11 +553,13 @@ export function buildPublicCatalogRevalidationPaths({
 }
 
 export function buildPublicCatalogRevalidationTags({
+  additionalTags = [],
   includeDeals = true,
   includeHome = true,
   includeThemeDirectory = true,
   targets,
 }: {
+  additionalTags?: readonly string[];
   includeDeals?: boolean;
   includeHome?: boolean;
   includeThemeDirectory?: boolean;
@@ -570,6 +582,10 @@ export function buildPublicCatalogRevalidationTags({
     dedupedTags.add(cacheTags.deals());
   }
 
+  for (const additionalTag of additionalTags) {
+    dedupedTags.add(additionalTag);
+  }
+
   for (const target of targets) {
     dedupedTags.add(cacheTags.set(target.setId));
     dedupedTags.add(cacheTags.set(target.slug));
@@ -580,6 +596,8 @@ export function buildPublicCatalogRevalidationTags({
 }
 
 export async function revalidatePublicCatalogPaths({
+  additionalPaths,
+  additionalTags,
   fetchImpl = fetch,
   includeDeals = true,
   includeHome = true,
@@ -587,6 +605,8 @@ export async function revalidatePublicCatalogPaths({
   reason,
   targets,
 }: {
+  additionalPaths?: readonly string[];
+  additionalTags?: readonly string[];
   fetchImpl?: typeof fetch;
   includeDeals?: boolean;
   includeHome?: boolean;
@@ -595,12 +615,14 @@ export async function revalidatePublicCatalogPaths({
   targets: readonly PublicWebCatalogRevalidationTarget[];
 }): Promise<PublicWebCatalogRevalidationResult> {
   const paths = buildPublicCatalogRevalidationPaths({
+    additionalPaths,
     includeDeals,
     includeHome,
     includeThemeDirectory,
     targets,
   });
   const tags = buildPublicCatalogRevalidationTags({
+    additionalTags,
     includeDeals,
     includeHome,
     includeThemeDirectory,

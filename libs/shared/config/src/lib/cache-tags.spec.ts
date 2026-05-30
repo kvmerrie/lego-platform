@@ -103,6 +103,16 @@ describe('cache tags', () => {
       'prices',
       'deals',
     ]);
+    expect(
+      buildPublicBrowseCollectionCacheTags({
+        collectionSlug: 'nieuwe-lego-sets',
+      }),
+    ).toEqual([
+      'catalog',
+      'sets',
+      'collections',
+      'collection:nieuwe-lego-sets',
+    ]);
   });
 
   test('builds theme and news mutation tags', () => {

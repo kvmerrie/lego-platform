@@ -8,6 +8,7 @@ import {
   bricksetGalleryAttributionText,
   type CatalogCanonicalSet,
 } from '@lego-platform/catalog/util';
+import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 
 const BRICKSET_API_BASE_URL = 'https://brickset.com/api/v3.asmx';
 const BRICKSET_SOURCE = 'brickset';
@@ -133,6 +134,7 @@ export interface BricksetEnrichmentSyncOptions {
   missingOnly?: boolean;
   offset?: number;
   setNumbers?: readonly string[];
+  syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
   upsertCatalogSetSourceMetadataFn?: typeof upsertCatalogSetSourceMetadata;
 }
 
@@ -146,6 +148,8 @@ export interface BricksetEnrichmentSyncResult {
   metadataRecords: readonly BricksetEnrichmentRecord[];
   missingOnly: boolean;
   offset: number;
+  collectionPageSnapshotCount: number;
+  collectionPageSnapshotsUpsertedCount: number;
   selectedCandidateCount: number;
   skippedMissingSetNumberCount: number;
   sourceMetadataExistingCount?: number;
@@ -490,6 +494,7 @@ export async function syncBricksetEnrichmentMetadata({
   missingOnly = false,
   offset = 0,
   setNumbers,
+  syncCollectionPageSnapshotsFn = syncCollectionPageSnapshots,
   upsertCatalogSetSourceMetadataFn = upsertCatalogSetSourceMetadata,
 }: BricksetEnrichmentSyncOptions = {}): Promise<BricksetEnrichmentSyncResult> {
   if (!bricksetApiKey?.trim()) {
@@ -587,6 +592,20 @@ export async function syncBricksetEnrichmentMetadata({
             }),
           ),
         });
+  const collectionPageSnapshotResult =
+    !dryRun && sourceMetadataUpsertedCount > 0
+      ? await syncCollectionPageSnapshotsFn({
+          collectionSlugs: ['nieuwe-lego-sets', 'retiring-lego-sets'],
+          dryRun: false,
+          pageSize: 40,
+        })
+      : {
+          dryRun,
+          generatedAt: now.toISOString(),
+          snapshots: [],
+          summaryByCollectionSlug: {},
+          upsertedCount: 0,
+        };
 
   return {
     additionalImageMatches,
@@ -601,6 +620,9 @@ export async function syncBricksetEnrichmentMetadata({
     metadataRecords,
     missingOnly,
     offset,
+    collectionPageSnapshotCount: collectionPageSnapshotResult.snapshots.length,
+    collectionPageSnapshotsUpsertedCount:
+      collectionPageSnapshotResult.upsertedCount,
     selectedCandidateCount: catalogSets.length,
     skippedMissingSetNumberCount: allCatalogSets.filter(
       (catalogSet) => !catalogSet.sourceSetNumber,

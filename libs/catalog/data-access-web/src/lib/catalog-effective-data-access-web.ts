@@ -29,6 +29,7 @@ import {
   getCatalogReleaseYear,
   getCatalogThemeDisplayName,
   isCatalogBrowsablePrimaryTheme,
+  isCatalogCollectionPageSnapshotSlug,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
   resolveCatalogReleaseDatePrecision,
@@ -71,6 +72,7 @@ const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const CATALOG_THEME_SUMMARIES_TABLE = 'catalog_theme_summaries';
+const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE =
   'commerce_current_offer_snapshots';
@@ -3520,6 +3522,111 @@ export interface CatalogCollectionLandingPageResult {
   bestPriceMinorBySetId: ReadonlyMap<string, number>;
   setCards: readonly CatalogHomepageSetCard[];
   totalSetCount: number;
+}
+
+interface CatalogCollectionPageSnapshotRow {
+  collection_slug: string;
+  generated_at: string | null;
+  items_json: unknown;
+  page: number;
+  page_size: number;
+  sort_key: string;
+  total_count: number;
+}
+
+function normalizeCatalogCollectionPageSnapshotItems(
+  itemsJson: unknown,
+): CatalogHomepageSetCard[] {
+  if (!Array.isArray(itemsJson)) {
+    return [];
+  }
+
+  return itemsJson.filter((item): item is CatalogHomepageSetCard => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      return false;
+    }
+
+    const candidate = item as Partial<CatalogHomepageSetCard>;
+
+    return (
+      typeof candidate.id === 'string' &&
+      typeof candidate.slug === 'string' &&
+      typeof candidate.name === 'string' &&
+      typeof candidate.theme === 'string' &&
+      typeof candidate.releaseYear === 'number' &&
+      typeof candidate.pieces === 'number'
+    );
+  });
+}
+
+export async function getCatalogCollectionLandingPageSnapshot({
+  config,
+  limit = CATALOG_BROWSE_PAGE_SIZE,
+  offset = 0,
+  sortKey,
+  supabaseClient,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  limit?: number;
+  offset?: number;
+  sortKey: CatalogCollectionLandingPageSortKey;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCollectionLandingPageResult | undefined> {
+  if (!isCatalogCollectionPageSnapshotSlug(config.slug)) {
+    return undefined;
+  }
+
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return {
+      bestPriceMinorBySetId: new Map(),
+      setCards: [],
+      totalSetCount: 0,
+    };
+  }
+
+  const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
+  const safeOffset = normalizeCatalogReadOffset(offset);
+  const page = Math.floor(safeOffset / safeLimit) + 1;
+  const { data, error } = await activeSupabaseClient
+    .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
+    .select(
+      'collection_slug, sort_key, page, page_size, total_count, items_json, generated_at',
+    )
+    .eq('collection_slug', config.slug)
+    .eq('sort_key', sortKey)
+    .eq('page', page)
+    .eq('page_size', safeLimit)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load collection page snapshot.');
+  }
+
+  const snapshot = data as CatalogCollectionPageSnapshotRow | null;
+
+  if (!snapshot) {
+    console.warn('[collection-page-snapshot] missing', {
+      collection_slug: config.slug,
+      page,
+      page_size: safeLimit,
+      sort_key: sortKey,
+    });
+
+    return {
+      bestPriceMinorBySetId: new Map(),
+      setCards: [],
+      totalSetCount: 0,
+    };
+  }
+
+  return {
+    bestPriceMinorBySetId: new Map(),
+    setCards: normalizeCatalogCollectionPageSnapshotItems(snapshot.items_json),
+    totalSetCount: snapshot.total_count,
+  };
 }
 
 const catalogAdultCollectorThemeSlugs = new Set([

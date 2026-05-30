@@ -196,12 +196,16 @@ export function createAdminPromoteRoutes({
             : promotedMetadataSetSlugs.map((slug) => buildSetDetailPath(slug));
           const revalidationPaths = [
             ...revalidationPlan.paths,
+            '/nieuwe-lego-sets',
+            '/retiring-lego-sets',
             ...promotedMetadataSetPaths,
           ];
           const revalidationTags = [
             cacheTags.homepage(),
             cacheTags.themes(),
             cacheTags.collections(),
+            cacheTags.collection('nieuwe-lego-sets'),
+            cacheTags.collection('retiring-lego-sets'),
             cacheTags.catalog(),
             cacheTags.sets(),
             ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),

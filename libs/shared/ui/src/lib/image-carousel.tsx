@@ -69,6 +69,10 @@ function clampIndex(index: number, imageCount: number): number {
   return Math.min(Math.max(index, 0), imageCount - 1);
 }
 
+function getGalleryImageKey(image: GalleryImage, imageIndex: number): string {
+  return `${image.src}::${image.thumbnailSrc ?? ''}::${image.alt}::${imageIndex}`;
+}
+
 function getGalleryImageLabel(image: GalleryImage, imageIndex: number): string {
   return image.alt.trim() || `Afbeelding ${imageIndex + 1}`;
 }
@@ -883,7 +887,11 @@ export function ImageGallery({
                 <span
                   className={styles.swipeSlide}
                   data-swipe-slide={slideName}
-                  key={`${target}-${slideName}-${image?.src ?? imageIndex}`}
+                  key={
+                    image
+                      ? `${target}-${getGalleryImageKey(image, imageIndex)}`
+                      : `${target}-${slideName}-placeholder`
+                  }
                 >
                   {image ? (
                     <GalleryImageMedia

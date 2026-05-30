@@ -15,6 +15,7 @@ import {
 } from '@lego-platform/commerce/data-access-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
@@ -29,6 +30,7 @@ const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
   CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
   CATALOG_SET_SOURCE_METADATA_TABLE,
+  COLLECTION_PAGE_SNAPSHOTS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
 const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
@@ -113,6 +115,15 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'metadata_json',
     'policy',
     'set_number',
+  ],
+  [COLLECTION_PAGE_SNAPSHOTS_TABLE]: [
+    'total_count',
+    'items_json',
+    'source_version',
+    'snapshot_source',
+    'generated_at',
+    'created_at',
+    'updated_at',
   ],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
@@ -211,6 +222,18 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
     curated: [],
     generatedRuntime: ['metadata_json', 'policy', 'last_seen_at'],
     protected: [],
+  },
+  [COLLECTION_PAGE_SNAPSHOTS_TABLE]: {
+    canonical: ['collection_slug', 'sort_key', 'page', 'page_size'],
+    curated: [],
+    generatedRuntime: [
+      'total_count',
+      'items_json',
+      'source_version',
+      'snapshot_source',
+      'generated_at',
+    ],
+    protected: ['created_at', 'updated_at'],
   },
   [COMMERCE_MERCHANTS_TABLE]: {
     canonical: ['id', 'slug', 'name', 'source_type', 'affiliate_network'],
@@ -347,6 +370,18 @@ interface CatalogSetSourceMetadataRow {
   source: string;
 }
 
+interface CollectionPageSnapshotRow {
+  collection_slug: string;
+  generated_at: string;
+  items_json: unknown;
+  page: number;
+  page_size: number;
+  snapshot_source: string;
+  sort_key: string;
+  source_version: string | null;
+  total_count: number;
+}
+
 export interface CatalogPromotionTableSummary {
   insertedCount: number;
   readCount: number;
@@ -358,6 +393,12 @@ export interface CatalogPromotionResult {
   brickset_source_metadata_promoted_count?: number;
   bricksetSourceMetadataPromotedCount?: number;
   changedThemeSlugs: string[];
+  collection_page_snapshots_by_slug?: Record<string, number>;
+  collection_page_snapshots_read_count?: number;
+  collection_page_snapshots_upserted_count?: number;
+  collectionPageSnapshotsBySlug?: Record<string, number>;
+  collectionPageSnapshotsReadCount?: number;
+  collectionPageSnapshotsUpsertedCount?: number;
   durationMs: number;
   promotedMetadataSetIds?: string[];
   promotedMetadataSetSlugs?: string[];
@@ -378,6 +419,7 @@ export interface CatalogPromotionResult {
     catalog_sets: CatalogPromotionTableSummary;
     catalog_set_minifig_summaries: CatalogPromotionTableSummary;
     catalog_set_source_metadata?: CatalogPromotionTableSummary;
+    collection_page_snapshots?: CatalogPromotionTableSummary;
     commerce_merchants: CatalogPromotionTableSummary;
     commerce_benchmark_sets: CatalogPromotionTableSummary;
     commerce_offer_seeds: CatalogPromotionTableSummary;
@@ -1853,6 +1895,7 @@ export async function promoteCatalogFromStagingToProduction({
       catalogSets,
       catalogSetMinifigSummaries,
       catalogSetSourceMetadata,
+      collectionPageSnapshots,
       commerceMerchants,
       commerceBenchmarkSets,
       commerceOfferSeeds,
@@ -1898,6 +1941,13 @@ export async function promoteCatalogFromStagingToProduction({
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_SET_SOURCE_METADATA_TABLE,
       }),
+      readOrderedRows<CollectionPageSnapshotRow>({
+        columns:
+          'collection_slug, sort_key, page, page_size, total_count, items_json, source_version, snapshot_source, generated_at, created_at, updated_at',
+        orderBy: 'collection_slug',
+        supabaseClient: stagingSupabaseClient,
+        table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+      }),
       readOrderedRows<CommerceMerchantRow>({
         columns:
           'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
@@ -1935,6 +1985,10 @@ export async function promoteCatalogFromStagingToProduction({
     assertPromotionReadWasNotDefaultCapped({
       readCount: catalogSetSourceMetadata.length,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+    assertPromotionReadWasNotDefaultCapped({
+      readCount: collectionPageSnapshots.length,
+      table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
     });
 
     const normalizedCatalogSourceThemes = catalogSourceThemes.map((theme) =>
@@ -2002,6 +2056,20 @@ export async function promoteCatalogFromStagingToProduction({
     const skippedSourceMetadataCount =
       catalogSetSourceMetadata.length -
       normalizedCatalogSetSourceMetadata.length;
+    const normalizedCollectionPageSnapshots = collectionPageSnapshots.filter(
+      (snapshot) =>
+        snapshot.collection_slug === 'nieuwe-lego-sets' ||
+        snapshot.collection_slug === 'retiring-lego-sets',
+    );
+    const collectionPageSnapshotsBySlug =
+      normalizedCollectionPageSnapshots.reduce<Record<string, number>>(
+        (countsBySlug, snapshot) => ({
+          ...countsBySlug,
+          [snapshot.collection_slug]:
+            (countsBySlug[snapshot.collection_slug] ?? 0) + 1,
+        }),
+        {},
+      );
     logCatalogSetStatusNormalization({
       rowsAfter: normalizedCatalogSets as unknown as Readonly<
         Record<string, unknown>
@@ -2130,6 +2198,25 @@ export async function promoteCatalogFromStagingToProduction({
         Record<string, unknown>
       >[],
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: [
+        'collection_slug',
+        'sort_key',
+        'snapshot_source',
+        'generated_at',
+      ],
+      rows: normalizedCollectionPageSnapshots as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+    });
+    validatePromotionRowsRequiredNumberColumns({
+      columns: ['page', 'page_size', 'total_count'],
+      rows: normalizedCollectionPageSnapshots as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
     });
     validatePromotionRowsRequiredColumns({
       columns: [
@@ -2264,6 +2351,13 @@ export async function promoteCatalogFromStagingToProduction({
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
     });
+    tables.collection_page_snapshots = await upsertRows({
+      nowIso: startedAtIso,
+      onConflict: 'collection_slug,sort_key,page,page_size',
+      rows: normalizedCollectionPageSnapshots,
+      supabaseClient: productionSupabaseClient,
+      table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+    });
 
     console.info('[catalog-promotion] promote_metadata_rows_copied', {
       brickset_source_metadata_promoted_count:
@@ -2276,6 +2370,13 @@ export async function promoteCatalogFromStagingToProduction({
       source_metadata_read_count: catalogSetSourceMetadata.length,
       skipped_source_metadata_count: skippedSourceMetadataCount,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+    console.info('[catalog-promotion] promote_collection_page_snapshots', {
+      collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
+      collection_page_snapshots_read_count: collectionPageSnapshots.length,
+      collection_page_snapshots_upserted_count:
+        tables.collection_page_snapshots.upsertedCount,
+      table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
     });
 
     if (
@@ -2311,6 +2412,14 @@ export async function promoteCatalogFromStagingToProduction({
         bricksetSourceMetadataPromotedCount,
       bricksetSourceMetadataPromotedCount,
       changedThemeSlugs,
+      collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
+      collection_page_snapshots_read_count: collectionPageSnapshots.length,
+      collection_page_snapshots_upserted_count:
+        tables.collection_page_snapshots.upsertedCount,
+      collectionPageSnapshotsBySlug,
+      collectionPageSnapshotsReadCount: collectionPageSnapshots.length,
+      collectionPageSnapshotsUpsertedCount:
+        tables.collection_page_snapshots.upsertedCount,
       durationMs: now().getTime() - startedAt.getTime(),
       promotedMetadataSetIds,
       promotedMetadataSetSlugs,
@@ -2333,7 +2442,7 @@ export async function promoteCatalogFromStagingToProduction({
         ? error.message
         : 'Catalog promotion failed unexpectedly.';
     const failedTableMatch = message.match(
-      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|catalog_set_source_metadata|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
+      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|catalog_set_source_metadata|collection_page_snapshots|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
     );
 
     throw new CatalogPromotionError(message, {

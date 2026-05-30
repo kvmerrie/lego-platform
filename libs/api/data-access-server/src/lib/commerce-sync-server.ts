@@ -20,6 +20,7 @@ import {
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
 import {
+  cacheTags,
   classifyCommerceCommercialUnitType,
   getCommerceMerchantReliabilityTier,
   isCommerceMerchantProductionFeed,
@@ -37,6 +38,7 @@ import {
   type CommerceCurrentOfferSnapshotParitySample,
   upsertCommerceCurrentOfferSnapshots,
 } from './commerce-current-offer-snapshot-server';
+import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface CommerceGeneratedArtifactCheckResult {
@@ -60,6 +62,8 @@ export interface CommerceSyncRunResult {
   currentOfferSnapshotOfferCount: number;
   currentOfferSnapshotBestOfferMismatchCount: number;
   currentOfferSnapshotsUpsertedCount: number;
+  collectionPageSnapshotCount: number;
+  collectionPageSnapshotsUpsertedCount: number;
   dailyHistorySummary: CommerceLatestOfferHistorySummary;
   dailyHistoryPointCount: number;
   enabledSetCount: number;
@@ -95,6 +99,7 @@ export interface CommerceSyncDependencies {
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
+  syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
@@ -500,6 +505,7 @@ export async function runCommerceSync({
     probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn = probeCatalogCurrentOfferSnapshotHitRateBySetIds,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
+    syncCollectionPageSnapshotsFn = syncCollectionPageSnapshots,
     upsertCommerceCurrentOfferSnapshotsFn = upsertCommerceCurrentOfferSnapshots,
     upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
@@ -686,6 +692,32 @@ export async function runCommerceSync({
           ),
         })
       : { upsertedCount: 0 };
+  const collectionPageSnapshotResult =
+    mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0
+      ? await syncCollectionPageSnapshotsFn({
+          collectionSlugs: ['lego-sets-onder-50-euro'],
+          dryRun: false,
+          pageSize: 40,
+        })
+      : {
+          dryRun: mode !== 'write',
+          generatedAt: now?.toISOString() ?? new Date().toISOString(),
+          snapshots: [],
+          summaryByCollectionSlug: {},
+          upsertedCount: 0,
+        };
+
+  if (mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0) {
+    console.info('[commerce-sync] collection_page_snapshots', {
+      collection_slug: 'lego-sets-onder-50-euro',
+      snapshots_built: collectionPageSnapshotResult.snapshots.length,
+      snapshots_upserted: collectionPageSnapshotResult.upsertedCount,
+      summary:
+        collectionPageSnapshotResult.summaryByCollectionSlug[
+          'lego-sets-onder-50-euro'
+        ],
+    });
+  }
 
   if (mode === 'write' && inputSource === 'supabase') {
     const probeSetIds = currentOfferSnapshotResult.snapshots
@@ -775,6 +807,11 @@ export async function runCommerceSync({
   if (mode === 'write' && revalidationCatalogSetSummaries.length > 0) {
     try {
       await revalidatePublicCatalogPathsFn({
+        additionalPaths: ['/lego-sets-onder-50-euro'],
+        additionalTags: [
+          cacheTags.collections(),
+          cacheTags.collection('lego-sets-onder-50-euro'),
+        ],
         reason: scoped ? 'commerce_sync_scoped' : 'commerce_sync',
         targets: revalidationCatalogSetSummaries.map((catalogSetSummary) => ({
           setId: catalogSetSummary.id,
@@ -791,6 +828,11 @@ export async function runCommerceSync({
   } else if (aggregateArtifactsChanged) {
     try {
       await revalidatePublicCatalogPathsFn({
+        additionalPaths: ['/lego-sets-onder-50-euro'],
+        additionalTags: [
+          cacheTags.collections(),
+          cacheTags.collection('lego-sets-onder-50-euro'),
+        ],
         includeThemeDirectory: false,
         reason: 'commerce_sync_aggregate',
         targets: [],
@@ -800,6 +842,30 @@ export async function runCommerceSync({
         error,
         fallbackMessage:
           'Public web aggregate revalidation failed after commerce sync.',
+      });
+    }
+  } else if (
+    mode === 'write' &&
+    collectionPageSnapshotResult.upsertedCount > 0
+  ) {
+    try {
+      await revalidatePublicCatalogPathsFn({
+        additionalPaths: ['/lego-sets-onder-50-euro'],
+        additionalTags: [
+          cacheTags.collections(),
+          cacheTags.collection('lego-sets-onder-50-euro'),
+        ],
+        includeDeals: false,
+        includeHome: false,
+        includeThemeDirectory: false,
+        reason: 'commerce_sync_collection_snapshots',
+        targets: [],
+      });
+    } catch (error) {
+      handleCommerceSyncRevalidationFailure({
+        error,
+        fallbackMessage:
+          'Collection snapshot revalidation failed after commerce sync.',
       });
     }
   }
@@ -833,6 +899,9 @@ export async function runCommerceSync({
       currentOfferSnapshotResult.summary.snapshotOfferCount,
     currentOfferSnapshotsUpsertedCount:
       currentOfferSnapshotUpsertResult.upsertedCount,
+    collectionPageSnapshotCount: collectionPageSnapshotResult.snapshots.length,
+    collectionPageSnapshotsUpsertedCount:
+      collectionPageSnapshotResult.upsertedCount,
     dailyHistoryPointCount:
       mode === 'write'
         ? dailyPriceHistoryResult.points.length

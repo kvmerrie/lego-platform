@@ -835,8 +835,7 @@
   .detailGalleryControls {
     bottom: var(--lego-space-3);
     display: block;
-    inset: var(--lego-space-3) var(--lego-space-3) var(--lego-space-3)
-      var(--lego-space-3);
+    inset: var(--lego-space-3) 0;
   }
 
   .detailGalleryCounter {

@@ -11,6 +11,7 @@ export * from './lib/catalog-promotion-server';
 export * from './lib/commerce-refresh-server';
 export * from './lib/commerce-current-offer-snapshot-server';
 export * from './lib/commerce-sync-server';
+export * from './lib/collection-page-snapshot-server';
 export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';
 export * from './lib/rakuten-lego-feed-sync-server';

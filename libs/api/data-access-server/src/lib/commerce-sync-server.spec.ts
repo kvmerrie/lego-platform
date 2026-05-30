@@ -255,6 +255,19 @@ describe('commerce sync server', () => {
       paths: ['/themes', '/sets/rivendell-10316', '/themes/icons'],
       skipped: false,
     });
+    const syncCollectionPageSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-04-21T10:00:00.000Z',
+      snapshots: [{ collectionSlug: 'lego-sets-onder-50-euro' }],
+      summaryByCollectionSlug: {
+        'lego-sets-onder-50-euro': {
+          itemsBuilt: 40,
+          pageCount: 1,
+          totalCount: 40,
+        },
+      },
+      upsertedCount: 1,
+    });
 
     const result = await runCommerceSync({
       dependencies: {
@@ -277,6 +290,7 @@ describe('commerce sync server', () => {
           staleCount: 0,
         }),
         revalidatePublicCatalogPathsFn,
+        syncCollectionPageSnapshotsFn,
         upsertCommerceCurrentOfferSnapshotsFn: vi
           .fn()
           .mockResolvedValue({ upsertedCount: 1 }),
@@ -322,6 +336,8 @@ describe('commerce sync server', () => {
       setIds: ['10316'],
     });
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      additionalPaths: ['/lego-sets-onder-50-euro'],
+      additionalTags: ['collections', 'collection:lego-sets-onder-50-euro'],
       reason: 'commerce_sync_scoped',
       targets: [
         {
@@ -331,6 +347,19 @@ describe('commerce sync server', () => {
         },
       ],
     });
+    expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
+      collectionSlugs: ['lego-sets-onder-50-euro'],
+      dryRun: false,
+      pageSize: 40,
+    });
+    expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
+    ).not.toContain('/nieuwe-lego-sets');
+    expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
+    ).not.toContain('collection:nieuwe-lego-sets');
+    expect(result.collectionPageSnapshotCount).toBe(1);
+    expect(result.collectionPageSnapshotsUpsertedCount).toBe(1);
     expect(result.refreshSuccessCount).toBe(1);
     expect(result.refreshMerchants).toBe(true);
     expect(result.scoped).toBe(true);
@@ -469,6 +498,8 @@ describe('commerce sync server', () => {
     });
 
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      additionalPaths: ['/lego-sets-onder-50-euro'],
+      additionalTags: ['collections', 'collection:lego-sets-onder-50-euro'],
       includeThemeDirectory: false,
       reason: 'commerce_sync_aggregate',
       targets: [],
@@ -646,6 +677,13 @@ describe('commerce sync server', () => {
     const upsertCommerceCurrentOfferSnapshotsFn = vi
       .fn()
       .mockResolvedValue({ upsertedCount: 1 });
+    const syncCollectionPageSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-11T10:00:00.000Z',
+      snapshots: [],
+      summaryByCollectionSlug: {},
+      upsertedCount: 0,
+    });
 
     const result = await runCommerceSync({
       dependencies: {
@@ -676,6 +714,7 @@ describe('commerce sync server', () => {
             syncSeeds: [syncSeed],
           }),
         ),
+        syncCollectionPageSnapshotsFn,
         upsertCommerceCurrentOfferSnapshotsFn,
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
           .fn()
@@ -721,6 +760,11 @@ describe('commerce sync server', () => {
       ],
     });
     expect(result.currentOfferSnapshotsUpsertedCount).toBe(1);
+    expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
+      collectionSlugs: ['lego-sets-onder-50-euro'],
+      dryRun: false,
+      pageSize: 40,
+    });
     expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
   });
 
@@ -1002,6 +1046,13 @@ describe('commerce sync server', () => {
         upsertCommerceCurrentOfferSnapshotsFn: vi
           .fn()
           .mockResolvedValue({ upsertedCount: 1 }),
+        syncCollectionPageSnapshotsFn: vi.fn().mockResolvedValue({
+          dryRun: false,
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          snapshots: [],
+          summaryByCollectionSlug: {},
+          upsertedCount: 0,
+        }),
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
         writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
           isClean: true,

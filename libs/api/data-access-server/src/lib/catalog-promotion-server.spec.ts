@@ -250,6 +250,59 @@ describe('catalog promotion server', () => {
             source: 'other-source',
           },
         ],
+        collection_page_snapshots: [
+          {
+            collection_slug: 'nieuwe-lego-sets',
+            created_at: '2026-05-30T08:00:00.000Z',
+            generated_at: '2026-05-30T08:00:00.000Z',
+            items_json: [
+              {
+                id: '10316',
+                slug: 'lord-of-the-rings-rivendell-10316',
+                title: 'Rivendell',
+              },
+            ],
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-new',
+            total_count: 1,
+            updated_at: '2026-05-30T08:00:00.000Z',
+          },
+          {
+            collection_slug: 'retiring-lego-sets',
+            created_at: '2026-05-30T08:05:00.000Z',
+            generated_at: '2026-05-30T08:05:00.000Z',
+            items_json: [
+              {
+                id: '10316',
+                slug: 'lord-of-the-rings-rivendell-10316',
+                title: 'Rivendell',
+              },
+            ],
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-retiring',
+            total_count: 1,
+            updated_at: '2026-05-30T08:05:00.000Z',
+          },
+          {
+            collection_slug: 'lego-sets-onder-50-euro',
+            created_at: '2026-05-30T08:10:00.000Z',
+            generated_at: '2026-05-30T08:10:00.000Z',
+            items_json: [],
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'price-asc',
+            source_version: 'price-sync',
+            total_count: 0,
+            updated_at: '2026-05-30T08:10:00.000Z',
+          },
+        ],
         commerce_merchants: [
           {
             affiliate_network: null,
@@ -333,6 +386,24 @@ describe('catalog promotion server', () => {
       readCount: 2,
       updatedCount: 0,
       upsertedCount: 2,
+    });
+    expect(result.tables.collection_page_snapshots).toEqual({
+      insertedCount: 2,
+      readCount: 2,
+      updatedCount: 0,
+      upsertedCount: 2,
+    });
+    expect(result.collection_page_snapshots_read_count).toBe(3);
+    expect(result.collectionPageSnapshotsReadCount).toBe(3);
+    expect(result.collection_page_snapshots_upserted_count).toBe(2);
+    expect(result.collectionPageSnapshotsUpsertedCount).toBe(2);
+    expect(result.collection_page_snapshots_by_slug).toEqual({
+      'nieuwe-lego-sets': 1,
+      'retiring-lego-sets': 1,
+    });
+    expect(result.collectionPageSnapshotsBySlug).toEqual({
+      'nieuwe-lego-sets': 1,
+      'retiring-lego-sets': 1,
     });
     expect(result.brickset_source_metadata_promoted_count).toBe(1);
     expect(result.bricksetSourceMetadataPromotedCount).toBe(1);
@@ -441,6 +512,53 @@ describe('catalog promotion server', () => {
       },
     );
     expect(
+      productionClient.upsertByTable.get('collection_page_snapshots'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          collection_slug: 'nieuwe-lego-sets',
+          created_at: '2026-05-30T08:00:00.000Z',
+          generated_at: '2026-05-30T08:00:00.000Z',
+          items_json: [
+            {
+              id: '10316',
+              slug: 'lord-of-the-rings-rivendell-10316',
+              title: 'Rivendell',
+            },
+          ],
+          page: 1,
+          page_size: 40,
+          snapshot_source: 'collection_snapshot_sync',
+          sort_key: 'default',
+          source_version: 'test-new',
+          total_count: 1,
+          updated_at: '2026-05-30T08:00:00.000Z',
+        },
+        {
+          collection_slug: 'retiring-lego-sets',
+          created_at: '2026-05-30T08:05:00.000Z',
+          generated_at: '2026-05-30T08:05:00.000Z',
+          items_json: [
+            {
+              id: '10316',
+              slug: 'lord-of-the-rings-rivendell-10316',
+              title: 'Rivendell',
+            },
+          ],
+          page: 1,
+          page_size: 40,
+          snapshot_source: 'collection_snapshot_sync',
+          sort_key: 'default',
+          source_version: 'test-retiring',
+          total_count: 1,
+          updated_at: '2026-05-30T08:05:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'collection_slug,sort_key,page,page_size',
+      },
+    );
+    expect(
       productionClient.upsertByTable.get('commerce_offer_seeds'),
     ).toHaveBeenCalledWith(
       [
@@ -466,6 +584,18 @@ describe('catalog promotion server', () => {
         source_metadata_read_count: 3,
         skipped_source_metadata_count: 1,
         table: 'catalog_set_source_metadata',
+      }),
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] promote_collection_page_snapshots',
+      expect.objectContaining({
+        collection_page_snapshots_by_slug: {
+          'nieuwe-lego-sets': 1,
+          'retiring-lego-sets': 1,
+        },
+        collection_page_snapshots_read_count: 3,
+        collection_page_snapshots_upserted_count: 2,
+        table: 'collection_page_snapshots',
       }),
     );
     consoleInfoSpy.mockRestore();

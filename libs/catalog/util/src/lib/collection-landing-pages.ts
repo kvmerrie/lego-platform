@@ -12,6 +12,23 @@ export type CatalogCollectionLandingPageSortKey =
 
 export const CATALOG_BROWSE_PAGE_SIZE = 40;
 
+export const catalogCollectionPageSnapshotSlugs = [
+  'nieuwe-lego-sets',
+  'retiring-lego-sets',
+  'lego-sets-onder-50-euro',
+] as const;
+
+export type CatalogCollectionPageSnapshotSlug =
+  (typeof catalogCollectionPageSnapshotSlugs)[number];
+
+export function isCatalogCollectionPageSnapshotSlug(
+  slug: string,
+): slug is CatalogCollectionPageSnapshotSlug {
+  return catalogCollectionPageSnapshotSlugs.includes(
+    slug as CatalogCollectionPageSnapshotSlug,
+  );
+}
+
 export interface CatalogCollectionLandingPageFilterConfig {
   adultCollector?: boolean;
   maxBestPriceMinor?: number;

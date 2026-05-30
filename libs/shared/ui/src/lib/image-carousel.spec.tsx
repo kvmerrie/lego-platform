@@ -881,19 +881,35 @@ describe('ImageGallery', () => {
       const swipeTrack = container.querySelector<HTMLElement>(
         '[data-swipe-track="detail"]',
       );
+      const settledNextImageBeforeCommit =
+        container.querySelector<HTMLImageElement>(
+          '[data-swipe-track="detail"] [data-swipe-slide="next"] img',
+        );
 
       expect(container.textContent).toContain('1/3');
       expect(swipeTrack?.dataset['swipePhase']).toBe('settling');
       expect(swipeTrack?.dataset['swipeDirection']).toBe('1');
       expect(swipeTrack?.style.transform).toContain('-66.666667%');
+      expect(settledNextImageBeforeCommit?.getAttribute('src')).toBe(
+        'https://images.example/rivendell-2.jpg',
+      );
 
       act(() => {
         vi.advanceTimersByTime(240);
       });
 
+      const settledCurrentImageAfterCommit =
+        container.querySelector<HTMLImageElement>(
+          '[data-swipe-track="detail"] [data-swipe-slide="current"] img',
+        );
+
       expect(swipeTrack?.dataset['swipePhase']).toBe('resetting');
       expect(swipeTrack?.dataset['swipeDirection']).toBe('0');
       expect(swipeTrack?.style.transform).toContain('-33.333333%');
+      expect(settledCurrentImageAfterCommit).toBe(settledNextImageBeforeCommit);
+      expect(settledCurrentImageAfterCommit?.getAttribute('src')).toBe(
+        'https://images.example/rivendell-2.jpg',
+      );
       expect(container.textContent).toContain('2/3');
       expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
@@ -902,6 +918,15 @@ describe('ImageGallery', () => {
       });
 
       expect(swipeTrack?.dataset['swipePhase']).toBe('idle');
+
+      const settledPreviousImageBeforeCommit =
+        container.querySelector<HTMLImageElement>(
+          '[data-swipe-track="detail"] [data-swipe-slide="previous"] img',
+        );
+
+      expect(settledPreviousImageBeforeCommit?.getAttribute('src')).toBe(
+        'https://images.example/rivendell-1.jpg',
+      );
 
       act(() => {
         dispatchPointerEvent(mainButton, 'pointerdown', {
@@ -924,9 +949,20 @@ describe('ImageGallery', () => {
         vi.advanceTimersByTime(240);
       });
 
+      const previousSwipeCurrentImageAfterCommit =
+        container.querySelector<HTMLImageElement>(
+          '[data-swipe-track="detail"] [data-swipe-slide="current"] img',
+        );
+
       expect(swipeTrack?.dataset['swipePhase']).toBe('resetting');
       expect(swipeTrack?.dataset['swipeDirection']).toBe('0');
       expect(swipeTrack?.style.transform).toContain('-33.333333%');
+      expect(previousSwipeCurrentImageAfterCommit).toBe(
+        settledPreviousImageBeforeCommit,
+      );
+      expect(previousSwipeCurrentImageAfterCommit?.getAttribute('src')).toBe(
+        'https://images.example/rivendell-1.jpg',
+      );
       expect(container.textContent).toContain('1/3');
     } finally {
       requestAnimationFrameSpy.mockRestore();

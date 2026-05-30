@@ -78,13 +78,19 @@ export function buildPublicBrowseCollectionCacheTags({
 }: {
   collectionSlug: string;
 }): string[] {
+  const priceBackedCollectionSlugs = new Set([
+    'lego-sets-onder-50-euro',
+    'lego-sets-onder-100-euro',
+  ]);
+
   return normalizeCacheTags([
     cacheTags.catalog(),
     cacheTags.sets(),
     cacheTags.collections(),
     cacheTags.collection(collectionSlug),
-    cacheTags.prices(),
-    cacheTags.deals(),
+    ...(priceBackedCollectionSlugs.has(collectionSlug)
+      ? [cacheTags.prices(), cacheTags.deals()]
+      : []),
   ]);
 }
 
