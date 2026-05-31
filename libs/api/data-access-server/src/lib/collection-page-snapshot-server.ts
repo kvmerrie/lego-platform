@@ -54,7 +54,9 @@ interface CommerceCurrentOfferSnapshotRow {
 }
 
 export interface CollectionPageSnapshotCard extends CatalogHomepageSetCard {
+  adultCollectorScore?: number;
   effectivePieces?: number;
+  bestPriceMinor?: number;
   priceContext?: {
     coverageLabel: string;
     currentPrice: string;
@@ -127,6 +129,17 @@ function readMetadataNumber(
     : undefined;
 }
 
+function readMetadataStringArray(
+  metadataJson: Record<string, unknown> | null | undefined,
+  key: string,
+): string[] {
+  const value = metadataJson?.[key];
+
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
 function parseDateTimestamp(value: string | undefined): number | undefined {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) {
     return undefined;
@@ -135,6 +148,20 @@ function parseDateTimestamp(value: string | undefined): number | undefined {
   const timestamp = Date.parse(`${value}T00:00:00Z`);
 
   return Number.isFinite(timestamp) ? timestamp : undefined;
+}
+
+function normalizeScoringText(value: string | undefined): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function includesScoringText({
+  haystack,
+  needle,
+}: {
+  haystack: string;
+  needle: string;
+}): boolean {
+  return haystack.includes(needle.toLowerCase());
 }
 
 function formatPrice(minorUnits: number): string {
@@ -235,11 +262,13 @@ async function listCommerceCurrentOfferSnapshots({
 function toSnapshotCard({
   bricksetMetadata,
   catalogSet,
+  recommendedAge,
   priceSnapshot,
   rakutenMetadata,
 }: {
   bricksetMetadata?: CatalogSetSourceMetadataRow;
   catalogSet: Awaited<ReturnType<typeof listCanonicalCatalogSets>>[number];
+  recommendedAge?: number;
   priceSnapshot?: CommerceCurrentOfferSnapshotRow;
   rakutenMetadata?: CatalogSetSourceMetadataRow;
 }): CollectionPageSnapshotCard {
@@ -274,6 +303,7 @@ function toSnapshotCard({
     pieces: effectivePieces ?? catalogSet.pieceCount,
     ...(bestPriceMinor && bestPriceMinor > 0
       ? {
+          bestPriceMinor,
           priceContext: {
             coverageLabel: 'Actuele prijs gevonden',
             currentPrice: `Vanaf ${formatPrice(bestPriceMinor)}`,
@@ -290,6 +320,7 @@ function toSnapshotCard({
         }
       : {}),
     releaseYear: catalogSet.releaseYear,
+    ...(recommendedAge ? { recommendedAge } : {}),
     ...(catalogSet.secondaryLabels
       ? {
           secondaryLabels: catalogSet.secondaryLabels,
@@ -298,7 +329,300 @@ function toSnapshotCard({
     setNumber: catalogSet.sourceSetNumber ?? catalogSet.setId,
     slug: catalogSet.slug,
     theme: catalogSet.primaryTheme,
+    ...(catalogSet.publicTheme ? { publicTheme: catalogSet.publicTheme } : {}),
   };
+}
+
+function scoreAdultCollectorCandidate({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): number {
+  const tags = readMetadataStringArray(bricksetMetadata?.metadata_json, 'tags');
+  const normalizedTags = tags.map(normalizeScoringText);
+  const theme = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'theme') ??
+      setCard.theme,
+  );
+  const themeGroup = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'themeGroup'),
+  );
+  const subtheme = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'subtheme'),
+  );
+  const setName = normalizeScoringText(setCard.name);
+  const searchableText = [
+    theme,
+    themeGroup,
+    subtheme,
+    setName,
+    ...normalizedTags,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  let score = 0;
+
+  if ((setCard.recommendedAge ?? 0) >= 18) {
+    score += 100;
+  }
+
+  for (const adultTag of [
+    '18 plus',
+    '18+',
+    'd2c',
+    'display stand',
+    'real place',
+    'landmarks',
+    'art',
+    'architecture',
+    'botanical',
+    'vehicle',
+  ]) {
+    if (normalizedTags.some((tag) => tag === adultTag)) {
+      score += adultTag === '18 plus' || adultTag === '18+' ? 70 : 18;
+    }
+  }
+
+  if (['icons', 'architecture', 'art', 'ideas'].includes(theme)) {
+    score += 55;
+  }
+
+  if (theme === 'botanicals' || subtheme === 'botanical collection') {
+    score += 55;
+  }
+
+  if (themeGroup === 'model making') {
+    score += 45;
+  }
+
+  if (
+    theme === 'star wars' &&
+    (includesScoringText({
+      haystack: subtheme,
+      needle: 'ultimate collector',
+    }) ||
+      includesScoringText({ haystack: subtheme, needle: 'ucs' }) ||
+      includesScoringText({ haystack: searchableText, needle: 'display' }))
+  ) {
+    score += 45;
+  }
+
+  const pieces = setCard.effectivePieces ?? setCard.pieces;
+
+  if (pieces >= 2_000) {
+    score += 12;
+  } else if (pieces >= 1_000) {
+    score += 8;
+  } else if (pieces >= 500) {
+    score += 3;
+  }
+
+  return score;
+}
+
+function getAdultCollectorTextSignals({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): {
+  normalizedTags: string[];
+  searchableText: string;
+  subtheme: string;
+  theme: string;
+  themeGroup: string;
+} {
+  const normalizedTags = readMetadataStringArray(
+    bricksetMetadata?.metadata_json,
+    'tags',
+  ).map(normalizeScoringText);
+  const theme = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'theme') ??
+      setCard.theme,
+  );
+  const themeGroup = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'themeGroup'),
+  );
+  const subtheme = normalizeScoringText(
+    readMetadataString(bricksetMetadata?.metadata_json, 'subtheme'),
+  );
+  const setName = normalizeScoringText(setCard.name);
+  const searchableText = [
+    theme,
+    themeGroup,
+    subtheme,
+    setName,
+    ...normalizedTags,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return {
+    normalizedTags,
+    searchableText,
+    subtheme,
+    theme,
+    themeGroup,
+  };
+}
+
+function hasStrongAdultCollectorSignal({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): boolean {
+  const normalizedTags = readMetadataStringArray(
+    bricksetMetadata?.metadata_json,
+    'tags',
+  ).map(normalizeScoringText);
+
+  return (
+    (setCard.recommendedAge ?? 0) >= 18 ||
+    normalizedTags.includes('18 plus') ||
+    normalizedTags.includes('18+')
+  );
+}
+
+function isExplicitAdultCollectorCategory({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): boolean {
+  const { normalizedTags, searchableText, subtheme, theme, themeGroup } =
+    getAdultCollectorTextSignals({ bricksetMetadata, setCard });
+
+  return (
+    hasStrongAdultCollectorSignal({ bricksetMetadata, setCard }) ||
+    ['icons', 'architecture', 'art', 'ideas'].includes(theme) ||
+    theme === 'botanicals' ||
+    theme === 'lord of the rings' ||
+    subtheme === 'botanical collection' ||
+    includesScoringText({ haystack: subtheme, needle: 'modular buildings' }) ||
+    themeGroup === 'model making' ||
+    (theme === 'star wars' &&
+      (includesScoringText({
+        haystack: subtheme,
+        needle: 'ultimate collector',
+      }) ||
+        includesScoringText({ haystack: subtheme, needle: 'ucs' }) ||
+        includesScoringText({
+          haystack: searchableText,
+          needle: 'display',
+        }))) ||
+    (normalizedTags.includes('vehicle') &&
+      (includesScoringText({ haystack: searchableText, needle: 'display' }) ||
+        themeGroup === 'model making'))
+  );
+}
+
+function isAdultCollectorNoveltyOrImpulseCandidate({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): boolean {
+  const { normalizedTags, searchableText, theme } =
+    getAdultCollectorTextSignals({
+      bricksetMetadata,
+      setCard,
+    });
+  const pieces = setCard.effectivePieces ?? setCard.pieces;
+
+  return (
+    theme === 'seasonal' ||
+    normalizedTags.some((tag) =>
+      ['polybag', 'promotional', 'gift with purchase', 'gwp'].includes(tag),
+    ) ||
+    includesScoringText({ haystack: searchableText, needle: 'birthday' }) ||
+    includesScoringText({ haystack: searchableText, needle: 'easter' }) ||
+    includesScoringText({ haystack: searchableText, needle: 'holiday' }) ||
+    includesScoringText({ haystack: searchableText, needle: 'christmas' }) ||
+    includesScoringText({
+      haystack: searchableText,
+      needle: 'snow adventure',
+    }) ||
+    (theme === 'creator 3-in-1' &&
+      pieces < 500 &&
+      (includesScoringText({ haystack: searchableText, needle: 'animal' }) ||
+        includesScoringText({ haystack: searchableText, needle: 'bunny' }) ||
+        includesScoringText({ haystack: searchableText, needle: 'bear' }) ||
+        includesScoringText({ haystack: searchableText, needle: 'cat' }) ||
+        includesScoringText({ haystack: searchableText, needle: 'dog' })))
+  );
+}
+
+function isObviousKidsOrPreschoolCandidate({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): boolean {
+  const fields = [
+    setCard.theme,
+    setCard.name,
+    readMetadataString(bricksetMetadata?.metadata_json, 'theme'),
+    readMetadataString(bricksetMetadata?.metadata_json, 'themeGroup'),
+    readMetadataString(bricksetMetadata?.metadata_json, 'subtheme'),
+    ...readMetadataStringArray(bricksetMetadata?.metadata_json, 'tags'),
+  ]
+    .map(normalizeScoringText)
+    .join(' ');
+
+  return (
+    includesScoringText({ haystack: fields, needle: 'duplo' }) ||
+    includesScoringText({ haystack: fields, needle: 'juniors' }) ||
+    includesScoringText({ haystack: fields, needle: 'spidey' }) ||
+    includesScoringText({ haystack: fields, needle: '4+' })
+  );
+}
+
+function isAdultCollectorCandidate({
+  bricksetMetadata,
+  setCard,
+}: {
+  bricksetMetadata?: CatalogSetSourceMetadataRow;
+  setCard: CollectionPageSnapshotCard;
+}): boolean {
+  const score = scoreAdultCollectorCandidate({ bricksetMetadata, setCard });
+  const explicitAdultCategory = isExplicitAdultCollectorCategory({
+    bricksetMetadata,
+    setCard,
+  });
+  const effectivePieces = setCard.effectivePieces ?? setCard.pieces;
+
+  if (
+    isAdultCollectorNoveltyOrImpulseCandidate({ bricksetMetadata, setCard })
+  ) {
+    return false;
+  }
+
+  if (
+    !explicitAdultCategory &&
+    (effectivePieces < 250 ||
+      (typeof setCard.bestPriceMinor === 'number' &&
+        setCard.bestPriceMinor > 0 &&
+        setCard.bestPriceMinor < 2_000))
+  ) {
+    return false;
+  }
+
+  if (!explicitAdultCategory && score < 80) {
+    return false;
+  }
+
+  return (
+    !isObviousKidsOrPreschoolCandidate({ bricksetMetadata, setCard }) ||
+    hasStrongAdultCollectorSignal({ bricksetMetadata, setCard })
+  );
 }
 
 function getEffectiveReleaseDate({
@@ -495,6 +819,16 @@ function compareSnapshotCards({
       );
     }
 
+    if (collectionSlug === 'lego-voor-volwassenen') {
+      return (
+        (right.adultCollectorScore ?? 0) - (left.adultCollectorScore ?? 0) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    }
+
     if (sortKey === 'price-asc') {
       return (
         (priceBySetId.get(left.id)?.best_price_minor ??
@@ -592,12 +926,25 @@ export async function buildCollectionPageSnapshots({
         : [],
     ),
   );
+  const overlayRecommendedAgeBySetId = new Map(
+    catalogSetOverlays.flatMap((overlay) =>
+      overlay.recommendedAge
+        ? [
+            [
+              getCanonicalCatalogSetId(overlay.canonicalId),
+              overlay.recommendedAge,
+            ],
+          ]
+        : [],
+    ),
+  );
   const cards = activeCatalogSets.map((catalogSet) =>
     toSnapshotCard({
       bricksetMetadata: sourceMetadata.bricksetBySetId.get(catalogSet.setId),
       catalogSet,
       priceSnapshot: priceSnapshots.get(catalogSet.setId),
       rakutenMetadata: sourceMetadata.rakutenBySetId.get(catalogSet.setId),
+      recommendedAge: overlayRecommendedAgeBySetId.get(catalogSet.setId),
     }),
   );
   const cardBySetId = new Map(cards.map((card) => [card.id, card]));
@@ -661,6 +1008,23 @@ export async function buildCollectionPageSnapshots({
           statusBySetId: overlayStatusBySetId,
         }),
       );
+    }
+
+    if (collectionSlug === 'lego-voor-volwassenen') {
+      candidates = cards
+        .map((card) => ({
+          ...card,
+          adultCollectorScore: scoreAdultCollectorCandidate({
+            bricksetMetadata: sourceMetadata.bricksetBySetId.get(card.id),
+            setCard: card,
+          }),
+        }))
+        .filter((card) =>
+          isAdultCollectorCandidate({
+            bricksetMetadata: sourceMetadata.bricksetBySetId.get(card.id),
+            setCard: card,
+          }),
+        );
     }
 
     const bricksetMetadataUsedCount = candidates.filter((card) =>

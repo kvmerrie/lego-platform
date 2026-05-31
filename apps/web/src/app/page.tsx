@@ -120,7 +120,7 @@ const homepageValueSignals = [
 const homepageDiscoveryTileConfigs = [
   {
     href: '/nieuwe-lego-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg',
     imageThemeSlugs: ['city', 'speed-champions', 'star-wars'],
     imageSetIds: ['60445', '60443', '60462', '75405'],
     id: 'new-sets',
@@ -129,7 +129,7 @@ const homepageDiscoveryTileConfigs = [
   },
   {
     href: '/lego-voor-volwassenen',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg',
     imageThemeSlugs: ['icons', 'the-lord-of-the-rings', 'technic'],
     imageSetIds: ['10368', '10344', '10343', '10316', '10333', '42172'],
     id: 'adult-sets',

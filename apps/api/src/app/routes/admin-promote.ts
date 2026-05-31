@@ -198,6 +198,7 @@ export function createAdminPromoteRoutes({
             ...revalidationPlan.paths,
             '/nieuwe-lego-sets',
             '/retiring-lego-sets',
+            '/lego-voor-volwassenen',
             ...promotedMetadataSetPaths,
           ];
           const revalidationTags = [
@@ -206,6 +207,7 @@ export function createAdminPromoteRoutes({
             cacheTags.collections(),
             cacheTags.collection('nieuwe-lego-sets'),
             cacheTags.collection('retiring-lego-sets'),
+            cacheTags.collection('lego-voor-volwassenen'),
             cacheTags.catalog(),
             cacheTags.sets(),
             ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),

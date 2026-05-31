@@ -22,6 +22,13 @@ function createCatalogSet(
     name: 'Catalog Set',
     pieceCount: 100,
     primaryTheme: 'Icons',
+    publicTheme: {
+      accentColor: '#1f8ad1',
+      name: 'Icons',
+      slug: 'icons',
+      surfaceColor: '#e8f4ff',
+      surfaceTextColor: '#0f3554',
+    },
     releaseDate: '2026-05-01',
     releaseDatePrecision: 'day',
     releaseYear: 2026,
@@ -126,6 +133,13 @@ describe('collection page snapshots', () => {
       1,
     );
     expect(result.snapshots[0]?.items[0]?.pieces).toBe(123);
+    expect(result.snapshots[0]?.items[0]?.publicTheme).toEqual(
+      expect.objectContaining({
+        slug: 'icons',
+        surfaceColor: '#e8f4ff',
+        surfaceTextColor: '#0f3554',
+      }),
+    );
   });
 
   test('keeps retiring snapshots released, near-term, and signal-backed', async () => {
@@ -295,6 +309,252 @@ describe('collection page snapshots', () => {
     ).toBe(1);
     expect(result.snapshots[0]?.items[0]?.priceContext?.currentPrice).toBe(
       'Vanaf € 49,99',
+    );
+  });
+
+  test('builds adult collector snapshots from Brickset adult signals', async () => {
+    listCanonicalCatalogSetsMock.mockResolvedValue([
+      createCatalogSet({
+        name: 'Icons Display Set',
+        pieceCount: 1800,
+        primaryTheme: 'Icons',
+        releaseDate: '2025-01-01',
+        releaseYear: 2025,
+        setId: '40000-1',
+        slug: 'icons-display-set-40000',
+        sourceSetNumber: '40000',
+      }),
+      createCatalogSet({
+        name: 'Architecture Landmark',
+        pieceCount: 900,
+        primaryTheme: 'Architecture',
+        releaseDate: '2024-01-01',
+        releaseYear: 2024,
+        setId: '40001-1',
+        slug: 'architecture-landmark-40001',
+        sourceSetNumber: '40001',
+      }),
+      createCatalogSet({
+        name: 'Duplo Preschool Vehicle',
+        pieceCount: 2500,
+        primaryTheme: 'DUPLO',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40002-1',
+        slug: 'duplo-preschool-vehicle-40002',
+        sourceSetNumber: '40002',
+      }),
+      createCatalogSet({
+        name: 'Large Generic Playset',
+        pieceCount: 2200,
+        primaryTheme: 'City',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40003-1',
+        slug: 'large-generic-playset-40003',
+        sourceSetNumber: '40003',
+      }),
+      createCatalogSet({
+        name: 'Birthday Bear',
+        pieceCount: 150,
+        primaryTheme: 'Seasonal',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40004-1',
+        slug: 'birthday-bear-40004',
+        sourceSetNumber: '40004',
+      }),
+      createCatalogSet({
+        name: 'Cute Animal Birthday Party',
+        pieceCount: 280,
+        primaryTheme: 'Creator 3-in-1',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40005-1',
+        slug: 'cute-animal-birthday-party-40005',
+        sourceSetNumber: '40005',
+      }),
+      createCatalogSet({
+        name: 'Cataclaws Snow Adventure',
+        pieceCount: 300,
+        primaryTheme: 'Seasonal',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40006-1',
+        slug: 'cataclaws-snow-adventure-40006',
+        sourceSetNumber: '40006',
+      }),
+      createCatalogSet({
+        name: 'Cute Easter Bunny',
+        pieceCount: 326,
+        primaryTheme: 'Creator 3-in-1',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40007-1',
+        slug: 'cute-easter-bunny-40007',
+        sourceSetNumber: '40007',
+      }),
+      createCatalogSet({
+        name: 'Tiny Botanical Display',
+        pieceCount: 180,
+        primaryTheme: 'Botanicals',
+        releaseDate: '2024-01-01',
+        releaseYear: 2024,
+        setId: '40008-1',
+        slug: 'tiny-botanical-display-40008',
+        sourceSetNumber: '40008',
+      }),
+      createCatalogSet({
+        name: 'Low Price Display Trinket',
+        pieceCount: 320,
+        primaryTheme: 'City',
+        releaseDate: '2026-01-01',
+        releaseYear: 2026,
+        setId: '40009-1',
+        slug: 'low-price-display-trinket-40009',
+        sourceSetNumber: '40009',
+      }),
+    ]);
+    const { client } = createSupabaseClient({
+      commerceSnapshots: [
+        {
+          best_availability: 'in_stock',
+          best_merchant_name: 'Brickfever',
+          best_price_minor: 1_999,
+          set_id: '40009-1',
+        },
+      ],
+      sourceMetadata: [
+        {
+          catalog_set_id: '40000-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['18 Plus', 'D2C'],
+            theme: 'Icons',
+            themeGroup: 'Model making',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40000',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40001-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Landmarks'],
+            theme: 'Architecture',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40001',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40002-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Architecture', 'Vehicle', 'Art'],
+            theme: 'DUPLO',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40002',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40004-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Vehicle'],
+            theme: 'Seasonal',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40004',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40005-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Art', 'Vehicle', 'Display Stand'],
+            theme: 'Creator 3-in-1',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40005',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40006-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Display Stand'],
+            theme: 'Seasonal',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40006',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40007-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['Art', 'Architecture', 'Vehicle'],
+            theme: 'Creator 3-in-1',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40007',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40008-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            subtheme: 'Botanical Collection',
+            tags: ['Botanical'],
+            theme: 'Botanicals',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40008',
+          source: 'brickset',
+        },
+        {
+          catalog_set_id: '40009-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            tags: ['D2C', 'Display Stand', 'Landmarks', 'Architecture', 'Art'],
+            theme: 'City',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '40009',
+          source: 'brickset',
+        },
+      ],
+    });
+
+    const result = await buildCollectionPageSnapshots({
+      collectionSlugs: ['lego-voor-volwassenen'],
+      supabaseClient: client,
+    });
+
+    expect(
+      result.summaryByCollectionSlug['lego-voor-volwassenen']?.totalCount,
+    ).toBe(3);
+    expect(result.snapshots[0]?.items.map((item) => item.id)).toEqual([
+      '40000-1',
+      '40001-1',
+      '40008-1',
+    ]);
+    expect(result.snapshots[0]?.items[0]).toEqual(
+      expect.objectContaining({
+        adultCollectorScore: expect.any(Number),
+      }),
     );
   });
 

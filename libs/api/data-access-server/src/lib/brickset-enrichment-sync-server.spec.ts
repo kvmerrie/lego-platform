@@ -234,9 +234,10 @@ describe('syncBricksetEnrichmentMetadata', () => {
       snapshots: [
         { collectionSlug: 'nieuwe-lego-sets' },
         { collectionSlug: 'retiring-lego-sets' },
+        { collectionSlug: 'lego-voor-volwassenen' },
       ],
       summaryByCollectionSlug: {},
-      upsertedCount: 2,
+      upsertedCount: 3,
     });
 
     const result = await syncBricksetEnrichmentMetadata({
@@ -251,8 +252,8 @@ describe('syncBricksetEnrichmentMetadata', () => {
     });
 
     expect(result.sourceMetadataUpsertedCount).toBe(1);
-    expect(result.collectionPageSnapshotCount).toBe(2);
-    expect(result.collectionPageSnapshotsUpsertedCount).toBe(2);
+    expect(result.collectionPageSnapshotCount).toBe(3);
+    expect(result.collectionPageSnapshotsUpsertedCount).toBe(3);
     expect(upsertCatalogSetSourceMetadataFn).toHaveBeenCalledWith({
       inputs: [
         expect.objectContaining({
@@ -266,7 +267,11 @@ describe('syncBricksetEnrichmentMetadata', () => {
       ],
     });
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
-      collectionSlugs: ['nieuwe-lego-sets', 'retiring-lego-sets'],
+      collectionSlugs: [
+        'nieuwe-lego-sets',
+        'retiring-lego-sets',
+        'lego-voor-volwassenen',
+      ],
       dryRun: false,
       pageSize: 40,
     });

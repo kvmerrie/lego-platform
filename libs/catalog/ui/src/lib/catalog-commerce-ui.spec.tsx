@@ -307,7 +307,8 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('offerRole');
     expect(markup).toContain('alternative');
     expect(markup).toContain('rankPosition');
-    expect(markup).not.toContain('Vergelijk alle 2 winkels');
+    expect(markup).toContain('Bekijk alle winkels');
+    expect(markup).toContain('aria-label="Vergelijk alle 2 winkels"');
   });
 
   it('shows all offers when the comparison has at most twenty shops', () => {
@@ -395,7 +396,8 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('Nu bij 8 winkels');
     expect(markup).not.toContain('Nu bij 8 van 8 winkels');
-    expect(markup).not.toContain('Vergelijk alle 8 winkels');
+    expect(markup).toContain('Bekijk alle winkels');
+    expect(markup).toContain('aria-label="Vergelijk alle 8 winkels"');
     expect(markup).toContain('LEGO');
     expect(markup).toContain('Top1Toys');
     expect(markup).toContain('MisterBricks');
@@ -426,7 +428,8 @@ describe('Catalog commerce UI', () => {
     );
 
     expect(markup).toContain('Nu bij 20 van 21 winkels');
-    expect(markup).toContain('Vergelijk alle 21 winkels');
+    expect(markup).toContain('Bekijk alle winkels');
+    expect(markup).toContain('aria-label="Vergelijk alle 21 winkels"');
     expect(markup).toContain('Shop 20');
     expect(markup).not.toContain('Shop 21');
   });

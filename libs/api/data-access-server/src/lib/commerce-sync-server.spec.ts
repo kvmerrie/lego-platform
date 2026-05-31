@@ -356,8 +356,14 @@ describe('commerce sync server', () => {
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
     ).not.toContain('/nieuwe-lego-sets');
     expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
+    ).not.toContain('/lego-voor-volwassenen');
+    expect(
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
     ).not.toContain('collection:nieuwe-lego-sets');
+    expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
+    ).not.toContain('collection:lego-voor-volwassenen');
     expect(result.collectionPageSnapshotCount).toBe(1);
     expect(result.collectionPageSnapshotsUpsertedCount).toBe(1);
     expect(result.refreshSuccessCount).toBe(1);

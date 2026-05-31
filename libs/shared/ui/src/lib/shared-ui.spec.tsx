@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
@@ -118,7 +119,23 @@ describe('Breadcrumbs', () => {
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('data-current="true"');
     expect(markup).toContain('Setdetail');
+  });
+
+  it('keeps mobile breadcrumbs on one line and truncates the current page', () => {
+    const css = readFileSync(
+      new URL('./shared-ui.module.css', import.meta.url),
+      'utf-8',
+    );
+
+    expect(css).toContain('@media (max-width: 47.9375rem)');
+    expect(css).toContain('flex-wrap: nowrap;');
+    expect(css).toContain(".breadcrumbItem[data-current='true']");
+    expect(css).toContain('flex: 1 1 auto;');
+    expect(css).toContain('text-overflow: ellipsis;');
+    expect(css).toContain('white-space: nowrap;');
+    expect(css).toContain('@media (max-width: 23.75rem)');
   });
 });
 

@@ -72,7 +72,7 @@
   }
 
   .browsePaginationList {
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     gap: var(--lego-space-1);
     justify-content: center;
@@ -83,6 +83,25 @@
 
   .browsePaginationItem {
     display: flex;
+  }
+
+  .browsePaginationMobileIndicator,
+  .browsePaginationEllipsis {
+    align-items: center;
+    color: var(--lego-text-muted);
+    display: inline-flex;
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-bold);
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0 var(--lego-space-2);
+  }
+
+  .browsePaginationMobileIndicator {
+    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border-radius: var(--lego-radius-sm);
+    color: var(--lego-text);
+    min-width: 5.25rem;
   }
 
   .browsePaginationPageLink,
@@ -136,6 +155,26 @@
     outline-offset: 2px;
   }
 
+  @media (min-width: 40rem) {
+    .browsePaginationMobileIndicator {
+      display: none;
+    }
+
+    .browsePaginationTabletList {
+      display: flex;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .browsePaginationTabletList {
+      display: none;
+    }
+
+    .browsePaginationDesktopList {
+      display: flex;
+    }
+  }
+
   .setCardCollectionRail {
     gap: var(--lego-space-2);
   }
@@ -159,20 +198,26 @@
   .setCard {
     --catalog-card-action-height: 2.5rem;
     --catalog-card-action-icon-size: 0.96rem;
-    --catalog-card-interaction-border-color: color-mix(
+    --rail-card-border: var(--lego-border-subtle);
+    --rail-card-border-hover: color-mix(
       in srgb,
       var(--lego-border-subtle) 78%,
       var(--lego-border) 22%
     );
+    --catalog-card-interaction-border-color: color-mix(
+      in srgb,
+      var(--rail-card-border-hover) 84%,
+      var(--lego-border) 16%
+    );
     --catalog-card-interaction-outline-color: color-mix(
       in srgb,
-      var(--lego-border-subtle) 72%,
-      var(--lego-border) 28%
+      var(--rail-card-border-hover) 72%,
+      transparent 28%
     );
     --card-theme-badge-bg: var(--lego-surface-muted);
     --card-theme-badge-text: var(--lego-text);
     background: var(--lego-surface-default);
-    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border: var(--lego-border-width-1) solid var(--rail-card-border);
     border-radius: var(--lego-radius-sm);
     box-shadow: none;
     display: flex;
@@ -1434,6 +1479,7 @@
     overscroll-behavior-x: contain;
     padding-bottom: 0.1rem;
     scrollbar-width: none;
+    touch-action: pan-x;
   }
 
   .galleryThumbRail::-webkit-scrollbar {
@@ -2135,6 +2181,7 @@
     scrollbar-gutter: stable;
     scroll-padding-inline: var(--catalog-offer-rail-inline-padding);
     scroll-snap-type: x proximity;
+    touch-action: pan-x;
   }
 
   .offerRail {
@@ -2393,15 +2440,11 @@
   }
 
   .offerRailViewAllAction {
-    color: var(--lego-text-muted);
     font-size: var(--lego-text-role-meta-size);
-    font-weight: var(--lego-font-weight-regular);
-    gap: 0.22rem;
-    min-height: auto;
-    padding: 0;
-    border-radius: 0;
+    gap: 0.32rem;
+    justify-content: center;
     text-align: left;
-    width: fit-content;
+    width: 100%;
   }
 
   .offerRailViewAllAction:hover {
@@ -3012,6 +3055,26 @@
     --catalog-rail-scrollbar-width: calc(
       100% - (var(--catalog-rail-inline-padding) * 2)
     );
+    --rail-scrollbar-track: color-mix(
+      in srgb,
+      var(--lego-border-subtle) 88%,
+      currentColor 12%
+    );
+    --rail-scrollbar-track-outline: color-mix(
+      in srgb,
+      var(--lego-border-subtle) 92%,
+      currentColor 8%
+    );
+    --rail-scrollbar-thumb: color-mix(
+      in srgb,
+      currentColor 32%,
+      transparent 68%
+    );
+    --rail-scrollbar-thumb-hover: color-mix(
+      in srgb,
+      currentColor 44%,
+      transparent 56%
+    );
     display: grid;
     gap: var(--catalog-rail-scrollbar-gap);
     margin-inline: calc(-1 * var(--catalog-rail-inline-padding));
@@ -3106,6 +3169,7 @@
     scroll-snap-type: x proximity;
     scrollbar-color: auto;
     scrollbar-width: none;
+    touch-action: pan-x;
   }
 
   .setCardRailTrack > .setCard {
@@ -3173,14 +3237,9 @@
   }
 
   .setCardRailScrollbar {
-    background: color-mix(
-      in srgb,
-      var(--lego-border-subtle) 88%,
-      currentColor 12%
-    );
+    background: var(--rail-scrollbar-track);
     border-radius: 999px;
-    box-shadow: inset 0 0 0 1px
-      color-mix(in srgb, var(--lego-border-subtle) 92%, currentColor 8%);
+    box-shadow: inset 0 0 0 1px var(--rail-scrollbar-track-outline);
     cursor: pointer;
     display: block;
     height: var(--catalog-rail-scrollbar-height);
@@ -3197,7 +3256,7 @@
   }
 
   .setCardRailScrollbarThumb {
-    background: color-mix(in srgb, currentColor 32%, transparent 68%);
+    background: var(--rail-scrollbar-thumb);
     border-radius: 999px;
     cursor: grab;
     height: 100%;
@@ -3209,16 +3268,46 @@
 
   .setCardRailScrollbarThumb[data-dragging='true'] {
     cursor: grabbing;
-    background: color-mix(in srgb, currentColor 44%, transparent 56%);
+    background: var(--rail-scrollbar-thumb-hover);
   }
 
   .setCardRailScrollbarThumb:hover {
-    background: color-mix(in srgb, currentColor 44%, transparent 56%);
+    background: var(--rail-scrollbar-thumb-hover);
   }
 
   .setCardRailSectionThemed {
     --catalog-card-muted-text: var(--lego-text-muted);
     --lego-text-muted: var(--article-theme-muted-text, var(--lego-text-muted));
+    --rail-card-border: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 16%,
+      transparent 84%
+    );
+    --rail-card-border-hover: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 28%,
+      transparent 72%
+    );
+    --rail-scrollbar-track: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 13%,
+      transparent 87%
+    );
+    --rail-scrollbar-track-outline: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 10%,
+      transparent 90%
+    );
+    --rail-scrollbar-thumb: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 34%,
+      transparent 66%
+    );
+    --rail-scrollbar-thumb-hover: color-mix(
+      in srgb,
+      var(--article-theme-surface-text, currentColor) 48%,
+      transparent 52%
+    );
     background: var(--article-theme-surface, var(--lego-surface-default));
     border-color: color-mix(
       in srgb,
@@ -3774,7 +3863,7 @@
     }
 
     .offerRailViewAllAction {
-      width: auto;
+      width: fit-content;
     }
 
     .offerOverlayBackdrop {

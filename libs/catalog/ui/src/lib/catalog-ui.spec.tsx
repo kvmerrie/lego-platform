@@ -19,6 +19,28 @@ import {
 } from './catalog-set-card-mobile-layout';
 
 describe('CatalogSetCard', () => {
+  function readPaginationBreakpointMarkup(
+    markup: string,
+    breakpoint: 'desktop' | 'mobile' | 'tablet',
+  ) {
+    if (breakpoint === 'mobile') {
+      return (
+        markup.match(
+          /<span[^>]+data-pagination-breakpoint="mobile"[^>]*>[\s\S]*?<\/span>/u,
+        )?.[0] ?? ''
+      );
+    }
+
+    const match = markup.match(
+      new RegExp(
+        `<ol[^>]+data-pagination-breakpoint="${breakpoint}"[^>]*>[\\s\\S]*?</ol>`,
+        'u',
+      ),
+    );
+
+    return match?.[0] ?? '';
+  }
+
   it('keeps catalog component CSS in a later cascade layer than shared primitives', () => {
     const catalogCss = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
@@ -68,6 +90,42 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Vorige');
     expect(markup).toContain('Volgende');
+  });
+
+  it('renders compact adaptive browse pagination for long result sets', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogBrowsePagination
+        ariaLabel="Collectiepagina's"
+        basePath="/nieuwe-lego-sets"
+        currentPage={8}
+        pageCount={19}
+        queryParams={{ sort: 'newest' }}
+      />,
+    );
+    const mobileMarkup = readPaginationBreakpointMarkup(markup, 'mobile');
+    const tabletMarkup = readPaginationBreakpointMarkup(markup, 'tablet');
+    const desktopMarkup = readPaginationBreakpointMarkup(markup, 'desktop');
+
+    expect(mobileMarkup).toContain('8 van 19');
+    expect(mobileMarkup).toContain('aria-current="page"');
+    expect(mobileMarkup).not.toContain('browsePaginationPageLink');
+    expect(
+      [...markup.matchAll(/class="[^"]*browsePaginationPageLink/g)].length,
+    ).toBeLessThan(19);
+
+    expect(tabletMarkup).toContain('>1</a>');
+    expect(tabletMarkup).toContain('>7</a>');
+    expect(tabletMarkup).toContain('>8</a>');
+    expect(tabletMarkup).toContain('>9</a>');
+    expect(tabletMarkup).toContain('>19</a>');
+    expect(tabletMarkup).toContain('...');
+
+    expect(
+      [...desktopMarkup.matchAll(/browsePaginationPageLink/g)].length,
+    ).toBeLessThanOrEqual(7);
+    expect(markup).toContain('href="/nieuwe-lego-sets?sort=newest&amp;page=7"');
+    expect(markup).toContain('href="/nieuwe-lego-sets?sort=newest&amp;page=9"');
+    expect(markup).toContain('aria-current="page"');
   });
 
   it('renders a back-to-top link when browse pagination is unnecessary', () => {

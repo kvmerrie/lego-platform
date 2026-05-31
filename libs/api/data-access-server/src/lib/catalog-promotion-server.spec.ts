@@ -290,6 +290,25 @@ describe('catalog promotion server', () => {
             updated_at: '2026-05-30T08:05:00.000Z',
           },
           {
+            collection_slug: 'lego-voor-volwassenen',
+            created_at: '2026-05-30T08:08:00.000Z',
+            generated_at: '2026-05-30T08:08:00.000Z',
+            items_json: [
+              {
+                id: '10316',
+                slug: 'lord-of-the-rings-rivendell-10316',
+                title: 'Rivendell',
+              },
+            ],
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'recommended',
+            source_version: 'test-adults',
+            total_count: 1,
+            updated_at: '2026-05-30T08:08:00.000Z',
+          },
+          {
             collection_slug: 'lego-sets-onder-50-euro',
             created_at: '2026-05-30T08:10:00.000Z',
             generated_at: '2026-05-30T08:10:00.000Z',
@@ -388,20 +407,22 @@ describe('catalog promotion server', () => {
       upsertedCount: 2,
     });
     expect(result.tables.collection_page_snapshots).toEqual({
-      insertedCount: 2,
-      readCount: 2,
+      insertedCount: 3,
+      readCount: 3,
       updatedCount: 0,
-      upsertedCount: 2,
+      upsertedCount: 3,
     });
-    expect(result.collection_page_snapshots_read_count).toBe(3);
-    expect(result.collectionPageSnapshotsReadCount).toBe(3);
-    expect(result.collection_page_snapshots_upserted_count).toBe(2);
-    expect(result.collectionPageSnapshotsUpsertedCount).toBe(2);
+    expect(result.collection_page_snapshots_read_count).toBe(4);
+    expect(result.collectionPageSnapshotsReadCount).toBe(4);
+    expect(result.collection_page_snapshots_upserted_count).toBe(3);
+    expect(result.collectionPageSnapshotsUpsertedCount).toBe(3);
     expect(result.collection_page_snapshots_by_slug).toEqual({
+      'lego-voor-volwassenen': 1,
       'nieuwe-lego-sets': 1,
       'retiring-lego-sets': 1,
     });
     expect(result.collectionPageSnapshotsBySlug).toEqual({
+      'lego-voor-volwassenen': 1,
       'nieuwe-lego-sets': 1,
       'retiring-lego-sets': 1,
     });
@@ -553,6 +574,25 @@ describe('catalog promotion server', () => {
           total_count: 1,
           updated_at: '2026-05-30T08:05:00.000Z',
         },
+        {
+          collection_slug: 'lego-voor-volwassenen',
+          created_at: '2026-05-30T08:08:00.000Z',
+          generated_at: '2026-05-30T08:08:00.000Z',
+          items_json: [
+            {
+              id: '10316',
+              slug: 'lord-of-the-rings-rivendell-10316',
+              title: 'Rivendell',
+            },
+          ],
+          page: 1,
+          page_size: 40,
+          snapshot_source: 'collection_snapshot_sync',
+          sort_key: 'recommended',
+          source_version: 'test-adults',
+          total_count: 1,
+          updated_at: '2026-05-30T08:08:00.000Z',
+        },
       ],
       {
         onConflict: 'collection_slug,sort_key,page,page_size',
@@ -590,11 +630,12 @@ describe('catalog promotion server', () => {
       '[catalog-promotion] promote_collection_page_snapshots',
       expect.objectContaining({
         collection_page_snapshots_by_slug: {
+          'lego-voor-volwassenen': 1,
           'nieuwe-lego-sets': 1,
           'retiring-lego-sets': 1,
         },
-        collection_page_snapshots_read_count: 3,
-        collection_page_snapshots_upserted_count: 2,
+        collection_page_snapshots_read_count: 4,
+        collection_page_snapshots_upserted_count: 3,
         table: 'collection_page_snapshots',
       }),
     );

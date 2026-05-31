@@ -246,10 +246,10 @@ describe('home metadata', () => {
     expect(markup).toContain('--theme-surface:#00a99d');
     expect(markup).toContain('--theme-surface:#8758d8');
     expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/43301-1/170847.jpg"',
+      'src="https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg"',
     );
     expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/10307-1/112417.jpg"',
+      'src="https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg"',
     );
     expect(markup).toContain(
       'src="https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg"',

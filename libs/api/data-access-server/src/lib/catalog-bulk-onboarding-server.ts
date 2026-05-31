@@ -10,6 +10,7 @@ import type {
   CatalogCanonicalSet,
   CatalogSet,
 } from '@lego-platform/catalog/util';
+import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import {
   generateCommerceOfferSeedCandidates,
   listCommercePrimaryCoverageGapAudit,
@@ -20,15 +21,23 @@ import {
   type CommerceSeedGenerationSummary,
   type CommerceSeedValidationSummary,
 } from '@lego-platform/commerce/data-access-server';
+import { cacheTags } from '@lego-platform/shared/config';
+import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import {
-  runCommerceSync,
-  type CommerceSyncRunResult,
-} from './commerce-sync-server';
+  syncBricksetEnrichmentMetadata,
+  type BricksetEnrichmentRecord,
+} from './brickset-enrichment-sync-server';
 import {
   enrichCatalogSetMinifigSummariesBestEffort,
   type EnrichCatalogSetMinifigSummariesFn,
 } from './catalog-minifig-onboarding-server';
+import {
+  runCommerceSync,
+  type CommerceSyncRunResult,
+} from './commerce-sync-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
+
+const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 
 export const catalogBulkOnboardingRunStatuses = [
   'running',
@@ -90,9 +99,14 @@ export interface CatalogBulkOnboardingImportSetResult {
 export interface CatalogBulkOnboardingImportSummary {
   alreadyPresentCount: number;
   attemptedSetCount: number;
+  bricksetEnrichmentAttempted?: boolean;
+  bricksetEnrichmentMatchedCount?: number;
+  bricksetEnrichmentMetadataUpsertedCount?: number;
+  collectionSnapshotsRebuiltBySlug?: Record<string, number>;
   createdCount: number;
   failedCount: number;
   results: readonly CatalogBulkOnboardingImportSetResult[];
+  themeMappingsUpdatedCount?: number;
 }
 
 export interface CatalogBulkOnboardingSnapshotSetSummary {
@@ -201,6 +215,7 @@ export interface CatalogBulkOnboardingRunReadResult {
 }
 
 export interface CatalogBulkOnboardingDependencies {
+  applyBricksetPublicThemeMappingsFn?: typeof applyBricksetPublicThemeMappings;
   createCatalogSetFn?: typeof createCatalogSet;
   enrichCatalogSetMinifigSummariesFn?: EnrichCatalogSetMinifigSummariesFn;
   generateCommerceOfferSeedCandidatesFn?: typeof generateCommerceOfferSeedCandidates;
@@ -211,6 +226,7 @@ export interface CatalogBulkOnboardingDependencies {
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   runCommerceSyncFn?: typeof runCommerceSync;
   searchCatalogMissingSetsFn?: typeof searchCatalogMissingSets;
+  syncBricksetEnrichmentMetadataFn?: typeof syncBricksetEnrichmentMetadata;
   validateGeneratedCommerceOfferSeedCandidatesFn?: typeof validateGeneratedCommerceOfferSeedCandidates;
 }
 
@@ -237,6 +253,461 @@ const stageProgressionOrder: Record<
   seed_validation_completed: 3,
   commerce_sync_completed: 4,
 };
+
+const bricksetBackedCollectionSlugs = [
+  'nieuwe-lego-sets',
+  'lego-voor-volwassenen',
+  'retiring-lego-sets',
+] as const;
+
+function readBricksetMetadataText(metadataJson: unknown): string {
+  if (!metadataJson || typeof metadataJson !== 'object') {
+    return '';
+  }
+
+  const metadata = metadataJson as Record<string, unknown>;
+  const textParts = [
+    metadata['theme'],
+    metadata['subtheme'],
+    metadata['themeGroup'],
+    metadata['category'],
+    ...(Array.isArray(metadata['tags']) ? metadata['tags'] : []),
+  ].filter((value): value is string => typeof value === 'string');
+
+  return textParts.join(' ').toLowerCase();
+}
+
+function resolveBricksetPublicThemeNames(metadataJson: unknown): string[] {
+  const metadataText = readBricksetMetadataText(metadataJson);
+
+  if (!metadataText) {
+    return [];
+  }
+
+  if (
+    metadataText.includes('lord of the rings') ||
+    metadataText.includes('lotr')
+  ) {
+    return ['Lord of the Rings'];
+  }
+
+  if (metadataText.includes('star trek')) {
+    return ['Star Trek'];
+  }
+
+  if (metadataText.includes('stranger things')) {
+    return ['Stranger Things'];
+  }
+
+  if (
+    metadataText.includes('botanical collection') ||
+    metadataText.includes('botanicals') ||
+    metadataText.includes('botanical')
+  ) {
+    return ['Botanicals'];
+  }
+
+  if (
+    metadataText.includes('formula 1') ||
+    metadataText.includes('f1 the movie') ||
+    /\bf1\b/u.test(metadataText)
+  ) {
+    return ['Formula 1', 'Speed Champions'];
+  }
+
+  return [];
+}
+
+function buildPublicThemeLookupIds(themeName: string): string[] {
+  const themeSlug = buildCatalogThemeSlug(themeName);
+
+  return [`theme:${themeSlug}`, themeSlug];
+}
+
+function isEligiblePublicThemeRow(themeRow: {
+  is_public?: boolean | null;
+  status?: string | null;
+}): boolean {
+  return themeRow.is_public === true && themeRow.status === 'active';
+}
+
+export async function applyBricksetPublicThemeMappings({
+  metadataRecords,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  metadataRecords: readonly BricksetEnrichmentRecord[];
+  supabaseClient?: ReturnType<typeof getServerSupabaseAdminClient>;
+}): Promise<{ updatedCount: number }> {
+  const mappings = metadataRecords.flatMap((record) => {
+    const publicThemeNames = resolveBricksetPublicThemeNames(
+      record.metadataJson,
+    );
+
+    if (!publicThemeNames.length) {
+      return [];
+    }
+
+    return [
+      {
+        setId: record.catalogSetId,
+        themeLookupIds: publicThemeNames.flatMap(buildPublicThemeLookupIds),
+      },
+    ];
+  });
+
+  if (!mappings.length) {
+    return { updatedCount: 0 };
+  }
+
+  const themeIds = [
+    ...new Set(mappings.flatMap((mapping) => mapping.themeLookupIds)),
+  ];
+  const { data: publicThemeRows, error: publicThemeError } =
+    await supabaseClient
+      .from('catalog_themes')
+      .select('id, is_public, status')
+      .in('id', themeIds);
+
+  if (publicThemeError) {
+    throw new Error(
+      'Unable to load public catalog themes for Brickset mapping.',
+    );
+  }
+
+  const eligibleThemeIds = new Set(
+    (
+      (publicThemeRows as Array<{
+        id: string;
+        is_public?: boolean | null;
+        status?: string | null;
+      }> | null) ?? []
+    )
+      .filter(isEligiblePublicThemeRow)
+      .map((themeRow) => themeRow.id),
+  );
+  const eligibleMappings = mappings.flatMap((mapping) => {
+    const themeId = mapping.themeLookupIds.find((lookupId) =>
+      eligibleThemeIds.has(lookupId),
+    );
+
+    return themeId ? [{ setId: mapping.setId, themeId }] : [];
+  });
+
+  if (!eligibleMappings.length) {
+    return { updatedCount: 0 };
+  }
+
+  let updatedCount = 0;
+
+  for (const mapping of eligibleMappings) {
+    const { error } = await supabaseClient
+      .from('catalog_sets')
+      .update({
+        primary_theme_id: mapping.themeId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('set_id', mapping.setId);
+
+    if (error) {
+      throw new Error(
+        `Unable to apply Brickset public theme mapping for ${mapping.setId}.`,
+      );
+    }
+
+    updatedCount += 1;
+  }
+
+  return { updatedCount };
+}
+
+interface BricksetThemeBackfillSetRow {
+  name: string;
+  primary_theme_id: string | null;
+  set_id: string;
+  slug: string;
+  source_theme_id: string | null;
+}
+
+interface BricksetThemeBackfillMetadataRow {
+  catalog_set_id: string;
+  metadata_json: unknown;
+}
+
+interface BricksetThemeBackfillThemeRow {
+  display_name: string | null;
+  id: string;
+  is_public: boolean | null;
+  slug: string | null;
+  status: string | null;
+}
+
+export interface BricksetPublicThemeMappingBackfillDetail {
+  action: 'remapped' | 'skipped';
+  afterThemeSlug?: string;
+  beforeThemeSlug?: string;
+  reason?: string;
+  setId: string;
+  setName: string;
+  setSlug: string;
+}
+
+export interface BricksetPublicThemeMappingBackfillResult {
+  details: readonly BricksetPublicThemeMappingBackfillDetail[];
+  dryRun: boolean;
+  inspectedCount: number;
+  remappedCount: number;
+  revalidation?: Awaited<ReturnType<typeof revalidatePublicCatalogPaths>>;
+  skippedCount: number;
+}
+
+function resolveThemeSlugFromRow(
+  themeRow: BricksetThemeBackfillThemeRow | undefined,
+  themeId: string | null,
+): string | undefined {
+  if (themeRow?.slug) {
+    return themeRow.slug;
+  }
+
+  if (!themeId) {
+    return undefined;
+  }
+
+  return themeId.startsWith('theme:')
+    ? themeId.slice('theme:'.length)
+    : themeId;
+}
+
+export async function backfillBricksetPublicThemeMappings({
+  dryRun = true,
+  revalidate = true,
+  revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
+  setIds,
+  source = 'brickset',
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  dryRun?: boolean;
+  revalidate?: boolean;
+  revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
+  setIds?: readonly string[];
+  source?: string;
+  supabaseClient?: ReturnType<typeof getServerSupabaseAdminClient>;
+} = {}): Promise<BricksetPublicThemeMappingBackfillResult> {
+  if (source !== 'brickset') {
+    throw new Error('Only source=brickset is supported for this backfill.');
+  }
+
+  const setQuery = supabaseClient
+    .from('catalog_sets')
+    .select('set_id, slug, name, source_theme_id, primary_theme_id');
+  const scopedSetQuery =
+    setIds && setIds.length
+      ? setQuery.in('set_id', [...new Set(setIds)])
+      : setQuery;
+  const { data: setRowsData, error: setRowsError } = await scopedSetQuery.order(
+    'set_id',
+    { ascending: true },
+  );
+
+  if (setRowsError) {
+    throw new Error('Unable to load catalog sets for Brickset theme backfill.');
+  }
+
+  const setRows = (setRowsData as BricksetThemeBackfillSetRow[] | null) ?? [];
+
+  if (!setRows.length) {
+    return {
+      details: [],
+      dryRun,
+      inspectedCount: 0,
+      remappedCount: 0,
+      skippedCount: 0,
+    };
+  }
+
+  const catalogSetIds = setRows.map((setRow) => setRow.set_id);
+  const { data: metadataRowsData, error: metadataRowsError } =
+    await supabaseClient
+      .from(CATALOG_SET_SOURCE_METADATA_TABLE)
+      .select('catalog_set_id, metadata_json')
+      .eq('source', 'brickset')
+      .eq('locale', 'en-US')
+      .eq('match_confidence', 'exact_set_number')
+      .in('catalog_set_id', catalogSetIds);
+
+  if (metadataRowsError) {
+    throw new Error(
+      'Unable to load Brickset source metadata for theme backfill.',
+    );
+  }
+
+  const metadataBySetId = new Map(
+    ((metadataRowsData as BricksetThemeBackfillMetadataRow[] | null) ?? []).map(
+      (metadataRow) => [metadataRow.catalog_set_id, metadataRow.metadata_json],
+    ),
+  );
+  const candidateThemeIds = new Set<string>();
+
+  for (const metadataJson of metadataBySetId.values()) {
+    for (const themeName of resolveBricksetPublicThemeNames(metadataJson)) {
+      for (const themeId of buildPublicThemeLookupIds(themeName)) {
+        candidateThemeIds.add(themeId);
+      }
+    }
+  }
+
+  const currentThemeIds = setRows
+    .map((setRow) => setRow.primary_theme_id)
+    .filter((themeId): themeId is string => Boolean(themeId));
+  const themeIds = [...new Set([...currentThemeIds, ...candidateThemeIds])];
+  const { data: themeRowsData, error: themeRowsError } = themeIds.length
+    ? await supabaseClient
+        .from('catalog_themes')
+        .select('id, slug, display_name, is_public, status')
+        .in('id', themeIds)
+    : { data: [], error: null };
+
+  if (themeRowsError) {
+    throw new Error('Unable to load catalog themes for Brickset backfill.');
+  }
+
+  const themeById = new Map(
+    ((themeRowsData as BricksetThemeBackfillThemeRow[] | null) ?? []).map(
+      (themeRow) => [themeRow.id, themeRow],
+    ),
+  );
+  const details: BricksetPublicThemeMappingBackfillDetail[] = [];
+  const remapDetails: BricksetPublicThemeMappingBackfillDetail[] = [];
+
+  for (const setRow of setRows) {
+    const beforeThemeSlug = resolveThemeSlugFromRow(
+      setRow.primary_theme_id
+        ? themeById.get(setRow.primary_theme_id)
+        : undefined,
+      setRow.primary_theme_id,
+    );
+    const metadataJson = metadataBySetId.get(setRow.set_id);
+
+    if (!metadataJson) {
+      details.push({
+        action: 'skipped',
+        beforeThemeSlug,
+        reason: 'missing_brickset_metadata',
+        setId: setRow.set_id,
+        setName: setRow.name,
+        setSlug: setRow.slug,
+      });
+      continue;
+    }
+
+    const targetThemeId = resolveBricksetPublicThemeNames(metadataJson)
+      .flatMap(buildPublicThemeLookupIds)
+      .find((themeId) => {
+        const themeRow = themeById.get(themeId);
+
+        return themeRow ? isEligiblePublicThemeRow(themeRow) : false;
+      });
+
+    if (!targetThemeId) {
+      details.push({
+        action: 'skipped',
+        beforeThemeSlug,
+        reason: 'no_supported_public_theme_mapping',
+        setId: setRow.set_id,
+        setName: setRow.name,
+        setSlug: setRow.slug,
+      });
+      continue;
+    }
+
+    const afterThemeSlug = resolveThemeSlugFromRow(
+      themeById.get(targetThemeId),
+      targetThemeId,
+    );
+
+    if (targetThemeId === setRow.primary_theme_id) {
+      details.push({
+        action: 'skipped',
+        afterThemeSlug,
+        beforeThemeSlug,
+        reason: 'already_mapped',
+        setId: setRow.set_id,
+        setName: setRow.name,
+        setSlug: setRow.slug,
+      });
+      continue;
+    }
+
+    const remapDetail: BricksetPublicThemeMappingBackfillDetail = {
+      action: 'remapped',
+      afterThemeSlug,
+      beforeThemeSlug,
+      setId: setRow.set_id,
+      setName: setRow.name,
+      setSlug: setRow.slug,
+    };
+
+    details.push(remapDetail);
+    remapDetails.push(remapDetail);
+
+    if (!dryRun) {
+      const { error: updateError } = await supabaseClient
+        .from('catalog_sets')
+        .update({
+          primary_theme_id: targetThemeId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('set_id', setRow.set_id);
+
+      if (updateError) {
+        throw new Error(
+          `Unable to backfill Brickset public theme mapping for ${setRow.set_id}.`,
+        );
+      }
+    }
+  }
+
+  const revalidation =
+    !dryRun && revalidate && remapDetails.length
+      ? await revalidatePublicCatalogPathsFn({
+          additionalPaths: [
+            ...remapDetails.map((detail) => `/sets/${detail.setSlug}`),
+            ...remapDetails.flatMap((detail) =>
+              [detail.beforeThemeSlug, detail.afterThemeSlug]
+                .filter((slug): slug is string => Boolean(slug))
+                .map((themeSlug) => `/themes/${themeSlug}`),
+            ),
+          ],
+          additionalTags: [
+            cacheTags.catalog(),
+            cacheTags.sets(),
+            cacheTags.themes(),
+            ...remapDetails.flatMap((detail) => [
+              cacheTags.set(detail.setId),
+              ...(detail.beforeThemeSlug
+                ? [cacheTags.theme(detail.beforeThemeSlug)]
+                : []),
+              ...(detail.afterThemeSlug
+                ? [cacheTags.theme(detail.afterThemeSlug)]
+                : []),
+            ]),
+          ],
+          includeDeals: false,
+          includeHome: false,
+          includeThemeDirectory: true,
+          reason: 'brickset_public_theme_mapping_backfill',
+          targets: [],
+        })
+      : undefined;
+
+  return {
+    details,
+    dryRun,
+    inspectedCount: setRows.length,
+    remappedCount: remapDetails.length,
+    ...(revalidation ? { revalidation } : {}),
+    skippedCount: details.length - remapDetails.length,
+  };
+}
 
 type CatalogBulkOnboardingCatalogSetIdentity = Pick<
   CatalogSet,
@@ -789,6 +1260,7 @@ export async function runCatalogBulkOnboarding({
   options: CatalogBulkOnboardingOptions;
 }): Promise<CatalogBulkOnboardingRunResult> {
   const {
+    applyBricksetPublicThemeMappingsFn = applyBricksetPublicThemeMappings,
     createCatalogSetFn = createCatalogSet,
     enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummariesBestEffort,
     generateCommerceOfferSeedCandidatesFn = generateCommerceOfferSeedCandidates,
@@ -799,6 +1271,7 @@ export async function runCatalogBulkOnboarding({
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     runCommerceSyncFn = runCommerceSync,
     searchCatalogMissingSetsFn = searchCatalogMissingSets,
+    syncBricksetEnrichmentMetadataFn = syncBricksetEnrichmentMetadata,
     validateGeneratedCommerceOfferSeedCandidatesFn = validateGeneratedCommerceOfferSeedCandidates,
   } = dependencies;
   const { requestedSetIds, run, runCreated, stateFilePath } =
@@ -938,6 +1411,11 @@ export async function runCatalogBulkOnboarding({
           ? [result.catalogSetId]
           : [],
       );
+      const createdSourceSetNumbers = importResults.flatMap((result) =>
+        result.status === 'created' && result.sourceSetNumber
+          ? [result.sourceSetNumber]
+          : [],
+      );
 
       if (createdSetIds.length > 0) {
         try {
@@ -951,6 +1429,64 @@ export async function runCatalogBulkOnboarding({
               : 'Catalog minifig enrichment failed after bulk onboarding import.',
           );
         }
+
+        if (!createdSourceSetNumbers.length) {
+          importSummary.bricksetEnrichmentAttempted = false;
+        } else {
+          try {
+            const bricksetResult = await syncBricksetEnrichmentMetadataFn({
+              dryRun: false,
+              setNumbers: createdSourceSetNumbers,
+            });
+            const themeMappingResult = await applyBricksetPublicThemeMappingsFn(
+              {
+                metadataRecords: bricksetResult.metadataRecords,
+              },
+            );
+
+            importSummary.bricksetEnrichmentAttempted = true;
+            importSummary.bricksetEnrichmentMatchedCount =
+              bricksetResult.matchedCatalogSetCount;
+            importSummary.bricksetEnrichmentMetadataUpsertedCount =
+              bricksetResult.sourceMetadataUpsertedCount;
+            importSummary.collectionSnapshotsRebuiltBySlug = Object.fromEntries(
+              Object.entries(bricksetResult.summaryByCollectionSlug).map(
+                ([collectionSlug, summary]) => [
+                  collectionSlug,
+                  summary.pageCount,
+                ],
+              ),
+            );
+            importSummary.themeMappingsUpdatedCount =
+              themeMappingResult.updatedCount;
+
+            console.info('[catalog-bulk-onboarding] brickset_enrichment', {
+              attempted: true,
+              collectionSnapshotsRebuiltBySlug:
+                importSummary.collectionSnapshotsRebuiltBySlug,
+              matchedCount: importSummary.bricksetEnrichmentMatchedCount,
+              metadataUpsertedCount:
+                importSummary.bricksetEnrichmentMetadataUpsertedCount,
+              setNumbers: createdSourceSetNumbers,
+              themeMappingsUpdatedCount:
+                importSummary.themeMappingsUpdatedCount,
+            });
+          } catch (error) {
+            importSummary.bricksetEnrichmentAttempted = true;
+            importSummary.bricksetEnrichmentMatchedCount = 0;
+            importSummary.bricksetEnrichmentMetadataUpsertedCount = 0;
+            importSummary.collectionSnapshotsRebuiltBySlug = {};
+            importSummary.themeMappingsUpdatedCount = 0;
+
+            console.warn(
+              error instanceof Error
+                ? error.message
+                : 'Brickset enrichment failed after bulk onboarding import.',
+            );
+          }
+        }
+      } else {
+        importSummary.bricksetEnrichmentAttempted = false;
       }
 
       completeStage({
@@ -1208,6 +1744,12 @@ export async function runCatalogBulkOnboarding({
     if (revalidationTargets.length > 0) {
       try {
         await revalidatePublicCatalogPathsFn({
+          additionalTags: [
+            cacheTags.collections(),
+            ...bricksetBackedCollectionSlugs.map((collectionSlug) =>
+              cacheTags.collection(collectionSlug),
+            ),
+          ],
           reason: 'catalog_bulk_onboarding',
           targets: revalidationTargets,
         });

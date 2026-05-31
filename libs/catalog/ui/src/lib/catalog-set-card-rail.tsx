@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type {
   ComponentProps,
+  MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from 'react';
@@ -55,6 +56,15 @@ interface CatalogSetCardRailScrollbarDragState {
   startScrollLeft: number;
 }
 
+interface CatalogSetCardRailGestureState {
+  didDrag: boolean;
+  mode: 'horizontal' | 'vertical' | null;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startScrollLeft: number;
+}
+
 interface CatalogSetCardRailProps {
   ariaLabel: string;
   items: readonly CatalogSetCardRailItem[];
@@ -65,6 +75,9 @@ interface CatalogSetCardRailProps {
 }
 
 const RAIL_SCROLL_EPSILON = 1;
+const RAIL_GESTURE_AXIS_THRESHOLD_PX = 8;
+const RAIL_GESTURE_AXIS_RATIO = 1.25;
+const RAIL_CLICK_SUPPRESS_THRESHOLD_PX = 6;
 
 function getRailMetrics(
   railElement: HTMLDivElement,
@@ -223,6 +236,10 @@ function CatalogSetCardRailViewport({
   const scrollbarRef = useRef<HTMLDivElement>(null);
   const scrollbarDragStateRef =
     useRef<CatalogSetCardRailScrollbarDragState | null>(null);
+  const railGestureStateRef = useRef<CatalogSetCardRailGestureState | null>(
+    null,
+  );
+  const suppressNextRailClickRef = useRef(false);
   const [railMetrics, setRailMetrics] = useState<CatalogSetCardRailMetrics>({
     canScrollNext: false,
     canScrollPrevious: false,
@@ -378,6 +395,113 @@ function CatalogSetCardRailViewport({
       left: nextScrollLeft - railElement.scrollLeft,
     });
     queueRailMetricsFollowUp();
+  }
+
+  function cancelRailMomentum() {
+    const railElement = railRef.current;
+
+    if (!railElement) {
+      return;
+    }
+
+    railElement.scrollTo?.({
+      behavior: 'auto',
+      left: railElement.scrollLeft,
+    });
+    railElement.scrollLeft = railElement.scrollLeft;
+  }
+
+  function handleRailPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    cancelRailMomentum();
+
+    if (
+      event.pointerType === 'mouse' ||
+      event.button !== 0 ||
+      !railMetrics.hasOverflow
+    ) {
+      railGestureStateRef.current = null;
+
+      return;
+    }
+
+    railGestureStateRef.current = {
+      didDrag: false,
+      mode: null,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startScrollLeft: event.currentTarget.scrollLeft,
+    };
+  }
+
+  function handleRailPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const gestureState = railGestureStateRef.current;
+
+    if (!gestureState || gestureState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - gestureState.startClientX;
+    const deltaY = event.clientY - gestureState.startClientY;
+    const absoluteDeltaX = Math.abs(deltaX);
+    const absoluteDeltaY = Math.abs(deltaY);
+
+    if (!gestureState.mode) {
+      if (
+        absoluteDeltaX < RAIL_GESTURE_AXIS_THRESHOLD_PX &&
+        absoluteDeltaY < RAIL_GESTURE_AXIS_THRESHOLD_PX
+      ) {
+        return;
+      }
+
+      gestureState.mode =
+        absoluteDeltaX > absoluteDeltaY * RAIL_GESTURE_AXIS_RATIO
+          ? 'horizontal'
+          : 'vertical';
+
+      if (gestureState.mode === 'horizontal') {
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+      }
+    }
+
+    if (gestureState.mode !== 'horizontal') {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (absoluteDeltaX >= RAIL_CLICK_SUPPRESS_THRESHOLD_PX) {
+      gestureState.didDrag = true;
+    }
+
+    setRailScrollPosition(gestureState.startScrollLeft - deltaX);
+  }
+
+  function handleRailPointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    const gestureState = railGestureStateRef.current;
+
+    if (!gestureState || gestureState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    suppressNextRailClickRef.current =
+      gestureState.mode === 'horizontal' && gestureState.didDrag;
+    railGestureStateRef.current = null;
+    queueRailMetricsFollowUp();
+  }
+
+  function handleRailClickCapture(event: ReactMouseEvent<HTMLDivElement>) {
+    if (!suppressNextRailClickRef.current) {
+      return;
+    }
+
+    suppressNextRailClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   function getScrollbarLayout() {
@@ -548,6 +672,11 @@ function CatalogSetCardRailViewport({
         className={styles.setCardRailTrack}
         id={railId}
         layout="rail"
+        onClickCapture={handleRailClickCapture}
+        onPointerCancel={handleRailPointerEnd}
+        onPointerDownCapture={handleRailPointerDown}
+        onPointerMove={handleRailPointerMove}
+        onPointerUp={handleRailPointerEnd}
         ref={railRef}
         variant={variant}
       >

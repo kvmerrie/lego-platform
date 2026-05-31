@@ -2059,7 +2059,8 @@ export async function promoteCatalogFromStagingToProduction({
     const normalizedCollectionPageSnapshots = collectionPageSnapshots.filter(
       (snapshot) =>
         snapshot.collection_slug === 'nieuwe-lego-sets' ||
-        snapshot.collection_slug === 'retiring-lego-sets',
+        snapshot.collection_slug === 'retiring-lego-sets' ||
+        snapshot.collection_slug === 'lego-voor-volwassenen',
     );
     const collectionPageSnapshotsBySlug =
       normalizedCollectionPageSnapshots.reduce<Record<string, number>>(

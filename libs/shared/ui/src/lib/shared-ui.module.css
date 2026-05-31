@@ -599,6 +599,54 @@
     flex: 0 0 auto;
   }
 
+  @media (max-width: 47.9375rem) {
+    .breadcrumbNav {
+      max-inline-size: 100%;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .breadcrumbList {
+      flex-wrap: nowrap;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .breadcrumbItem {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .breadcrumbItem[data-current='true'] {
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .breadcrumbCurrent {
+      display: block;
+      overflow: hidden;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .breadcrumbLink {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 23.75rem) {
+    .breadcrumbItem:not([data-current='true']):not(:first-child) {
+      max-inline-size: min(8rem, 36vw);
+      overflow: hidden;
+    }
+  }
+
   .badge {
     align-self: flex-start;
     align-items: center;

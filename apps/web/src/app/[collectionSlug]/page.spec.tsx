@@ -70,21 +70,39 @@ vi.mock('@lego-platform/catalog/util', () => ({
             metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
             slug: 'lego-sets-onder-50-euro',
           }
-        : undefined,
+        : slug === 'lego-voor-volwassenen'
+          ? {
+              ...collectionPageMocks.collectionConfig,
+              canonicalPath: '/lego-voor-volwassenen',
+              h1: 'LEGO voor volwassenen',
+              metaTitle: 'LEGO voor volwassenen | Brickhunt',
+              slug: 'lego-voor-volwassenen',
+              sort: {
+                default: 'recommended',
+                options: ['recommended', 'pieces-desc', 'newest'],
+              },
+            }
+          : undefined,
   isCatalogCollectionPageSnapshotSlug: (slug: string) =>
     [
       'nieuwe-lego-sets',
       'retiring-lego-sets',
       'lego-sets-onder-50-euro',
+      'lego-voor-volwassenen',
     ].includes(slug),
   listCatalogCollectionLandingPageConfigs: () => [
     collectionPageMocks.collectionConfig,
   ],
   normalizeCatalogCollectionLandingPageSortKey: ({
+    config,
     value,
   }: {
+    config?: { sort?: { default: string } };
     value?: string;
-  }) => value ?? collectionPageMocks.collectionConfig.sort.default,
+  }) =>
+    value ??
+    config?.sort?.default ??
+    collectionPageMocks.collectionConfig.sort.default,
 }));
 
 vi.mock('@lego-platform/shell/web', () => ({
@@ -174,6 +192,12 @@ describe('collection landing page route', () => {
             releaseYear: 2026,
             slug: 'spaceship-60430',
             theme: 'City',
+            publicTheme: {
+              name: 'City',
+              slug: 'city',
+              surfaceColor: '#e7f2ff',
+              surfaceTextColor: '#12385c',
+            },
           },
         ],
         totalSetCount: 1,
@@ -332,6 +356,11 @@ describe('collection landing page route', () => {
         setCards: [
           expect.objectContaining({
             id: '60430',
+            publicTheme: expect.objectContaining({
+              slug: 'city',
+              surfaceColor: '#e7f2ff',
+              surfaceTextColor: '#12385c',
+            }),
             priceContext: expect.objectContaining({
               currentPrice: 'Vanaf € 39,99',
             }),
@@ -339,5 +368,34 @@ describe('collection landing page route', () => {
         ],
       }),
     );
+  });
+
+  it('reads lego-voor-volwassenen from collection_page_snapshots', async () => {
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-voor-volwassenen',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          slug: 'lego-voor-volwassenen',
+        }),
+        limit: 40,
+        offset: 0,
+        sortKey: 'recommended',
+      }),
+    );
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
   });
 });

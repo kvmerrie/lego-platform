@@ -639,6 +639,7 @@ export function CatalogOfferComparisonRail({
   const overlayDialogRef = useRef<HTMLDivElement>(null);
   const railOffers = offers.slice(0, MAX_VISIBLE_OFFER_RAIL_ITEMS);
   const hasHiddenOffers = railOffers.length < offers.length;
+  const hasMultipleOffers = offers.length > 1;
   const comparisonContext = buildCompactOfferComparisonContext(offers);
   const railTitle = hasHiddenOffers
     ? `Nu bij ${railOffers.length} van ${offers.length} winkels`
@@ -647,7 +648,8 @@ export function CatalogOfferComparisonRail({
     offerCount: offers.length,
     summaryLabel,
   });
-  const viewAllLabel = `Vergelijk alle ${offers.length} winkel${
+  const viewAllLabel = 'Bekijk alle winkels';
+  const viewAllAriaLabel = `Vergelijk alle ${offers.length} winkel${
     offers.length === 1 ? '' : 's'
   }`;
   const closeOverlay = useCallback(() => {
@@ -772,16 +774,16 @@ export function CatalogOfferComparisonRail({
             ))}
           </ol>
         </div>
-        {hasHiddenOffers ? (
+        {hasMultipleOffers ? (
           <div className={styles.offerRailFooter}>
             <Button
-              aria-label={viewAllLabel}
-              className={`${styles.railActionLink} ${styles.offerRailViewAllAction}`}
+              aria-label={viewAllAriaLabel}
+              className={styles.offerRailViewAllAction}
               onClick={(event) => {
                 triggerRef.current = event.currentTarget;
                 setIsOverlayOpen(true);
               }}
-              tone="inline"
+              tone="secondary"
               type="button"
             >
               {viewAllLabel}

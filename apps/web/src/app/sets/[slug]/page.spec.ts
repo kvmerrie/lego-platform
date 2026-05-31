@@ -1720,6 +1720,8 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('href="/themes"');
     expect(html).toContain('href="/themes/editions"');
+    expect(html).toContain('Nike Dunk x LEGO');
+    expect(html).not.toContain('Setdetail');
     expect(html).not.toContain('href="/themes/other"');
     expect(html).not.toContain('href="/themes/nike-x-lego-collectie"');
   });

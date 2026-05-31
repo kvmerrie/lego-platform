@@ -15,8 +15,6 @@
   color: var(--theme-index-text);
   padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--theme-index-text) 10%, transparent);
 }
 
 .introContent {

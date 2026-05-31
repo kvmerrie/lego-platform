@@ -9,6 +9,8 @@ import type {
 } from '@lego-platform/commerce/data-access-server';
 import type { CommerceSyncRunResult } from './commerce-sync-server';
 import {
+  applyBricksetPublicThemeMappings,
+  backfillBricksetPublicThemeMappings,
   getCatalogBulkOnboardingRun,
   getLatestCatalogBulkOnboardingRun,
   runCatalogBulkOnboarding,
@@ -286,6 +288,62 @@ describe('catalog bulk onboarding server', () => {
       processedSets: 1,
       summariesUpserted: 1,
     });
+    const syncBricksetEnrichmentMetadataFn = vi.fn().mockResolvedValue({
+      additionalImageMatches: 2,
+      collectionPageSnapshotCount: 3,
+      collectionPageSnapshotsUpsertedCount: 3,
+      dryRun: false,
+      fetchedSetCount: 1,
+      imageReferenceCount: 3,
+      matchedCatalogSetCount: 1,
+      maxSets: undefined,
+      metadataRecords: [
+        {
+          catalogSetId: '10316',
+          catalogSetName: 'Rivendell',
+          metadataJson: {
+            bricksetSetId: 123,
+            images: [],
+            sourceSeen: true,
+            subtheme: 'The Lord of the Rings',
+            theme: 'Icons',
+          },
+          setNumber: '10316-1',
+        },
+      ],
+      missingOnly: false,
+      offset: 0,
+      selectedCandidateCount: 1,
+      skippedMissingSetNumberCount: 0,
+      sourceMetadataUpsertedCount: 1,
+      summaryByCollectionSlug: {
+        'lego-voor-volwassenen': {
+          bricksetMetadataUsedCount: 1,
+          itemsBuilt: 40,
+          missingPriceSnapshotCount: 0,
+          pageCount: 1,
+          totalCount: 40,
+        },
+        'nieuwe-lego-sets': {
+          bricksetMetadataUsedCount: 1,
+          itemsBuilt: 40,
+          missingPriceSnapshotCount: 0,
+          pageCount: 1,
+          totalCount: 40,
+        },
+        'retiring-lego-sets': {
+          bricksetMetadataUsedCount: 1,
+          itemsBuilt: 12,
+          missingPriceSnapshotCount: 0,
+          pageCount: 1,
+          totalCount: 12,
+        },
+      },
+      unmatchedCatalogSets: [],
+    });
+    const applyBricksetPublicThemeMappingsFn = vi.fn().mockResolvedValue({
+      updatedCount: 1,
+    });
     const generateCommerceOfferSeedCandidatesFn = vi.fn().mockResolvedValue({
       candidateCount: 8,
       insertedCount: 4,
@@ -348,6 +406,7 @@ describe('catalog bulk onboarding server', () => {
 
     const result = await runCatalogBulkOnboarding({
       dependencies: {
+        applyBricksetPublicThemeMappingsFn,
         createCatalogSetFn,
         enrichCatalogSetMinifigSummariesFn,
         generateCommerceOfferSeedCandidatesFn,
@@ -357,6 +416,7 @@ describe('catalog bulk onboarding server', () => {
         revalidatePublicCatalogPathsFn,
         runCommerceSyncFn,
         searchCatalogMissingSetsFn,
+        syncBricksetEnrichmentMetadataFn,
         validateGeneratedCommerceOfferSeedCandidatesFn,
       },
       options: {
@@ -369,6 +429,17 @@ describe('catalog bulk onboarding server', () => {
     expect(createCatalogSetFn).toHaveBeenCalledTimes(1);
     expect(enrichCatalogSetMinifigSummariesFn).toHaveBeenCalledWith({
       setIds: ['10316'],
+    });
+    expect(syncBricksetEnrichmentMetadataFn).toHaveBeenCalledWith({
+      dryRun: false,
+      setNumbers: ['10316-1'],
+    });
+    expect(applyBricksetPublicThemeMappingsFn).toHaveBeenCalledWith({
+      metadataRecords: expect.arrayContaining([
+        expect.objectContaining({
+          catalogSetId: '10316',
+        }),
+      ]),
     });
     expect(generateCommerceOfferSeedCandidatesFn).toHaveBeenCalledWith({
       filters: {
@@ -391,6 +462,12 @@ describe('catalog bulk onboarding server', () => {
       workspaceRoot,
     });
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      additionalTags: [
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:lego-voor-volwassenen',
+        'collection:retiring-lego-sets',
+      ],
       reason: 'catalog_bulk_onboarding',
       targets: expect.arrayContaining([
         {
@@ -406,6 +483,19 @@ describe('catalog bulk onboarding server', () => {
       ]),
     });
     expect(result.run.status).toBe('completed');
+    expect(result.run.importStep.summary).toEqual(
+      expect.objectContaining({
+        bricksetEnrichmentAttempted: true,
+        bricksetEnrichmentMatchedCount: 1,
+        bricksetEnrichmentMetadataUpsertedCount: 1,
+        collectionSnapshotsRebuiltBySlug: {
+          'lego-voor-volwassenen': 1,
+          'nieuwe-lego-sets': 1,
+          'retiring-lego-sets': 1,
+        },
+        themeMappingsUpdatedCount: 1,
+      }),
+    );
     expect(result.run.setProgressById['10316']).toEqual(
       expect.objectContaining({
         catalogSetId: '10316',
@@ -436,6 +526,500 @@ describe('catalog bulk onboarding server', () => {
     );
   });
 
+  test('does not call Brickset enrichment when import creates no sets', async () => {
+    const workspaceRoot = await createTempDirectory();
+    const stateFilePath = join(workspaceRoot, 'state', 'bulk.json');
+    const existingCatalogSet = createCatalogSet({
+      name: 'Notre-Dame de Paris',
+      setId: '21061',
+      sourceSetNumber: '21061-1',
+    });
+    const syncBricksetEnrichmentMetadataFn = vi.fn();
+
+    const result = await runCatalogBulkOnboarding({
+      dependencies: {
+        enrichCatalogSetMinifigSummariesFn: vi.fn(),
+        generateCommerceOfferSeedCandidatesFn: vi.fn().mockResolvedValue({
+          candidateCount: 0,
+          insertedCount: 0,
+          skippedCount: 0,
+          supportedMerchantSlugs: [],
+          updatedCount: 0,
+        }),
+        listCanonicalCatalogSetsFn: vi
+          .fn()
+          .mockResolvedValue([existingCatalogSet]),
+        listCommercePrimaryCoverageGapAuditFn: vi.fn().mockResolvedValue(
+          createGapAudit({
+            rows: [],
+          }),
+        ),
+        listCommercePrimaryCoverageReportFn: vi.fn().mockResolvedValue(
+          createCoverageReport({
+            rows: [],
+          }),
+        ),
+        revalidatePublicCatalogPathsFn: vi.fn(),
+        runCommerceSyncFn: vi
+          .fn()
+          .mockResolvedValue(createSyncSummary(['21061'])),
+        searchCatalogMissingSetsFn: vi.fn(),
+        syncBricksetEnrichmentMetadataFn,
+        validateGeneratedCommerceOfferSeedCandidatesFn: vi
+          .fn()
+          .mockResolvedValue({
+            invalidCount: 0,
+            processedCount: 0,
+            skippedCount: 0,
+            staleCount: 0,
+            validCount: 0,
+          }),
+      },
+      options: {
+        setIds: ['21061'],
+        stateFilePath,
+        workspaceRoot,
+      },
+    });
+
+    expect(syncBricksetEnrichmentMetadataFn).not.toHaveBeenCalled();
+    expect(result.run.importStep.summary).toEqual(
+      expect.objectContaining({
+        bricksetEnrichmentAttempted: false,
+        createdCount: 0,
+      }),
+    );
+  });
+
+  test('maps Brickset subthemes to supported public themes without changing the source theme', async () => {
+    const updates: Array<{ setId: string; values: Record<string, unknown> }> =
+      [];
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_themes') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: 'theme:lord-of-the-rings',
+                    is_public: true,
+                    status: 'active',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        return {
+          update: vi.fn((values: Record<string, unknown>) => ({
+            eq: vi.fn((column: string, setId: string) => {
+              updates.push({
+                setId,
+                values,
+              });
+
+              return Promise.resolve({ error: null });
+            }),
+          })),
+        };
+      }),
+    };
+
+    const result = await applyBricksetPublicThemeMappings({
+      metadataRecords: [
+        {
+          catalogSetId: '11377',
+          catalogSetName: 'The Lord of the Rings: Minas Tirith',
+          metadataJson: {
+            bricksetSetId: 11377,
+            images: [],
+            sourceSeen: true,
+            subtheme: 'The Lord of the Rings',
+            theme: 'Icons',
+          },
+          setNumber: '11377-1',
+        },
+      ],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof applyBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(result.updatedCount).toBe(1);
+    expect(updates).toEqual([
+      {
+        setId: '11377',
+        values: expect.objectContaining({
+          primary_theme_id: 'theme:lord-of-the-rings',
+        }),
+      },
+    ]);
+    expect(updates[0]?.values).not.toHaveProperty('source_theme_id');
+  });
+
+  test('backfills existing Brickset-enriched Icons sets to the stronger public theme', async () => {
+    const updates: Array<{ setId: string; values: Record<string, unknown> }> =
+      [];
+    const catalogSets = [
+      {
+        name: 'The Lord of the Rings: Minas Tirith',
+        primary_theme_id: 'theme:icons',
+        set_id: '11377',
+        slug: 'the-lord-of-the-rings-minas-tirith-11377',
+        source_theme_id: 'rebrickable:721',
+      },
+      {
+        name: 'Generic Icons Display Set',
+        primary_theme_id: 'theme:icons',
+        set_id: '10300',
+        slug: 'generic-icons-display-set-10300',
+        source_theme_id: 'rebrickable:721',
+      },
+    ];
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn(
+                (column: string, requestedSetIds: readonly string[]) => ({
+                  order: vi.fn().mockResolvedValue({
+                    data: catalogSets.filter((setRow) =>
+                      requestedSetIds.includes(setRow.set_id),
+                    ),
+                    error: null,
+                  }),
+                }),
+              ),
+            })),
+            update: vi.fn((values: Record<string, unknown>) => ({
+              eq: vi.fn((column: string, setId: string) => {
+                updates.push({ setId, values });
+
+                return Promise.resolve({ error: null });
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_set_source_metadata') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    in: vi.fn().mockResolvedValue({
+                      data: [
+                        {
+                          catalog_set_id: '11377',
+                          metadata_json: {
+                            images: [],
+                            sourceSeen: true,
+                            subtheme: 'The Lord of the Rings',
+                            theme: 'Icons',
+                          },
+                        },
+                        {
+                          catalog_set_id: '10300',
+                          metadata_json: {
+                            images: [],
+                            sourceSeen: true,
+                            theme: 'Icons',
+                          },
+                        },
+                      ],
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            })),
+          };
+        }
+
+        if (table === 'catalog_themes') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    display_name: 'Icons',
+                    id: 'theme:icons',
+                    is_public: true,
+                    slug: 'icons',
+                    status: 'active',
+                  },
+                  {
+                    display_name: 'Lord of the Rings',
+                    id: 'lord-of-the-rings',
+                    is_public: true,
+                    slug: 'lord-of-the-rings',
+                    status: 'active',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        throw new Error(`Unexpected table ${table}`);
+      }),
+    };
+
+    const result = await backfillBricksetPublicThemeMappings({
+      dryRun: false,
+      revalidate: false,
+      setIds: ['11377', '10300'],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof backfillBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(result.inspectedCount).toBe(2);
+    expect(result.remappedCount).toBe(1);
+    expect(result.skippedCount).toBe(1);
+    expect(updates).toEqual([
+      {
+        setId: '11377',
+        values: expect.objectContaining({
+          primary_theme_id: 'lord-of-the-rings',
+        }),
+      },
+    ]);
+    expect(updates[0]?.values).not.toHaveProperty('source_theme_id');
+    expect(result.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: 'remapped',
+          afterThemeSlug: 'lord-of-the-rings',
+          beforeThemeSlug: 'icons',
+          setId: '11377',
+        }),
+        expect.objectContaining({
+          action: 'skipped',
+          beforeThemeSlug: 'icons',
+          reason: 'no_supported_public_theme_mapping',
+          setId: '10300',
+        }),
+      ]),
+    );
+  });
+
+  test('dry-run Brickset theme backfill reports changes without writing', async () => {
+    const updateCatalogSet = vi.fn();
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn(() => ({
+                order: vi.fn().mockResolvedValue({
+                  data: [
+                    {
+                      name: 'The Lord of the Rings: Minas Tirith',
+                      primary_theme_id: 'theme:icons',
+                      set_id: '11377',
+                      slug: 'the-lord-of-the-rings-minas-tirith-11377',
+                      source_theme_id: 'rebrickable:721',
+                    },
+                  ],
+                  error: null,
+                }),
+              })),
+            })),
+            update: updateCatalogSet,
+          };
+        }
+
+        if (table === 'catalog_set_source_metadata') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    in: vi.fn().mockResolvedValue({
+                      data: [
+                        {
+                          catalog_set_id: '11377',
+                          metadata_json: {
+                            subtheme: 'The Lord of the Rings',
+                            theme: 'Icons',
+                          },
+                        },
+                      ],
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            })),
+          };
+        }
+
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: 'theme:icons',
+                  is_public: true,
+                  slug: 'icons',
+                  status: 'active',
+                },
+                {
+                  id: 'theme:lord-of-the-rings',
+                  is_public: true,
+                  slug: 'lord-of-the-rings',
+                  status: 'active',
+                },
+              ],
+              error: null,
+            }),
+          })),
+        };
+      }),
+    };
+
+    const result = await backfillBricksetPublicThemeMappings({
+      dryRun: true,
+      setIds: ['11377'],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof backfillBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(result.remappedCount).toBe(1);
+    expect(updateCatalogSet).not.toHaveBeenCalled();
+  });
+
+  test('Brickset theme backfill revalidates affected set and old/new theme paths', async () => {
+    const revalidatePublicCatalogPathsFn = vi.fn().mockResolvedValue({
+      attempted: true,
+      pathCount: 3,
+      paths: [
+        '/sets/the-lord-of-the-rings-minas-tirith-11377',
+        '/themes/icons',
+        '/themes/lord-of-the-rings',
+      ],
+      skipped: false,
+      tagCount: 6,
+      tags: [
+        'set:11377',
+        'theme:icons',
+        'theme:lord-of-the-rings',
+        'themes',
+        'catalog',
+        'sets',
+      ],
+    });
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn(() => ({
+                order: vi.fn().mockResolvedValue({
+                  data: [
+                    {
+                      name: 'The Lord of the Rings: Minas Tirith',
+                      primary_theme_id: 'theme:icons',
+                      set_id: '11377',
+                      slug: 'the-lord-of-the-rings-minas-tirith-11377',
+                      source_theme_id: 'rebrickable:721',
+                    },
+                  ],
+                  error: null,
+                }),
+              })),
+            })),
+            update: vi.fn(() => ({
+              eq: vi.fn().mockResolvedValue({ error: null }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_set_source_metadata') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    in: vi.fn().mockResolvedValue({
+                      data: [
+                        {
+                          catalog_set_id: '11377',
+                          metadata_json: {
+                            subtheme: 'The Lord of the Rings',
+                            theme: 'Icons',
+                          },
+                        },
+                      ],
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            })),
+          };
+        }
+
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn().mockResolvedValue({
+              data: [
+                {
+                  id: 'theme:icons',
+                  is_public: true,
+                  slug: 'icons',
+                  status: 'active',
+                },
+                {
+                  id: 'theme:lord-of-the-rings',
+                  is_public: true,
+                  slug: 'lord-of-the-rings',
+                  status: 'active',
+                },
+              ],
+              error: null,
+            }),
+          })),
+        };
+      }),
+    };
+
+    await backfillBricksetPublicThemeMappings({
+      dryRun: false,
+      revalidatePublicCatalogPathsFn,
+      setIds: ['11377'],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof backfillBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        additionalPaths: expect.arrayContaining([
+          '/sets/the-lord-of-the-rings-minas-tirith-11377',
+          '/themes/icons',
+          '/themes/lord-of-the-rings',
+        ]),
+        additionalTags: expect.arrayContaining([
+          'set:11377',
+          'theme:icons',
+          'theme:lord-of-the-rings',
+          'themes',
+          'catalog',
+          'sets',
+        ]),
+        reason: 'brickset_public_theme_mapping_backfill',
+      }),
+    );
+  });
+
   test('starts a run for application code and makes the running state readable before completion', async () => {
     const workspaceRoot = await createTempDirectory();
     const stateFilePath = join(workspaceRoot, 'state', 'bulk.json');
@@ -453,6 +1037,9 @@ describe('catalog bulk onboarding server', () => {
     });
     const startedRun = await startCatalogBulkOnboardingRun({
       dependencies: {
+        applyBricksetPublicThemeMappingsFn: vi.fn().mockResolvedValue({
+          updatedCount: 0,
+        }),
         createCatalogSetFn: vi.fn().mockResolvedValue(catalogSet),
         enrichCatalogSetMinifigSummariesFn: vi.fn().mockResolvedValue({
           changedSetIds: [],
@@ -484,6 +1071,14 @@ describe('catalog bulk onboarding server', () => {
             ],
           }),
         ),
+        revalidatePublicCatalogPathsFn: vi.fn().mockResolvedValue({
+          attempted: true,
+          pathCount: 1,
+          paths: ['/sets/rivendell-10316'],
+          skipped: false,
+          tagCount: 1,
+          tags: ['set:10316'],
+        }),
         runCommerceSyncFn: vi
           .fn()
           .mockResolvedValue(createSyncSummary(['10316'])),
@@ -500,6 +1095,23 @@ describe('catalog bulk onboarding server', () => {
             theme: catalogSet.primaryTheme,
           },
         ]),
+        syncBricksetEnrichmentMetadataFn: vi.fn().mockResolvedValue({
+          additionalImageMatches: 0,
+          collectionPageSnapshotCount: 0,
+          collectionPageSnapshotsUpsertedCount: 0,
+          dryRun: false,
+          fetchedSetCount: 0,
+          imageReferenceCount: 0,
+          matchedCatalogSetCount: 0,
+          metadataRecords: [],
+          missingOnly: false,
+          offset: 0,
+          selectedCandidateCount: 1,
+          skippedMissingSetNumberCount: 0,
+          sourceMetadataUpsertedCount: 0,
+          summaryByCollectionSlug: {},
+          unmatchedCatalogSets: [],
+        }),
         validateGeneratedCommerceOfferSeedCandidatesFn: vi
           .fn()
           .mockResolvedValue({
@@ -555,7 +1167,7 @@ describe('catalog bulk onboarding server', () => {
       updatedCount: 0,
     });
 
-    for (let attempt = 0; attempt < 20; attempt += 1) {
+    for (let attempt = 0; attempt < 50; attempt += 1) {
       const completedRun = await getCatalogBulkOnboardingRun({
         options: {
           stateFilePath,
@@ -573,7 +1185,7 @@ describe('catalog bulk onboarding server', () => {
         return;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
     throw new Error('Expected the started bulk onboarding run to complete.');

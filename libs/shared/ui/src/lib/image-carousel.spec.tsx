@@ -1413,6 +1413,9 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
     expect(css).toContain('height: 508px;');
     expect(css).toContain('@media (max-width: 47.99rem)');
+    expect(css).toContain(
+      '.detailMainButton,\n  .lightboxMediaFrame {\n    touch-action: pan-y;',
+    );
     expect(css).toContain('.detailThumbRow {\n    display: none;');
     expect(css).toContain('.detailGalleryCounter {\n    left: 0;');
     expect(css).toContain('.detailGalleryActions {\n    bottom: 0;');

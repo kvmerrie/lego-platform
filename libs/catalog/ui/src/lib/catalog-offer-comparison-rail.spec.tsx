@@ -129,9 +129,8 @@ describe('CatalogOfferComparisonRail overlay', () => {
       );
     });
 
-    const viewAllLabel = `Vergelijk alle ${overlayOffers.length} winkels`;
     const trigger = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent?.includes(viewAllLabel),
+      (button) => button.textContent?.includes('Bekijk alle winkels'),
     );
 
     expect(trigger).not.toBeUndefined();
@@ -172,6 +171,42 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(container.textContent).toContain('LEGO®');
     expect(container.textContent).not.toContain('LEGO® LEGO®');
+  });
+
+  it('renders the full comparison trigger for normal multi-shop rails', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={offers}
+          summaryLabel="2 winkels nagekeken"
+        />,
+      );
+    });
+
+    const trigger = Array.from(container.querySelectorAll('button')).find(
+      (button) => button.textContent?.includes('Bekijk alle winkels'),
+    );
+
+    expect(trigger).not.toBeUndefined();
+    expect(trigger?.getAttribute('aria-label')).toBe(
+      'Vergelijk alle 2 winkels',
+    );
+  });
+
+  it('does not render the full comparison trigger for a single offer', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[offers[0]]}
+          summaryLabel="1 winkel nagekeken"
+        />,
+      );
+    });
+
+    expect(container.textContent).not.toContain('Bekijk alle winkels');
+    expect(
+      container.querySelector('button[aria-label="Vergelijk alle 1 winkel"]'),
+    ).toBeNull();
   });
 
   it('uses the shared full-screen overlay layer and locks background scroll', async () => {

@@ -131,6 +131,16 @@ export interface CatalogBrowsePaginationProps {
   topHref?: string;
 }
 
+type CatalogBrowsePaginationItem =
+  | {
+      page: number;
+      type: 'page';
+    }
+  | {
+      id: string;
+      type: 'ellipsis';
+    };
+
 function buildCatalogBrowsePageHref({
   basePath,
   page,
@@ -157,6 +167,54 @@ function buildCatalogBrowsePageHref({
   const queryString = searchParams.toString();
 
   return queryString ? `${basePath}?${queryString}` : basePath;
+}
+
+function buildCatalogBrowsePaginationItems({
+  currentPage,
+  maxNumericItems,
+  pageCount,
+  siblingCount,
+}: {
+  currentPage: number;
+  maxNumericItems: number;
+  pageCount: number;
+  siblingCount: number;
+}): CatalogBrowsePaginationItem[] {
+  if (pageCount <= maxNumericItems) {
+    return Array.from({ length: pageCount }, (_, index) => ({
+      page: index + 1,
+      type: 'page' as const,
+    }));
+  }
+
+  const innerNumericCount = Math.max(1, maxNumericItems - 2);
+  const desiredStart = currentPage - siblingCount;
+  const desiredEnd = currentPage + siblingCount;
+  const startPage = Math.max(
+    2,
+    Math.min(desiredStart, pageCount - innerNumericCount),
+  );
+  const endPage = Math.min(
+    pageCount - 1,
+    Math.max(desiredEnd, startPage + innerNumericCount - 1),
+  );
+  const items: CatalogBrowsePaginationItem[] = [{ page: 1, type: 'page' }];
+
+  if (startPage > 2) {
+    items.push({ id: 'start-ellipsis', type: 'ellipsis' });
+  }
+
+  for (let page = startPage; page <= endPage; page += 1) {
+    items.push({ page, type: 'page' });
+  }
+
+  if (endPage < pageCount - 1) {
+    items.push({ id: 'end-ellipsis', type: 'ellipsis' });
+  }
+
+  items.push({ page: pageCount, type: 'page' });
+
+  return items;
 }
 
 export function CatalogBrowsePagination({
@@ -190,6 +248,68 @@ export function CatalogBrowsePagination({
 
   const previousPage = Math.max(1, normalizedCurrentPage - 1);
   const nextPage = Math.min(normalizedPageCount, normalizedCurrentPage + 1);
+  const tabletItems = buildCatalogBrowsePaginationItems({
+    currentPage: normalizedCurrentPage,
+    maxNumericItems: 5,
+    pageCount: normalizedPageCount,
+    siblingCount: 1,
+  });
+  const desktopItems = buildCatalogBrowsePaginationItems({
+    currentPage: normalizedCurrentPage,
+    maxNumericItems: 7,
+    pageCount: normalizedPageCount,
+    siblingCount: 2,
+  });
+  const renderPageItems = (
+    items: readonly CatalogBrowsePaginationItem[],
+    breakpoint: 'desktop' | 'tablet',
+  ) => (
+    <ol
+      className={[
+        styles.browsePaginationList,
+        breakpoint === 'tablet'
+          ? styles.browsePaginationTabletList
+          : styles.browsePaginationDesktopList,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      data-pagination-breakpoint={breakpoint}
+    >
+      {items.map((item) =>
+        item.type === 'ellipsis' ? (
+          <li className={styles.browsePaginationItem} key={item.id}>
+            <span
+              aria-hidden="true"
+              className={styles.browsePaginationEllipsis}
+            >
+              ...
+            </span>
+          </li>
+        ) : (
+          <li className={styles.browsePaginationItem} key={item.page}>
+            <a
+              aria-current={
+                item.page === normalizedCurrentPage ? 'page' : undefined
+              }
+              aria-label={
+                item.page === normalizedCurrentPage
+                  ? `Pagina ${item.page}, huidige pagina`
+                  : `Ga naar pagina ${item.page}`
+              }
+              className={styles.browsePaginationPageLink}
+              href={buildCatalogBrowsePageHref({
+                basePath,
+                page: item.page,
+                queryParams,
+              })}
+            >
+              {item.page}
+            </a>
+          </li>
+        ),
+      )}
+    </ol>
+  );
 
   return (
     <nav
@@ -207,26 +327,16 @@ export function CatalogBrowsePagination({
       >
         Vorige
       </a>
-      <ol className={styles.browsePaginationList}>
-        {Array.from(
-          { length: normalizedPageCount },
-          (_, index) => index + 1,
-        ).map((page) => (
-          <li className={styles.browsePaginationItem} key={page}>
-            <a
-              aria-current={page === normalizedCurrentPage ? 'page' : undefined}
-              className={styles.browsePaginationPageLink}
-              href={buildCatalogBrowsePageHref({
-                basePath,
-                page,
-                queryParams,
-              })}
-            >
-              {page}
-            </a>
-          </li>
-        ))}
-      </ol>
+      <span
+        aria-current="page"
+        aria-label={`Pagina ${normalizedCurrentPage} van ${normalizedPageCount}`}
+        className={styles.browsePaginationMobileIndicator}
+        data-pagination-breakpoint="mobile"
+      >
+        {normalizedCurrentPage} van {normalizedPageCount}
+      </span>
+      {renderPageItems(tabletItems, 'tablet')}
+      {renderPageItems(desktopItems, 'desktop')}
       <a
         aria-disabled={
           normalizedCurrentPage === normalizedPageCount ? 'true' : undefined
@@ -1889,7 +1999,7 @@ export function CatalogSetDetailPanel({
                 </CatalogCanonicalText>
               ),
             },
-            { id: 'set-detail', label: 'Setdetail' },
+            { id: 'set-detail', label: visibleTitle },
           ],
         }}
         className={styles.detailPageIntro}

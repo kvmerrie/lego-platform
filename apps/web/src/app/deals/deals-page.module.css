@@ -12,8 +12,6 @@
   --deals-page-muted: var(--lego-text-muted);
   background: var(--deals-page-surface);
   border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
-  box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--deals-page-text) 10%, transparent);
   color: var(--deals-page-text);
   display: grid;
   gap: var(--lego-space-4);

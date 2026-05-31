@@ -8,7 +8,10 @@ import {
   bricksetGalleryAttributionText,
   type CatalogCanonicalSet,
 } from '@lego-platform/catalog/util';
-import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
+import {
+  syncCollectionPageSnapshots,
+  type CollectionPageSnapshotBuildResult,
+} from './collection-page-snapshot-server';
 
 const BRICKSET_API_BASE_URL = 'https://brickset.com/api/v3.asmx';
 const BRICKSET_SOURCE = 'brickset';
@@ -154,6 +157,7 @@ export interface BricksetEnrichmentSyncResult {
   skippedMissingSetNumberCount: number;
   sourceMetadataExistingCount?: number;
   sourceMetadataUpsertedCount: number;
+  summaryByCollectionSlug: CollectionPageSnapshotBuildResult['summaryByCollectionSlug'];
   unmatchedCatalogSets: readonly {
     name: string;
     setId: string;
@@ -595,7 +599,11 @@ export async function syncBricksetEnrichmentMetadata({
   const collectionPageSnapshotResult =
     !dryRun && sourceMetadataUpsertedCount > 0
       ? await syncCollectionPageSnapshotsFn({
-          collectionSlugs: ['nieuwe-lego-sets', 'retiring-lego-sets'],
+          collectionSlugs: [
+            'nieuwe-lego-sets',
+            'retiring-lego-sets',
+            'lego-voor-volwassenen',
+          ],
           dryRun: false,
           pageSize: 40,
         })
@@ -629,6 +637,8 @@ export async function syncBricksetEnrichmentMetadata({
     ).length,
     sourceMetadataExistingCount: existingSourceMetadataSetIds?.size,
     sourceMetadataUpsertedCount,
+    summaryByCollectionSlug:
+      collectionPageSnapshotResult.summaryByCollectionSlug,
     unmatchedCatalogSets: catalogSets
       .filter((catalogSet) => !matchedCatalogSetIds.has(catalogSet.setId))
       .map((catalogSet) => ({

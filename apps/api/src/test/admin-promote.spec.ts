@@ -117,16 +117,23 @@ describe('admin promote routes', () => {
   test('returns structured promotion counts on a successful run', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 4,
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       skipped: false,
-      tagCount: 7,
+      tagCount: 8,
       tags: [
         'homepage',
         'themes',
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -147,7 +154,13 @@ describe('admin promote routes', () => {
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       reason: 'catalog_promote',
       tags: [
         'homepage',
@@ -155,6 +168,7 @@ describe('admin promote routes', () => {
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -164,16 +178,23 @@ describe('admin promote routes', () => {
       durationMs: 421,
       revalidation: {
         attempted: true,
-        pathCount: 4,
-        paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+        pathCount: 5,
+        paths: [
+          '/',
+          '/themes',
+          '/nieuwe-lego-sets',
+          '/retiring-lego-sets',
+          '/lego-voor-volwassenen',
+        ],
         skipped: false,
-        tagCount: 7,
+        tagCount: 8,
         tags: [
           'homepage',
           'themes',
           'collections',
           'collection:nieuwe-lego-sets',
           'collection:retiring-lego-sets',
+          'collection:lego-voor-volwassenen',
           'catalog',
           'sets',
         ],
@@ -198,22 +219,24 @@ describe('admin promote routes', () => {
   test('revalidates changed public theme detail paths after promotion', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 5,
+      pathCount: 6,
       paths: [
         '/',
         '/themes',
         '/themes/icons',
         '/nieuwe-lego-sets',
         '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
       ],
       skipped: false,
-      tagCount: 7,
+      tagCount: 8,
       tags: [
         'homepage',
         'themes',
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -298,6 +321,7 @@ describe('admin promote routes', () => {
         '/themes/icons',
         '/nieuwe-lego-sets',
         '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
       ],
       reason: 'catalog_promote',
       tags: [
@@ -306,6 +330,7 @@ describe('admin promote routes', () => {
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -317,16 +342,23 @@ describe('admin promote routes', () => {
   test('skips targeted theme detail revalidation when too many themes changed', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 4,
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       skipped: false,
-      tagCount: 7,
+      tagCount: 8,
       tags: [
         'homepage',
         'themes',
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -408,7 +440,13 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       reason: 'catalog_promote',
       tags: [
         'homepage',
@@ -416,6 +454,7 @@ describe('admin promote routes', () => {
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -444,7 +483,13 @@ describe('admin promote routes', () => {
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       reason: 'catalog_promote',
       tags: [
         'homepage',
@@ -452,6 +497,7 @@ describe('admin promote routes', () => {
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -469,16 +515,23 @@ describe('admin promote routes', () => {
   test('keeps successful catalog promotion when revalidation is skipped as unconfigured', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: false,
-      pathCount: 4,
-      paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
       skipped: true,
-      tagCount: 7,
+      tagCount: 8,
       tags: [
         'homepage',
         'themes',
         'collections',
         'collection:nieuwe-lego-sets',
         'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
       ],
@@ -501,16 +554,23 @@ describe('admin promote routes', () => {
       expect.objectContaining({
         revalidation: {
           attempted: false,
-          pathCount: 4,
-          paths: ['/', '/themes', '/nieuwe-lego-sets', '/retiring-lego-sets'],
+          pathCount: 5,
+          paths: [
+            '/',
+            '/themes',
+            '/nieuwe-lego-sets',
+            '/retiring-lego-sets',
+            '/lego-voor-volwassenen',
+          ],
           skipped: true,
-          tagCount: 7,
+          tagCount: 8,
           tags: [
             'homepage',
             'themes',
             'collections',
             'collection:nieuwe-lego-sets',
             'collection:retiring-lego-sets',
+            'collection:lego-voor-volwassenen',
             'catalog',
             'sets',
           ],

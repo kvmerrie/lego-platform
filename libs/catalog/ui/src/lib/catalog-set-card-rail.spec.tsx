@@ -11,6 +11,36 @@ import {
   CatalogSetCardRailSection,
 } from './catalog-set-card-rail';
 
+function dispatchPointerEvent(
+  element: Element | null,
+  type: string,
+  options: {
+    clientX: number;
+    clientY: number;
+    pointerId?: number;
+    pointerType?: string;
+  },
+) {
+  if (!element) {
+    return;
+  }
+
+  const event = new Event(type, {
+    bubbles: true,
+    cancelable: true,
+  });
+
+  Object.assign(event, {
+    button: 0,
+    clientX: options.clientX,
+    clientY: options.clientY,
+    pointerId: options.pointerId ?? 1,
+    pointerType: options.pointerType ?? 'touch',
+  });
+
+  element.dispatchEvent(event);
+}
+
 const requestAnimationFrameMock = vi
   .spyOn(window, 'requestAnimationFrame')
   .mockImplementation((callback: FrameRequestCallback) => {
@@ -26,6 +56,7 @@ describe('CatalogSetCardRail', () => {
   let originalScrollWidthDescriptor: PropertyDescriptor | undefined;
   let originalScrollLeftDescriptor: PropertyDescriptor | undefined;
   let originalScrollBy: typeof HTMLElement.prototype.scrollBy | undefined;
+  let originalScrollTo: typeof HTMLElement.prototype.scrollTo | undefined;
   let railClientWidth = 720;
   let railScrollWidth = 1440;
   let scrollLeftValue = 0;
@@ -53,6 +84,7 @@ describe('CatalogSetCardRail', () => {
       'scrollLeft',
     );
     originalScrollBy = HTMLElement.prototype.scrollBy;
+    originalScrollTo = HTMLElement.prototype.scrollTo;
 
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
       configurable: true,
@@ -91,6 +123,15 @@ describe('CatalogSetCardRail', () => {
     }: ScrollToOptions) {
       if (this.className.toString().includes('setCardRailTrack')) {
         scrollLeftValue += left;
+        this.dispatchEvent(new Event('scroll'));
+      }
+    };
+
+    HTMLElement.prototype.scrollTo = function scrollTo({
+      left = 0,
+    }: ScrollToOptions) {
+      if (this.className.toString().includes('setCardRailTrack')) {
+        scrollLeftValue = left;
         this.dispatchEvent(new Event('scroll'));
       }
     };
@@ -151,6 +192,14 @@ describe('CatalogSetCardRail', () => {
 
     if (originalScrollBy) {
       HTMLElement.prototype.scrollBy = originalScrollBy;
+    } else {
+      delete (HTMLElement.prototype as { scrollBy?: unknown }).scrollBy;
+    }
+
+    if (originalScrollTo) {
+      HTMLElement.prototype.scrollTo = originalScrollTo;
+    } else {
+      delete (HTMLElement.prototype as { scrollTo?: unknown }).scrollTo;
     }
   });
 
@@ -628,6 +677,12 @@ describe('CatalogSetCardRail', () => {
       'utf-8',
     );
 
+    expect(css).toContain('--rail-scrollbar-track: color-mix(');
+    expect(css).toContain('--rail-scrollbar-thumb: color-mix(');
+    expect(css).toContain('--rail-card-border: var(--lego-border-subtle);');
+    expect(css).toContain(
+      'border: var(--lego-border-width-1) solid var(--rail-card-border);',
+    );
     expect(css).toContain(
       'background: var(--article-theme-surface, var(--lego-surface-default));',
     );
@@ -638,12 +693,104 @@ describe('CatalogSetCardRail', () => {
       '--article-theme-muted-text: var(--lego-text-muted);',
     );
     expect(css).not.toContain('--article-theme-surface-text: inherit;');
+    expect(css).toContain('.setCardRailSectionThemed {');
+    expect(css).toContain(
+      '--rail-card-border: color-mix(\n      in srgb,\n      var(--article-theme-surface-text, currentColor) 16%,',
+    );
+    expect(css).toContain(
+      '--rail-scrollbar-thumb-hover: color-mix(\n      in srgb,\n      var(--article-theme-surface-text, currentColor) 48%,',
+    );
+    expect(css).toContain('background: var(--rail-scrollbar-track);');
+    expect(css).toContain('background: var(--rail-scrollbar-thumb);');
+    expect(css).toContain('background: var(--rail-scrollbar-thumb-hover);');
     expect(css).toContain('.setCardRailSectionThemed .setCard');
     expect(css).toContain('.setCardRailSectionThemed .setCardLink');
     expect(css).toContain('color: var(--lego-text);');
     expect(css).toContain(
       '--lego-text-muted: var(--catalog-card-muted-text, #5d677c);',
     );
+  });
+
+  it('locks horizontal touch gestures and keeps taps responsive during rail momentum', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Uitgelichte setrail"
+          items={[
+            {
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+            {
+              href: '/sets/avengers-tower-76269',
+              id: '76269',
+              setSummary: {
+                id: '76269',
+                slug: 'avengers-tower-76269',
+                name: 'Avengers Tower',
+                theme: 'Marvel',
+                releaseYear: 2023,
+                pieces: 5202,
+                imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    const railTrack = container.querySelector(
+      '[class*="setCardRailTrack"]',
+    ) as HTMLDivElement | null;
+    const firstLink = container.querySelector<HTMLAnchorElement>(
+      'a[href="/sets/rivendell-10316"]',
+    );
+    const clickHandler = vi.fn((event: MouseEvent) => event.preventDefault());
+
+    firstLink?.addEventListener('click', clickHandler);
+    scrollLeftValue = 120;
+
+    dispatchPointerEvent(firstLink, 'pointerdown', {
+      clientX: 140,
+      clientY: 80,
+    });
+    firstLink?.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(clickHandler).toHaveBeenCalledTimes(1);
+
+    dispatchPointerEvent(railTrack, 'pointerdown', {
+      clientX: 140,
+      clientY: 80,
+    });
+    dispatchPointerEvent(railTrack, 'pointermove', {
+      clientX: 86,
+      clientY: 84,
+    });
+
+    expect(scrollLeftValue).toBe(174);
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.setCardRailTrack {');
+    expect(css).toContain('touch-action: pan-x;');
   });
 
   it('syncs scroll progress and button state after native horizontal scrolling', async () => {

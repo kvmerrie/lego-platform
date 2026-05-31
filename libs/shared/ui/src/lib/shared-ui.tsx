@@ -364,7 +364,11 @@ export function Breadcrumbs({
           const isCurrent = index === items.length - 1;
 
           return (
-            <li className={styles.breadcrumbItem} key={item.id}>
+            <li
+              className={styles.breadcrumbItem}
+              data-current={isCurrent ? 'true' : undefined}
+              key={item.id}
+            >
               {index > 0 ? (
                 <span aria-hidden="true" className={styles.breadcrumbSeparator}>
                   <ChevronRight size={14} strokeWidth={2.2} />

@@ -16,6 +16,7 @@ export const catalogCollectionPageSnapshotSlugs = [
   'nieuwe-lego-sets',
   'retiring-lego-sets',
   'lego-sets-onder-50-euro',
+  'lego-voor-volwassenen',
 ] as const;
 
 export type CatalogCollectionPageSnapshotSlug =
