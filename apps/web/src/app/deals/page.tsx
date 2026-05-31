@@ -1,24 +1,17 @@
-import React, { type ReactNode } from 'react';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import React from 'react';
 import {
-  getCatalogCommerceRailRuntimeDiagnostics,
-  getCatalogPartnerOfferRailDiagnostics,
-  listCatalogCurrentOfferCandidateSetIds,
-  listCatalogCurrentOfferSummariesBySetIds,
-  listCatalogCurrentOfferSummaries,
-  listCatalogDiscoverySignalsBySetId,
-  listCatalogSetCardsByIds,
-  listDiscoverBestDealSetCards,
-  listDiscoverRecentPriceChangeSetCards,
-  rankCatalogPartnerOfferSetCards,
+  getCatalogDealPageSnapshot,
+  type CatalogDealPageSortKey,
 } from '@lego-platform/catalog/data-access-web';
 import {
-  CatalogSetCardRailSection,
-  type CatalogSetCardCtaMode,
-  type CatalogSetCardPriceContext,
+  CatalogBrowsePagination,
+  CatalogSectionShell,
+  CatalogSetCard,
+  CatalogSetCardCollection,
 } from '@lego-platform/catalog/ui';
-import { type CatalogHomepageSetCard } from '@lego-platform/catalog/util';
-import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
+import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 import {
   buildCanonicalUrl,
   buildSetDetailPath,
@@ -26,25 +19,31 @@ import {
   cacheTags,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
-import {
-  type BrickhuntAnalyticsEventDescriptor,
-  getBrickhuntAnalyticsPriceVerdictFromDelta,
-} from '@lego-platform/shared/util';
+import { ActionLink, SectionHeading } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
-import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
-import {
-  buildCurrentSetCardPriceContextBySetId,
-  buildReliableDealDiscount,
-  getCurrentOfferRailDiagnostics,
-} from '../lib/current-set-card-price-context';
+import { getCachedPublicBrowsePageData } from '../lib/public-browse-page-cache';
 import styles from './deals-page.module.css';
 
 export const revalidate = false;
 
+const DEALS_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 const dealsMetadataTitle = 'LEGO deals en actuele prijzen';
 const dealsMetadataDescription =
   'Bekijk LEGO-sets met actuele prijzen, kooplinks en prijsbewegingen bij Brickhunt.';
+
+const dealSortLabels: Record<CatalogDealPageSortKey, string> = {
+  'discount-desc': 'Grootste korting',
+  'price-per-brick': 'Prijs per steen',
+  recommended: 'Beste deals',
+  'under-50': 'Onder €50',
+};
+
+const dealSortKeys: readonly CatalogDealPageSortKey[] = [
+  'recommended',
+  'discount-desc',
+  'price-per-brick',
+  'under-50',
+];
 
 export const metadata: Metadata = {
   title: dealsMetadataTitle,
@@ -60,510 +59,89 @@ export const metadata: Metadata = {
   },
 };
 
-const DEALS_RAIL_LIMIT = 20;
-const DEALS_MIN_OPTIONAL_RAIL_ITEMS = 4;
-
-function getPublicMerchandisingRotationSeed(): number {
-  return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
+function readSearchParam(
+  value: string | string[] | undefined,
+): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
-type CurrentOfferSummaryBySetId = Awaited<
-  ReturnType<typeof listCatalogCurrentOfferSummaries>
->;
+function normalizeDealPageNumber(value?: string): number {
+  const parsedPage = Number.parseInt(value ?? '', 10);
 
-interface DealsRailItem extends CatalogHomepageSetCard {
-  actions?: ReactNode;
-  ctaMode?: CatalogSetCardCtaMode;
-  priceContext?: CatalogSetCardPriceContext;
+  return Number.isFinite(parsedPage) && parsedPage > 1 ? parsedPage : 1;
 }
 
-function formatSetCount(count: number): string {
-  return `${count} set${count === 1 ? '' : 's'}`;
+function normalizeDealSortKey(value?: string): CatalogDealPageSortKey {
+  return dealSortKeys.includes(value as CatalogDealPageSortKey)
+    ? (value as CatalogDealPageSortKey)
+    : 'recommended';
 }
 
-function isDealsCommerceRailsDebugEnabled(): boolean {
-  return process.env['DEBUG_COMMERCE_RAILS'] === 'true';
+function getDealSortHref(sortKey: CatalogDealPageSortKey): string {
+  return sortKey === 'recommended'
+    ? webPathnames.deals
+    : `${webPathnames.deals}?sort=${sortKey}`;
 }
 
-function logDealsCommerceRailDiagnostics({
-  bestDealCandidateSetCards,
-  bestDealSetCards,
-  budgetSetCards,
-  catalogDiscoverySignalBySetId,
-  commerceCandidateSetCards,
-  currentOfferSummaryBySetId,
-  displaySetCards,
-  goodPricedCandidateSetCards,
-  goodPricedSetCards,
-  currentOfferSetCards,
-  recentPriceChangeSetCards,
-  rotationSeed,
-  runtimeDiagnostics,
+async function getCachedDealPageSnapshot({
+  limit,
+  offset,
+  sortKey,
 }: {
-  bestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
-  bestDealSetCards: readonly DealsRailItem[];
-  budgetSetCards: readonly DealsRailItem[];
-  catalogDiscoverySignalBySetId: Awaited<
-    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
-  >;
-  commerceCandidateSetCards: readonly CatalogHomepageSetCard[];
-  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
-  displaySetCards: readonly DealsRailItem[];
-  goodPricedCandidateSetCards: readonly CatalogHomepageSetCard[];
-  goodPricedSetCards: readonly DealsRailItem[];
-  currentOfferSetCards: readonly DealsRailItem[];
-  recentPriceChangeSetCards: readonly DealsRailItem[];
-  rotationSeed: number;
-  runtimeDiagnostics?: Awaited<
-    ReturnType<typeof getCatalogCommerceRailRuntimeDiagnostics>
-  >;
-}): void {
-  if (!isDealsCommerceRailsDebugEnabled()) {
-    return;
-  }
-
-  const offerSummaries = [...currentOfferSummaryBySetId.values()];
-
-  console.info('[commerce-rails] deals diagnostics', {
-    candidateCounts: {
-      bestDealsNow: bestDealCandidateSetCards.length,
-      commerceCandidates: commerceCandidateSetCards.length,
-      goodPriced: goodPricedCandidateSetCards.length,
-      offerSummaries: offerSummaries.length,
-    },
-    finalRailCounts: {
-      bestDealsNow: bestDealSetCards.length,
-      budget: budgetSetCards.length,
-      currentOffers: currentOfferSetCards.length,
-      display: displaySetCards.length,
-      goodPriced: goodPricedSetCards.length,
-      recentPriceDrops: recentPriceChangeSetCards.length,
-    },
-    firstSetScoringInputs: getCatalogPartnerOfferRailDiagnostics({
-      catalogDiscoverySignalBySetId,
-      currentOfferSummaryBySetId,
-      limit: 10,
-      rotationSeed,
-      setCards: commerceCandidateSetCards,
-    }),
-    offerSignals: {
-      currentOfferFallback: getCurrentOfferRailDiagnostics({
-        currentOfferSummaryBySetId,
-        finalSetCards: currentOfferSetCards,
-        setCards: commerceCandidateSetCards,
-      }),
-      firstCommerceCandidateSetIds: commerceCandidateSetCards
-        .map((catalogSetCard) => catalogSetCard.id)
-        .slice(0, 20),
-      firstReturnedOfferSetIds: offerSummaries
-        .map((currentOfferSummary) => currentOfferSummary.setId)
-        .slice(0, 20),
-      setsInStock: offerSummaries.filter(
-        (currentOfferSummary) =>
-          currentOfferSummary.bestOffer?.availability === 'in_stock',
-      ).length,
-      setsWithAffiliateDeeplink: offerSummaries.filter(
-        (currentOfferSummary) =>
-          typeof currentOfferSummary.bestOffer?.url === 'string' &&
-          currentOfferSummary.bestOffer.url.length > 0,
-      ).length,
-      setsWithCurrentPrice: offerSummaries.filter(
-        (currentOfferSummary) =>
-          typeof currentOfferSummary.bestOffer?.priceCents === 'number' &&
-          currentOfferSummary.bestOffer.priceCents > 0,
-      ).length,
-    },
-    ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
-  });
-}
-
-function renderCanonicalNames(names: readonly string[]): ReactNode {
-  return names.map((name, index) => (
-    <span key={`${name}-${index}`}>
-      {index > 0 ? (index === names.length - 1 ? ' en ' : ', ') : null}
-      <span className="notranslate" translate="no">
-        {name}
-      </span>
-    </span>
-  ));
-}
-
-function formatFanContext(
-  setCard: Pick<CatalogHomepageSetCard, 'minifigureHighlights'>,
-): ReactNode {
-  if (setCard.minifigureHighlights?.length) {
-    const visibleHighlights = setCard.minifigureHighlights.slice(0, 3);
-    return <>Met {renderCanonicalNames(visibleHighlights)}</>;
-  }
-}
-
-function toRailItems(setCards: readonly DealsRailItem[]) {
-  return setCards.map((setCard) => ({
-    actions: setCard.actions,
-    ctaMode: setCard.ctaMode,
-    href: buildSetDetailPath(setCard.slug),
-    id: setCard.id,
-    priceContext: setCard.priceContext,
-    setSummary: setCard,
-    supportingNote: formatFanContext(setCard),
-  }));
-}
-
-function renderMerchandisingGroups({
-  budgetSetCards,
-  displaySetCards,
-  goodPricedSetCards,
-  recentPriceChangeSetCards,
-}: {
-  budgetSetCards: readonly DealsRailItem[];
-  displaySetCards: readonly DealsRailItem[];
-  goodPricedSetCards: readonly DealsRailItem[];
-  recentPriceChangeSetCards: readonly DealsRailItem[];
-}): ReactNode {
-  const groups = [
-    goodPricedSetCards.length ? 'Nu goed geprijsd' : undefined,
-    budgetSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
-      ? 'Onder €50'
-      : undefined,
-    displaySetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
-      ? 'Grote displaysets'
-      : undefined,
-    recentPriceChangeSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
-      ? 'Net goedkoper'
-      : undefined,
-  ].filter((group): group is string => Boolean(group));
-
-  if (groups.length === 0) {
-    return null;
-  }
-
-  return (
-    <ul className={styles.merchandisingGroups} aria-label="Dealgroepen">
-      {groups.map((group) => (
-        <li className={styles.merchandisingGroup} key={group}>
-          {group}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function toDealsRailSetCards({
-  catalogDiscoverySignalBySetId,
-  currentOfferSummaryBySetId,
-  sectionId,
-  setCards,
-}: {
-  catalogDiscoverySignalBySetId: Awaited<
-    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
-  >;
-  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
-  sectionId: string;
-  setCards: readonly CatalogHomepageSetCard[];
-}): DealsRailItem[] {
-  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    setCards,
-  });
-
-  return setCards
-    .map((setCard, index) => {
-      const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
-      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
-      const bestCurrentOffer = currentOfferSummary?.bestOffer;
-      const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
-        featuredSetPriceContext?.deltaMinor,
-      );
-      const priceContext = priceContextBySetId.get(setCard.id);
-      const primaryActionTrackingEvent:
-        | BrickhuntAnalyticsEventDescriptor
-        | undefined = bestCurrentOffer
-        ? {
-            event: 'offer_click',
-            properties: {
-              merchantCount: currentOfferSummary?.offers.length,
-              merchantName: bestCurrentOffer.merchantName,
-              offerPlacement: 'card_primary_cta',
-              offerRole: 'best',
-              pageSurface: 'deals',
-              priceVerdict,
-              rankPosition: index + 1,
-              sectionId,
-              setId: setCard.id,
-              theme: setCard.theme,
-            },
-          }
-        : undefined;
-
-      return {
-        ...setCard,
-        actions: (
-          <WishlistFeatureWishlistToggle
-            analyticsContext={{
-              merchantCount: currentOfferSummary?.offers.length,
-              pageSurface: 'deals',
-              priceVerdict,
-              sectionId,
-              setId: setCard.id,
-              theme: setCard.theme,
-            }}
-            productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
-            setId={setCard.id}
-            variant="inline"
-          />
-        ),
-        ctaMode: 'commerce' as const,
-        priceContext: priceContext
-          ? {
-              ...priceContext,
-              primaryActionTrackingEvent,
-            }
-          : undefined,
-      };
-    })
-    .filter((setCard) => setCard.priceContext?.primaryActionHref);
-}
-
-function getUniqueSetIds(
-  setCardGroups: readonly (readonly Pick<CatalogHomepageSetCard, 'id'>[])[],
-): string[] {
-  return [
-    ...new Set(
-      setCardGroups.flatMap((setCards) =>
-        setCards.map((catalogSetCard) => catalogSetCard.id),
-      ),
-    ),
-  ];
-}
-
-function selectDealBudgetSetCards({
-  currentOfferSummaryBySetId,
-  excludedSetIds = [],
-  setCards,
-}: {
-  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
-  excludedSetIds?: readonly string[];
-  setCards: readonly CatalogHomepageSetCard[];
-}): CatalogHomepageSetCard[] {
-  const excludedSetIdSet = new Set(excludedSetIds);
-
-  return setCards
-    .filter((setCard) => {
-      const bestOffer = currentOfferSummaryBySetId.get(setCard.id)?.bestOffer;
-
-      return (
-        !excludedSetIdSet.has(setCard.id) &&
-        typeof bestOffer?.priceCents === 'number' &&
-        bestOffer.priceCents > 0 &&
-        bestOffer.priceCents <= 5000 &&
-        Boolean(bestOffer.url) &&
-        bestOffer.availability !== 'out_of_stock'
-      );
-    })
-    .slice(0, DEALS_RAIL_LIMIT);
-}
-
-function selectDealDisplaySetCards({
-  catalogDiscoverySignalBySetId,
-  currentOfferSummaryBySetId,
-  excludedSetIds = [],
-  setCards,
-}: {
-  catalogDiscoverySignalBySetId: Awaited<
-    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
-  >;
-  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
-  excludedSetIds?: readonly string[];
-  setCards: readonly CatalogHomepageSetCard[];
-}): CatalogHomepageSetCard[] {
-  const excludedSetIdSet = new Set(excludedSetIds);
-
-  return setCards
-    .filter((setCard) => {
-      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
-      const bestOffer = currentOfferSummary?.bestOffer;
-      const discoverySignal = catalogDiscoverySignalBySetId.get(setCard.id);
-      const hasClearBuyingReason =
-        Boolean(
-          buildReliableDealDiscount({
-            currentOfferSummary,
-            pricePanelSnapshot: getFeaturedSetPriceContext(setCard.id),
-          }),
-        ) ||
-        Boolean(
-          currentOfferSummary &&
-            currentOfferSummary.offers.length >= 2 &&
-            typeof discoverySignal?.priceSpreadMinor === 'number' &&
-            discoverySignal.priceSpreadMinor >= 100,
-        );
-
-      return (
-        !excludedSetIdSet.has(setCard.id) &&
-        typeof bestOffer?.priceCents === 'number' &&
-        bestOffer.priceCents > 0 &&
-        Boolean(bestOffer.url) &&
-        bestOffer.availability !== 'out_of_stock' &&
-        hasClearBuyingReason &&
-        setCard.pieces >= 1500 &&
-        ['Architecture', 'Icons', 'Ideas', 'Star Wars', 'Technic'].includes(
-          setCard.theme,
-        )
-      );
-    })
-    .slice(0, DEALS_RAIL_LIMIT);
-}
-
-export default async function DealsPage() {
-  const commerceCandidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
-    cacheOptions: {
-      revalidateSeconds: revalidate,
-      tags: [cacheTags.deals(), cacheTags.prices()],
-    },
-    limit: 240,
-  });
-  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
-    canonicalIds: commerceCandidateSetIds,
-  });
-  const currentOfferSummaryBySetId =
-    commerceCandidateSetCards.length > 0
-      ? await listCatalogCurrentOfferSummariesBySetIds({
-          cacheOptions: {
-            revalidateSeconds: revalidate,
-            tags: [cacheTags.deals(), cacheTags.prices()],
-          },
-          setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
-        })
-      : new Map();
-  const catalogDiscoverySignalBySetId =
-    await listCatalogDiscoverySignalsBySetId({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [cacheTags.deals(), cacheTags.prices()],
+  limit: number;
+  offset: number;
+  sortKey: CatalogDealPageSortKey;
+}) {
+  return getCachedPublicBrowsePageData({
+    load: async () =>
+      (await getCatalogDealPageSnapshot({
+        limit,
+        offset,
+        sortKey,
+      })) ?? {
+        setCards: [],
+        totalSetCount: 0,
       },
-      setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
-    });
-  const commerceRailRotationSeed = getPublicMerchandisingRotationSeed();
-  const getCatalogDiscoverySignalFn = (setId: string) =>
-    catalogDiscoverySignalBySetId.get(setId);
-  const bestDealCandidateSetCards = await listDiscoverBestDealSetCards({
-    getCatalogDiscoverySignalFn,
-    limit: DEALS_RAIL_LIMIT,
-    rotationSeed: commerceRailRotationSeed,
-    setCards: commerceCandidateSetCards,
+    pageType: 'deals',
+    params: ['sort', sortKey, 'limit', limit, 'offset', offset],
+    revalidateSeconds: revalidate,
+    slug: 'deals',
+    tags: [cacheTags.deals(), cacheTags.prices()],
   });
-  const bestDealSetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-best-deals',
-    setCards: bestDealCandidateSetCards,
-  });
-  const goodPricedCandidateSetCards = rankCatalogPartnerOfferSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    excludedSetIds: getUniqueSetIds([bestDealSetCards]),
-    limit: DEALS_RAIL_LIMIT,
-    requirePrimaryDealQuality: true,
-    rotationSeed: commerceRailRotationSeed,
-    setCards: commerceCandidateSetCards,
-  });
-  const goodPricedSetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-good-priced',
-    setCards: goodPricedCandidateSetCards,
-  });
-  const currentOfferCandidateSetCards = rankCatalogPartnerOfferSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    excludedSetIds: getUniqueSetIds([bestDealSetCards, goodPricedSetCards]),
-    limit: DEALS_RAIL_LIMIT,
-    rotationSeed: commerceRailRotationSeed,
-    setCards: commerceCandidateSetCards,
-  });
-  const currentOfferSetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-current-offers',
-    setCards: currentOfferCandidateSetCards,
-  });
-  const recentPriceChangeCandidateSetCards =
-    await listDiscoverRecentPriceChangeSetCards({
-      excludedSetIds: getUniqueSetIds([
-        bestDealSetCards,
-        goodPricedSetCards,
-        currentOfferSetCards,
-      ]),
-      getCatalogDiscoverySignalFn,
-      limit: DEALS_RAIL_LIMIT,
-      rotationSeed: commerceRailRotationSeed,
-      setCards: commerceCandidateSetCards,
-    });
-  const recentPriceChangeSetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-recent-price-drops',
-    setCards: recentPriceChangeCandidateSetCards,
-  });
-  const budgetCandidateSetCards = selectDealBudgetSetCards({
-    currentOfferSummaryBySetId,
-    excludedSetIds: getUniqueSetIds([
-      bestDealSetCards,
-      goodPricedSetCards,
-      currentOfferSetCards,
-      recentPriceChangeSetCards,
-    ]),
-    setCards: commerceCandidateSetCards,
-  });
-  const budgetSetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-budget',
-    setCards: budgetCandidateSetCards,
-  });
-  const displayCandidateSetCards = selectDealDisplaySetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    excludedSetIds: getUniqueSetIds([
-      bestDealSetCards,
-      goodPricedSetCards,
-      currentOfferSetCards,
-      recentPriceChangeSetCards,
-      budgetSetCards,
-    ]),
-    setCards: commerceCandidateSetCards,
-  });
-  const displaySetCards = toDealsRailSetCards({
-    catalogDiscoverySignalBySetId,
-    currentOfferSummaryBySetId,
-    sectionId: 'deals-display',
-    setCards: displayCandidateSetCards,
-  });
-  const commerceRailRuntimeDiagnostics = isDealsCommerceRailsDebugEnabled()
-    ? await getCatalogCommerceRailRuntimeDiagnostics({
-        limit: 300,
-      })
-    : undefined;
+}
 
-  logDealsCommerceRailDiagnostics({
-    bestDealCandidateSetCards,
-    bestDealSetCards,
-    budgetSetCards,
-    catalogDiscoverySignalBySetId,
-    commerceCandidateSetCards,
-    currentOfferSummaryBySetId,
-    displaySetCards,
-    goodPricedCandidateSetCards,
-    goodPricedSetCards,
-    currentOfferSetCards,
-    recentPriceChangeSetCards,
-    rotationSeed: commerceRailRotationSeed,
-    runtimeDiagnostics: commerceRailRuntimeDiagnostics,
+export default async function DealsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    page?: string | string[];
+    sort?: string | string[];
+  }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const sortKey = normalizeDealSortKey(
+    readSearchParam(resolvedSearchParams?.sort),
+  );
+  const currentPage = normalizeDealPageNumber(
+    readSearchParam(resolvedSearchParams?.page),
+  );
+  const dealsPage = await getCachedDealPageSnapshot({
+    limit: DEALS_PAGE_SIZE,
+    offset: (currentPage - 1) * DEALS_PAGE_SIZE,
+    sortKey,
   });
+  const pageCount = Math.max(
+    1,
+    Math.ceil(dealsPage.totalSetCount / DEALS_PAGE_SIZE),
+  );
+
+  if (currentPage > pageCount) {
+    notFound();
+  }
 
   return (
     <ShellWeb>
-      <div className={styles.page}>
+      <main className={styles.page}>
         <section className={styles.intro}>
           <SectionHeading
             description="Alleen sets met actuele prijzen en kooplinks. Hier draait het om wat je vandaag echt kunt kopen."
@@ -572,117 +150,85 @@ export default async function DealsPage() {
             titleAs="h1"
           />
           <p className={styles.introMeta}>
-            {commerceCandidateSetCards.length} sets met actuele koopdata
+            {dealsPage.totalSetCount} sets met actuele koopdata
           </p>
-          {renderMerchandisingGroups({
-            budgetSetCards,
-            displaySetCards,
-            goodPricedSetCards,
-            recentPriceChangeSetCards,
-          })}
+          <ul className={styles.merchandisingGroups} aria-label="Dealgroepen">
+            <li className={styles.merchandisingGroup}>Beste deals</li>
+            <li className={styles.merchandisingGroup}>Grootste korting</li>
+            <li className={styles.merchandisingGroup}>Prijs per steen</li>
+            <li className={styles.merchandisingGroup}>Onder €50</li>
+          </ul>
+          <ActionLink href="#deals" size="hero" tone="accent">
+            Bekijk de deals
+          </ActionLink>
         </section>
 
-        {goodPricedSetCards.length ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Nu goed geprijsd"
-            bodySpacing="relaxed"
-            description="Actuele partnerprijzen met een werkende kooplink. Geen losse geruchten, wel sets die je nu echt kunt vergelijken."
-            eyebrow="Prijscheck"
-            items={toRailItems(goodPricedSetCards)}
-            padding="default"
-            signal={formatSetCount(goodPricedSetCards.length)}
-            title="Nu goed geprijsd"
-            titleAs="h2"
-            tone="default"
-            variant="featured"
-          />
-        ) : null}
-
-        {currentOfferSetCards.length ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Actueel te koop"
-            bodySpacing="relaxed"
-            description="Geen harde kortingclaim nodig: deze sets hebben nu een actuele prijs en een werkende winkelroute."
-            eyebrow="Actuele prijzen"
-            items={toRailItems(currentOfferSetCards)}
-            padding="default"
-            signal={formatSetCount(currentOfferSetCards.length)}
-            title="Actueel te koop"
-            titleAs="h2"
-            tone="default"
-          />
-        ) : null}
-
-        {bestDealSetCards.length ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Beste deals nu"
-            bodySpacing="relaxed"
-            description="Sets die nu duidelijk scherper geprijsd zijn dan hun recente referentie."
-            eyebrow="Deals"
-            items={toRailItems(bestDealSetCards)}
-            padding="default"
-            signal={formatSetCount(bestDealSetCards.length)}
-            title="Beste deals nu"
-            titleAs="h2"
-            tone="default"
-            variant="featured"
-          />
-        ) : null}
-
-        {recentPriceChangeSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Net goedkoper geworden"
-            bodySpacing="relaxed"
-            description="Prijsdalingen van de afgelopen dagen, met actuele winkelactie erbij."
-            eyebrow="Prijsdaling"
-            items={toRailItems(recentPriceChangeSetCards)}
-            padding="default"
-            signal={formatSetCount(recentPriceChangeSetCards.length)}
-            title="Net goedkoper geworden"
-            titleAs="h2"
-            tone="muted"
-            variant="featured"
-          />
-        ) : null}
-
-        {budgetSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Klein budget"
-            bodySpacing="relaxed"
-            description="Betaalbare sets met een actuele kooplink. Handig als je iets zoekt dat niet meteen je hele budget opeet."
-            eyebrow="Budget"
-            items={toRailItems(budgetSetCards)}
-            padding="default"
-            signal={formatSetCount(budgetSetCards.length)}
-            title="Onder €50"
-            titleAs="h2"
-            tone="muted"
-            variant="featured"
-          />
-        ) : null}
-
-        {displaySetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS ? (
-          <CatalogSetCardRailSection
-            as="section"
-            ariaLabel="Grote displaysets"
-            bodySpacing="relaxed"
-            description="Grotere sets met actuele prijzen. Dit zijn dozen die je koopt omdat ze straks echt zichtbaar staan."
-            eyebrow="Display"
-            items={toRailItems(displaySetCards)}
-            padding="default"
-            signal={formatSetCount(displaySetCards.length)}
-            title="Grote displaysets"
-            titleAs="h2"
-            tone="muted"
-            variant="featured"
-          />
-        ) : null}
-      </div>
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.browseSection}
+          description="Een vaste browsepagina uit de deal-snapshot. Geen live winkelrefresh tijdens het laden, wel actuele prijscontext uit de laatste commerce-sync."
+          eyebrow="Dealbrowser"
+          id="deals"
+          padding="default"
+          signal={`${dealsPage.totalSetCount} deals`}
+          spacing="relaxed"
+          title={dealSortLabels[sortKey]}
+          titleAs="h2"
+          tone="default"
+          utility={
+            <nav aria-label="Sorteer deals" className={styles.sortNav}>
+              {dealSortKeys.map((dealSortKey) => (
+                <a
+                  aria-current={dealSortKey === sortKey ? 'true' : undefined}
+                  className={styles.sortLink}
+                  href={getDealSortHref(dealSortKey)}
+                  key={dealSortKey}
+                >
+                  {dealSortLabels[dealSortKey]}
+                </a>
+              ))}
+            </nav>
+          }
+          utilityPlacement="below-heading"
+        >
+          {dealsPage.setCards.length ? (
+            <>
+              <CatalogSetCardCollection
+                className={styles.grid}
+                gridMode="browse"
+                variant="compact"
+              >
+                {dealsPage.setCards.map((setCard, index) => (
+                  <CatalogSetCard
+                    ctaMode="commerce"
+                    href={buildSetDetailPath(setCard.slug)}
+                    imageLoading={index < 6 ? 'eager' : 'lazy'}
+                    key={setCard.id}
+                    priceContext={setCard.priceContext}
+                    setSummary={setCard}
+                    variant="featured"
+                  />
+                ))}
+              </CatalogSetCardCollection>
+              <CatalogBrowsePagination
+                ariaLabel="Deals pagina's"
+                basePath={webPathnames.deals}
+                currentPage={currentPage}
+                pageCount={pageCount}
+                queryParams={
+                  sortKey !== 'recommended' ? { sort: sortKey } : undefined
+                }
+              />
+            </>
+          ) : (
+            <p className={styles.emptyState}>
+              De deal-snapshot is nog leeg. Na de volgende commerce-sync staat
+              hier een browsebare lijst met actuele deals.
+            </p>
+          )}
+        </CatalogSectionShell>
+      </main>
     </ShellWeb>
   );
 }

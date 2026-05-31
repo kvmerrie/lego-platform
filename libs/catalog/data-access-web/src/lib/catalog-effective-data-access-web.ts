@@ -3629,6 +3629,118 @@ export async function getCatalogCollectionLandingPageSnapshot({
   };
 }
 
+export type CatalogDealPageSortKey =
+  | 'recommended'
+  | 'discount-desc'
+  | 'price-per-brick'
+  | 'under-50';
+
+export interface CatalogDealPageSnapshotResult {
+  setCards: readonly (CatalogHomepageSetCard & {
+    priceContext?: {
+      coverageLabel: string;
+      currentPrice: string;
+      dealReason?: string;
+      discountMetric?: string;
+      decisionLabel?: string;
+      decisionNote?: string;
+      merchantLabel: string;
+      primaryActionHref?: string;
+      pricePositionLabel?: string;
+      pricePositionTone?: 'info' | 'neutral' | 'positive' | 'warning';
+      reviewedLabel: string;
+    };
+  })[];
+  totalSetCount: number;
+}
+
+function normalizeCatalogDealPageSnapshotItems(
+  itemsJson: unknown,
+): CatalogDealPageSnapshotResult['setCards'] {
+  if (!Array.isArray(itemsJson)) {
+    return [];
+  }
+
+  return itemsJson.filter(
+    (item): item is CatalogDealPageSnapshotResult['setCards'][number] => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return false;
+      }
+
+      const candidate = item as Partial<CatalogHomepageSetCard>;
+
+      return (
+        typeof candidate.id === 'string' &&
+        typeof candidate.slug === 'string' &&
+        typeof candidate.name === 'string' &&
+        typeof candidate.theme === 'string' &&
+        typeof candidate.releaseYear === 'number' &&
+        typeof candidate.pieces === 'number'
+      );
+    },
+  );
+}
+
+export async function getCatalogDealPageSnapshot({
+  limit = CATALOG_BROWSE_PAGE_SIZE,
+  offset = 0,
+  sortKey,
+  supabaseClient,
+}: {
+  limit?: number;
+  offset?: number;
+  sortKey: CatalogDealPageSortKey;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogDealPageSnapshotResult | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return {
+      setCards: [],
+      totalSetCount: 0,
+    };
+  }
+
+  const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
+  const safeOffset = normalizeCatalogReadOffset(offset);
+  const page = Math.floor(safeOffset / safeLimit) + 1;
+  const { data, error } = await activeSupabaseClient
+    .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
+    .select(
+      'collection_slug, sort_key, page, page_size, total_count, items_json, generated_at',
+    )
+    .eq('collection_slug', 'deals')
+    .eq('sort_key', sortKey)
+    .eq('page', page)
+    .eq('page_size', safeLimit)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load deal page snapshot.');
+  }
+
+  const snapshot = data as CatalogCollectionPageSnapshotRow | null;
+
+  if (!snapshot) {
+    console.warn('[deal-page-snapshot] missing', {
+      page,
+      page_size: safeLimit,
+      sort_key: sortKey,
+    });
+
+    return {
+      setCards: [],
+      totalSetCount: 0,
+    };
+  }
+
+  return {
+    setCards: normalizeCatalogDealPageSnapshotItems(snapshot.items_json),
+    totalSetCount: snapshot.total_count,
+  };
+}
+
 const catalogAdultCollectorThemeSlugs = new Set([
   'architecture',
   'art',

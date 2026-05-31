@@ -1,153 +1,142 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import React from 'react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dealsPageMocks = vi.hoisted(() => ({
-  catalogSetCardRailSection: vi.fn(),
-  getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
-  getCatalogPartnerOfferRailDiagnostics: vi.fn(),
-  listCatalogCurrentOfferCandidateSetIds: vi.fn(),
-  listCatalogCurrentOfferSummaries: vi.fn(),
-  listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
-  listCatalogDiscoverySignalsBySetId: vi.fn(),
-  listCatalogSetCardsByIds: vi.fn(),
-  listDiscoverBestDealSetCards: vi.fn(),
-  listDiscoverRecentPriceChangeSetCards: vi.fn(),
-  rankCatalogPartnerOfferSetCards: vi.fn(),
+  catalogBrowsePagination: vi.fn(),
+  catalogSetCard: vi.fn(),
+  getCatalogDealPageSnapshot: vi.fn(),
+}));
+
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: () => unknown) => fn,
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
-  getCatalogCommerceRailRuntimeDiagnostics:
-    dealsPageMocks.getCatalogCommerceRailRuntimeDiagnostics,
-  getCatalogPartnerOfferRailDiagnostics:
-    dealsPageMocks.getCatalogPartnerOfferRailDiagnostics,
-  listCatalogCurrentOfferCandidateSetIds:
-    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds,
-  listCatalogCurrentOfferSummaries:
-    dealsPageMocks.listCatalogCurrentOfferSummaries,
-  listCatalogCurrentOfferSummariesBySetIds:
-    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds,
-  listCatalogDiscoverySignalsBySetId:
-    dealsPageMocks.listCatalogDiscoverySignalsBySetId,
-  listCatalogSetCardsByIds: dealsPageMocks.listCatalogSetCardsByIds,
-  listDiscoverBestDealSetCards: dealsPageMocks.listDiscoverBestDealSetCards,
-  listDiscoverRecentPriceChangeSetCards:
-    dealsPageMocks.listDiscoverRecentPriceChangeSetCards,
-  rankCatalogPartnerOfferSetCards:
-    dealsPageMocks.rankCatalogPartnerOfferSetCards,
+  getCatalogDealPageSnapshot: dealsPageMocks.getCatalogDealPageSnapshot,
 }));
 
-vi.mock('@lego-platform/catalog/ui', () => ({
-  CatalogSetCardRailSection: (props: unknown) => {
-    dealsPageMocks.catalogSetCardRailSection(props);
-    return null;
-  },
-}));
+vi.mock('@lego-platform/catalog/ui', async () => {
+  const actual = await vi.importActual<
+    typeof import('@lego-platform/catalog/ui')
+  >('@lego-platform/catalog/ui');
 
-vi.mock('@lego-platform/pricing/data-access', () => ({
-  buildSetDecisionPresentation: () => ({
-    cardLabel: 'Actuele prijzen binnen',
-    verdict: {
-      tone: 'neutral',
+  return {
+    ...actual,
+    CatalogBrowsePagination: (props: unknown) => {
+      dealsPageMocks.catalogBrowsePagination(props);
+      return <nav data-testid="pagination" />;
     },
-  }),
-  getFeaturedSetPriceContext: () => undefined,
-}));
+    CatalogSetCard: (props: unknown) => {
+      dealsPageMocks.catalogSetCard(props);
+      return <article data-testid="deal-card" />;
+    },
+  };
+});
 
-vi.mock('@lego-platform/shared/ui', () => ({
-  SectionHeading: () => null,
-}));
+vi.mock('@lego-platform/shared/ui', async () => {
+  const actual = await vi.importActual<
+    typeof import('@lego-platform/shared/ui')
+  >('@lego-platform/shared/ui');
+
+  return {
+    ...actual,
+    SectionHeading: () => null,
+  };
+});
 
 vi.mock('@lego-platform/shell/web', () => ({
   ShellWeb: ({ children }: { children?: unknown }) => children ?? null,
 }));
 
-vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
-  WishlistFeatureWishlistToggle: () => null,
-}));
-
-describe('deals page discovery signals', () => {
+describe('deals page snapshots', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
-    dealsPageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
-    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      setCards: [],
+      totalSetCount: 0,
+    });
+  });
+
+  it('reads /deals from deal snapshots without live commerce rail loaders', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      setCards: [
+        {
+          id: '10307',
+          name: 'Eiffeltoren',
+          pieces: 10001,
+          priceContext: {
+            coverageLabel: '2 actuele winkels',
+            currentPrice: 'Vanaf €100,00',
+            merchantLabel: 'Laagst bij MediaMarkt',
+            reviewedLabel: 'Snapshot bijgewerkt',
+          },
+          releaseYear: 2022,
+          slug: 'eiffel-tower-10307',
+          theme: 'Icons',
+        },
+      ],
+      totalSetCount: 41,
+    });
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        searchParams: Promise.resolve({ page: '2', sort: 'discount-desc' }),
+      }),
+    );
+
+    expect(dealsPageMocks.getCatalogDealPageSnapshot).toHaveBeenCalledWith({
+      limit: 40,
+      offset: 40,
+      sortKey: 'discount-desc',
+    });
+    expect(dealsPageMocks.catalogSetCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ctaMode: 'commerce',
+        href: '/sets/eiffel-tower-10307',
+        variant: 'featured',
+      }),
     );
   });
 
-  it('renders current offer cards when reference-discount deal gates are empty', async () => {
-    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-    ]);
-    dealsPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map([
-        [
-          '42177',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T08:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'Goodbricks',
-              priceCents: 19999,
-              url: 'https://example.com/42177',
-            },
-            offers: [{ merchantName: 'Goodbricks' }],
-            setId: '42177',
-          },
-        ],
-      ]),
-    );
-    dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([
-      {
-        id: '42177',
-        name: 'Mercedes-AMG F1 W14 E Performance',
-        pieces: 1642,
-        releaseYear: 2024,
-        slug: 'mercedes-amg-f1-w14-e-performance-42177',
-        theme: 'Technic',
-      },
-    ]);
-    dealsPageMocks.rankCatalogPartnerOfferSetCards
-      .mockReturnValueOnce([])
-      .mockReturnValueOnce([
+  it('renders pagination with the active sort query', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      setCards: [
         {
-          id: '42177',
-          name: 'Mercedes-AMG F1 W14 E Performance',
-          pieces: 1642,
-          releaseYear: 2024,
-          slug: 'mercedes-amg-f1-w14-e-performance-42177',
-          theme: 'Technic',
+          id: '10307',
+          name: 'Eiffeltoren',
+          pieces: 10001,
+          releaseYear: 2022,
+          slug: 'eiffel-tower-10307',
+          theme: 'Icons',
         },
-      ]);
-    dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
+      ],
+      totalSetCount: 80,
+    });
 
     const pageModule = await import('./page');
-    renderToStaticMarkup(await pageModule.default());
+    renderToStaticMarkup(
+      await pageModule.default({
+        searchParams: Promise.resolve({ sort: 'price-per-brick' }),
+      }),
+    );
 
-    expect(dealsPageMocks.catalogSetCardRailSection).toHaveBeenCalledWith(
+    expect(dealsPageMocks.catalogBrowsePagination).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Actueel te koop',
+        basePath: '/deals',
+        currentPage: 1,
+        pageCount: 2,
+        queryParams: { sort: 'price-per-brick' },
       }),
     );
   });
 
   it('uses the default light-blue hero instead of discovery tile variants', async () => {
-    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
-    dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
-    dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-
     const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
+    const markup = renderToStaticMarkup(await pageModule.default({}));
 
     expect(markup).not.toContain('--deals-page-surface:');
     expect(markup).not.toContain('--deals-page-surface:#00a99d');
@@ -158,35 +147,5 @@ describe('deals page discovery signals', () => {
     );
 
     expect(css).toContain('--deals-page-surface: var(--lego-surface-accent);');
-  });
-
-  it('scopes discovery signals to current commerce candidate cards', async () => {
-    dealsPageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-      '75398',
-    ]);
-    dealsPageMocks.listCatalogSetCardsByIds.mockResolvedValue([
-      { id: '42177' },
-      { id: '75398' },
-    ]);
-    dealsPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    dealsPageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    dealsPageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
-    dealsPageMocks.listDiscoverRecentPriceChangeSetCards.mockResolvedValue([]);
-
-    const pageModule = await import('./page');
-    await pageModule.default();
-
-    expect(
-      dealsPageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith({
-      cacheOptions: {
-        revalidateSeconds: false,
-        tags: ['deals', 'prices'],
-      },
-      setIds: ['42177', '75398'],
-    });
   });
 });

@@ -336,8 +336,13 @@ describe('commerce sync server', () => {
       setIds: ['10316'],
     });
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
-      additionalPaths: ['/lego-sets-onder-50-euro'],
-      additionalTags: ['collections', 'collection:lego-sets-onder-50-euro'],
+      additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+      additionalTags: [
+        'collections',
+        'collection:lego-sets-onder-50-euro',
+        'deals',
+        'prices',
+      ],
       reason: 'commerce_sync_scoped',
       targets: [
         {
@@ -504,8 +509,13 @@ describe('commerce sync server', () => {
     });
 
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
-      additionalPaths: ['/lego-sets-onder-50-euro'],
-      additionalTags: ['collections', 'collection:lego-sets-onder-50-euro'],
+      additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+      additionalTags: [
+        'collections',
+        'collection:lego-sets-onder-50-euro',
+        'deals',
+        'prices',
+      ],
       includeThemeDirectory: false,
       reason: 'commerce_sync_aggregate',
       targets: [],

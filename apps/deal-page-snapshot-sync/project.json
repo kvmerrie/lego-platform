@@ -1,7 +1,7 @@
 {
-  "name": "catalog-theme-backfill",
+  "name": "deal-page-snapshot-sync",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/catalog-theme-backfill/src",
+  "sourceRoot": "apps/deal-page-snapshot-sync/src",
   "projectType": "application",
   "tags": ["scope:api", "type:app", "platform:server"],
   "targets": {
@@ -11,11 +11,11 @@
       "defaultConfiguration": "production",
       "options": {
         "platform": "node",
-        "outputPath": "dist/apps/catalog-theme-backfill",
+        "outputPath": "dist/apps/deal-page-snapshot-sync",
         "format": ["cjs"],
         "bundle": true,
-        "main": "apps/catalog-theme-backfill/src/main.ts",
-        "tsConfig": "apps/catalog-theme-backfill/tsconfig.app.json",
+        "main": "apps/deal-page-snapshot-sync/src/main.ts",
+        "tsConfig": "apps/deal-page-snapshot-sync/tsconfig.app.json",
         "assets": []
       },
       "configurations": {
@@ -31,7 +31,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["build"],
       "options": {
-        "command": "node dist/apps/catalog-theme-backfill/main.cjs"
+        "command": "node dist/apps/deal-page-snapshot-sync/main.cjs"
       }
     }
   }
