@@ -11,6 +11,7 @@
     "sync:catalog:check": "pnpm sync:catalog:live:check",
     "sync:catalog:live:check": "pnpm nx run catalog-sync:run -- --check",
     "sync:catalog:local:check": "pnpm nx run catalog-sync:run -- --local-check",
+    "sync:catalog-theme-mappings": "pnpm nx run catalog-theme-backfill:run",
     "sync:catalog-popularity": "pnpm nx run catalog-popularity-sync:run",
     "sync:catalog-popularity:check": "pnpm nx run catalog-popularity-sync:run -- --check",
     "sync:minifigs": "pnpm nx run catalog-minifig-sync:run",

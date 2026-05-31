@@ -2,6 +2,7 @@ import {
   backfillCatalogOverlayThemeIdentity,
   CATALOG_SETS_TABLE,
 } from '@lego-platform/catalog/data-access-server';
+import { backfillBricksetPublicThemeMappings } from '@lego-platform/api/data-access-server';
 import {
   buildCatalogCleanBootstrapPayload,
   writeCatalogCleanBootstrapPayload,
@@ -65,6 +66,30 @@ function getSetIds(argv: readonly string[]): string[] | undefined {
     .filter(Boolean);
 
   return normalizedSetIds.length ? normalizedSetIds : undefined;
+}
+
+function getSource(argv: readonly string[]): 'rebrickable' | 'brickset' {
+  const sourceFlagIndex = argv.findIndex((argument) => argument === '--source');
+  const equalsStyleFlag = argv.find((argument) =>
+    argument.startsWith('--source='),
+  );
+  const source =
+    equalsStyleFlag?.slice('--source='.length).trim().toLowerCase() ??
+    argv[sourceFlagIndex + 1]?.trim().toLowerCase();
+
+  if (!source) {
+    return 'rebrickable';
+  }
+
+  if (source === 'brickset') {
+    return 'brickset';
+  }
+
+  if (source === 'rebrickable') {
+    return 'rebrickable';
+  }
+
+  throw new Error(`Unsupported catalog theme backfill source: ${source}.`);
 }
 
 async function listThemeBackfillCheckRows({
@@ -132,6 +157,7 @@ async function main() {
   const mode = getMode(argv);
   const exportPath = getExportPath(argv);
   const setIds = getSetIds(argv);
+  const source = getSource(argv);
   const startedAt = Date.now();
 
   if (!hasServerSupabaseConfig()) {
@@ -140,21 +166,41 @@ async function main() {
     );
   }
 
-  if (!hasRebrickableApiConfig()) {
+  if (source !== 'brickset' && !hasRebrickableApiConfig()) {
     throw new Error(
       'REBRICKABLE_API_KEY is required for catalog theme backfill.',
     );
   }
 
+  if (source === 'brickset') {
+    const result = await backfillBricksetPublicThemeMappings({
+      dryRun: mode !== 'write',
+      setIds,
+      source,
+    });
+
+    console.log(
+      `[catalog-theme-backfill] end source=${source} mode=${mode} inspected=${result.inspectedCount} remapped=${result.remappedCount} skipped=${result.skippedCount} set_ids=${setIds?.join(',') ?? 'all'} revalidated_paths=${result.revalidation?.pathCount ?? 0} revalidated_tags=${result.revalidation?.tagCount ?? 0} duration_ms=${Date.now() - startedAt}`,
+    );
+
+    for (const detail of result.details) {
+      console.log(
+        `[catalog-theme-backfill] set set_id=${detail.setId} action=${detail.action} before=${detail.beforeThemeSlug ?? 'none'} after=${detail.afterThemeSlug ?? 'none'} reason=${detail.reason ?? 'mapped'}`,
+      );
+    }
+
+    return;
+  }
+
   const beforeRows = await listSetsMissingNormalizedThemeIds({ setIds });
 
   console.log(
-    `[catalog-theme-backfill] start mode=${mode} missing_before=${beforeRows.length} set_ids=${setIds?.join(',') ?? 'all'}`,
+    `[catalog-theme-backfill] start source=${source} mode=${mode} missing_before=${beforeRows.length} set_ids=${setIds?.join(',') ?? 'all'}`,
   );
 
   if (mode === 'check') {
     console.log(
-      `[catalog-theme-backfill] end mode=${mode} missing_after=${beforeRows.length} set_ids=${
+      `[catalog-theme-backfill] end source=${source} mode=${mode} missing_after=${beforeRows.length} set_ids=${
         setIds?.join(',') ??
         (beforeRows.map((row) => row.set_id).join(',') || 'none')
       } duration_ms=${Date.now() - startedAt}`,
@@ -184,7 +230,7 @@ async function main() {
   }
 
   console.log(
-    `[catalog-theme-backfill] end mode=${mode} processed=${result.processedCount} updated=${result.updatedCount} skipped=${result.skippedCount} missing_after=${afterRows.length} set_ids=${setIds?.join(',') ?? 'all'} export_path=${exportPath ?? 'none'} duration_ms=${Date.now() - startedAt}`,
+    `[catalog-theme-backfill] end source=${source} mode=${mode} processed=${result.processedCount} updated=${result.updatedCount} skipped=${result.skippedCount} missing_after=${afterRows.length} set_ids=${setIds?.join(',') ?? 'all'} export_path=${exportPath ?? 'none'} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
