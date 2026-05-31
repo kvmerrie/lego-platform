@@ -36,7 +36,8 @@ type LightboxMode = 'overview' | 'viewer';
 type SwipeTarget = 'detail' | 'lightbox';
 type SwipePhase = 'idle' | 'dragging' | 'resetting' | 'settling';
 
-const SWIPE_AXIS_LOCK_THRESHOLD_PX = 8;
+const SWIPE_AXIS_LOCK_THRESHOLD_PX = 10;
+const SWIPE_AXIS_LOCK_RATIO = 1.6;
 const SWIPE_DISTANCE_THRESHOLD_PX = 56;
 const SWIPE_VELOCITY_THRESHOLD_PX_PER_MS = 0.42;
 const SWIPE_TRACK_TRANSITION_MS = 240;
@@ -746,10 +747,16 @@ export function ImageGallery({
       }
 
       swipeState.mode =
-        absoluteDeltaX > absoluteDeltaY * 1.25 ? 'horizontal' : 'vertical';
+        absoluteDeltaX > absoluteDeltaY * SWIPE_AXIS_LOCK_RATIO
+          ? 'horizontal'
+          : 'vertical';
 
       if (swipeState.mode === 'horizontal') {
         event.currentTarget.setPointerCapture?.(event.pointerId);
+      } else {
+        swipeStateRef.current = null;
+        resetSwipeState(swipeState.target);
+        return;
       }
     }
 
@@ -785,6 +792,10 @@ export function ImageGallery({
     }
 
     swipeStateRef.current = null;
+
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
     if (swipeState.mode !== 'horizontal') {
       resetSwipeState(swipeState.target);

@@ -22,7 +22,6 @@
     --catalog-section-inline-padding,
     var(--lego-space-4)
   );
-  touch-action: pan-x;
 }
 
 .discoveryTileTrack {

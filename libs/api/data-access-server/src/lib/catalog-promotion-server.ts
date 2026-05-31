@@ -26,6 +26,11 @@ const RAKUTEN_LEGO_SOURCE_METADATA_SOURCE = 'rakuten-lego-eu';
 const RAKUTEN_LEGO_SOURCE_METADATA_LOCALE = 'nl-NL';
 const EXACT_SET_NUMBER_MATCH_CONFIDENCE = 'exact_set_number';
 const CATALOG_PROMOTION_PAGE_SIZE = 1000;
+const CATALOG_PROMOTION_NON_PRICE_COLLECTION_SNAPSHOT_SLUGS = new Set([
+  'nieuwe-lego-sets',
+  'retiring-lego-sets',
+  'lego-voor-volwassenen',
+]);
 const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
   CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
@@ -2058,9 +2063,9 @@ export async function promoteCatalogFromStagingToProduction({
       normalizedCatalogSetSourceMetadata.length;
     const normalizedCollectionPageSnapshots = collectionPageSnapshots.filter(
       (snapshot) =>
-        snapshot.collection_slug === 'nieuwe-lego-sets' ||
-        snapshot.collection_slug === 'retiring-lego-sets' ||
-        snapshot.collection_slug === 'lego-voor-volwassenen',
+        CATALOG_PROMOTION_NON_PRICE_COLLECTION_SNAPSHOT_SLUGS.has(
+          snapshot.collection_slug,
+        ),
     );
     const collectionPageSnapshotsBySlug =
       normalizedCollectionPageSnapshots.reduce<Record<string, number>>(

@@ -1479,7 +1479,6 @@
     overscroll-behavior-x: contain;
     padding-bottom: 0.1rem;
     scrollbar-width: none;
-    touch-action: pan-x;
   }
 
   .galleryThumbRail::-webkit-scrollbar {
@@ -2181,7 +2180,6 @@
     scrollbar-gutter: stable;
     scroll-padding-inline: var(--catalog-offer-rail-inline-padding);
     scroll-snap-type: x proximity;
-    touch-action: pan-x;
   }
 
   .offerRail {
@@ -3169,7 +3167,7 @@
     scroll-snap-type: x proximity;
     scrollbar-color: auto;
     scrollbar-width: none;
-    touch-action: pan-x;
+    touch-action: pan-y;
   }
 
   .setCardRailTrack > .setCard {

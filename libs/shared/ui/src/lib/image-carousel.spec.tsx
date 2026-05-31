@@ -30,7 +30,7 @@ function dispatchPointerEvent(
   },
 ) {
   if (!element) {
-    return;
+    return null;
   }
 
   const event = new Event(type, {
@@ -46,6 +46,8 @@ function dispatchPointerEvent(
   });
 
   element.dispatchEvent(event);
+
+  return event;
 }
 
 describe('ImageGallery', () => {
@@ -1029,14 +1031,20 @@ describe('ImageGallery', () => {
           clientX: 200,
           clientY: 120,
         });
-        dispatchPointerEvent(mainButton, 'pointermove', {
-          clientX: 178,
-          clientY: 190,
-        });
+        const verticalMoveEvent = dispatchPointerEvent(
+          mainButton,
+          'pointermove',
+          {
+            clientX: 178,
+            clientY: 190,
+          },
+        );
         dispatchPointerEvent(mainButton, 'pointerup', {
           clientX: 150,
           clientY: 230,
         });
+
+        expect(verticalMoveEvent?.defaultPrevented).toBe(false);
       });
 
       expect(container.textContent).toContain('1/2');
@@ -1108,14 +1116,20 @@ describe('ImageGallery', () => {
           clientX: 240,
           clientY: 120,
         });
-        dispatchPointerEvent(mediaFrame, 'pointermove', {
-          clientX: 140,
-          clientY: 124,
-        });
+        const horizontalMoveEvent = dispatchPointerEvent(
+          mediaFrame,
+          'pointermove',
+          {
+            clientX: 140,
+            clientY: 124,
+          },
+        );
         dispatchPointerEvent(mediaFrame, 'pointerup', {
           clientX: 132,
           clientY: 124,
         });
+
+        expect(horizontalMoveEvent?.defaultPrevented).toBe(true);
       });
 
       const swipeTrack = document.body.querySelector<HTMLElement>(
@@ -1165,14 +1179,20 @@ describe('ImageGallery', () => {
         clientX: 200,
         clientY: 120,
       });
-      dispatchPointerEvent(mainButton, 'pointermove', {
-        clientX: 178,
-        clientY: 190,
-      });
+      const verticalMoveEvent = dispatchPointerEvent(
+        mainButton,
+        'pointermove',
+        {
+          clientX: 178,
+          clientY: 190,
+        },
+      );
       dispatchPointerEvent(mainButton, 'pointerup', {
         clientX: 150,
         clientY: 230,
       });
+
+      expect(verticalMoveEvent?.defaultPrevented).toBe(false);
     });
 
     expect(container.textContent).toContain('1/2');

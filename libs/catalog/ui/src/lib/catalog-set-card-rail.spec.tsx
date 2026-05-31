@@ -22,7 +22,7 @@ function dispatchPointerEvent(
   },
 ) {
   if (!element) {
-    return;
+    return null;
   }
 
   const event = new Event(type, {
@@ -39,6 +39,8 @@ function dispatchPointerEvent(
   });
 
   element.dispatchEvent(event);
+
+  return event;
 }
 
 const requestAnimationFrameMock = vi
@@ -777,12 +779,27 @@ describe('CatalogSetCardRail', () => {
       clientX: 140,
       clientY: 80,
     });
-    dispatchPointerEvent(railTrack, 'pointermove', {
+    const horizontalMoveEvent = dispatchPointerEvent(railTrack, 'pointermove', {
       clientX: 86,
       clientY: 84,
     });
 
     expect(scrollLeftValue).toBe(174);
+    expect(horizontalMoveEvent?.defaultPrevented).toBe(true);
+
+    scrollLeftValue = 120;
+
+    dispatchPointerEvent(railTrack, 'pointerdown', {
+      clientX: 140,
+      clientY: 80,
+    });
+    const verticalMoveEvent = dispatchPointerEvent(railTrack, 'pointermove', {
+      clientX: 128,
+      clientY: 126,
+    });
+
+    expect(scrollLeftValue).toBe(120);
+    expect(verticalMoveEvent?.defaultPrevented).toBe(false);
 
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
@@ -790,7 +807,8 @@ describe('CatalogSetCardRail', () => {
     );
 
     expect(css).toContain('.setCardRailTrack {');
-    expect(css).toContain('touch-action: pan-x;');
+    expect(css).toContain('touch-action: pan-y;');
+    expect(css).not.toContain('touch-action: pan-x;');
   });
 
   it('syncs scroll progress and button state after native horizontal scrolling', async () => {

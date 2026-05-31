@@ -75,8 +75,8 @@ interface CatalogSetCardRailProps {
 }
 
 const RAIL_SCROLL_EPSILON = 1;
-const RAIL_GESTURE_AXIS_THRESHOLD_PX = 8;
-const RAIL_GESTURE_AXIS_RATIO = 1.25;
+const RAIL_GESTURE_AXIS_THRESHOLD_PX = 10;
+const RAIL_GESTURE_AXIS_RATIO = 1.6;
 const RAIL_CLICK_SUPPRESS_THRESHOLD_PX = 6;
 
 function getRailMetrics(
@@ -461,6 +461,9 @@ function CatalogSetCardRailViewport({
 
       if (gestureState.mode === 'horizontal') {
         event.currentTarget.setPointerCapture?.(event.pointerId);
+      } else {
+        railGestureStateRef.current = null;
+        return;
       }
     }
 
