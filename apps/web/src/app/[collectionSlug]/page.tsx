@@ -32,7 +32,7 @@ import {
 } from '../lib/structured-data';
 
 export const dynamicParams = false;
-export const revalidate = false;
+export const revalidate = 21_600;
 
 const COLLECTION_LANDING_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 

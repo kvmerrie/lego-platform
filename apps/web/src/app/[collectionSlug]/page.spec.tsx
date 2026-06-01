@@ -234,7 +234,7 @@ describe('collection landing page route', () => {
       expect.objectContaining({
         pageType: 'collection',
         params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
-        revalidateSeconds: false,
+        revalidateSeconds: 21_600,
         slug: 'lego-sets-onder-100-euro',
         tags: [
           'catalog',
@@ -253,7 +253,7 @@ describe('collection landing page route', () => {
       expect.objectContaining({
         pageType: 'collection',
         params: ['sort', 'price-asc', 'limit', 40, 'offset', 0],
-        revalidateSeconds: false,
+        revalidateSeconds: 21_600,
         slug: 'lego-sets-onder-100-euro',
         tags: [
           'catalog',
@@ -270,7 +270,7 @@ describe('collection landing page route', () => {
     ).toHaveBeenCalledWith(
       expect.objectContaining({
         cacheOptions: expect.objectContaining({
-          revalidateSeconds: false,
+          revalidateSeconds: 21_600,
           tags: [
             'catalog',
             'sets',
