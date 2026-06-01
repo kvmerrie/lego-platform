@@ -3167,7 +3167,7 @@
     scroll-snap-type: x proximity;
     scrollbar-color: auto;
     scrollbar-width: none;
-    touch-action: pan-y;
+    touch-action: auto;
   }
 
   .setCardRailTrack > .setCard {

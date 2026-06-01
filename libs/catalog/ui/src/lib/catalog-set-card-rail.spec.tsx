@@ -713,7 +713,7 @@ describe('CatalogSetCardRail', () => {
     );
   });
 
-  it('locks horizontal touch gestures and keeps taps responsive during rail momentum', () => {
+  it('keeps native rail panning available while custom touch drag stays vertical-safe', () => {
     act(() => {
       root.render(
         <CatalogSetCardRail
@@ -807,7 +807,8 @@ describe('CatalogSetCardRail', () => {
     );
 
     expect(css).toContain('.setCardRailTrack {');
-    expect(css).toContain('touch-action: pan-y;');
+    expect(css).toContain('touch-action: auto;');
+    expect(css).not.toContain('touch-action: pan-y;');
     expect(css).not.toContain('touch-action: pan-x;');
   });
 
