@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type {
   ComponentProps,
@@ -65,9 +65,12 @@ interface CatalogSetCardRailGestureState {
   startScrollLeft: number;
 }
 
+export type CatalogSetCardRailLayoutMode = 'default' | 'stable-square';
+
 interface CatalogSetCardRailProps {
   ariaLabel: string;
   items: readonly CatalogSetCardRailItem[];
+  railLayoutMode?: CatalogSetCardRailLayoutMode;
   mobileOverflowBleed?: boolean;
   mobileOverflowBleedUntil?: 'mobile' | 'page' | 'tablet';
   showControls?: boolean;
@@ -78,6 +81,18 @@ const RAIL_SCROLL_EPSILON = 1;
 const RAIL_GESTURE_AXIS_THRESHOLD_PX = 10;
 const RAIL_GESTURE_AXIS_RATIO = 1.6;
 const RAIL_CLICK_SUPPRESS_THRESHOLD_PX = 6;
+function areRailMetricsEqual(
+  left: CatalogSetCardRailMetrics,
+  right: CatalogSetCardRailMetrics,
+): boolean {
+  return (
+    left.canScrollNext === right.canScrollNext &&
+    left.canScrollPrevious === right.canScrollPrevious &&
+    left.hasOverflow === right.hasOverflow &&
+    left.progress === right.progress &&
+    left.thumbWidthPercent === right.thumbWidthPercent
+  );
+}
 
 function getRailMetrics(
   railElement: HTMLDivElement,
@@ -221,11 +236,41 @@ function CatalogSetCardRailHeadingControls({
   );
 }
 
+const CatalogSetCardRailItems = memo(function CatalogSetCardRailItems({
+  items,
+  variant,
+}: {
+  items: readonly CatalogSetCardRailItem[];
+  variant: 'compact' | 'featured';
+}) {
+  return (
+    <>
+      {items.map((item) => (
+        <CatalogSetCard
+          actions={item.actions}
+          ctaMode={item.ctaMode}
+          href={item.href}
+          imageFetchPriority={item.imageFetchPriority}
+          imageLoading={item.imageLoading}
+          key={item.id}
+          priceContext={item.priceContext}
+          setSummary={item.setSummary}
+          showThemeBadge={item.showThemeBadge}
+          supportingNote={item.supportingNote}
+          trackingEvent={item.trackingEvent}
+          variant={variant}
+        />
+      ))}
+    </>
+  );
+});
+
 function CatalogSetCardRailViewport({
   ariaLabel,
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
+  railLayoutMode = 'default',
   render,
   variant = 'featured',
 }: CatalogSetCardRailProps & {
@@ -259,7 +304,13 @@ function CatalogSetCardRailViewport({
       return;
     }
 
-    setRailMetrics(getRailMetrics(railElement));
+    const nextMetrics = getRailMetrics(railElement);
+
+    setRailMetrics((currentMetrics) =>
+      areRailMetricsEqual(currentMetrics, nextMetrics)
+        ? currentMetrics
+        : nextMetrics,
+    );
   }, []);
 
   const queueRailMetricsFlush = useCallback(() => {
@@ -285,93 +336,24 @@ function CatalogSetCardRailViewport({
 
   useEffect(() => {
     const railElement = railRef.current;
-    const scrollbarElement = scrollbarRef.current;
 
     if (!railElement) {
       return undefined;
     }
-    const cleanupImageListeners: Array<() => void> = [];
-
-    function bindRailImageListeners() {
-      const nextRailElement = railRef.current;
-
-      cleanupImageListeners.splice(0).forEach((cleanup) => cleanup());
-
-      if (!nextRailElement) {
-        return;
-      }
-
-      const railImages = nextRailElement.querySelectorAll('img');
-
-      railImages.forEach((image) => {
-        image.addEventListener('load', queueRailMetricsFollowUp, {
-          passive: true,
-        });
-        image.addEventListener('error', queueRailMetricsFollowUp, {
-          passive: true,
-        });
-
-        cleanupImageListeners.push(() => {
-          image.removeEventListener('load', queueRailMetricsFollowUp);
-          image.removeEventListener('error', queueRailMetricsFollowUp);
-        });
-      });
-    }
+    const measuredRailElement = railElement;
 
     queueRailMetricsFlush();
-    metricAnimationFrameIdRef.current = requestAnimationFrame(() => {
-      queueRailMetricsFollowUp();
-    });
-    railElement.addEventListener('scroll', flushRailMetrics, { passive: true });
-    window.addEventListener('resize', queueRailMetricsFollowUp, {
+    measuredRailElement.addEventListener('scroll', flushRailMetrics, {
       passive: true,
     });
-    window.addEventListener('load', queueRailMetricsFollowUp, {
-      passive: true,
-    });
-
-    const resizeObserver =
-      typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(queueRailMetricsFollowUp)
-        : null;
-    const mutationObserver =
-      typeof MutationObserver !== 'undefined'
-        ? new MutationObserver(() => {
-            bindRailImageListeners();
-            queueRailMetricsFollowUp();
-          })
-        : null;
-
-    resizeObserver?.observe(railElement);
-    if (scrollbarElement) {
-      resizeObserver?.observe(scrollbarElement);
-    }
-    Array.from(railElement.children).forEach((child) => {
-      resizeObserver?.observe(child);
-    });
-    mutationObserver?.observe(railElement, {
-      childList: true,
-      subtree: true,
-    });
-    bindRailImageListeners();
 
     return () => {
       cancelAnimationFrame(metricAnimationFrameIdRef.current);
       clearTimeout(metricFollowUpTimeoutIdRef.current);
       isMetricFrameQueuedRef.current = false;
-      railElement.removeEventListener('scroll', flushRailMetrics);
-      window.removeEventListener('resize', queueRailMetricsFollowUp);
-      window.removeEventListener('load', queueRailMetricsFollowUp);
-      cleanupImageListeners.splice(0).forEach((cleanup) => cleanup());
-      resizeObserver?.disconnect();
-      mutationObserver?.disconnect();
+      measuredRailElement.removeEventListener('scroll', flushRailMetrics);
     };
-  }, [
-    flushRailMetrics,
-    items.length,
-    queueRailMetricsFlush,
-    queueRailMetricsFollowUp,
-  ]);
+  }, [flushRailMetrics, items.length, queueRailMetricsFlush]);
 
   if (!items.length) {
     return null;
@@ -665,7 +647,12 @@ function CatalogSetCardRailViewport({
               ? styles.setCardRailTabletBleed
               : styles.setCardRailMobileBleed
           : ''
+      } ${
+        railLayoutMode === 'stable-square' ? styles.setCardRailStableSquare : ''
       }`.trim()}
+      data-rail-layout-mode={
+        railLayoutMode === 'stable-square' ? 'stable-square' : undefined
+      }
       data-rail-mobile-bleed={mobileOverflowBleed ? 'true' : undefined}
       data-rail-mobile-bleed-until={
         mobileOverflowBleed ? mobileOverflowBleedUntil : undefined
@@ -683,22 +670,7 @@ function CatalogSetCardRailViewport({
         ref={railRef}
         variant={variant}
       >
-        {items.map((item) => (
-          <CatalogSetCard
-            actions={item.actions}
-            ctaMode={item.ctaMode}
-            href={item.href}
-            imageFetchPriority={item.imageFetchPriority}
-            imageLoading={item.imageLoading}
-            key={item.id}
-            priceContext={item.priceContext}
-            setSummary={item.setSummary}
-            showThemeBadge={item.showThemeBadge}
-            supportingNote={item.supportingNote}
-            trackingEvent={item.trackingEvent}
-            variant={variant}
-          />
-        ))}
+        <CatalogSetCardRailItems items={items} variant={variant} />
       </CatalogSetCardCollection>
       {shouldRenderScrollbar ? (
         <div
@@ -738,6 +710,7 @@ export function CatalogSetCardRail({
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
+  railLayoutMode = 'default',
   showControls = false,
   variant = 'featured',
 }: CatalogSetCardRailProps) {
@@ -747,6 +720,7 @@ export function CatalogSetCardRail({
       items={items}
       mobileOverflowBleed={mobileOverflowBleed}
       mobileOverflowBleedUntil={mobileOverflowBleedUntil}
+      railLayoutMode={railLayoutMode}
       render={({ controls, rail }) =>
         showControls && controls ? (
           <div className={styles.setCardRailInline}>
@@ -769,6 +743,7 @@ export function CatalogSetCardRailSection({
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
+  railLayoutMode = 'default',
   railClassName,
   surfaceVariant = 'default',
   tone = surfaceVariant === 'themed' ? 'default' : 'plain',
@@ -789,6 +764,7 @@ export function CatalogSetCardRailSection({
       items={items}
       mobileOverflowBleed={mobileOverflowBleed}
       mobileOverflowBleedUntil={mobileOverflowBleedUntil}
+      railLayoutMode={railLayoutMode}
       render={({ controls, rail }) => (
         <CatalogSectionShell
           className={[

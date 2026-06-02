@@ -447,6 +447,9 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain(
       'href="/sets/grogu-mandalorian-apprentice-75446"',
     );
+    expect(railHtml).not.toContain('data-rail-performance-mode');
+    expect(railHtml).not.toContain('data-rail-layout-mode="stable-square"');
+    expect(railHtml).not.toContain('setCardRailOffscreenContainment');
     expect(railHtml).toContain('Verder ontdekken');
     expect(railHtml).toContain('href="/nieuwe-lego-sets"');
     expect(railHtml).toContain('href="/themes/star-wars"');
@@ -1721,6 +1724,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/nieuwe-lego-sets"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
+    expect(html).not.toContain('data-rail-layout-mode="stable-square"');
     expect(html.indexOf('Meer uit dit thema')).toBeLessThan(
       html.indexOf('Recent bekeken LEGO sets'),
     );

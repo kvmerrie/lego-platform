@@ -64,6 +64,7 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: (props: unknown) => {
     pageMocks.catalogFeatureSetList(props);
     const typedProps = props as {
+      railLayoutMode?: string;
       sectionId?: string;
       surfaceVariant?: string;
       title?: string;
@@ -74,6 +75,7 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
       'section',
       {
         'data-homepage-set-list': typedProps.sectionId ?? typedProps.title,
+        'data-rail-layout-mode': typedProps.railLayoutMode ?? 'default',
         'data-surface-variant': typedProps.surfaceVariant ?? 'default',
         'data-tone': typedProps.tone ?? 'muted',
       },
@@ -372,6 +374,7 @@ describe('home metadata', () => {
       ([props]) =>
         props as {
           sectionId?: string;
+          railLayoutMode?: string;
           surfaceVariant?: string;
           title?: string;
           tone?: string;
@@ -395,6 +398,14 @@ describe('home metadata', () => {
     expect(
       normalRailSetListProps.map((props) => props.surfaceVariant ?? 'default'),
     ).toEqual(['default', 'default']);
+    expect(normalRailSetListProps.map((props) => props.railLayoutMode)).toEqual(
+      ['stable-square', 'stable-square'],
+    );
+    expect(
+      normalRailSetListProps.some(
+        (props) => 'maxRailItems' in props || 'railPerformanceMode' in props,
+      ),
+    ).toBe(false);
     expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
       expect.objectContaining({
         tone: 'default',
@@ -521,6 +532,7 @@ describe('home metadata', () => {
     expect(markup).toContain('href="/#best-current-deals"');
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
+        railLayoutMode: 'stable-square',
         sectionId: 'best-current-deals',
         title: 'Beste deals nu',
       }),
@@ -574,6 +586,7 @@ describe('home metadata', () => {
     expect(markup).toContain('href="/#popular-to-follow"');
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
+        railLayoutMode: 'stable-square',
         sectionId: 'popular-to-follow',
         title: 'Populair om te volgen',
       }),

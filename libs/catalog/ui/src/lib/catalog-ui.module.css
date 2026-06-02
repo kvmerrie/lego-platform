@@ -231,11 +231,8 @@
     flex-direction: column;
     min-width: 0;
     position: relative;
-    transition:
-      border-color var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard),
-      box-shadow var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard);
+    transition: border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
   }
 
   .setCardCompact {
@@ -309,12 +306,16 @@
     background: transparent;
   }
 
-  .setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink {
+  .setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink,
+  .setCardCompact[data-catalog-set-card-variant='featured'] > .setCardLink {
     gap: 0.78rem;
     padding-block-start: 0.72rem;
   }
 
   .setCardCompact[data-catalog-set-card-variant='compact']
+    > .setCardLink
+    > .setVisual,
+  .setCardCompact[data-catalog-set-card-variant='featured']
     > .setCardLink
     > .setVisual {
     aspect-ratio: 1 / 1.08;
@@ -322,6 +323,10 @@
   }
 
   .setCardCompact[data-catalog-set-card-variant='compact']
+    > .setCardLink
+    > .setVisual
+    > .visualMedia,
+  .setCardCompact[data-catalog-set-card-variant='featured']
     > .setCardLink
     > .setVisual
     > .visualMedia {
@@ -648,8 +653,8 @@
   .priceCompactBlock {
     align-content: start;
     display: grid;
-    gap: 0.18rem;
-    min-block-size: 4rem;
+    gap: 0.35rem;
+    min-block-size: 4.75rem;
     min-width: 0;
   }
 
@@ -770,7 +775,13 @@
 
   .featuredCardBody {
     align-content: start;
-    gap: 0.58rem;
+    gap: 0.88rem;
+  }
+
+  .featuredPriceValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.08;
   }
 
   .cardCompactFooter {
@@ -3080,8 +3091,6 @@
     gap: var(--lego-space-3);
     min-width: 0;
     overflow: hidden;
-    transition: box-shadow var(--lego-motion-duration-fast)
-      var(--lego-motion-ease-standard);
   }
 
   .themePortraitCard:focus-within,
@@ -3126,8 +3135,6 @@
     text-decoration: none;
     transition:
       background-color var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard),
-      box-shadow var(--lego-motion-duration-fast)
         var(--lego-motion-ease-standard),
       color var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
     white-space: nowrap;
@@ -3302,8 +3309,147 @@
   }
 
   .setCardRailTrack > .setCard {
+    inline-size: 100%;
+    max-inline-size: 100%;
     min-width: 0;
+    overflow: hidden;
     scroll-snap-align: start;
+  }
+
+  .setCardCollectionRail > .setCardCompact {
+    grid-template-rows: auto auto;
+  }
+
+  .setCardCollectionRail > .setCardCompact > .setCardLink {
+    align-content: start;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    min-width: 0;
+  }
+
+  .setCardCollectionRail > .setCardCompact > .setCardLink > .setVisual {
+    aspect-ratio: 1 / 1;
+    inline-size: 100%;
+    max-block-size: none;
+    min-block-size: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail
+    > .setCardCompact
+    > .setCardLink
+    > .setVisual
+    > .visualMedia {
+    block-size: 100%;
+    inline-size: 100%;
+    margin-inline: auto;
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail > .setCardCompact .discountMetric,
+  .setCardCollectionRail > .setCardCompact .cardCompactSupporting {
+    min-width: 0;
+  }
+
+  .setCardCollectionRail > .setCardCompact > .cardCompactDecisionZone {
+    align-self: end;
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: 100%;
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactFooterActions {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactPrimaryAction {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactActionLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactSecondaryAction {
+    flex: 0 0 var(--catalog-card-action-height);
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardTitle {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.16;
+  }
+
+  .setCardCollectionRail > .setCardCompact .featuredPriceValue,
+  .setCardCollectionRail > .setCardCompact .cardCompactBrowsePriceValue {
+    font-size: 1.5rem;
+    line-height: 1.08;
+  }
+
+  .setCardRailStableSquare .setCardCollectionRail > .setCardCompact {
+    container: catalog-rail-set-card / inline-size;
+  }
+
+  .setCardRailStableSquare
+    .setCardCollectionRail
+    > .setCardCompact
+    > .setCardLink
+    > .setVisual {
+    contain: layout paint;
+  }
+
+  .setCardRailStableSquare
+    .setCardCollectionRail
+    > .setCardCompact
+    > .setCardLink
+    > .setVisual
+    > .visualMedia {
+    contain: layout paint;
+  }
+
+  .setCardRailStableSquare
+    .setCardCollectionRail
+    > .setCardCompact
+    > .setCardLink
+    > .setVisual
+    .setImage {
+    block-size: auto;
+    inline-size: auto;
+    max-block-size: 100%;
+    max-inline-size: 100%;
+  }
+
+  @container catalog-rail-set-card (inline-size < 13.5rem) {
+    .setCardRailStableSquare .cardFacts {
+      font-size: 0.86rem;
+    }
+
+    .setCardRailStableSquare
+      .setCardCollectionRail
+      > .setCardCompact
+      .cardTitle {
+      font-size: 0.96rem;
+    }
+
+    .setCardRailStableSquare
+      .setCardCollectionRail
+      > .setCardCompact
+      .featuredPriceValue,
+    .setCardRailStableSquare
+      .setCardCollectionRail
+      > .setCardCompact
+      .cardCompactBrowsePriceValue {
+      font-size: 1.36rem;
+    }
   }
 
   .setCardRailTrack::-webkit-scrollbar {
@@ -3513,38 +3659,48 @@
   }
 
   @supports (grid-template-rows: subgrid) {
-    .setCardCollectionCompact > .setCardCompact {
+    .setCardCollectionBrowse.setCardCollectionCompact > .setCardCompact {
       display: grid;
       grid-row: span 5;
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionFeatured > .setCardCompact {
+    .setCardCollectionBrowse.setCardCollectionFeatured > .setCardCompact {
       display: grid;
       grid-row: span 5;
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionCompact > .setCardCompact > .setCardLink {
+    .setCardCollectionBrowse.setCardCollectionCompact
+      > .setCardCompact
+      > .setCardLink {
       display: grid;
       gap: 1rem;
       grid-row: 1 / span 5;
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionFeatured > .setCardCompact > .setCardLink {
+    .setCardCollectionBrowse.setCardCollectionFeatured
+      > .setCardCompact
+      > .setCardLink {
       display: grid;
-      gap: 0.55rem;
-      grid-row: 1 / span 4;
+      gap: 1rem;
+      grid-row: 1 / span 5;
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionCompact > .setCardCompact > .setCardLink > .setVisual,
-    .setCardCollectionFeatured > .setCardCompact > .setCardLink > .setVisual {
+    .setCardCollectionBrowse.setCardCollectionCompact
+      > .setCardCompact
+      > .setCardLink
+      > .setVisual,
+    .setCardCollectionBrowse.setCardCollectionFeatured
+      > .setCardCompact
+      > .setCardLink
+      > .setVisual {
       grid-row: 1;
     }
 
-    .setCardCollectionCompact
+    .setCardCollectionBrowse.setCardCollectionCompact
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody {
@@ -3554,17 +3710,17 @@
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionFeatured
+    .setCardCollectionBrowse.setCardCollectionFeatured
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody {
       display: grid;
       gap: 0.75rem;
-      grid-row: 2 / span 3;
+      grid-row: 2 / span 4;
       grid-template-rows: subgrid;
     }
 
-    .setCardCollectionCompact
+    .setCardCollectionBrowse.setCardCollectionCompact
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
@@ -3572,15 +3728,15 @@
       grid-row: 2;
     }
 
-    .setCardCollectionFeatured
+    .setCardCollectionBrowse.setCardCollectionFeatured
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
       > .cardTitle {
-      grid-row: 1;
+      grid-row: 2;
     }
 
-    .setCardCollectionCompact
+    .setCardCollectionBrowse.setCardCollectionCompact
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
@@ -3588,7 +3744,7 @@
       grid-row: 1;
     }
 
-    .setCardCollectionCompact
+    .setCardCollectionBrowse.setCardCollectionCompact
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
@@ -3596,7 +3752,7 @@
       grid-row: 3;
     }
 
-    .setCardCollectionCompact
+    .setCardCollectionBrowse.setCardCollectionCompact
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
@@ -3604,15 +3760,15 @@
       grid-row: 4;
     }
 
-    .setCardCollectionFeatured
+    .setCardCollectionBrowse.setCardCollectionFeatured
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
       > .cardFeaturedSupportingSlot {
-      grid-row: 2;
+      grid-row: 1;
     }
 
-    .setCardCollectionFeatured
+    .setCardCollectionBrowse.setCardCollectionFeatured
       > .setCardCompact
       > .setCardLink
       > .cardCompactBody
@@ -3620,7 +3776,9 @@
       grid-row: 3;
     }
 
-    .setCardCollectionFeatured > .setCardCompact > .cardCompactDecisionZone {
+    .setCardCollectionBrowse.setCardCollectionFeatured
+      > .setCardCompact
+      > .cardCompactDecisionZone {
       grid-row: 5;
     }
   }
@@ -4156,6 +4314,14 @@
   }
 
   @media (max-width: 47.999rem) {
+    .setCardCollectionRail {
+      align-items: start;
+    }
+
+    .setCardCollectionRail > .setCardCompact {
+      height: auto;
+    }
+
     .setCardCollectionBrowse.setCardCollectionMobileOneColumn {
       grid-template-columns: minmax(0, 1fr);
     }

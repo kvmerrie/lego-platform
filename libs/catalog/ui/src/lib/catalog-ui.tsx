@@ -22,13 +22,11 @@ import {
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
 import {
-  ArrowDown,
   CalendarDays,
   ChevronRight,
   Clock3,
   Eye,
   Hash,
-  Minus,
   ToyBrick,
 } from 'lucide-react';
 import {
@@ -631,34 +629,6 @@ function CatalogSetMetadata({
   );
 }
 
-function getPricePositionClassName(
-  pricePositionTone?: CatalogSetCardPriceContextTone,
-): string {
-  if (pricePositionTone === 'positive') {
-    return styles.cardCompactSignalPositive;
-  }
-
-  if (pricePositionTone === 'warning') {
-    return styles.cardCompactSignalWarning;
-  }
-
-  return styles.cardCompactSignalInfo;
-}
-
-function getCardPriceSignalIcon(
-  pricePositionTone?: CatalogSetCardPriceContextTone,
-): typeof ArrowDown {
-  if (pricePositionTone === 'warning') {
-    return Clock3;
-  }
-
-  if (pricePositionTone === 'positive') {
-    return ArrowDown;
-  }
-
-  return Minus;
-}
-
 function getCardMerchantLabel(merchantLabel: string): string {
   const trimmedMerchantLabel = merchantLabel.trim();
   const dutchPrefix = 'Nu het laagst bij ';
@@ -681,6 +651,31 @@ function getCardMerchantLabel(merchantLabel: string): string {
 
 function isDuplicatePriceContextLine(left?: string, right?: string): boolean {
   return Boolean(left && right && left.trim() === right.trim());
+}
+
+function buildCompactDealValueLine(
+  priceContext: CatalogSetCardPriceContext,
+): string | undefined {
+  const isPricePerBrickCopy = (value: string): boolean =>
+    /\b(?:ct|cent)\s*(?:\/|per)\s*steen\b/iu.test(value);
+  const valueParts = [
+    priceContext.discountMetric,
+    isDuplicatePriceContextLine(
+      priceContext.dealReason,
+      priceContext.discountMetric,
+    )
+      ? undefined
+      : priceContext.dealReason,
+  ]
+    .map((value) => value?.trim())
+    .filter(
+      (value): value is string =>
+        typeof value === 'string' &&
+        value.length > 0 &&
+        !isPricePerBrickCopy(value),
+    );
+
+  return valueParts.length ? valueParts.join(' · ') : undefined;
 }
 
 function getCardPrimaryActionConfig({
@@ -1234,11 +1229,9 @@ export function CatalogSetCard({
       ? (priceContext.decisionNote ??
         getCardMerchantLabel(priceContext.merchantLabel))
       : null;
-    const featuredDecisionLabel =
-      priceContext?.decisionLabel ?? priceContext?.pricePositionLabel;
-    const FeaturedPriceSignalIcon =
-      featuredDecisionLabel &&
-      getCardPriceSignalIcon(priceContext?.pricePositionTone);
+    const featuredDealValueLine = priceContext
+      ? buildCompactDealValueLine(priceContext)
+      : undefined;
     const overlayBadges = (
       <CatalogSetCardVisualBadges
         contextBadge={contextBadge}
@@ -1262,46 +1255,33 @@ export function CatalogSetCard({
           variant="card"
         />
         <div className={`${styles.cardCompactBody} ${styles.featuredCardBody}`}>
-          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
-            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
-          </h3>
           <CatalogSetFactRow
             className={styles.cardFeaturedSupportingSlot}
             setSummary={setSummary}
           />
+          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
+            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
+          </h3>
           <div className={styles.priceCompactBlock}>
             {priceContext ? (
               <>
-                {featuredDecisionLabel ? (
-                  <p
-                    className={`${styles.cardCompactSignal} ${getPricePositionClassName(
-                      priceContext.pricePositionTone,
-                    )}`}
-                  >
-                    {FeaturedPriceSignalIcon ? (
-                      <FeaturedPriceSignalIcon
-                        aria-hidden="true"
-                        className={styles.cardCompactSignalIcon}
-                      />
-                    ) : null}
-                    {featuredDecisionLabel}
-                  </p>
-                ) : null}
-                <p className={styles.priceValue}>{priceContext.currentPrice}</p>
-                {priceContext.discountMetric ? (
+                <p
+                  aria-label={`Vanaf ${formatCompactBrowsePrice(
+                    priceContext.currentPrice,
+                  )}`}
+                  className={`${styles.cardCompactBrowsePriceValue} ${styles.featuredPriceValue}`}
+                >
+                  <span aria-hidden="true">
+                    {formatCompactBrowsePrice(priceContext.currentPrice)}
+                  </span>
+                </p>
+                {featuredDealValueLine ? (
                   <p
                     className={styles.discountMetric}
                     data-catalog-discount-metric="true"
                   >
-                    {priceContext.discountMetric}
+                    {featuredDealValueLine}
                   </p>
-                ) : null}
-                {priceContext.dealReason &&
-                !isDuplicatePriceContextLine(
-                  priceContext.dealReason,
-                  priceContext.discountMetric,
-                ) ? (
-                  <p className={styles.dealReason}>{priceContext.dealReason}</p>
                 ) : null}
                 <p className={styles.cardCompactSupporting}>
                   {featuredMerchantLabel}

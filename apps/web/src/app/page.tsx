@@ -1003,6 +1003,7 @@ export default async function HomePage() {
               description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
               eyebrow="Deals"
               prioritizeFirstImage
+              railLayoutMode="stable-square"
               sectionId={HOMEPAGE_PRIMARY_DEAL_SECTION_ID}
               setCards={homepageStrongDealSetCards}
               showSignal={false}
@@ -1016,6 +1017,7 @@ export default async function HomePage() {
               description="Sets die nu lager staan dan recent. Geen hard deal-label, wel een goed moment om te kijken."
               eyebrow="Prijsbeweging"
               prioritizeFirstImage
+              railLayoutMode="stable-square"
               sectionId={HOMEPAGE_SOFT_DEAL_SECTION_ID}
               setCards={homepageSoftDealSetCards}
               showSignal={false}
@@ -1029,6 +1031,7 @@ export default async function HomePage() {
               description="Geen harde kortingclaim, wel actuele prijzen met een werkende winkelroute. Begin hier als je nu wilt vergelijken."
               eyebrow="Actuele prijzen"
               prioritizeFirstImage
+              railLayoutMode="stable-square"
               sectionId={HOMEPAGE_CURRENT_OFFERS_SECTION_ID}
               setCards={homepageCurrentOfferSetCards}
               showSignal={false}
@@ -1062,6 +1065,7 @@ export default async function HomePage() {
           <CatalogFeatureSetList
             description="Geen deal-label, wel sets die je collectie richting geven. Volg ze en pak het moment zodra prijs of voorraad goed wordt."
             eyebrow="Volgen"
+            railLayoutMode="stable-square"
             setCards={homepageSetCards}
             sectionId={HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID}
             title="Populair om te volgen"

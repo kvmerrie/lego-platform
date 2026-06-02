@@ -6,6 +6,7 @@ import {
   CatalogSetCard,
   type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
+  type CatalogSetCardRailLayoutMode,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -29,6 +30,7 @@ export function CatalogFeatureSetList({
   eyebrow = 'Pronkstukken',
   layout = 'rail',
   prioritizeFirstImage = false,
+  railLayoutMode = 'default',
   sectionId = 'featured-sets',
   setCards,
   showSignal = true,
@@ -45,6 +47,7 @@ export function CatalogFeatureSetList({
   eyebrow?: string;
   layout?: 'grid' | 'rail';
   prioritizeFirstImage?: boolean;
+  railLayoutMode?: CatalogSetCardRailLayoutMode;
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
   showSignal?: boolean;
@@ -129,6 +132,7 @@ export function CatalogFeatureSetList({
         setSummary: catalogSetSummary,
         trackingEvent: catalogSetSummary.trackingEvent,
       }))}
+      railLayoutMode={railLayoutMode}
       surfaceVariant={surfaceVariant}
       variant="featured"
     />

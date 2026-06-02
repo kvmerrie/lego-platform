@@ -62,6 +62,9 @@ describe('CatalogSetCardRail', () => {
   let railClientWidth = 720;
   let railScrollWidth = 1440;
   let scrollLeftValue = 0;
+  let railClientWidthReadCount = 0;
+  let railScrollWidthReadCount = 0;
+  let railScrollLeftReadCount = 0;
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -72,6 +75,9 @@ describe('CatalogSetCardRail', () => {
     railClientWidth = 720;
     railScrollWidth = 1440;
     scrollLeftValue = 0;
+    railClientWidthReadCount = 0;
+    railScrollWidthReadCount = 0;
+    railScrollLeftReadCount = 0;
 
     originalClientWidthDescriptor = Object.getOwnPropertyDescriptor(
       HTMLElement.prototype,
@@ -91,27 +97,39 @@ describe('CatalogSetCardRail', () => {
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
       configurable: true,
       get() {
-        return this.className.toString().includes('setCardRailTrack')
-          ? railClientWidth
-          : 0;
+        if (this.className.toString().includes('setCardRailTrack')) {
+          railClientWidthReadCount += 1;
+
+          return railClientWidth;
+        }
+
+        return 0;
       },
     });
 
     Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
       configurable: true,
       get() {
-        return this.className.toString().includes('setCardRailTrack')
-          ? railScrollWidth
-          : 0;
+        if (this.className.toString().includes('setCardRailTrack')) {
+          railScrollWidthReadCount += 1;
+
+          return railScrollWidth;
+        }
+
+        return 0;
       },
     });
 
     Object.defineProperty(HTMLElement.prototype, 'scrollLeft', {
       configurable: true,
       get() {
-        return this.className.toString().includes('setCardRailTrack')
-          ? scrollLeftValue
-          : 0;
+        if (this.className.toString().includes('setCardRailTrack')) {
+          railScrollLeftReadCount += 1;
+
+          return scrollLeftValue;
+        }
+
+        return 0;
       },
       set(value: number) {
         if (this.className.toString().includes('setCardRailTrack')) {
@@ -166,6 +184,12 @@ describe('CatalogSetCardRail', () => {
     container.remove();
     document.body.innerHTML = '';
     requestAnimationFrameMock.mockClear();
+    requestAnimationFrameMock.mockImplementation(
+      (callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      },
+    );
     vi.unstubAllGlobals();
 
     if (originalClientWidthDescriptor) {
@@ -278,6 +302,7 @@ describe('CatalogSetCardRail', () => {
     expect(skeletonCardRule).toContain('overflow: hidden;');
     expect(skeletonCardRule).toContain('scroll-snap-align: start;');
     expect(skeletonTrackRule).toContain('grid-auto-columns: minmax(');
+    expect(skeletonTrackRule).toContain('100% -');
     expect(skeletonTrackRule).toContain('overflow: hidden;');
     expect(skeletonImageRule).toContain(
       'block-size: clamp(12rem, 34vw, 15.5rem);',
@@ -287,6 +312,38 @@ describe('CatalogSetCardRail', () => {
     expect(skeletonImageRule).toContain('max-inline-size: 100%;');
     expect(skeletonImageRule).toContain('overflow: hidden;');
     expect(loadedRailCardRule).toContain('min-width: 0;');
+  });
+
+  it('does not emit experimental offscreen containment attributes', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Standaard setrail"
+          items={[
+            {
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6181,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
+
+    expect(container.innerHTML).not.toContain(
+      'setCardRailOffscreenContainment',
+    );
   });
 
   it('keeps inverse skeleton rails on the inverse section treatment', () => {
@@ -424,12 +481,13 @@ describe('CatalogSetCardRail', () => {
       );
     });
 
-    expect(container.textContent).toContain('Vanaf € 489,99');
-    expect(container.textContent).toContain('Bekijk set');
+    expect(container.textContent).toContain('€ 489,99');
+    expect(container.textContent).not.toContain('Vanaf € 489,99');
+    expect(container.querySelector('[aria-label="Bekijk set"]')).not.toBeNull();
     expect(container.textContent).not.toContain('10316');
   });
 
-  it('updates overflow visibility after delayed image/layout completion', () => {
+  it('does not run rail metrics again from image load events', () => {
     railScrollWidth = 720;
 
     act(() => {
@@ -477,12 +535,18 @@ describe('CatalogSetCardRail', () => {
     expect(scrollbar?.dataset.visible).toBe('false');
 
     railScrollWidth = 1440;
+    railClientWidthReadCount = 0;
+    railScrollWidthReadCount = 0;
+    railScrollLeftReadCount = 0;
 
     act(() => {
       firstImage?.dispatchEvent(new Event('load'));
     });
 
-    expect(scrollbar?.dataset.visible).toBe('true');
+    expect(scrollbar?.dataset.visible).toBe('false');
+    expect(railClientWidthReadCount).toBe(0);
+    expect(railScrollWidthReadCount).toBe(0);
+    expect(railScrollLeftReadCount).toBe(0);
   });
 
   it('updates next and previous control state after button scrolling', () => {
@@ -1044,6 +1108,322 @@ describe('CatalogSetCardRail', () => {
     expect(themePageSource).toContain('<CatalogSetCardRailSection');
   });
 
+  it('keeps rail card link, content, and CTA row contained inside the card shell', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Nu te vergelijken"
+          items={[
+            {
+              actions: <button type="button">Volg set</button>,
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              priceContext: {
+                coverageLabel: 'Actuele prijs gevonden',
+                currentPrice: 'Vanaf € 489,99',
+                merchantLabel: 'Laagst bij Brickshop',
+                reviewedLabel: 'Nagekeken 29 mrt',
+              },
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6181,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    const railCard = container.querySelector(
+      '[data-catalog-set-card="true"]',
+    ) as HTMLElement | null;
+    const cardLink = container.querySelector(
+      '[data-catalog-set-card-link="true"]',
+    ) as HTMLElement | null;
+
+    expect(railCard).not.toBeNull();
+    expect(cardLink).not.toBeNull();
+    expect(container.innerHTML).toContain('cardCompactFooterActions');
+    expect(container.innerHTML).toContain('Bekijk set');
+    expect(container.textContent).not.toContain('Set 10316');
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railCardRule =
+      css.match(/\.setCardRailTrack > \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const railLinkRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact > \.setCardLink \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railCardShellRule =
+      css.match(/\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u)?.[0] ??
+      '';
+    const railDecisionRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact > \.cardCompactDecisionZone \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railFooterRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.cardCompactFooterActions \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railPrimaryActionRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.cardCompactPrimaryAction \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railSecondaryActionRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.cardCompactSecondaryAction \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(railCardRule).toContain('inline-size: 100%;');
+    expect(railCardRule).toContain('max-inline-size: 100%;');
+    expect(railCardRule).not.toContain('content-visibility: auto;');
+    expect(railCardRule).not.toContain('contain-intrinsic-size');
+    expect(railCardRule).toContain('overflow: hidden;');
+    expect(css).not.toContain('setCardRailOffscreenContainment');
+    expect(css).not.toContain('content-visibility: auto;');
+    expect(css).not.toContain('contain-intrinsic-size');
+    expect(railCardShellRule).not.toContain('--catalog-rail-card-facts-slot');
+    expect(railCardShellRule).not.toContain('--catalog-rail-card-title-slot');
+    expect(railCardShellRule).not.toContain('--catalog-rail-card-price-slot');
+    expect(railCardShellRule).not.toContain('--catalog-rail-card-context-slot');
+    expect(railCardShellRule).toContain('grid-template-rows: auto auto;');
+    expect(railLinkRule).toContain('inline-size: 100%;');
+    expect(railLinkRule).toContain('max-inline-size: 100%;');
+    expect(railLinkRule).toContain('align-content: start;');
+    expect(railDecisionRule).toContain('inline-size: 100%;');
+    expect(railDecisionRule).toContain('align-self: end;');
+    expect(railDecisionRule).toContain('overflow: hidden;');
+    expect(railFooterRule).toContain('inline-size: 100%;');
+    expect(railFooterRule).toContain('overflow: hidden;');
+    expect(railPrimaryActionRule).toContain('flex: 0 1 auto;');
+    expect(railPrimaryActionRule).toContain('overflow: hidden;');
+    expect(railSecondaryActionRule).toContain(
+      'flex: 0 0 var(--catalog-card-action-height);',
+    );
+  });
+
+  it('keeps default rail image slots stable without optimized containment', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railTrackRule =
+      css.match(/\n  \.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
+    const skeletonTrackRule =
+      css.match(/\n  \.setCardRailSkeletonTrack \{[^}]+\}/u)?.[0] ?? '';
+    const railCardShellRule =
+      css.match(/\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u)?.[0] ??
+      '';
+    const stableRailCardShellRule =
+      css.match(
+        /\.setCardRailStableSquare \.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railVisualRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact > \.setCardLink > \.setVisual \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const stableRailVisualRule =
+      css.match(
+        /\.setCardRailStableSquare\s+\.setCardCollectionRail\s+> \.setCardCompact\s+> \.setCardLink\s+> \.setVisual \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railVisualMediaRule =
+      css.match(
+        /\.setCardCollectionRail\s+> \.setCardCompact\s+> \.setCardLink\s+> \.setVisual\s+> \.visualMedia \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const stableRailVisualMediaRule =
+      css.match(
+        /\.setCardRailStableSquare\s+\.setCardCollectionRail\s+> \.setCardCompact\s+> \.setCardLink\s+> \.setVisual\s+> \.visualMedia \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const stableRailImageRule =
+      css.match(
+        /\.setCardRailStableSquare\s+\.setCardCollectionRail\s+> \.setCardCompact\s+> \.setCardLink\s+> \.setVisual\s+\.setImage \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const baseVisualRule = css.match(/\n  \.cardVisual \{[^}]+\}/u)?.[0] ?? '';
+    const baseImageRule = css.match(/\n  \.setImage \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(css).not.toContain('--set-card-rail-card-width');
+    expect(css).not.toContain('--set-card-rail-image-size');
+    expect(railCardShellRule).not.toContain(
+      'container: catalog-rail-set-card / inline-size;',
+    );
+    expect(railTrackRule).toContain('grid-auto-columns: calc(');
+    expect(railTrackRule).toContain('100% -');
+    expect(skeletonTrackRule).toContain('grid-auto-columns: minmax(');
+    expect(skeletonTrackRule).toContain('100% -');
+    expect(css).not.toContain('setCardRailOffscreenContainment');
+    expect(css).not.toContain('content-visibility: auto;');
+    expect(css).not.toContain('contain-intrinsic-size');
+    expect(stableRailCardShellRule).toContain(
+      'container: catalog-rail-set-card / inline-size;',
+    );
+    expect(css).toContain('@container catalog-rail-set-card');
+    expect(css).toContain(
+      'grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 4)) / 5);',
+    );
+    expect(railVisualRule).toContain('aspect-ratio: 1 / 1;');
+    expect(railVisualRule).not.toContain('contain: layout paint;');
+    expect(railVisualRule).toContain('inline-size: 100%;');
+    expect(railVisualRule).toContain('max-block-size: none;');
+    expect(railVisualRule).toContain('min-block-size: 0;');
+    expect(railVisualRule).toContain('overflow: hidden;');
+    expect(railVisualRule).not.toContain(
+      'block-size: var(--set-card-rail-image-size);',
+    );
+    expect(railVisualMediaRule).toContain('block-size: 100%;');
+    expect(railVisualMediaRule).not.toContain('contain: layout paint;');
+    expect(railVisualMediaRule).toContain('inline-size: 100%;');
+    expect(railVisualMediaRule).toContain('margin-inline: auto;');
+    expect(railVisualMediaRule).toContain('overflow: hidden;');
+    expect(css).not.toContain(
+      '.setCardCollectionRail > .setCardCompact > .setCardLink > .setVisual .setImage',
+    );
+    expect(stableRailVisualRule).toContain('contain: layout paint;');
+    expect(stableRailVisualMediaRule).toContain('contain: layout paint;');
+    expect(stableRailImageRule).toContain('block-size: auto;');
+    expect(stableRailImageRule).toContain('inline-size: auto;');
+    expect(stableRailImageRule).toContain('max-block-size: 100%;');
+    expect(stableRailImageRule).toContain('max-inline-size: 100%;');
+    expect(baseVisualRule).toContain('aspect-ratio: 1 / 1.02;');
+    expect(baseVisualRule).not.toContain(
+      'block-size: var(--set-card-rail-image-size);',
+    );
+    expect(baseImageRule).toContain('height: 100%;');
+    expect(baseImageRule).toContain('width: 100%;');
+    expect(baseImageRule).toContain('object-fit: contain;');
+  });
+
+  it('lets mobile rail cards use natural height instead of forced stretch', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const mobileRailNaturalHeightRule =
+      css.match(
+        /@media \(max-width: 47\.999rem\) \{[\s\S]+?\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(mobileRailNaturalHeightRule).toContain('align-items: start;');
+    expect(mobileRailNaturalHeightRule).toContain('height: auto;');
+    expect(mobileRailNaturalHeightRule).not.toContain('height: 100%;');
+  });
+
+  it('uses rail-only calm title and larger price typography without changing browse grids', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railTitleRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.cardTitle \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railPriceRule =
+      [
+        ...css.matchAll(
+          /\.setCardCollectionRail > \.setCardCompact \.featuredPriceValue,[\s\S]+?\.setCardCollectionRail > \.setCardCompact \.cardCompactBrowsePriceValue \{[^}]+\}/gu,
+        ),
+      ]
+        .map((match) => match[0])
+        .find((rule) => rule.includes('font-size: 1.5rem;')) ?? '';
+    const browsePriceRule =
+      css.match(/\.cardCompactBrowsePriceValue \{[^}]+\}/u)?.[0] ?? '';
+    const subgridStart = css.indexOf('@supports (grid-template-rows: subgrid)');
+    const subgridBlock = css.slice(
+      subgridStart,
+      css.indexOf('.themeCard', subgridStart),
+    );
+
+    expect(railTitleRule).toContain('font-size: 1rem;');
+    expect(railTitleRule).toContain('line-height: 1.16;');
+    expect(railPriceRule).toContain('font-size: 1.5rem;');
+    expect(railPriceRule).toContain('line-height: 1.08;');
+    expect(browsePriceRule).toContain('font-size: 1.04rem;');
+    expect(subgridBlock).toContain(
+      '.setCardCollectionBrowse.setCardCollectionFeatured',
+    );
+    expect(subgridBlock).not.toContain(
+      '.setCardCollectionFeatured > .setCardCompact > .setCardLink',
+    );
+  });
+
+  it('renders priced and no-price rail card content without fixed mobile row slots', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Vergelijkbare LEGO sets"
+          items={[
+            {
+              actions: <button type="button">Volg set</button>,
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              priceContext: {
+                coverageLabel: 'Actuele prijs gevonden',
+                currentPrice: 'Vanaf € 489,99',
+                discountMetric: '€ 35 goedkoper',
+                merchantLabel: 'Laagst bij Brickshop',
+                reviewedLabel: 'Nagekeken 29 mrt',
+              },
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell met een behoorlijk lange titel',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6181,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+            {
+              actions: <button type="button">Volg set</button>,
+              href: '/sets/avengers-tower-76269',
+              id: '76269',
+              setSummary: {
+                id: '76269',
+                slug: 'avengers-tower-76269',
+                name: 'Avengers Tower',
+                theme: 'Marvel',
+                releaseYear: 2023,
+                pieces: 5202,
+                imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.innerHTML).toContain('Vanaf € 489,99');
+    expect(container.innerHTML).toContain('Prijs volgt');
+    expect(
+      container.querySelectorAll('[class*="cardCompactDecisionZone"]'),
+    ).toHaveLength(2);
+    expect(container.textContent).not.toContain('Set 10316');
+    expect(container.textContent).not.toContain('Set 76269');
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railContextRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.discountMetric,[\s\S]+?\.setCardCollectionRail > \.setCardCompact \.cardCompactSupporting \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(css).not.toContain('--catalog-rail-card-title-slot');
+    expect(css).not.toContain('--catalog-rail-card-price-slot');
+    expect(css).not.toContain('--catalog-rail-card-context-slot');
+    expect(railContextRule).toContain('min-width: 0;');
+  });
+
   it('keeps native rail panning available while custom touch drag stays vertical-safe', () => {
     act(() => {
       root.render(
@@ -1143,13 +1523,87 @@ describe('CatalogSetCardRail', () => {
     expect(css).not.toContain('touch-action: pan-x;');
   });
 
-  it('syncs scroll progress and button state after native horizontal scrolling', async () => {
+  it('keeps rail metric work simple and free of resize observer loops', () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/ui/src/lib/catalog-set-card-rail.tsx',
+      ),
+      'utf-8',
+    );
+
+    expect(source).toContain(
+      "measuredRailElement.addEventListener('scroll', flushRailMetrics",
+    );
+    expect(source).not.toContain('new ResizeObserver');
+    expect(source).not.toContain('new MutationObserver');
+    expect(source).not.toContain('resizeObserver?.observe');
+    expect(source).not.toContain("window.addEventListener('resize'");
+    expect(source).not.toContain("window.addEventListener('load'");
+    expect(source).not.toContain(
+      'Array.from(railElement.children).forEach((child)',
+    );
+    expect(source).toContain(
+      'areRailMetricsEqual(currentMetrics, nextMetrics)',
+    );
+    expect(source).toContain('const CatalogSetCardRailItems = memo');
+    expect(source).toContain('<CatalogSetCardRailItems');
+    expect(source).not.toContain('subtree: true');
+  });
+
+  it('keeps default detail-style rails off ResizeObserver and image mutation loops', () => {
     act(() => {
       root.render(
         <CatalogSetCardRail
-          ariaLabel="Uitgelichte setrail"
+          ariaLabel="Meer uit dit thema"
           items={[
             {
+              href: '/sets/golden-retriever-puppy-11384',
+              id: '11384',
+              setSummary: {
+                id: '11384',
+                slug: 'golden-retriever-puppy-11384',
+                name: 'Golden Retriever Puppy',
+                theme: 'Creator',
+                releaseYear: 2025,
+                pieces: 476,
+                imageUrl: 'https://images.example/golden-retriever.jpg',
+              },
+            },
+            {
+              href: '/sets/playful-cat-31163',
+              id: '31163',
+              setSummary: {
+                id: '31163',
+                slug: 'playful-cat-31163',
+                name: 'Playful Cat',
+                theme: 'Creator',
+                releaseYear: 2025,
+                pieces: 407,
+                imageUrl: 'https://images.example/playful-cat.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(resizeObserverCallback).toBeNull();
+    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
+    expect(container.querySelector('[data-rail-layout-mode]')).toBeNull();
+    expect(container.textContent).toContain('Golden Retriever Puppy');
+    expect(container.innerHTML).toContain('cardCompactFooterActions');
+  });
+
+  it('applies the stable-square layout only when explicitly requested', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Nu te vergelijken"
+          items={[
+            {
+              href: '/sets/rivendell-10316',
               id: '10316',
               setSummary: {
                 id: '10316',
@@ -1157,62 +1611,44 @@ describe('CatalogSetCardRail', () => {
                 name: 'Rivendell',
                 theme: 'Icons',
                 releaseYear: 2023,
-                pieces: 6167,
+                pieces: 6181,
                 imageUrl: 'https://images.example/rivendell.jpg',
               },
             },
-            {
-              id: '76269',
-              setSummary: {
-                id: '76269',
-                slug: 'avengers-tower-76269',
-                name: 'Avengers Tower',
-                theme: 'Marvel',
-                releaseYear: 2023,
-                pieces: 5202,
-                imageUrl: 'https://images.example/avengers-tower.jpg',
-              },
-            },
           ]}
-          showControls
+          railLayoutMode="stable-square"
           variant="featured"
         />,
       );
     });
 
-    const railTrack = container.querySelector(
-      '[class*="setCardRailTrack"]',
-    ) as HTMLDivElement | null;
-    await act(async () => {
-      railTrack?.scrollBy({ left: 360 });
-      await Promise.resolve();
-    });
+    expect(
+      container.querySelector('[data-rail-layout-mode="stable-square"]'),
+    ).not.toBeNull();
+    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
+  });
 
-    const previousButtonMidRail = container.querySelector(
-      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
-    ) as HTMLButtonElement | null;
-    const nextButtonMidRail = container.querySelector(
-      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
-    ) as HTMLButtonElement | null;
+  it('keeps rails off resize, mutation, and image-load observer loops', () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/ui/src/lib/catalog-set-card-rail.tsx',
+      ),
+      'utf-8',
+    );
 
-    expect(previousButtonMidRail).not.toBeNull();
-    expect(nextButtonMidRail).not.toBeNull();
-
-    await act(async () => {
-      railTrack?.scrollBy({ left: 360 });
-      await Promise.resolve();
-    });
-
-    const previousButtonAtEnd = container.querySelector(
-      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
-    ) as HTMLButtonElement | null;
-    const nextButtonAtEnd = container.querySelector(
-      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
-    ) as HTMLButtonElement | null;
-
-    await vi.waitFor(() => {
-      expect(previousButtonAtEnd?.disabled).toBe(false);
-      expect(nextButtonAtEnd?.disabled).toBe(true);
-    });
+    expect(source).toContain(
+      "measuredRailElement.addEventListener('scroll', flushRailMetrics",
+    );
+    expect(source).not.toContain('new ResizeObserver');
+    expect(source).not.toContain('new MutationObserver');
+    expect(source).not.toContain("window.addEventListener('resize'");
+    expect(source).not.toContain("window.addEventListener('load'");
+    expect(source).not.toContain("image.addEventListener('load'");
+    expect(source).not.toContain("image.addEventListener('error'");
+    expect(source).not.toContain('queueRailMetricsSettledResize');
+    expect(source).not.toContain(
+      "railElement.addEventListener('scroll', queueRailMetricsSettledResize",
+    );
   });
 });

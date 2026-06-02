@@ -173,6 +173,82 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('Buyable set 20');
   });
 
+  it('renders all provided homepage rail items without an experimental cap', () => {
+    const setCards = Array.from({ length: 20 }, (_, index) => {
+      const setId = String(45_000 + index);
+
+      return {
+        id: setId,
+        slug: `homepage-set-${setId}`,
+        name: `Homepage set ${index + 1}`,
+        theme: 'Icons',
+        releaseYear: 2025,
+        pieces: 1200 + index,
+        priceContext: {
+          coverageLabel: 'In stock · 2 reviewed offers',
+          currentPrice: 'EUR 119.99',
+          merchantLabel: 'Lowest reviewed price at Goodbricks',
+          reviewedLabel: 'Checked today',
+        },
+      };
+    });
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList setCards={setCards} title="Nu te vergelijken" />,
+    );
+
+    expect(markup).toContain('20 sets die meteen de kamer pakken');
+    expect(markup).toContain('20 met nagekeken prijzen');
+    expect(markup).toContain('Homepage set 1');
+    expect(markup).toContain('Homepage set 12');
+    expect(markup).toContain('Homepage set 13');
+    expect(markup).toContain('Homepage set 20');
+  });
+
+  it('does not emit experimental rail performance mode attributes', () => {
+    const setCards = [
+      {
+        id: '10316',
+        slug: 'rivendell-10316',
+        name: 'Rivendell',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 6181,
+        imageUrl: 'https://images.example/rivendell.jpg',
+      },
+    ];
+    const defaultMarkup = renderToStaticMarkup(
+      <CatalogFeatureSetList setCards={setCards} title="Meer uit dit thema" />,
+    );
+
+    expect(defaultMarkup).not.toContain('data-rail-performance-mode');
+    expect(defaultMarkup).not.toContain('setCardRailOffscreenContainment');
+    expect(defaultMarkup).not.toContain('data-rail-layout-mode');
+  });
+
+  it('passes the stable-square rail layout only when explicitly requested', () => {
+    const setCards = [
+      {
+        id: '10316',
+        slug: 'rivendell-10316',
+        name: 'Rivendell',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 6181,
+        imageUrl: 'https://images.example/rivendell.jpg',
+      },
+    ];
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        railLayoutMode="stable-square"
+        setCards={setCards}
+        title="Nu te vergelijken"
+      />,
+    );
+
+    expect(markup).toContain('data-rail-layout-mode="stable-square"');
+    expect(markup).not.toContain('data-rail-performance-mode');
+  });
+
   it('preserves theme badge colors from set-card public theme presentation', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSetList

@@ -266,7 +266,10 @@ describe('CatalogSetCard', () => {
     );
 
     expect(css).toContain(
-      ".setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink {",
+      ".setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink,",
+    );
+    expect(css).toContain(
+      ".setCardCompact[data-catalog-set-card-variant='featured'] > .setCardLink {",
     );
     expect(css).toContain('gap: 0.78rem;');
     expect(css).toContain('padding-block-start: 0.72rem;');
@@ -395,6 +398,33 @@ describe('CatalogSetCard', () => {
     expect(hoverBlock).toContain(
       'box-shadow: inset 0 0 0 1px var(--catalog-card-hover-outline-color);',
     );
+  });
+
+  it('keeps public set-card transitions narrow and resize-safe', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const setCardBlock = css.match(/\n  \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const compactActionBlock =
+      css.match(/\n  \.cardCompactAction \{[^}]+\}/u)?.[0] ?? '';
+    const transitionDeclarations =
+      css.match(/transition(?:-property)?:[^;]+;/gu) ?? [];
+    const layoutTransitionPattern =
+      /\b(width|height|max-height|min-height|padding|margin|gap|grid-template|flex-basis|left|right|top|bottom)\b/u;
+
+    expect(transitionDeclarations.join('\n')).not.toContain('transition: all');
+    expect(transitionDeclarations.join('\n')).not.toContain(
+      'transition-property: all',
+    );
+    expect(transitionDeclarations).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(layoutTransitionPattern)]),
+    );
+    expect(setCardBlock).toContain('transition:');
+    expect(setCardBlock).toContain('border-color');
+    expect(setCardBlock).not.toContain('container:');
+    expect(setCardBlock).not.toContain('box-shadow var(');
+    expect(compactActionBlock).not.toContain('transition:');
   });
 
   it('keeps rich rail borderless styling scoped away from the light theme deal rail', () => {
@@ -533,7 +563,7 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Set 10316');
   });
 
-  it('keeps deal-specific price copy on featured cards', () => {
+  it('keeps featured deal cards calm while preserving accessible price context', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         ctaMode="commerce"
@@ -541,9 +571,9 @@ describe('CatalogSetCard', () => {
         priceContext={{
           coverageLabel: '4 actuele winkels',
           currentPrice: 'Vanaf € 489,99',
-          dealReason: '€ 80 onder de adviesprijs',
+          dealReason: '6 ct/steen',
           decisionLabel: 'Sterke deal',
-          discountMetric: '14% korting',
+          discountMetric: '€ 80 onder de adviesprijs',
           merchantLabel: 'Laagst bij Brickshop',
           reviewedLabel: 'Nagekeken 29 mrt',
         }}
@@ -560,22 +590,56 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Sterke deal');
-    expect(markup).toContain('Vanaf € 489,99');
-    expect(markup).toContain('14% korting');
+    expect(markup).toContain('aria-label="Vanaf € 489,99"');
+    expect(markup).toContain('>€ 489,99</span>');
+    expect(markup).not.toContain('>Vanaf € 489,99<');
+    expect(markup).not.toContain('6 ct/steen');
+    expect(markup).not.toContain('cent per steen');
     expect(markup).toContain('€ 80 onder de adviesprijs');
+    expect(markup).toContain('Laagst bij Brickshop');
+    expect(markup).not.toContain('Sterke deal');
+    expect(markup.match(/discountMetric/g) ?? []).toHaveLength(1);
+    expect(markup.match(/cardCompactSupporting/g) ?? []).toHaveLength(1);
   });
 
-  it('keeps featured deal card layout selectors separate from compact browse cards', () => {
+  it('uses the rail-card price scale and calmer spacing for featured deal cards', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const priceBlockRule = css.slice(
+      css.indexOf('.priceCompactBlock {'),
+      css.indexOf('.cardCompactBrowsePrice {'),
+    );
+    const featuredBodyRule = css.slice(
+      css.indexOf('.featuredCardBody {'),
+      css.indexOf('.featuredPriceValue {'),
+    );
+    const featuredPriceRule = css.slice(
+      css.indexOf('.featuredPriceValue {'),
+      css.indexOf('.cardCompactFooter {'),
+    );
+
+    expect(priceBlockRule).toContain('gap: 0.35rem;');
+    expect(priceBlockRule).toContain('min-block-size: 4.75rem;');
+    expect(featuredBodyRule).toContain('gap: 0.88rem;');
+    expect(featuredPriceRule).toContain('font-size: 1.5rem;');
+    expect(featuredPriceRule).toContain('font-weight: 700;');
+    expect(featuredPriceRule).toContain('line-height: 1.08;');
+  });
+
+  it('keeps featured deal card layout selectors aligned with compact browse cards', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
 
-    expect(css).toContain(
+    expect(css).toContain('.setCardCollectionBrowse.setCardCollectionFeatured');
+    expect(css).not.toContain(
       '.setCardCollectionFeatured > .setCardCompact > .setCardLink {',
     );
-    expect(css).toContain('grid-row: 1 / span 4;');
+    expect(css).toContain('grid-row: 1 / span 5;');
+    expect(css).toContain('> .cardFeaturedSupportingSlot');
     expect(css).toContain('.setCardCollectionFeatured');
     expect(css).toContain('> .priceCompactBlock');
     expect(css).toContain('.cardCompactDecisionZone {');
@@ -1268,9 +1332,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Laagst bij bol');
-    expect(markup).toContain('EUR 10.00 below ref');
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
+    expect(markup.indexOf('cardFactRow')).toBeLessThan(markup.indexOf('<h3'));
+    expect(markup.indexOf('<h3')).toBeLessThan(markup.indexOf('EUR 489.99'));
     expect(markup).toContain('Bekijk set');
     expect(markup).toContain('aria-label="Bekijk set"');
     expect(markup).toContain('href="/sets/rivendell-10316"');
@@ -1282,6 +1347,7 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Actualiteit');
     expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
     expect(markup).not.toContain('Nagekeken prijs');
+    expect(markup).not.toContain('EUR 10.00 below ref');
   });
 
   it('renders a compact deal reason under the price when provided', () => {

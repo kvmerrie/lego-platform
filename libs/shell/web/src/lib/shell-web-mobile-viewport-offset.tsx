@@ -20,6 +20,25 @@ export function getShellMobileViewportBottomOffset({
   );
 }
 
+export function shouldSyncShellMobileViewportOffsetOnWindowResize({
+  hasCoarsePointer,
+  innerHeight,
+  visualViewportHeight,
+}: {
+  hasCoarsePointer: boolean;
+  innerHeight: number;
+  visualViewportHeight: number;
+}): boolean {
+  return (
+    hasCoarsePointer ||
+    getShellMobileViewportBottomOffset({
+      innerHeight,
+      visualViewportHeight,
+      visualViewportOffsetTop: 0,
+    }) > 0
+  );
+}
+
 export function ShellWebMobileViewportOffset() {
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -28,6 +47,14 @@ export function ShellWebMobileViewportOffset() {
 
     const rootElement = document.documentElement;
     const visualViewport = window.visualViewport;
+    const shouldListenToWindowResize =
+      typeof window.matchMedia === 'function'
+        ? shouldSyncShellMobileViewportOffsetOnWindowResize({
+            hasCoarsePointer: window.matchMedia('(pointer: coarse)').matches,
+            innerHeight: window.innerHeight,
+            visualViewportHeight: visualViewport?.height ?? window.innerHeight,
+          })
+        : true;
 
     if (!visualViewport) {
       rootElement.style.setProperty(shellMobileViewportBottomOffsetVar, '0px');
@@ -58,12 +85,16 @@ export function ShellWebMobileViewportOffset() {
     scheduleViewportOffsetSync();
     visualViewport.addEventListener('resize', scheduleViewportOffsetSync);
     visualViewport.addEventListener('scroll', scheduleViewportOffsetSync);
-    window.addEventListener('resize', scheduleViewportOffsetSync);
+    if (shouldListenToWindowResize) {
+      window.addEventListener('resize', scheduleViewportOffsetSync);
+    }
 
     return () => {
       visualViewport.removeEventListener('resize', scheduleViewportOffsetSync);
       visualViewport.removeEventListener('scroll', scheduleViewportOffsetSync);
-      window.removeEventListener('resize', scheduleViewportOffsetSync);
+      if (shouldListenToWindowResize) {
+        window.removeEventListener('resize', scheduleViewportOffsetSync);
+      }
       window.cancelAnimationFrame(frame);
       rootElement.style.removeProperty(shellMobileViewportBottomOffsetVar);
     };
