@@ -6,6 +6,7 @@ import { CatalogSetCardRailSection } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { ContentArticleSetRail } from '@lego-platform/content/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { normalizeSetRailIds } from './article-mdx-embed-normalization';
 import { ArticleSetClickTrackingRegion } from './article-set-click-tracking-region';
 
@@ -173,6 +174,20 @@ export function ArticleMdxSetRailClient({
             description={subtitle}
             eyebrow={eyebrow}
             items={resolvedSetCards.map((setCard) => ({
+              actions: (
+                <WishlistFeatureWishlistToggle
+                  analyticsContext={{
+                    articleSlug,
+                    pageSurface: 'article',
+                    sectionId: 'article-set-rail',
+                    setId: setCard.id,
+                    theme: setCard.theme,
+                  }}
+                  productIntent="wishlist"
+                  setId={setCard.id}
+                  variant="inline"
+                />
+              ),
               href: buildSetDetailPath(setCard.slug),
               id: setCard.id,
               setSummary: setCard,

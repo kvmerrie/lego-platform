@@ -27,6 +27,7 @@ export interface CatalogCollectionLandingPageLink {
 
 export interface CatalogCollectionLandingPageItem
   extends CatalogHomepageSetCard {
+  actions?: ReactNode;
   priceContext?: CatalogSetCardPriceContext;
 }
 
@@ -186,6 +187,7 @@ export function CatalogFeatureCollectionLandingPage({
             >
               {setCards.map((setCard, index) => (
                 <CatalogSetCard
+                  actions={setCard.actions}
                   href={buildSetDetailPath(setCard.slug)}
                   imageLoading={index < 6 ? 'eager' : 'lazy'}
                   key={setCard.id}

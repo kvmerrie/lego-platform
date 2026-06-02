@@ -20,6 +20,7 @@ import {
   buildCanonicalUrl,
   buildPublicBrowseCollectionCacheTags,
 } from '@lego-platform/shared/config';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { JsonLdScript } from '../lib/json-ld';
 import {
   getCachedPublicBrowsePageData,
@@ -346,6 +347,19 @@ export default async function CollectionLandingPage({
 
     return {
       ...setCard,
+      actions: (
+        <WishlistFeatureWishlistToggle
+          analyticsContext={{
+            pageSurface: 'collection_page',
+            sectionId: config.slug,
+            setId: setCard.id,
+            theme: setCard.theme,
+          }}
+          productIntent={priceContext ? 'price-alert' : 'wishlist'}
+          setId={setCard.id}
+          variant="inline"
+        />
+      ),
       ...(priceContext
         ? {
             priceContext,

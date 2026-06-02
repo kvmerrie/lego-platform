@@ -1,6 +1,17 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { CollectorWishlistPanel, WantedSetToggleCard } from './wishlist-ui';
+
+function readWishlistUiCss(): string {
+  const cwd = process.cwd();
+  const stylesheetPath = cwd.endsWith('libs/wishlist/ui')
+    ? resolve(cwd, 'src/lib/wishlist-ui.module.css')
+    : resolve(cwd, 'libs/wishlist/ui/src/lib/wishlist-ui.module.css');
+
+  return readFileSync(stylesheetPath, 'utf-8');
+}
 
 describe('WantedSetToggleCard', () => {
   it('renders clear saved-state confirmation for wanted sets', () => {
@@ -147,10 +158,29 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Volg');
-    expect(markup).toContain('aria-label="Volg"');
+    expect(markup).toContain('Volg set');
+    expect(markup).toContain('aria-label="Volg set"');
     expect(markup).not.toContain('Zet prijsalert aan');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
+  });
+
+  it('styles unliked inline hearts as borderless light-gray 44px buttons', () => {
+    const css = readWishlistUiCss();
+    const buttonBlock = css.match(/\.inlineToggleButton \{[^}]+\}/u)?.[0] ?? '';
+    const idleBlock =
+      css.match(/\.inlineToggleButtonIdle \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(buttonBlock).toContain(
+      'inline-size: var(--catalog-card-action-height, 2.75rem);',
+    );
+    expect(buttonBlock).toContain(
+      'min-height: var(--catalog-card-action-height, 2.75rem);',
+    );
+    expect(buttonBlock).toContain(
+      'min-inline-size: var(--catalog-card-action-height, 2.75rem);',
+    );
+    expect(idleBlock).toContain('background: var(--lego-surface-muted);');
+    expect(idleBlock).toContain('border-color: transparent;');
   });
 
   it('uses a filled icon for followed inline price states so cards read faster at a glance', () => {
@@ -165,8 +195,19 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Volgt');
+    expect(markup).toContain('Ontvolg set');
+    expect(markup).toContain('aria-label="Ontvolg set"');
     expect(markup).toContain('fill="currentColor"');
+  });
+
+  it('styles followed inline hearts as borderless light-blue buttons', () => {
+    const css = readWishlistUiCss();
+    const activeBlock =
+      css.match(/\.inlineToggleButtonActive \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(activeBlock).toContain('background: var(--lego-info-subtle);');
+    expect(activeBlock).toContain('border-color: transparent;');
+    expect(activeBlock).toContain('color: var(--lego-info);');
   });
 
   it('keeps the inline loading state compact instead of expanding to a long status label', () => {
@@ -182,7 +223,7 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Volg');
+    expect(markup).toContain('Volg set');
     expect(markup).toContain('data-loading="true"');
     expect(markup).not.toContain('Controleren...');
     expect(markup).not.toContain('Volgen...');

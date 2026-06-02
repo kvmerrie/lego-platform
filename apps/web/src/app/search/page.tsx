@@ -10,6 +10,7 @@ import {
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import { ShellWeb, ShellWebSearchForm } from '@lego-platform/shell/web';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { buildCurrentSearchReviewedPriceContext } from '../lib/current-set-card-price-context';
 import { getUtilityRouteMetadata } from '../lib/utility-route-metadata';
 
@@ -77,6 +78,19 @@ export default async function SearchPage({
         activeFilter={activeFilter}
         query={query}
         reviewedPriceContexts={reviewedPriceContexts}
+        renderSetActions={(setCard) => (
+          <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              pageSurface: 'search',
+              sectionId: 'search-results',
+              setId: setCard.id,
+              theme: setCard.theme,
+            }}
+            productIntent={setCard.priceContext ? 'price-alert' : 'wishlist'}
+            setId={setCard.id}
+            variant="inline"
+          />
+        )}
         searchMatches={searchMatches}
         themeMatches={themeMatches}
         searchEntry={

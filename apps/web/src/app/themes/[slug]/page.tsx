@@ -468,10 +468,6 @@ async function withThemeBrowsePriceContexts({
     setCards: themePage.setCards,
   });
 
-  if (!priceContextBySetId.size) {
-    return themePage;
-  }
-
   return {
     ...themePage,
     setCards: themePage.setCards.map((setCard) => {
@@ -479,6 +475,19 @@ async function withThemeBrowsePriceContexts({
 
       return {
         ...setCard,
+        actions: (
+          <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              pageSurface: 'theme_page',
+              sectionId: 'theme-browse',
+              setId: setCard.id,
+              theme: setCard.theme,
+            }}
+            productIntent={priceContext ? 'price-alert' : 'wishlist'}
+            setId={setCard.id}
+            variant="inline"
+          />
+        ),
         ...(priceContext ? { priceContext } : {}),
       };
     }),

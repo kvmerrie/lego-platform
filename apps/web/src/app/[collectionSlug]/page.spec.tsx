@@ -109,6 +109,10 @@ vi.mock('@lego-platform/shell/web', () => ({
   ShellWeb: ({ children }: { children?: React.ReactNode }) => children ?? null,
 }));
 
+vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
+  WishlistFeatureWishlistToggle: () => <button type="button">wishlist</button>,
+}));
+
 vi.mock('@lego-platform/shared/config', () => ({
   buildCanonicalUrl: (path: string) => `https://www.brickhunt.nl${path}`,
   buildPublicBrowseCollectionCacheTags: ({

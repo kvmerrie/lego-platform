@@ -132,11 +132,11 @@
   font-size: var(--lego-text-role-support-size);
   font-weight: var(--lego-font-weight-semibold);
   gap: 0;
-  inline-size: var(--catalog-card-action-height, 2.5rem);
+  inline-size: var(--catalog-card-action-height, 2.75rem);
   justify-content: center;
   line-height: 1;
-  min-height: var(--catalog-card-action-height, 2.5rem);
-  min-inline-size: var(--catalog-card-action-height, 2.5rem);
+  min-height: var(--catalog-card-action-height, 2.75rem);
+  min-inline-size: var(--catalog-card-action-height, 2.75rem);
   padding-block: 0;
   padding-inline: 0;
   white-space: nowrap;
@@ -144,15 +144,12 @@
 
 .inlineToggleButtonIdle {
   background: var(--lego-surface-muted);
+  border-color: transparent;
   color: var(--lego-text);
 }
 
 .inlineToggleButtonIdle:hover {
-  background: color-mix(
-    in srgb,
-    var(--lego-surface-muted) 76%,
-    var(--lego-border-subtle) 24%
-  );
+  background: var(--lego-surface-subtle);
   border-color: transparent;
   color: var(--lego-text);
 }

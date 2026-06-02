@@ -204,21 +204,8 @@ export function WantedSetToggleCard({
   if (variant === 'inline') {
     const isInlineLoading = Boolean(isLoading || isPending);
     const InlineActionIcon = isInlineLoading ? LoaderCircle : Heart;
-    const inlineActionLabel = isUnavailable
-      ? productIntent === 'price-alert'
-        ? 'Volg'
-        : 'Bewaar'
-      : isWanted
-        ? productIntent === 'price-alert'
-          ? 'Volgt'
-          : 'Bewaard'
-        : !isAuthenticated
-          ? productIntent === 'price-alert'
-            ? 'Volg'
-            : 'Log in'
-          : productIntent === 'price-alert'
-            ? 'Volg'
-            : 'Bewaar';
+    const inlineActionLabel =
+      isWanted && !isUnavailable ? 'Ontvolg set' : 'Volg set';
 
     return (
       <article className={styles.inlineToggle}>

@@ -240,6 +240,12 @@ describe('CatalogSetCardRail', () => {
       )?.[0] ?? '';
     const skeletonCardRule =
       css.match(/\.setCardRailSkeletonCard \{[^}]+\}/u)?.[0] ?? '';
+    const skeletonTrackRule =
+      css.match(/\.setCardRailSkeletonTrack \{[^}]+\}/u)?.[0] ?? '';
+    const skeletonImageRule =
+      css.match(/\.setCardRailSkeletonImage \{[^}]+\}/u)?.[0] ?? '';
+    const loadedRailCardRule =
+      css.match(/\.setCardRailTrack > \.setCard \{[^}]+\}/u)?.[0] ?? '';
 
     expect(skeletonSectionRule).toContain(
       '--rail-skeleton-card-background: var(--lego-surface-default);',
@@ -265,6 +271,22 @@ describe('CatalogSetCardRail', () => {
     expect(skeletonCardRule).toContain(
       'min-block-size: var(--rail-skeleton-card-min-block-size);',
     );
+    expect(skeletonCardRule).toContain('box-sizing: border-box;');
+    expect(skeletonCardRule).toContain('inline-size: 100%;');
+    expect(skeletonCardRule).toContain('max-inline-size: 100%;');
+    expect(skeletonCardRule).toContain('min-inline-size: 0;');
+    expect(skeletonCardRule).toContain('overflow: hidden;');
+    expect(skeletonCardRule).toContain('scroll-snap-align: start;');
+    expect(skeletonTrackRule).toContain('grid-auto-columns: minmax(');
+    expect(skeletonTrackRule).toContain('overflow: hidden;');
+    expect(skeletonImageRule).toContain(
+      'block-size: clamp(12rem, 34vw, 15.5rem);',
+    );
+    expect(skeletonImageRule).toContain('inline-size: 100%;');
+    expect(skeletonImageRule).toContain('max-block-size: 15.5rem;');
+    expect(skeletonImageRule).toContain('max-inline-size: 100%;');
+    expect(skeletonImageRule).toContain('overflow: hidden;');
+    expect(loadedRailCardRule).toContain('min-width: 0;');
   });
 
   it('keeps inverse skeleton rails on the inverse section treatment', () => {
@@ -334,6 +356,77 @@ describe('CatalogSetCardRail', () => {
     expect(
       container.querySelector('[class*="setCardRailScrollbarThumb"]'),
     ).not.toBeNull();
+  });
+
+  it('does not show set numbers on no-price rail set cards', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Populaire sets"
+          items={[
+            {
+              actions: <button aria-label="Volg set" type="button" />,
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('Rivendell');
+    expect(container.textContent).toContain('Prijs volgt');
+    expect(container.textContent).not.toContain('10316');
+  });
+
+  it('does not show set numbers on priced rail set cards', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Deals"
+          items={[
+            {
+              actions: <button aria-label="Volg set" type="button" />,
+              ctaMode: 'commerce',
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              priceContext: {
+                coverageLabel: '2 actuele winkels',
+                currentPrice: 'Vanaf € 489,99',
+                merchantLabel: 'Laagst bij bol',
+                pricePositionLabel: '€ 10 onder LEGO',
+                pricePositionTone: 'positive',
+                reviewedLabel: 'Vandaag bekeken',
+              },
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+          ]}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('Vanaf € 489,99');
+    expect(container.textContent).toContain('Bekijk set');
+    expect(container.textContent).not.toContain('10316');
   });
 
   it('updates overflow visibility after delayed image/layout completion', () => {

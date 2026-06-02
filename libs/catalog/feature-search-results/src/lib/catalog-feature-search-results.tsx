@@ -35,6 +35,10 @@ export interface CatalogFeatureSearchReviewedPriceContext {
   setId: string;
 }
 
+type CatalogFeatureSearchResultSetCard = CatalogSearchMatch['setCard'] & {
+  priceContext?: CatalogFeatureSearchReviewedPriceContext;
+};
+
 function formatReviewedPrice({
   currencyCode,
   minorUnits,
@@ -139,6 +143,7 @@ function getSearchResultSupportingNote(searchResult: {
 export function CatalogFeatureSearchResults({
   activeFilter,
   query,
+  renderSetActions,
   reviewedPriceContexts = [],
   searchMatches,
   searchEntry,
@@ -146,6 +151,7 @@ export function CatalogFeatureSearchResults({
 }: {
   activeFilter?: string;
   query?: string;
+  renderSetActions?: (setCard: CatalogFeatureSearchResultSetCard) => ReactNode;
   reviewedPriceContexts?: readonly CatalogFeatureSearchReviewedPriceContext[];
   searchMatches?: readonly CatalogSearchMatch[];
   searchEntry?: ReactNode;
@@ -348,6 +354,7 @@ export function CatalogFeatureSearchResults({
         >
           {filteredSearchResults.map((searchResult) => (
             <CatalogSetCard
+              actions={renderSetActions?.(searchResult)}
               href={buildSetDetailPath(searchResult.slug)}
               key={searchResult.id}
               setSummary={searchResult}

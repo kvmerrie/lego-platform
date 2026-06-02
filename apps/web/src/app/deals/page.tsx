@@ -10,6 +10,7 @@ import {
   CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardCollection,
+  CatalogVisualTile,
 } from '@lego-platform/catalog/ui';
 import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 import {
@@ -20,6 +21,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { getCachedPublicBrowsePageData } from '../lib/public-browse-page-cache';
 import {
   PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
@@ -30,6 +32,7 @@ import styles from './deals-page.module.css';
 export const revalidate = false;
 
 const DEALS_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
+const DEALS_COLLECTION_SECTION_ID = 'deals-collection';
 
 interface DealSortViewConfig {
   description: string;
@@ -38,6 +41,11 @@ interface DealSortViewConfig {
   metadataTitle: string;
   sortKey: CatalogDealPageSortKey;
   title: string;
+  tileTitle: string;
+  visual: {
+    backgroundColor: string;
+    textColor: string;
+  };
 }
 
 const dealSortViewConfigs = [
@@ -49,7 +57,12 @@ const dealSortViewConfigs = [
       'Bekijk actuele LEGO deals met sterke korting, goede prijs per steen en betrouwbare kooplinks.',
     metadataTitle: 'LEGO deals van vandaag',
     sortKey: 'recommended',
+    tileTitle: 'Aanraders',
     title: 'LEGO deals die nu de moeite waard zijn',
+    visual: {
+      backgroundColor: '#3aaee8',
+      textColor: '#08243a',
+    },
   },
   {
     description:
@@ -59,7 +72,12 @@ const dealSortViewConfigs = [
       'Vind LEGO sets met de grootste korting ten opzichte van LEGO, inclusief actuele prijs en kooplink.',
     metadataTitle: 'LEGO deals met de grootste korting',
     sortKey: 'discount-desc',
+    tileTitle: 'Grootste kortingen',
     title: 'De grootste LEGO kortingen',
+    visual: {
+      backgroundColor: '#35b765',
+      textColor: '#062817',
+    },
   },
   {
     description:
@@ -69,7 +87,12 @@ const dealSortViewConfigs = [
       'Bekijk LEGO aanbiedingen gesorteerd op de beste prijs per steen, met actuele winkelprijzen.',
     metadataTitle: 'Beste LEGO prijs per steen',
     sortKey: 'price-per-brick',
+    tileTitle: 'Prijs per steen',
     title: 'De beste prijs per steen',
+    visual: {
+      backgroundColor: '#00a99d',
+      textColor: '#062927',
+    },
   },
   {
     description:
@@ -79,7 +102,12 @@ const dealSortViewConfigs = [
       'Bekijk actuele LEGO deals onder 50 euro, met kooplinks en prijscontext.',
     metadataTitle: 'LEGO deals onder 50 euro',
     sortKey: 'under-50',
+    tileTitle: 'Onder €50',
     title: 'LEGO deals onder €50',
+    visual: {
+      backgroundColor: '#f28c28',
+      textColor: '#281400',
+    },
   },
   {
     description:
@@ -89,7 +117,12 @@ const dealSortViewConfigs = [
       'Bekijk nieuwe LEGO deals uit de laatste prijssnapshot, met actuele winkelprijzen.',
     metadataTitle: 'Nieuwe LEGO deals',
     sortKey: 'new-deals',
+    tileTitle: 'Nieuwe deals',
     title: 'Nieuwe LEGO deals',
+    visual: {
+      backgroundColor: '#8758d8',
+      textColor: '#ffffff',
+    },
   },
   {
     description:
@@ -99,7 +132,12 @@ const dealSortViewConfigs = [
       'Bekijk actuele LEGO deals onder 20 euro, met prijscontext en kooplinks.',
     metadataTitle: 'LEGO deals onder 20 euro',
     sortKey: 'under-20',
+    tileTitle: 'Onder €20',
     title: 'LEGO deals onder €20',
+    visual: {
+      backgroundColor: '#f5c542',
+      textColor: '#2b2100',
+    },
   },
   {
     description:
@@ -109,7 +147,12 @@ const dealSortViewConfigs = [
       'Bekijk premium LEGO deals boven 100 euro met sterke korting of opvallend lage prijs per steen.',
     metadataTitle: 'Premium LEGO deals',
     sortKey: 'premium-deals',
+    tileTitle: 'Premium deals',
     title: 'Premium LEGO deals',
+    visual: {
+      backgroundColor: '#16213b',
+      textColor: '#ffffff',
+    },
   },
   {
     description:
@@ -119,7 +162,12 @@ const dealSortViewConfigs = [
       'Bekijk LEGO deals met de beste prijs per steen uit de actuele deal-snapshot.',
     metadataTitle: 'Beste LEGO prijs per steen',
     sortKey: 'best-price-per-brick',
+    tileTitle: 'Beste prijs per steen',
     title: 'Beste LEGO prijs per steen',
+    visual: {
+      backgroundColor: '#00a99d',
+      textColor: '#062927',
+    },
   },
   {
     description:
@@ -129,7 +177,12 @@ const dealSortViewConfigs = [
       'Bekijk LEGO deals met de grootste korting uit de actuele deal-snapshot.',
     metadataTitle: 'Grootste LEGO korting',
     sortKey: 'largest-discount',
+    tileTitle: 'Grootste korting',
     title: 'Grootste LEGO korting',
+    visual: {
+      backgroundColor: '#35b765',
+      textColor: '#062817',
+    },
   },
 ] as const satisfies readonly DealSortViewConfig[];
 
@@ -137,15 +190,12 @@ const dealSortKeys = dealSortViewConfigs.map(
   (config) => config.sortKey,
 ) as readonly CatalogDealPageSortKey[];
 
-const primaryDealSortKeys: readonly CatalogDealPageSortKey[] = [
+const dealDiscoverySortKeys: readonly CatalogDealPageSortKey[] = [
   'recommended',
-  'discount-desc',
+  'largest-discount',
   'price-per-brick',
   'under-50',
   'new-deals',
-];
-
-const secondaryDealSortKeys: readonly CatalogDealPageSortKey[] = [
   'under-20',
   'premium-deals',
 ];
@@ -184,6 +234,26 @@ function getDealSortHref(sortKey: CatalogDealPageSortKey): string {
   return sortKey === 'recommended'
     ? webPathnames.deals
     : `${webPathnames.deals}?sort=${sortKey}`;
+}
+
+function getDealDiscoveryHref(sortKey: CatalogDealPageSortKey): string {
+  return `${getDealSortHref(sortKey)}#${DEALS_COLLECTION_SECTION_ID}`;
+}
+
+function isDealDiscoverySortActive(
+  discoverySortKey: CatalogDealPageSortKey,
+  activeSortKey: CatalogDealPageSortKey,
+): boolean {
+  if (discoverySortKey === activeSortKey) {
+    return true;
+  }
+
+  return (
+    (discoverySortKey === 'largest-discount' &&
+      activeSortKey === 'discount-desc') ||
+    (discoverySortKey === 'price-per-brick' &&
+      activeSortKey === 'best-price-per-brick')
+  );
 }
 
 function formatDealStatNumber(value: number): string {
@@ -319,6 +389,12 @@ export default async function DealsPage({
             <p className={styles.heroEyebrow}>LEGO deals</p>
             <h1 className={styles.heroTitle}>{sortConfig.title}</h1>
             <p className={styles.heroDescription}>{sortConfig.description}</p>
+            <a
+              className={styles.heroCta}
+              href={`#${DEALS_COLLECTION_SECTION_ID}`}
+            >
+              Bekijk deals
+            </a>
           </div>
 
           <dl className={styles.dealStats} aria-label="Dealstatistieken">
@@ -345,44 +421,49 @@ export default async function DealsPage({
               </dd>
             </div>
           </dl>
-
-          <nav aria-label="Deal categorieen" className={styles.dealNav}>
-            {primaryDealSortKeys.map((dealSortKey) => {
-              const config = getDealSortConfig(dealSortKey);
-
-              return (
-                <a
-                  aria-current={dealSortKey === sortKey ? 'page' : undefined}
-                  className={styles.dealNavLink}
-                  href={getDealSortHref(dealSortKey)}
-                  key={dealSortKey}
-                >
-                  {config.label}
-                </a>
-              );
-            })}
-          </nav>
-
-          <nav
-            aria-label="Extra deal categorieen"
-            className={styles.secondaryDealNav}
-          >
-            {secondaryDealSortKeys.map((dealSortKey) => {
-              const config = getDealSortConfig(dealSortKey);
-
-              return (
-                <a
-                  aria-current={dealSortKey === sortKey ? 'page' : undefined}
-                  className={styles.secondaryDealNavLink}
-                  href={getDealSortHref(dealSortKey)}
-                  key={dealSortKey}
-                >
-                  {config.label}
-                </a>
-              );
-            })}
-          </nav>
         </section>
+
+        <CatalogSectionShell
+          as="section"
+          className={styles.discoveryTileSection}
+          description="Kies meteen het type deal dat bij je zoektocht past."
+          eyebrow="Begin hier"
+          headingClassName={styles.discoveryTileHeading}
+          signal="7 routes"
+          title="Ontdek deals op jouw manier"
+          titleAs="h2"
+          tone="default"
+        >
+          <nav
+            aria-label="Deal categorieen"
+            className={styles.discoveryTileViewport}
+          >
+            <div className={styles.discoveryTileTrack}>
+              {dealDiscoverySortKeys.map((dealSortKey) => {
+                const config = getDealSortConfig(dealSortKey);
+                const isActive = isDealDiscoverySortActive(
+                  dealSortKey,
+                  sortKey,
+                );
+
+                return (
+                  <CatalogVisualTile
+                    ariaCurrent={isActive ? 'page' : undefined}
+                    className={`${styles.discoveryTile}${
+                      isActive ? ` ${styles.discoveryTileActive}` : ''
+                    }`}
+                    dataTile={dealSortKey}
+                    href={getDealDiscoveryHref(dealSortKey)}
+                    key={dealSortKey}
+                    meta={isActive ? 'Actief' : config.label}
+                    title={config.tileTitle}
+                    visual={config.visual}
+                  />
+                );
+              })}
+            </div>
+          </nav>
+        </CatalogSectionShell>
 
         <CatalogSectionShell
           as="section"
@@ -390,7 +471,7 @@ export default async function DealsPage({
           className={styles.browseSection}
           description="Deze lijst komt uit de deal-snapshot. Geen live winkelrefresh tijdens het laden, wel actuele prijscontext uit de laatste commerce-sync."
           eyebrow="Dealbrowser"
-          id="deals"
+          id={DEALS_COLLECTION_SECTION_ID}
           padding="default"
           signal={`${dealsPage.totalSetCount} deals`}
           spacing="relaxed"
@@ -407,6 +488,24 @@ export default async function DealsPage({
               >
                 {dealsPage.setCards.map((setCard, index) => (
                   <CatalogSetCard
+                    actions={
+                      <WishlistFeatureWishlistToggle
+                        analyticsContext={{
+                          pageSurface: 'deals',
+                          rankPosition:
+                            (currentPage - 1) * DEALS_PAGE_SIZE + index + 1,
+                          sectionId: DEALS_COLLECTION_SECTION_ID,
+                          setId: setCard.id,
+                          sortKey,
+                          theme: setCard.theme,
+                        }}
+                        productIntent={
+                          setCard.priceContext ? 'price-alert' : 'wishlist'
+                        }
+                        setId={setCard.id}
+                        variant="inline"
+                      />
+                    }
                     ctaMode="commerce"
                     href={buildSetDetailPath(setCard.slug)}
                     imageLoading={index < 6 ? 'eager' : 'lazy'}

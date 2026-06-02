@@ -23,13 +23,13 @@ import {
 } from '@lego-platform/catalog/util';
 import {
   ArrowDown,
-  Blocks,
   CalendarDays,
   ChevronRight,
   Clock3,
   Eye,
   Hash,
   Minus,
+  ToyBrick,
 } from 'lucide-react';
 import {
   CatalogKeyFacts,
@@ -685,6 +685,7 @@ function isDuplicatePriceContextLine(left?: string, right?: string): boolean {
 
 function getCardPrimaryActionConfig({
   href,
+  priceContext,
   trackingEvent,
 }: {
   ctaMode: CatalogSetCardCtaMode;
@@ -693,6 +694,7 @@ function getCardPrimaryActionConfig({
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant: CatalogSetCardVariant;
 }): {
+  ariaLabel: string;
   className: string;
   href?: string;
   icon: typeof Eye;
@@ -701,7 +703,22 @@ function getCardPrimaryActionConfig({
   target?: '_blank';
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 } {
+  const hasKnownPrice =
+    priceContext && !/^prijs volgt$/iu.test(priceContext.currentPrice.trim());
+
+  if (!hasKnownPrice) {
+    return {
+      ariaLabel: 'Bekijk set, prijs volgt',
+      className: styles.cardCompactActionPending,
+      href,
+      icon: Clock3,
+      label: 'Prijs volgt',
+      trackingEvent,
+    };
+  }
+
   return {
+    ariaLabel: 'Bekijk set',
     className: styles.cardCompactActionBrowse,
     href,
     icon: Eye,
@@ -711,28 +728,26 @@ function getCardPrimaryActionConfig({
 }
 
 function formatCardSetFacts(setSummary: CatalogSetCardSummary): Array<{
+  accessibleLabel: string;
   icon: typeof CalendarDays;
   id: string;
   value: string;
 }> {
-  const releaseFactLabel =
-    buildCatalogReleaseLabel({
-      releaseDate: setSummary.releaseDate,
-      releaseDatePrecision: setSummary.releaseDatePrecision,
-      releaseYear: setSummary.releaseYear,
-      variant: 'compact',
-    })?.value ?? setSummary.releaseYear.toString();
+  const releaseYearLabel = setSummary.releaseYear.toString();
+  const piecesLabel = setSummary.pieces.toLocaleString('nl-NL');
 
   return [
     {
+      accessibleLabel: `Uitgekomen in ${releaseYearLabel}`,
       icon: CalendarDays,
       id: 'release',
-      value: releaseFactLabel,
+      value: releaseYearLabel,
     },
     {
-      icon: Blocks,
+      accessibleLabel: `${piecesLabel} stenen`,
+      icon: ToyBrick,
       id: 'piece-count',
-      value: `${setSummary.pieces.toLocaleString('nl-NL')} stenen`,
+      value: piecesLabel,
     },
   ];
 }
@@ -756,13 +771,17 @@ function CatalogSetFactRow({
         const FactIcon = factItem.icon;
 
         return (
-          <span className={styles.cardFactItem} key={factItem.id}>
+          <span
+            aria-label={factItem.accessibleLabel}
+            className={styles.cardFactItem}
+            key={factItem.id}
+          >
             <FactIcon
               aria-hidden="true"
               className={styles.cardFactIcon}
-              strokeWidth={2.1}
+              strokeWidth={2.2}
             />
-            <span>{factItem.value}</span>
+            <span aria-hidden="true">{factItem.value}</span>
           </span>
         );
       })}
@@ -836,19 +855,6 @@ function CatalogSetCardVisualBadges({
         </Badge>
       ) : null}
     </div>
-  );
-}
-
-function CatalogSetNumberMeta({ setId }: { setId: string }) {
-  return (
-    <p className={styles.cardCompactMeta}>
-      <Hash
-        aria-hidden="true"
-        className={styles.cardCompactMetaIcon}
-        strokeWidth={2.1}
-      />
-      <CatalogCanonicalText>{setId}</CatalogCanonicalText>
-    </p>
   );
 }
 
@@ -1150,9 +1156,9 @@ export function CatalogSetCard({
             <div className={styles.cardCompactFooter}>
               {href ? (
                 <span
-                  aria-label={primaryAction.label}
+                  aria-label={primaryAction.ariaLabel}
                   className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
-                  title={primaryAction.label}
+                  title={primaryAction.ariaLabel}
                 >
                   <PrimaryActionIcon
                     aria-hidden="true"
@@ -1188,20 +1194,15 @@ export function CatalogSetCard({
         </div>
         {compactUsesDecisionZone ? (
           <div className={styles.cardCompactDecisionZone}>
-            <CatalogSetNumberMeta setId={setSummary.id} />
             <div className={styles.cardCompactFooterActions}>
-              {actions ? (
-                <div className={styles.cardCompactSecondaryAction}>
-                  {actions}
-                </div>
-              ) : null}
               {primaryAction.href ? (
                 <ActionLink
-                  aria-label={primaryAction.label}
+                  aria-label={primaryAction.ariaLabel}
                   className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
                   href={primaryAction.href}
                   rel={primaryAction.rel}
                   target={primaryAction.target}
+                  title={primaryAction.ariaLabel}
                   tone="card"
                   {...buildBrickhuntAnalyticsAttributes(
                     primaryAction.trackingEvent,
@@ -1215,6 +1216,11 @@ export function CatalogSetCard({
                     {primaryAction.label}
                   </span>
                 </ActionLink>
+              ) : null}
+              {actions ? (
+                <div className={styles.cardCompactSecondaryAction}>
+                  {actions}
+                </div>
               ) : null}
             </div>
           </div>
@@ -1230,7 +1236,6 @@ export function CatalogSetCard({
       : null;
     const featuredDecisionLabel =
       priceContext?.decisionLabel ?? priceContext?.pricePositionLabel;
-    const featuredFooterMeta = priceContext ? null : setSummary.id;
     const FeaturedPriceSignalIcon =
       featuredDecisionLabel &&
       getCardPriceSignalIcon(priceContext?.pricePositionTone);
@@ -1327,26 +1332,17 @@ export function CatalogSetCard({
         <div className={styles.setCardLink} data-catalog-set-card-link="true">
           {featuredCardContent}
         </div>
-        {featuredFooterMeta || primaryAction.href || actions ? (
+        {primaryAction.href || actions ? (
           <div className={styles.cardCompactDecisionZone}>
-            {featuredFooterMeta ? (
-              <CatalogSetNumberMeta setId={featuredFooterMeta} />
-            ) : (
-              <span className={styles.cardCompactDecisionSpacer} />
-            )}
             <div className={styles.cardCompactFooterActions}>
-              {actions ? (
-                <div className={styles.cardCompactSecondaryAction}>
-                  {actions}
-                </div>
-              ) : null}
               {primaryAction.href ? (
                 <ActionLink
-                  aria-label={primaryAction.label}
+                  aria-label={primaryAction.ariaLabel}
                   className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
                   href={primaryAction.href}
                   rel={primaryAction.rel}
                   target={primaryAction.target}
+                  title={primaryAction.ariaLabel}
                   tone="card"
                   {...buildBrickhuntAnalyticsAttributes(
                     primaryAction.trackingEvent,
@@ -1360,6 +1356,11 @@ export function CatalogSetCard({
                     {primaryAction.label}
                   </span>
                 </ActionLink>
+              ) : null}
+              {actions ? (
+                <div className={styles.cardCompactSecondaryAction}>
+                  {actions}
+                </div>
               ) : null}
             </div>
           </div>
@@ -1488,16 +1489,20 @@ export function CatalogSetCard({
           getCatalogSetMetadataReleaseItem(setSummary),
         ]}
       />
-      {actions ? <div className={styles.cardActions}>{actions}</div> : null}
-      {href ? (
-        <ActionLink
-          className={styles.actionLink}
-          href={href}
-          tone="secondary"
-          {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
-        >
-          Bekijk set
-        </ActionLink>
+      {actions || href ? (
+        <div className={styles.cardActions}>
+          {href ? (
+            <ActionLink
+              className={styles.actionLink}
+              href={href}
+              tone="secondary"
+              {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+            >
+              Bekijk set
+            </ActionLink>
+          ) : null}
+          {actions}
+        </div>
       ) : null}
     </Surface>
   );
@@ -2286,6 +2291,7 @@ export function CatalogThemeHighlight({
 }
 
 export function CatalogVisualTile({
+  ariaCurrent,
   className,
   dataTile,
   dataTheme,
@@ -2297,6 +2303,7 @@ export function CatalogVisualTile({
   trackingEvent,
   visual,
 }: {
+  ariaCurrent?: HTMLAttributes<HTMLAnchorElement>['aria-current'];
   className?: string;
   dataTile?: string;
   dataTheme?: string;
@@ -2347,6 +2354,7 @@ export function CatalogVisualTile({
     >
       {href ? (
         <ActionLink
+          aria-current={ariaCurrent}
           className={styles.themePortraitLink}
           href={href}
           tone="card"

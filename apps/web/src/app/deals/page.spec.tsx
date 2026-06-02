@@ -56,6 +56,10 @@ vi.mock('@lego-platform/shell/web', () => ({
   ShellWeb: ({ children }: { children?: unknown }) => children ?? null,
 }));
 
+vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
+  WishlistFeatureWishlistToggle: () => <button type="button">wishlist</button>,
+}));
+
 describe('deals page snapshots', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -162,7 +166,7 @@ describe('deals page snapshots', () => {
     );
   });
 
-  it('uses the default light-blue hero instead of discovery tile variants', async () => {
+  it('uses a full-width light-blue hero instead of discovery tile variants', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default({}));
 
@@ -175,9 +179,21 @@ describe('deals page snapshots', () => {
     );
 
     expect(css).toContain('--deals-page-surface: var(--lego-surface-accent);');
+    expect(css).toContain('font-size: clamp(2rem, 1.55rem + 1.6vw, 3.2rem);');
+    expect(css).toContain('width: 100%;');
+    expect(css).not.toContain('max-width: min(70rem, 100%);');
   });
 
-  it('renders snapshot deal stats and phase 2 category navigation', async () => {
+  it('renders the calm hero CTA to the deal collection section', async () => {
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default({}));
+
+    expect(markup).toContain('Bekijk deals');
+    expect(markup).toContain('href="#deals-collection"');
+    expect(markup).toContain('id="deals-collection"');
+  });
+
+  it('renders snapshot deal stats and discovery tile navigation', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),
       stats: {
@@ -199,7 +215,86 @@ describe('deals page snapshots', () => {
     expect(markup).toContain('6 cent');
     expect(markup).toContain('Nieuwe deals');
     expect(markup).toContain('Premium deals');
-    expect(markup).toContain('/deals?sort=new-deals');
+    expect(markup).toContain('Onder €20');
+    expect(markup).toContain('/deals?sort=new-deals#deals-collection');
+    expect(markup).toContain('/deals?sort=largest-discount#deals-collection');
+    expect(markup).toContain('/deals?sort=price-per-brick#deals-collection');
+    expect(markup).toContain('/deals?sort=under-50#deals-collection');
+    expect(markup).toContain('/deals?sort=under-20#deals-collection');
+    expect(markup).toContain('/deals?sort=premium-deals#deals-collection');
+    expect(markup).toContain('href="/deals#deals-collection"');
+    expect(markup.match(/data-visual-tile=/gu)).toHaveLength(7);
+  });
+
+  it('marks the active deal discovery tile and keeps legacy aliases active', async () => {
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
+        searchParams: Promise.resolve({ sort: 'discount-desc' }),
+      }),
+    );
+
+    expect(markup).toContain('data-visual-tile="largest-discount"');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup.match(/aria-current="page"/gu)).toHaveLength(1);
+  });
+
+  it('removes the old pill filter area', async () => {
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default({}));
+    const css = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/deals/deals-page.module.css'),
+      'utf-8',
+    );
+
+    expect(markup).not.toContain('Extra deal categorieen');
+    expect(css).not.toContain('.dealNavLink');
+    expect(css).not.toContain('.secondaryDealNavLink');
+  });
+
+  it('renders the snapshot grid below the discovery rail', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 1,
+      },
+      setCards: [
+        {
+          id: '10307',
+          name: 'Eiffeltoren',
+          pieces: 10001,
+          releaseYear: 2022,
+          slug: 'eiffel-tower-10307',
+          theme: 'Icons',
+        },
+      ],
+      totalSetCount: 1,
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default({}));
+
+    expect(markup.indexOf('Ontdek deals op jouw manier')).toBeLessThan(
+      markup.indexOf('id="deals-collection"'),
+    );
+    expect(dealsPageMocks.catalogSetCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        href: '/sets/eiffel-tower-10307',
+        variant: 'featured',
+      }),
+    );
+  });
+
+  it('does not include sibling fade behavior for the deal discovery rail', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/deals/deals-page.module.css'),
+      'utf-8',
+    );
+
+    expect(css).not.toContain('opacity: 0.35;');
+    expect(css).not.toContain('.discoveryTileTrack:hover > *');
+    expect(css).not.toContain('.discoveryTileTrack:focus-within > *');
+    expect(css).not.toContain('transition: opacity 170ms');
   });
 
   it('emits unique metadata and canonical URLs for sorted deal pages', async () => {

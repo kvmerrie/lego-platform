@@ -9,12 +9,13 @@
   --deals-page-muted: var(--lego-text-muted);
   background: var(--deals-page-surface);
   border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+  box-sizing: border-box;
   color: var(--deals-page-text);
   display: grid;
-  gap: var(--lego-space-4);
-  max-width: min(70rem, 100%);
-  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
+  gap: var(--lego-space-3);
+  padding-block: var(--lego-space-5);
   padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
+  width: 100%;
 }
 
 .heroCopy {
@@ -35,7 +36,7 @@
 
 .heroTitle {
   color: var(--deals-page-text);
-  font-size: var(--lego-text-role-display-sm-size);
+  font-size: clamp(2rem, 1.55rem + 1.6vw, 3.2rem);
   line-height: 1.05;
   margin: 0;
 }
@@ -48,13 +49,38 @@
   max-width: 38rem;
 }
 
+.heroCta {
+  align-items: center;
+  background: var(--lego-accent);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-accent-contrast);
+  display: inline-flex;
+  font-size: var(--lego-text-role-support-size);
+  font-weight: var(--lego-font-weight-bold);
+  justify-content: center;
+  justify-self: start;
+  line-height: 1;
+  min-height: 2.75rem;
+  padding: 0.85rem var(--lego-space-4);
+  text-decoration: none;
+}
+
+.heroCta:hover {
+  text-decoration: none;
+}
+
+.heroCta:focus-visible {
+  outline: 3px solid var(--lego-focus-ring);
+  outline-offset: 3px;
+}
+
 .dealStats {
-  border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-block-start: var(--lego-border-width-1) solid var(--lego-border-subtle);
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
-  padding-block: var(--lego-space-3);
+  padding-block-start: var(--lego-space-3);
 }
 
 .dealStat {
@@ -71,56 +97,59 @@
 
 .dealStat dd {
   color: var(--deals-page-text);
-  font-size: var(--lego-text-role-heading-sm-size);
+  font-size: var(--lego-text-role-card-title-size);
   font-weight: var(--lego-font-weight-bold);
-  line-height: var(--lego-text-role-heading-sm-line-height);
+  line-height: var(--lego-text-role-card-title-line-height);
   margin: 0;
 }
 
-.dealNav,
-.secondaryDealNav {
+.discoveryTileSection {
+  padding-block: var(--lego-space-5);
+}
+
+.discoveryTileHeading {
+  max-width: 42rem;
+}
+
+.discoveryTileViewport {
+  margin-inline: calc(
+    -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
+  );
+  overflow-x: auto;
+  padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
+    var(--lego-space-1);
+  scroll-padding-inline: var(
+    --catalog-section-inline-padding,
+    var(--lego-space-4)
+  );
+}
+
+.discoveryTileTrack {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-1);
+  gap: var(--lego-space-2);
+  margin: 0;
+  scroll-snap-type: x proximity;
 }
 
-.dealNavLink,
-.secondaryDealNavLink {
-  align-items: center;
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  border-radius: var(--lego-radius-pill);
-  color: var(--lego-text-muted);
-  display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
-  font-weight: var(--lego-font-weight-bold);
-  line-height: 1;
-  min-height: 2.5rem;
-  padding: 0.7rem var(--lego-space-3);
-  text-decoration: none;
+.discoveryTileTrack::after {
+  content: '';
+  flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
 }
 
-.secondaryDealNavLink {
-  min-height: 2.25rem;
-  padding-block: 0.58rem;
+.discoveryTileTrack > * {
+  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
+  min-width: 0;
+  scroll-snap-align: start;
 }
 
-.dealNavLink:hover,
-.secondaryDealNavLink:hover {
-  color: var(--lego-text);
-  text-decoration: none;
+.discoveryTile {
+  min-width: 0;
 }
 
-.dealNavLink[aria-current='page'],
-.secondaryDealNavLink[aria-current='page'] {
-  background: var(--lego-accent);
-  border-color: transparent;
-  color: var(--lego-accent-contrast);
-}
-
-.dealNavLink:focus-visible,
-.secondaryDealNavLink:focus-visible {
-  outline: 3px solid var(--lego-focus-ring);
-  outline-offset: 2px;
+.discoveryTileActive {
+  box-shadow:
+    inset 0 0 0 3px var(--lego-focus-ring),
+    inset 0 0 0 6px color-mix(in srgb, var(--theme-surface) 78%, white 22%);
 }
 
 .browseSection {
@@ -154,6 +183,21 @@
 }
 
 @media (min-width: 64rem) {
+  .discoveryTileViewport {
+    margin-inline: 0;
+    overflow: visible;
+    padding: 0;
+    scroll-padding-inline: 0;
+  }
+
+  .discoveryTileTrack > * {
+    flex: 1 1 0;
+  }
+
+  .discoveryTileTrack::after {
+    content: none;
+  }
+
   .grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }

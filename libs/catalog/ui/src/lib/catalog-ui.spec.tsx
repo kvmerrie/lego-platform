@@ -193,8 +193,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('6.181 stenen');
     expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('Bekijk set');
-    expect(markup).toContain('aria-label="Bekijk set"');
-    expect(markup).toContain('title="Bekijk set"');
+    expect(markup).toContain('aria-label="Bekijk set, prijs volgt"');
+    expect(markup).toContain('title="Bekijk set, prijs volgt"');
     expect(markup).not.toContain('A flagship fantasy build');
     expect(markup).not.toContain('Reviewed prijs');
     expect(markup).not.toContain('Dekking');
@@ -231,6 +231,32 @@ describe('CatalogSetCard', () => {
     expect(factsIndex).toBeLessThan(titleIndex);
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
+  });
+
+  it('simplifies compact browse facts while preserving accessible labels', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/f1-pit-stop-60443"
+        setSummary={{
+          id: '60443',
+          slug: 'f1-pit-stop-60443',
+          name: 'F1 Pit Stop',
+          theme: 'City',
+          releaseYear: 2026,
+          pieces: 788,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/60443-1/123.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Uitgekomen in 2026"');
+    expect(markup).toContain('aria-label="788 stenen"');
+    expect(markup).toContain('>2026</span>');
+    expect(markup).toContain('>788</span>');
+    expect(markup).not.toContain('>Nieuw in 2026</span>');
+    expect(markup).not.toContain('>788 stenen</span>');
+    expect(markup).toContain('lucide-toy-brick');
   });
 
   it('styles compact browse spacing, metadata, price, and CTA alignment', () => {
@@ -274,23 +300,23 @@ describe('CatalogSetCard', () => {
       )?.[0] ?? '';
     const compactBrowseActionBlock =
       css.match(
-        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{[\s\S]+?\n  \}/u,
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n  \}/u,
       )?.[0] ?? '';
     const compactBrowseActionIconBlock =
       css.match(
-        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionIcon \{[^}]+\}/u,
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactPrimaryAction\s+\.cardCompactActionIcon \{[^}]+\}/u,
       )?.[0] ?? '';
     const compactBrowseActionLabelBlock =
       css.match(
-        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionLabel \{[^}]+\}/u,
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactPrimaryAction\s+\.cardCompactActionLabel \{[^}]+\}/u,
       )?.[0] ?? '';
     const desktopCompactBrowseActionBlock =
       css.match(
-        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{[\s\S]+?\n    \}/u,
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n    \}/u,
       )?.[0] ?? '';
     const desktopCompactBrowseActionLabelBlock =
       css.match(
-        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionLabel \{[^}]+\}/u,
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact \.cardCompactPrimaryAction \.cardCompactActionLabel \{[^}]+\}/u,
       )?.[0] ?? '';
 
     expect(compactCardBlock).toContain(
@@ -309,30 +335,29 @@ describe('CatalogSetCard', () => {
       'var(--catalog-browse-grid-focus-ring-color)',
     );
     expect(compactBrowseActionBlock).toContain(
-      'background: var(--lego-accent);',
-    );
-    expect(compactBrowseActionBlock).toContain('border-color: transparent;');
-    expect(compactBrowseActionBlock).toContain(
-      'color: var(--lego-accent-contrast, #ffffff);',
-    );
-    expect(compactBrowseActionBlock).toContain(
       'font-size: var(--lego-text-role-meta-size);',
     );
-    expect(compactBrowseActionBlock).toContain('inline-size: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain(
+      'inline-size: var(--catalog-card-action-height);',
+    );
     expect(compactBrowseActionBlock).toContain('min-height: 2.75rem;');
-    expect(compactBrowseActionBlock).toContain('min-width: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain(
+      'min-width: var(--catalog-card-action-height);',
+    );
     expect(compactBrowseActionBlock).toContain('padding-inline: 0;');
     expect(compactBrowseActionIconBlock).toContain('display: block;');
     expect(compactBrowseActionLabelBlock).toContain('display: none;');
-    expect(desktopCompactBrowseActionBlock).toContain('min-height: 2.2rem;');
+    expect(desktopCompactBrowseActionBlock).toContain('min-height: 2.75rem;');
     expect(desktopCompactBrowseActionBlock).toContain(
-      'padding-inline: 0.7rem;',
+      'padding-inline: 0.95rem;',
     );
-    expect(desktopCompactBrowseActionBlock).toContain('gap: 0.34rem;');
+    expect(desktopCompactBrowseActionBlock).toContain('gap: 0.55rem;');
     expect(desktopCompactBrowseActionLabelBlock).toContain('display: inline;');
     expect(css).toContain('.setCardCollectionFeatured');
     expect(css).toContain('.cardCompactActionCommerce,');
     expect(css).toContain('background: var(--lego-accent);');
+    expect(css).toContain('.cardCompactActionPending,');
+    expect(css).toContain('background: var(--lego-surface-muted);');
   });
 
   it('neutralizes compact hover borders while preserving focus visibility', () => {
@@ -759,7 +784,9 @@ describe('CatalogSetCard', () => {
       <CatalogSetCard
         actions={
           <>
-            <button type="button">Bewaar</button>
+            <button aria-label="Volg set" type="button">
+              ♡
+            </button>
             <button type="button">Zoom</button>
           </>
         }
@@ -781,12 +808,107 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Bewaar');
+    expect(markup).toContain('aria-label="Volg set"');
     expect(markup).toContain('Zoom');
     expect(markup).toContain('Bekijk set');
     expect(markup).toContain('cardCompactDecisionZone');
     expect(markup).toContain('cardCompactFooterActions');
     expect(markup).toContain('data-catalog-set-card-click-layer="true"');
+    expect(markup).not.toContain('Setnummer');
+
+    const primaryActionStart = markup.indexOf(
+      'aria-label="Bekijk set, prijs volgt"',
+    );
+    const followActionStart = markup.indexOf('aria-label="Volg set"');
+
+    expect(primaryActionStart).toBeGreaterThan(-1);
+    expect(followActionStart).toBeGreaterThan(primaryActionStart);
+    expect(markup).toContain('Prijs volgt');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+  });
+
+  it('renders featured deal-card follow actions next to the primary CTA', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        actions={
+          <button aria-label="Ontvolg set" type="button">
+            ♥
+          </button>
+        }
+        ctaMode="commerce"
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
+          currentPrice: 'EUR 489.99',
+          merchantLabel: 'Lowest reviewed price at bol',
+          pricePositionLabel: 'EUR 10.00 below ref',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Checked 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Ontvolg set"');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('cardCompactFooterActions');
+
+    const primaryActionStart = markup.indexOf('aria-label="Bekijk set"');
+    const followActionStart = markup.indexOf('aria-label="Ontvolg set"');
+
+    expect(primaryActionStart).toBeGreaterThan(-1);
+    expect(followActionStart).toBeGreaterThan(primaryActionStart);
+  });
+
+  it('renders no-price featured cards with a neutral pending-price CTA next to follow', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.tsx'),
+      'utf-8',
+    );
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        actions={<button aria-label="Volg set" type="button" />}
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Bekijk set, prijs volgt"');
+    expect(markup).toContain('Prijs volgt');
+    expect(markup).toContain('cardCompactActionPending');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('aria-label="Volg set"');
+    expect(markup).not.toContain('>10316<');
+    expect(source).toContain('icon: Clock3');
+
+    const pendingActionStart = markup.indexOf(
+      'aria-label="Bekijk set, prijs volgt"',
+    );
+    const followActionStart = markup.indexOf('aria-label="Volg set"');
+
+    expect(followActionStart).toBeGreaterThan(pendingActionStart);
   });
 
   it('uses a stretched card link without nesting compact footer actions', () => {
@@ -811,7 +933,9 @@ describe('CatalogSetCard', () => {
     );
     const cardLinkEnd = markup.indexOf('</a>', cardLinkStart);
     const footerStart = markup.indexOf('cardCompactFooterActions');
-    const footerActionStart = markup.indexOf('aria-label="Bekijk set"');
+    const footerActionStart = markup.indexOf(
+      'aria-label="Bekijk set, prijs volgt"',
+    );
 
     expect(cardLinkStart).toBeGreaterThan(-1);
     expect(cardLinkEnd).toBeGreaterThan(cardLinkStart);
@@ -842,6 +966,52 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('z-index: 2;');
   });
 
+  it('left-aligns compact CTA rows and keeps primary and follow actions at 44px', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const footerActionsBlock =
+      css.match(/\.cardCompactFooterActions \{[^}]+\}/u)?.[0] ?? '';
+    const secondaryActionBlock =
+      css.match(/\.cardCompactSecondaryAction \{[^}]+\}/u)?.[0] ?? '';
+    const compactBrowseActionBlock =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n  \}/u,
+      )?.[0] ?? '';
+    const pendingActionBlock =
+      css.match(
+        /\.cardCompactActionPending,[\s\S]+?\.cardCompactActionPending:visited \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const mobileLabelBlock =
+      css.match(/\.cardCompactActionLabel \{[^}]+\}/u)?.[0] ?? '';
+    const desktopPrimaryActionBlock =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact \.cardCompactPrimaryAction,[\s\S]+?\.setCardCompact \.cardCompactPrimaryAction:visited \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const desktopLabelBlock =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact \.cardCompactPrimaryAction \.cardCompactActionLabel \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(footerActionsBlock).toContain('justify-content: flex-start;');
+    expect(footerActionsBlock).toContain('margin-left: 0;');
+    expect(footerActionsBlock).not.toContain('justify-content: flex-end;');
+    expect(footerActionsBlock).not.toContain('margin-left: auto;');
+    expect(secondaryActionBlock).toContain(
+      '--catalog-card-action-height: 2.75rem;',
+    );
+    expect(compactBrowseActionBlock).toContain('min-height: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain('padding-inline: 0;');
+    expect(pendingActionBlock).toContain(
+      'background: var(--lego-surface-muted);',
+    );
+    expect(pendingActionBlock).toContain('color: var(--lego-text);');
+    expect(mobileLabelBlock).toContain('display: none;');
+    expect(desktopPrimaryActionBlock).toContain('gap: 0.55rem;');
+    expect(desktopLabelBlock).toContain('display: inline;');
+  });
+
   it('keeps the compact primary action white-on-blue inside the shared footer row', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
@@ -855,6 +1025,7 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.cardCompactPrimaryAction,');
     expect(css).toContain('.cardCompactPrimaryAction:visited {');
     expect(css).toContain('color: var(--lego-accent-contrast, #ffffff);');
+    expect(css).toContain('gap: 0.55rem;');
     expect(css).toContain('.cardCompactActionBrowse,');
     expect(css).toContain('.cardCompactActionBrowse:visited {');
     expect(css).toContain('.cardCompactActionCommerce,');
@@ -2873,7 +3044,7 @@ describe('CatalogSetCardCollection', () => {
       /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\] \{\s+--catalog-card-action-icon-size: 0\.88rem;/u,
     );
     expect(css).toMatch(
-      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{\s+inline-size: 2\.25rem;\s+min-height: 2\.25rem;\s+min-width: 2\.25rem;/u,
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{\s+inline-size: var\(--catalog-card-action-height\);\s+min-height: 2\.75rem;\s+min-width: var\(--catalog-card-action-height\);\s+padding-inline: 0;/u,
     );
     expect(css).toMatch(
       /@media \(min-width: 48rem\) \{\s+\.setCardMobileLayoutToggle \{\s+display: none;/u,

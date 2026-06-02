@@ -32,6 +32,7 @@ export interface CatalogFeatureThemePageDealItem
 }
 
 export interface CatalogFeatureThemePageSetCard extends CatalogHomepageSetCard {
+  actions?: ReactNode;
   priceContext?: CatalogSetCardPriceContext;
 }
 
@@ -246,6 +247,7 @@ export function CatalogFeatureThemePage({
         >
           {visibleSetCards.map((setCard, index) => (
             <CatalogSetCard
+              actions={setCard.actions}
               href={buildSetDetailPath(setCard.slug)}
               imageLoading={index < 6 ? 'eager' : 'lazy'}
               key={setCard.id}
