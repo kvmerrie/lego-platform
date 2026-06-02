@@ -401,11 +401,6 @@ describe('home metadata', () => {
     expect(normalRailSetListProps.map((props) => props.railLayoutMode)).toEqual(
       ['stable-square', 'stable-square'],
     );
-    expect(
-      normalRailSetListProps.some(
-        (props) => 'maxRailItems' in props || 'railPerformanceMode' in props,
-      ),
-    ).toBe(false);
     expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
       expect.objectContaining({
         tone: 'default',

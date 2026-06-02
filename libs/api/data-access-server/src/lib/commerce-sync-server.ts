@@ -41,7 +41,10 @@ import {
 import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { syncDealPageSnapshots } from './deal-page-snapshot-server';
 import { syncSetDetailRelatedThemeSnapshots } from './set-detail-related-theme-snapshot-server';
-import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
+import {
+  revalidatePublicCatalogPaths,
+  revalidatePublicWeb,
+} from './public-web-revalidation-server';
 
 export interface CommerceGeneratedArtifactCheckResult {
   isClean: boolean;
@@ -103,6 +106,7 @@ export interface CommerceSyncDependencies {
   loadCommerceSyncInputsFn?: typeof loadCommerceSyncInputs;
   probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn?: typeof probeCatalogCurrentOfferSnapshotHitRateBySetIds;
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
+  revalidatePublicWebFn?: typeof revalidatePublicWeb;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
   syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
@@ -203,6 +207,34 @@ function handleCommerceSyncRevalidationFailure({
   }
 
   console.warn(error instanceof Error ? error.message : fallbackMessage);
+}
+
+function buildSetDetailRelatedThemeSnapshotRevalidationTags({
+  catalogSetSummaries,
+  snapshotSetIds,
+}: {
+  catalogSetSummaries: readonly CatalogSetSummary[];
+  snapshotSetIds: readonly string[];
+}): string[] {
+  const catalogSetSummaryById = new Map(
+    catalogSetSummaries.map((catalogSetSummary) => [
+      catalogSetSummary.id,
+      catalogSetSummary,
+    ]),
+  );
+  const tags = new Set<string>();
+
+  for (const setId of snapshotSetIds) {
+    tags.add(cacheTags.set(setId));
+
+    const catalogSetSummary = catalogSetSummaryById.get(setId);
+
+    if (catalogSetSummary?.slug) {
+      tags.add(cacheTags.set(catalogSetSummary.slug));
+    }
+  }
+
+  return [...tags];
 }
 
 function buildCommerceSyncArtifacts({
@@ -553,6 +585,7 @@ export async function runCommerceSync({
     loadCommerceSyncInputsFn = loadCommerceSyncInputs,
     probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn = probeCatalogCurrentOfferSnapshotHitRateBySetIds,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
+    revalidatePublicWebFn = revalidatePublicWeb,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
     syncCollectionPageSnapshotsFn = dependenciesInjected
       ? skipInjectedCollectionPageSnapshotSync
@@ -757,7 +790,7 @@ export async function runCommerceSync({
           pageSize: 40,
         })
       : {
-          dryRun: mode !== 'write',
+          dryRun: true,
           generatedAt: now?.toISOString() ?? new Date().toISOString(),
           snapshots: [],
           summaryByCollectionSlug: {},
@@ -776,14 +809,26 @@ export async function runCommerceSync({
           summaryBySortKey: {},
           upsertedCount: 0,
         };
+  const setDetailRelatedThemeSnapshotStartedAt = Date.now();
   const setDetailRelatedThemeSnapshotResult =
-    mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0
+    mode === 'write'
       ? await syncSetDetailRelatedThemeSnapshotsFn({
           dryRun: false,
           limit: 8,
+        }).catch((error: unknown) => {
+          console.error(
+            '[commerce-sync] set_detail_related_theme_snapshots_failed',
+            {
+              duration_ms: Date.now() - setDetailRelatedThemeSnapshotStartedAt,
+              event: 'set_detail_related_theme_snapshots_failed',
+              error: error instanceof Error ? error.message : 'unknown',
+            },
+          );
+
+          throw error;
         })
       : {
-          dryRun: mode !== 'write',
+          dryRun: true,
           generatedAt: now?.toISOString() ?? new Date().toISOString(),
           snapshots: [],
           summary: {
@@ -809,7 +854,17 @@ export async function runCommerceSync({
       snapshots_upserted: dealPageSnapshotResult.upsertedCount,
       summary_by_sort_key: dealPageSnapshotResult.summaryBySortKey,
     });
+  }
+
+  if (mode === 'write') {
     console.info('[commerce-sync] set_detail_related_theme_snapshots', {
+      affected_set_count: new Set(
+        setDetailRelatedThemeSnapshotResult.snapshots.map(
+          (snapshot) => snapshot.setId,
+        ),
+      ).size,
+      duration_ms: Date.now() - setDetailRelatedThemeSnapshotStartedAt,
+      event: 'set_detail_related_theme_snapshots_built',
       snapshots_built: setDetailRelatedThemeSnapshotResult.snapshots.length,
       snapshots_upserted: setDetailRelatedThemeSnapshotResult.upsertedCount,
       summary: setDetailRelatedThemeSnapshotResult.summary,
@@ -970,6 +1025,46 @@ export async function runCommerceSync({
         error,
         fallbackMessage:
           'Collection snapshot revalidation failed after commerce sync.',
+      });
+    }
+  }
+
+  if (
+    mode === 'write' &&
+    setDetailRelatedThemeSnapshotResult.upsertedCount > 0
+  ) {
+    const affectedSetIds = [
+      ...new Set(
+        setDetailRelatedThemeSnapshotResult.snapshots.map(
+          (snapshot) => snapshot.setId,
+        ),
+      ),
+    ];
+    const catalogSetSummaries = await listCatalogSetSummariesFn();
+    const tags = buildSetDetailRelatedThemeSnapshotRevalidationTags({
+      catalogSetSummaries,
+      snapshotSetIds: affectedSetIds,
+    });
+
+    try {
+      const revalidationResult = await revalidatePublicWebFn({
+        paths: [],
+        reason: 'commerce_sync_set_detail_related_theme_snapshots',
+        tags,
+      });
+
+      console.info('[commerce-sync] set_detail_related_theme_revalidation', {
+        affected_set_count: affectedSetIds.length,
+        event: 'set_detail_related_theme_revalidation',
+        revalidated_set_count: affectedSetIds.length,
+        skipped: revalidationResult.skipped,
+        tag_count: tags.length,
+      });
+    } catch (error) {
+      handleCommerceSyncRevalidationFailure({
+        error,
+        fallbackMessage:
+          'Set detail related-theme snapshot revalidation failed after commerce sync.',
       });
     }
   }

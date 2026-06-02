@@ -314,38 +314,6 @@ describe('CatalogSetCardRail', () => {
     expect(loadedRailCardRule).toContain('min-width: 0;');
   });
 
-  it('does not emit experimental offscreen containment attributes', () => {
-    act(() => {
-      root.render(
-        <CatalogSetCardRail
-          ariaLabel="Standaard setrail"
-          items={[
-            {
-              href: '/sets/rivendell-10316',
-              id: '10316',
-              setSummary: {
-                id: '10316',
-                slug: 'rivendell-10316',
-                name: 'Rivendell',
-                theme: 'Icons',
-                releaseYear: 2023,
-                pieces: 6181,
-                imageUrl: 'https://images.example/rivendell.jpg',
-              },
-            },
-          ]}
-          variant="featured"
-        />,
-      );
-    });
-
-    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
-
-    expect(container.innerHTML).not.toContain(
-      'setCardRailOffscreenContainment',
-    );
-  });
-
   it('keeps inverse skeleton rails on the inverse section treatment', () => {
     act(() => {
       root.render(
@@ -1185,12 +1153,7 @@ describe('CatalogSetCardRail', () => {
 
     expect(railCardRule).toContain('inline-size: 100%;');
     expect(railCardRule).toContain('max-inline-size: 100%;');
-    expect(railCardRule).not.toContain('content-visibility: auto;');
-    expect(railCardRule).not.toContain('contain-intrinsic-size');
     expect(railCardRule).toContain('overflow: hidden;');
-    expect(css).not.toContain('setCardRailOffscreenContainment');
-    expect(css).not.toContain('content-visibility: auto;');
-    expect(css).not.toContain('contain-intrinsic-size');
     expect(railCardShellRule).not.toContain('--catalog-rail-card-facts-slot');
     expect(railCardShellRule).not.toContain('--catalog-rail-card-title-slot');
     expect(railCardShellRule).not.toContain('--catalog-rail-card-price-slot');
@@ -1259,9 +1222,6 @@ describe('CatalogSetCardRail', () => {
     expect(railTrackRule).toContain('100% -');
     expect(skeletonTrackRule).toContain('grid-auto-columns: minmax(');
     expect(skeletonTrackRule).toContain('100% -');
-    expect(css).not.toContain('setCardRailOffscreenContainment');
-    expect(css).not.toContain('content-visibility: auto;');
-    expect(css).not.toContain('contain-intrinsic-size');
     expect(stableRailCardShellRule).toContain(
       'container: catalog-rail-set-card / inline-size;',
     );
@@ -1590,7 +1550,6 @@ describe('CatalogSetCardRail', () => {
     });
 
     expect(resizeObserverCallback).toBeNull();
-    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
     expect(container.querySelector('[data-rail-layout-mode]')).toBeNull();
     expect(container.textContent).toContain('Golden Retriever Puppy');
     expect(container.innerHTML).toContain('cardCompactFooterActions');
@@ -1625,7 +1584,6 @@ describe('CatalogSetCardRail', () => {
     expect(
       container.querySelector('[data-rail-layout-mode="stable-square"]'),
     ).not.toBeNull();
-    expect(container.querySelector('[data-rail-performance-mode]')).toBeNull();
   });
 
   it('keeps rails off resize, mutation, and image-load observer loops', () => {

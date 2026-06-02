@@ -82,10 +82,7 @@ import {
   type CatalogReleaseDatePrecision,
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
-import {
-  buildCurrentSetCardPriceContext,
-  buildCurrentSetCardPriceContextBySetId,
-} from '../../lib/current-set-card-price-context';
+import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import {
   buildSetBreadcrumbJsonLd,
@@ -1683,29 +1680,6 @@ function buildTrackedAvailabilityFallbackTrustSignals({
   ];
 }
 
-function toSimilarSetRailItems({
-  currentOfferSummaryBySetId,
-  setCards,
-}: {
-  currentOfferSummaryBySetId: Awaited<
-    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
-  >;
-  setCards: readonly CatalogFeatureSetListItem[];
-}): CatalogFeatureSetListItem[] {
-  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
-    currentOfferSummaryBySetId,
-    setCards,
-  });
-
-  return setCards.map((setCard) => {
-    return {
-      ...setCard,
-      ctaMode: 'default' as const,
-      priceContext: priceContextBySetId.get(setCard.id),
-    };
-  });
-}
-
 export interface SetDetailInternalLinkBlock {
   id: 'same-theme';
   items: readonly CatalogFeatureSetListItem[];
@@ -1725,93 +1699,6 @@ function getSetDetailThemeKey(
     normalizeTheme(setCard.theme)?.key ??
     setCard.theme.toLowerCase()
   );
-}
-
-function hasSetDetailInternalLinkBasics(
-  setCard: Pick<
-    CatalogHomepageSetCard,
-    'id' | 'name' | 'releaseYear' | 'slug' | 'theme'
-  >,
-): boolean {
-  return (
-    setCard.id.trim().length > 0 &&
-    setCard.name.trim().length > 0 &&
-    setCard.slug.trim().length > 0 &&
-    setCard.theme.trim().length > 0 &&
-    setCard.releaseYear > 0
-  );
-}
-
-function selectSetDetailInternalLinkItems({
-  currentSetId,
-  limit,
-  setCards,
-  usedSetIds,
-}: {
-  currentSetId: string;
-  limit: number;
-  setCards: readonly CatalogHomepageSetCard[];
-  usedSetIds: Set<string>;
-}): CatalogHomepageSetCard[] {
-  const selected: CatalogHomepageSetCard[] = [];
-
-  for (const setCard of setCards) {
-    if (
-      selected.length >= limit ||
-      setCard.id === currentSetId ||
-      usedSetIds.has(setCard.id) ||
-      !hasSetDetailInternalLinkBasics(setCard)
-    ) {
-      continue;
-    }
-
-    usedSetIds.add(setCard.id);
-    selected.push(setCard);
-  }
-
-  return selected;
-}
-
-export function buildSetDetailInternalLinkBlocks({
-  candidateSetCards,
-  currentSetCard,
-}: {
-  candidateSetCards: readonly CatalogHomepageSetCard[];
-  currentSetCard: Pick<
-    CatalogHomepageSetCard,
-    'id' | 'name' | 'pieces' | 'publicTheme' | 'releaseYear' | 'theme'
-  >;
-}): SetDetailInternalLinkBlock[] {
-  const usedSetIds = new Set<string>([currentSetCard.id]);
-  const currentThemeKey = getSetDetailThemeKey(currentSetCard);
-  const sameThemeSetCards = selectSetDetailInternalLinkItems({
-    currentSetId: currentSetCard.id,
-    limit: SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT,
-    setCards: [...candidateSetCards]
-      .filter((setCard) => getSetDetailThemeKey(setCard) === currentThemeKey)
-      .sort(
-        (left, right) =>
-          right.releaseYear - left.releaseYear ||
-          right.pieces - left.pieces ||
-          left.name.localeCompare(right.name) ||
-          left.id.localeCompare(right.id),
-      ),
-    usedSetIds,
-  });
-  const blocks: SetDetailInternalLinkBlock[] = [];
-
-  if (sameThemeSetCards.length) {
-    blocks.push({
-      id: 'same-theme',
-      items: toSimilarSetRailItems({
-        currentOfferSummaryBySetId: new Map(),
-        setCards: sameThemeSetCards,
-      }),
-      title: 'Meer uit dit thema',
-    });
-  }
-
-  return blocks.slice(0, 1);
 }
 
 function getCollectionDiscoveryLink(slug: string): SetDetailDiscoveryLink {

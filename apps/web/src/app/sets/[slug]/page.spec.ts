@@ -15,7 +15,6 @@ const setPageMocks = vi.hoisted(() => ({
   listCatalogSetCardsByIds: vi.fn(),
   listCatalogSetLiveOffersBySetId: vi.fn(),
   listCatalogSetSlugs: vi.fn(),
-  listCatalogSimilarSetCards: vi.fn(),
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
   unstableCache: vi.fn((callback: () => unknown) => callback),
 }));
@@ -44,7 +43,6 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listCatalogSetCardsByIds: setPageMocks.listCatalogSetCardsByIds,
   listCatalogSetLiveOffersBySetId: setPageMocks.listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs: setPageMocks.listCatalogSetSlugs,
-  listCatalogSimilarSetCards: setPageMocks.listCatalogSimilarSetCards,
 }));
 
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
@@ -462,9 +460,7 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain(
       'href="/sets/grogu-mandalorian-apprentice-75446"',
     );
-    expect(railHtml).not.toContain('data-rail-performance-mode');
     expect(railHtml).not.toContain('data-rail-layout-mode="stable-square"');
-    expect(railHtml).not.toContain('setCardRailOffscreenContainment');
     expect(railHtml).toContain('Verder ontdekken');
     expect(railHtml).toContain('href="/nieuwe-lego-sets"');
     expect(railHtml).toContain('href="/themes/star-wars"');
@@ -477,7 +473,6 @@ describe('set detail static generation', () => {
     ).toHaveBeenCalledWith({
       setId: '75355',
     });
-    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
   });
 
   it('keys set detail cache by Brickset gallery render mode', async () => {
@@ -519,7 +514,6 @@ describe('set detail static generation', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
     );
@@ -548,55 +542,6 @@ describe('set detail static generation', () => {
       expect.objectContaining({
         tags: [expect.any(String)],
       }),
-    );
-  });
-
-  it('selects one same-theme internal-link rail without duplicate set links', async () => {
-    const pageModule = await import('./page');
-    const blocks = pageModule.buildSetDetailInternalLinkBlocks({
-      candidateSetCards: [
-        {
-          id: 'current',
-          name: 'Current Set',
-          pieces: 1000,
-          releaseYear: 2024,
-          slug: 'current-set',
-          theme: 'Star Wars',
-        },
-        {
-          id: 'theme-1',
-          name: 'TIE Fighter',
-          pieces: 432,
-          releaseYear: 2026,
-          slug: 'tie-fighter',
-          theme: 'Star Wars',
-        },
-        {
-          id: 'shared',
-          name: 'Shared Candidate',
-          pieces: 600,
-          releaseYear: 2025,
-          slug: 'shared-candidate',
-          theme: 'Star Wars',
-        },
-      ],
-      currentSetCard: {
-        id: 'current',
-        name: 'Current Set',
-        pieces: 1000,
-        releaseYear: 2024,
-        theme: 'Star Wars',
-      },
-    });
-    const linkedSetIds = blocks.flatMap((block) =>
-      block.items.map((item) => item.id),
-    );
-
-    expect(blocks.map((block) => block.id)).toEqual(['same-theme']);
-    expect(linkedSetIds).not.toContain('current');
-    expect(new Set(linkedSetIds).size).toBe(linkedSetIds.length);
-    expect(blocks.find((block) => block.id === 'same-theme')?.items).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'shared' })]),
     );
   });
 
@@ -904,7 +849,6 @@ describe('set detail metadata', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
 
     const pageModule = await import('./page');
@@ -1217,7 +1161,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 1,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       createCurrentOfferSummaryMap({
         offers: [
@@ -1327,7 +1270,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 1,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       createCurrentOfferSummaryMap({
         offers: [
@@ -1425,7 +1367,6 @@ describe('set detail page JSON-LD', () => {
         ],
       ]),
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       createCurrentOfferSummaryMap({
         offers: [
@@ -1520,7 +1461,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 2,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map([
         [
@@ -1571,7 +1511,6 @@ describe('set detail page JSON-LD', () => {
     setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockRejectedValue(
       new Error('Unable to load primary catalog merchant availability.'),
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -1621,17 +1560,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([
-      {
-        id: '75446',
-        imageUrl: 'https://cdn.example.com/75446.jpg',
-        name: 'Grogu with Hover Pram',
-        pieces: 1048,
-        releaseYear: 2026,
-        slug: 'grogu-mandalorian-apprentice-75446',
-        theme: 'Star Wars',
-      },
-    ]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -1750,7 +1678,6 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
     expect(html).not.toContain('data-rail-layout-mode="stable-square"');
-    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
     expect(html.indexOf('Meer uit dit thema')).toBeLessThan(
       html.indexOf('Recent bekeken LEGO sets'),
     );
@@ -1781,9 +1708,6 @@ describe('set detail page JSON-LD', () => {
     setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue(
       undefined,
     );
-    setPageMocks.listCatalogSimilarSetCards.mockImplementation(() => {
-      return new Promise(() => undefined);
-    });
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockImplementation(
       () => new Promise(() => undefined),
     );
@@ -1811,7 +1735,6 @@ describe('set detail page JSON-LD', () => {
     ).toHaveBeenCalledWith({
       setId: '75355',
     });
-    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
   });
 
   it('links set breadcrumbs to a public curated parent theme when available', async () => {
@@ -1840,7 +1763,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -1884,7 +1806,6 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );

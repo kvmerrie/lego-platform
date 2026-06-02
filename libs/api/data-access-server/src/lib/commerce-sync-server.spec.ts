@@ -784,6 +784,303 @@ describe('commerce sync server', () => {
     expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
   });
 
+  test('revalidates only affected set-detail tags after related-theme snapshot upserts', async () => {
+    const syncSeed = buildEligibleCommerceSeed();
+    const revalidatePublicCatalogPathsFn = vi.fn();
+    const revalidatePublicWebFn = vi.fn().mockResolvedValue({
+      attempted: true,
+      pathCount: 0,
+      paths: [],
+      skipped: false,
+      tagCount: 4,
+      tags: [
+        'set:10316',
+        'set:rivendell-10316',
+        'set:75355',
+        'set:x-wing-starfighter-75355',
+      ],
+    });
+    const syncSetDetailRelatedThemeSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-11T10:00:00.000Z',
+      snapshots: [
+        {
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          items: [],
+          page: 1,
+          pageSize: 20,
+          setId: '10316',
+          snapshotSlug: 'set-detail-related-theme:10316',
+          totalCount: 0,
+        },
+        {
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          items: [],
+          page: 1,
+          pageSize: 20,
+          setId: '75355',
+          snapshotSlug: 'set-detail-related-theme:75355',
+          totalCount: 0,
+        },
+      ],
+      summary: {
+        setCount: 2,
+        snapshotCount: 2,
+        snapshotWithItemsCount: 0,
+      },
+      upsertedCount: 2,
+    });
+
+    const result = await runCommerceSync({
+      dependencies: {
+        listCatalogCurrentOfferSummariesBySetIdsFn: vi.fn().mockResolvedValue([
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-11T10:00:00.000Z',
+              commercialUnitType: 'full_set',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'other',
+              merchantName: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              priceCents: 19995,
+              setId: '10316',
+              url: 'https://goodbricks.example/lego-10316',
+            },
+            offers: [],
+            setId: '10316',
+          },
+        ]),
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([
+          {
+            id: '10316',
+            name: 'Rivendell',
+            pieces: 6167,
+            releaseYear: 2023,
+            slug: 'rivendell-10316',
+            theme: 'Icons',
+          },
+          {
+            id: '75355',
+            name: 'X-wing Starfighter',
+            pieces: 1949,
+            releaseYear: 2023,
+            slug: 'x-wing-starfighter-75355',
+            theme: 'Star Wars',
+          },
+          {
+            id: '99999',
+            name: 'Unrelated Set',
+            pieces: 100,
+            releaseYear: 2026,
+            slug: 'unrelated-set-99999',
+            theme: 'City',
+          },
+        ]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue(
+          buildCommerceSyncInputMock({
+            refreshSeeds: [],
+            syncSeeds: [syncSeed],
+          }),
+        ),
+        revalidatePublicCatalogPathsFn,
+        revalidatePublicWebFn,
+        syncCollectionPageSnapshotsFn: vi.fn().mockResolvedValue({
+          dryRun: false,
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          snapshots: [],
+          summaryByCollectionSlug: {},
+          upsertedCount: 0,
+        }),
+        syncDealPageSnapshotsFn: vi.fn().mockResolvedValue({
+          debugCounters: {
+            snapshotRowsRead: 0,
+            rowsRejectedByReason: {},
+            rowsUnder50: 0,
+            rowsWithBestOffer: 0,
+            rowsWithDiscount: 0,
+            rowsWithInStockOffer: 0,
+            rowsWithOfferCount: 0,
+            rowsWithOffersJson: 0,
+            rowsWithPieces: 0,
+            rowsWithReferencePrice: 0,
+          },
+          dryRun: false,
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          snapshots: [],
+          summaryBySortKey: {},
+          upsertedCount: 0,
+        }),
+        syncSetDetailRelatedThemeSnapshotsFn,
+        upsertCommerceCurrentOfferSnapshotsFn: vi
+          .fn()
+          .mockResolvedValue({ upsertedCount: 1 }),
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue({
+            points: [],
+            summary: {
+              latestOfferRowsSeen: 1,
+              eligibleLatestOfferRows: 0,
+              dailyHistoryPointsBuilt: 0,
+              maxObservedAgeHours: 48,
+              skipped: {
+                inactiveSeedOrMerchant: 0,
+                invalidSeed: 0,
+                missingLatest: 0,
+                missingOrInvalidPrice: 0,
+                nonEur: 0,
+                staleOrError: 0,
+                untrustedMerchant: 0,
+                unavailableForHeadline: 0,
+              },
+            },
+          }),
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(syncSetDetailRelatedThemeSnapshotsFn).toHaveBeenCalledWith({
+      dryRun: false,
+      limit: 8,
+    });
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: [],
+      reason: 'commerce_sync_set_detail_related_theme_snapshots',
+      tags: [
+        'set:10316',
+        'set:rivendell-10316',
+        'set:75355',
+        'set:x-wing-starfighter-75355',
+      ],
+    });
+    expect(revalidatePublicCatalogPathsFn).not.toHaveBeenCalled();
+    expect(revalidatePublicWebFn.mock.calls[0]?.[0].tags).not.toContain(
+      'homepage',
+    );
+    expect(revalidatePublicWebFn.mock.calls[0]?.[0].tags).not.toContain(
+      'deals',
+    );
+    expect(revalidatePublicWebFn.mock.calls[0]?.[0].tags).not.toContain(
+      'catalog',
+    );
+    expect(revalidatePublicWebFn.mock.calls[0]?.[0].tags).not.toContain(
+      'prices',
+    );
+    expect(revalidatePublicWebFn.mock.calls[0]?.[0].tags).not.toContain(
+      'set:unrelated-set-99999',
+    );
+    expect(result.setDetailRelatedThemeSnapshotCount).toBe(2);
+    expect(result.setDetailRelatedThemeSnapshotsUpsertedCount).toBe(2);
+  });
+
+  test('rebuilds related-theme snapshots during write mode without current-offer upserts', async () => {
+    const revalidatePublicWebFn = vi.fn().mockResolvedValue({
+      attempted: true,
+      pathCount: 0,
+      paths: [],
+      skipped: false,
+      tagCount: 2,
+      tags: ['set:10316', 'set:rivendell-10316'],
+    });
+    const syncSetDetailRelatedThemeSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-11T10:00:00.000Z',
+      snapshots: [
+        {
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          items: [],
+          page: 1,
+          pageSize: 20,
+          setId: '10316',
+          snapshotSlug: 'set-detail-related-theme:10316',
+          totalCount: 0,
+        },
+      ],
+      summary: {
+        setCount: 1,
+        snapshotCount: 1,
+        snapshotWithItemsCount: 0,
+      },
+      upsertedCount: 1,
+    });
+
+    await runCommerceSync({
+      dependencies: {
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([
+          {
+            id: '10316',
+            name: 'Rivendell',
+            pieces: 6167,
+            releaseYear: 2023,
+            slug: 'rivendell-10316',
+            theme: 'Icons',
+          },
+        ]),
+        loadCommerceSyncInputsFn: vi
+          .fn()
+          .mockResolvedValue(buildCommerceSyncInputMock({ syncSeeds: [] })),
+        revalidatePublicWebFn,
+        syncSetDetailRelatedThemeSnapshotsFn,
+        upsertCommerceCurrentOfferSnapshotsFn: vi
+          .fn()
+          .mockResolvedValue({ upsertedCount: 0 }),
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue({
+            points: [],
+            summary: {
+              latestOfferRowsSeen: 0,
+              eligibleLatestOfferRows: 0,
+              dailyHistoryPointsBuilt: 0,
+              maxObservedAgeHours: 48,
+              skipped: {
+                inactiveSeedOrMerchant: 0,
+                invalidSeed: 0,
+                missingLatest: 0,
+                missingOrInvalidPrice: 0,
+                nonEur: 0,
+                staleOrError: 0,
+                untrustedMerchant: 0,
+                unavailableForHeadline: 0,
+              },
+            },
+          }),
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(syncSetDetailRelatedThemeSnapshotsFn).toHaveBeenCalledWith({
+      dryRun: false,
+      limit: 8,
+    });
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: [],
+      reason: 'commerce_sync_set_detail_related_theme_snapshots',
+      tags: ['set:10316', 'set:rivendell-10316'],
+    });
+  });
+
   test('keeps current-offer snapshot check mode read-only', async () => {
     const upsertCommerceCurrentOfferSnapshotsFn = vi.fn();
 
