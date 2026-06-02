@@ -1154,11 +1154,16 @@ describe('CatalogSetCardRail', () => {
     expect(railCardRule).toContain('inline-size: 100%;');
     expect(railCardRule).toContain('max-inline-size: 100%;');
     expect(railCardRule).toContain('overflow: hidden;');
-    expect(railCardShellRule).not.toContain('--catalog-rail-card-facts-slot');
-    expect(railCardShellRule).not.toContain('--catalog-rail-card-title-slot');
-    expect(railCardShellRule).not.toContain('--catalog-rail-card-price-slot');
-    expect(railCardShellRule).not.toContain('--catalog-rail-card-context-slot');
-    expect(railCardShellRule).toContain('grid-template-rows: auto auto;');
+    expect(railCardRule).toContain('align-self: stretch;');
+    expect(railCardRule).toContain('block-size: 100%;');
+    expect(railCardShellRule).toContain('--catalog-rail-card-facts-slot');
+    expect(railCardShellRule).toContain('--catalog-rail-card-title-slot');
+    expect(railCardShellRule).toContain('--catalog-rail-card-price-slot');
+    expect(railCardShellRule).toContain('--catalog-rail-card-merchant-slot');
+    expect(railCardShellRule).toContain('block-size: 100%;');
+    expect(railCardShellRule).toContain(
+      'grid-template-rows: minmax(0, 1fr) auto;',
+    );
     expect(railLinkRule).toContain('inline-size: 100%;');
     expect(railLinkRule).toContain('max-inline-size: 100%;');
     expect(railLinkRule).toContain('align-content: start;');
@@ -1261,19 +1266,38 @@ describe('CatalogSetCardRail', () => {
     expect(baseImageRule).toContain('object-fit: contain;');
   });
 
-  it('lets mobile rail cards use natural height instead of forced stretch', () => {
+  it('aligns mobile rail cards with internal slots instead of fixed card height', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
-    const mobileRailNaturalHeightRule =
+    const railTrackRule =
+      css.match(/\n  \.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
+    const railCardRule =
+      css.match(/\.setCardRailTrack > \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const railCardShellRule =
+      css.match(/\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u)?.[0] ??
+      '';
+    const railLinkRule =
       css.match(
-        /@media \(max-width: 47\.999rem\) \{[\s\S]+?\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u,
+        /\.setCardCollectionRail > \.setCardCompact > \.setCardLink \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railBodyRule =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact \.cardCompactBody \{[^}]+\}/u,
       )?.[0] ?? '';
 
-    expect(mobileRailNaturalHeightRule).toContain('align-items: start;');
-    expect(mobileRailNaturalHeightRule).toContain('height: auto;');
-    expect(mobileRailNaturalHeightRule).not.toContain('height: 100%;');
+    expect(railTrackRule).toContain('align-items: stretch;');
+    expect(railCardRule).toContain('block-size: 100%;');
+    expect(railCardShellRule).toContain('block-size: 100%;');
+    expect(railLinkRule).toContain('block-size: 100%;');
+    expect(railBodyRule).toContain('--catalog-rail-card-facts-slot');
+    expect(railBodyRule).toContain('--catalog-rail-card-title-slot');
+    expect(railBodyRule).toContain('--catalog-rail-card-price-slot');
+    expect(railBodyRule).toContain('--catalog-rail-card-context-slot');
+    expect(railBodyRule).toContain('grid-template-rows:');
+    expect(railCardShellRule).not.toContain('height: 30rem;');
+    expect(railCardShellRule).not.toContain('min-height: 30rem;');
   });
 
   it('uses rail-only calm title and larger price typography without changing browse grids', () => {
@@ -1314,7 +1338,7 @@ describe('CatalogSetCardRail', () => {
     );
   });
 
-  it('renders priced and no-price rail card content without fixed mobile row slots', () => {
+  it('renders priced and no-price rail card content with fixed internal rail slots', () => {
     act(() => {
       root.render(
         <CatalogSetCardRail
@@ -1378,9 +1402,9 @@ describe('CatalogSetCardRail', () => {
         /\.setCardCollectionRail > \.setCardCompact \.discountMetric,[\s\S]+?\.setCardCollectionRail > \.setCardCompact \.cardCompactSupporting \{[^}]+\}/u,
       )?.[0] ?? '';
 
-    expect(css).not.toContain('--catalog-rail-card-title-slot');
-    expect(css).not.toContain('--catalog-rail-card-price-slot');
-    expect(css).not.toContain('--catalog-rail-card-context-slot');
+    expect(css).toContain('--catalog-rail-card-title-slot');
+    expect(css).toContain('--catalog-rail-card-price-slot');
+    expect(css).toContain('--catalog-rail-card-merchant-slot');
     expect(railContextRule).toContain('min-width: 0;');
   });
 

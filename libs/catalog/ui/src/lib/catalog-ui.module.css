@@ -3290,6 +3290,7 @@
   }
 
   .setCardRailTrack {
+    align-items: stretch;
     display: grid;
     gap: var(--catalog-rail-card-gap);
     grid-auto-columns: calc(
@@ -3309,6 +3310,8 @@
   }
 
   .setCardRailTrack > .setCard {
+    align-self: stretch;
+    block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
     min-width: 0;
@@ -3317,12 +3320,26 @@
   }
 
   .setCardCollectionRail > .setCardCompact {
-    grid-template-rows: auto auto;
+    --catalog-rail-card-facts-slot: 1.25rem;
+    --catalog-rail-card-title-slot: 2.35rem;
+    --catalog-rail-card-price-slot: 1.75rem;
+    --catalog-rail-card-deal-slot: 1.2rem;
+    --catalog-rail-card-merchant-slot: 1.35rem;
+    --catalog-rail-card-context-slot: calc(
+      var(--catalog-rail-card-deal-slot) +
+        var(--catalog-rail-card-merchant-slot)
+    );
+    align-items: stretch;
+    block-size: 100%;
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .setCardCollectionRail > .setCardCompact > .setCardLink {
     align-content: start;
     box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    block-size: 100%;
     inline-size: 100%;
     max-inline-size: 100%;
     min-inline-size: 0;
@@ -3354,6 +3371,79 @@
     min-width: 0;
   }
 
+  .setCardCollectionRail > .setCardCompact .cardCompactBody {
+    align-content: stretch;
+    display: grid;
+    gap: 0.58rem;
+    grid-template-rows:
+      var(--catalog-rail-card-facts-slot)
+      var(--catalog-rail-card-title-slot)
+      var(--catalog-rail-card-price-slot)
+      var(--catalog-rail-card-context-slot);
+    min-block-size: calc(
+      var(--catalog-rail-card-facts-slot) +
+        var(--catalog-rail-card-title-slot) +
+        var(--catalog-rail-card-price-slot) +
+        var(--catalog-rail-card-context-slot) + 1.74rem
+    );
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactSupportingSlot,
+  .setCardCollectionRail > .setCardCompact .cardFeaturedSupportingSlot {
+    align-self: start;
+    min-block-size: var(--catalog-rail-card-facts-slot);
+    overflow: hidden;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardTitle {
+    align-self: start;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.16;
+    min-block-size: var(--catalog-rail-card-title-slot);
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactBrowsePrice,
+  .setCardCollectionRail > .setCardCompact .priceCompactBlock {
+    min-block-size: var(--catalog-rail-card-price-slot);
+  }
+
+  .setCardCollectionRail > .setCardCompact .priceCompactBlock {
+    grid-row: 3 / span 2;
+    min-block-size: calc(
+      var(--catalog-rail-card-price-slot) +
+        var(--catalog-rail-card-context-slot)
+    );
+  }
+
+  .setCardCollectionRail > .setCardCompact .priceCompactBlock {
+    grid-template-rows:
+      var(--catalog-rail-card-price-slot)
+      var(--catalog-rail-card-deal-slot)
+      var(--catalog-rail-card-merchant-slot);
+  }
+
+  .setCardCollectionRail > .setCardCompact .featuredPriceValue,
+  .setCardCollectionRail > .setCardCompact .cardCompactBrowsePriceValue,
+  .setCardCollectionRail > .setCardCompact .priceQuietState {
+    align-self: start;
+  }
+
+  .setCardCollectionRail > .setCardCompact .featuredPriceValue,
+  .setCardCollectionRail > .setCardCompact .priceQuietState {
+    grid-row: 1;
+  }
+
+  .setCardCollectionRail > .setCardCompact .discountMetric {
+    align-self: start;
+    grid-row: 2;
+  }
+
+  .setCardCollectionRail > .setCardCompact .cardCompactSupporting {
+    align-self: start;
+    grid-row: 3;
+  }
+
   .setCardCollectionRail > .setCardCompact > .cardCompactDecisionZone {
     align-self: end;
     box-sizing: border-box;
@@ -3381,12 +3471,6 @@
 
   .setCardCollectionRail > .setCardCompact .cardCompactSecondaryAction {
     flex: 0 0 var(--catalog-card-action-height);
-  }
-
-  .setCardCollectionRail > .setCardCompact .cardTitle {
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.16;
   }
 
   .setCardCollectionRail > .setCardCompact .featuredPriceValue,
@@ -4314,14 +4398,6 @@
   }
 
   @media (max-width: 47.999rem) {
-    .setCardCollectionRail {
-      align-items: start;
-    }
-
-    .setCardCollectionRail > .setCardCompact {
-      height: auto;
-    }
-
     .setCardCollectionBrowse.setCardCollectionMobileOneColumn {
       grid-template-columns: minmax(0, 1fr);
     }
