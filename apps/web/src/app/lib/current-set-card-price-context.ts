@@ -625,6 +625,71 @@ export function buildCurrentSetCardPriceContext({
   };
 }
 
+export function buildBrowseSetCardPriceContext({
+  checkedAt,
+  currencyCode = 'EUR',
+  merchantName,
+  priceMinor,
+}: {
+  checkedAt?: string;
+  currencyCode?: string;
+  merchantName?: string;
+  priceMinor?: number;
+}): CatalogSetCardPriceContext | undefined {
+  if (
+    typeof priceMinor !== 'number' ||
+    !Number.isFinite(priceMinor) ||
+    priceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel: 'Actuele prijs gevonden',
+    currentPrice: `Vanaf ${formatPriceMinor({
+      currencyCode,
+      minorUnits: priceMinor,
+    })}`,
+    decisionLabel: 'Beste prijs',
+    merchantLabel: merchantName
+      ? `Laagst bij ${merchantName}`
+      : 'Laagste bekende prijs',
+    reviewedLabel: checkedAt
+      ? `Nagekeken ${formatCheckedOn(checkedAt)}`
+      : 'Server-side bijgewerkt',
+  };
+}
+
+export function buildBrowseSetCardPriceContextBySetId<
+  SetCard extends { id: string },
+>({
+  currentOfferSummaryBySetId,
+  setCards,
+}: {
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  setCards: readonly SetCard[];
+}): Map<string, CatalogSetCardPriceContext> {
+  const priceContextBySetId = new Map<string, CatalogSetCardPriceContext>();
+
+  for (const setCard of setCards) {
+    const bestOffer = currentOfferSummaryBySetId.get(setCard.id)?.bestOffer;
+    const priceContext = buildBrowseSetCardPriceContext({
+      checkedAt: bestOffer?.checkedAt,
+      currencyCode: bestOffer?.currency,
+      merchantName: bestOffer
+        ? getPublicBestOfferMerchantName(bestOffer)
+        : undefined,
+      priceMinor: bestOffer?.priceCents,
+    });
+
+    if (priceContext) {
+      priceContextBySetId.set(setCard.id, priceContext);
+    }
+  }
+
+  return priceContextBySetId;
+}
+
 export function buildCurrentSetCardPriceContextBySetId<
   SetCard extends { id: string; theme: string },
 >({

@@ -5,6 +5,7 @@ import type {
 import type { FeaturedSetPriceContext } from '@lego-platform/pricing/util';
 import { describe, expect, it } from 'vitest';
 import {
+  buildBrowseSetCardPriceContext,
   buildCurrentSetCardPriceContext,
   buildReliableDealDiscount,
   compareReliableDealDiscounts,
@@ -437,5 +438,31 @@ describe('buildCurrentSetCardPriceContext', () => {
 
     expect(result?.decisionLabel).toBe('Actuele prijs binnen');
     expect(result?.decisionNote).toBeUndefined();
+  });
+});
+
+describe('buildBrowseSetCardPriceContext', () => {
+  it('formats browse cards with the shared Vanaf price label', () => {
+    expect(
+      buildBrowseSetCardPriceContext({
+        checkedAt: '2026-05-31T09:00:00.000Z',
+        merchantName: 'Brickshop',
+        priceMinor: 6_400,
+      }),
+    ).toMatchObject({
+      coverageLabel: 'Actuele prijs gevonden',
+      currentPrice: 'Vanaf € 64,00',
+      decisionLabel: 'Beste prijs',
+      merchantLabel: 'Laagst bij Brickshop',
+      reviewedLabel: expect.stringContaining('Nagekeken'),
+    });
+  });
+
+  it('keeps no-price browse cards on their fallback card state', () => {
+    expect(
+      buildBrowseSetCardPriceContext({
+        priceMinor: 0,
+      }),
+    ).toBeUndefined();
   });
 });

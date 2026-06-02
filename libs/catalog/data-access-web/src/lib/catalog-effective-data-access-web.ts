@@ -3632,10 +3632,24 @@ export type CatalogDealPageSortKey =
   | 'recommended'
   | 'discount-desc'
   | 'price-per-brick'
-  | 'under-50';
+  | 'under-50'
+  | 'best-price-per-brick'
+  | 'largest-discount'
+  | 'under-20'
+  | 'premium-deals'
+  | 'new-deals';
+
+export interface CatalogDealPageSnapshotStats {
+  activeDealCount: number;
+  averageDiscountPercent?: number;
+  averagePricePerBrickMinor?: number;
+  highestDiscountPercent?: number;
+  lowestPricePerBrickMinor?: number;
+}
 
 export interface CatalogDealPageSnapshotResult {
   snapshotGeneratedAt?: string | null;
+  stats: CatalogDealPageSnapshotStats;
   setCards: readonly (CatalogHomepageSetCard & {
     priceContext?: {
       coverageLabel: string;
@@ -3654,14 +3668,24 @@ export interface CatalogDealPageSnapshotResult {
   totalSetCount: number;
 }
 
-function normalizeCatalogDealPageSnapshotItems(
-  itemsJson: unknown,
-): CatalogDealPageSnapshotResult['setCards'] {
-  if (!Array.isArray(itemsJson)) {
+function readCatalogDealPageSnapshotItemsJson(itemsJson: unknown): unknown[] {
+  if (Array.isArray(itemsJson)) {
+    return itemsJson;
+  }
+
+  if (!itemsJson || typeof itemsJson !== 'object' || Array.isArray(itemsJson)) {
     return [];
   }
 
-  return itemsJson.filter(
+  const candidate = itemsJson as { items?: unknown };
+
+  return Array.isArray(candidate.items) ? candidate.items : [];
+}
+
+function normalizeCatalogDealPageSnapshotItems(
+  itemsJson: unknown,
+): CatalogDealPageSnapshotResult['setCards'] {
+  return readCatalogDealPageSnapshotItemsJson(itemsJson).filter(
     (item): item is CatalogDealPageSnapshotResult['setCards'][number] => {
       if (!item || typeof item !== 'object' || Array.isArray(item)) {
         return false;
@@ -3679,6 +3703,45 @@ function normalizeCatalogDealPageSnapshotItems(
       );
     },
   );
+}
+
+function normalizeCatalogDealPageSnapshotStats(
+  itemsJson: unknown,
+): CatalogDealPageSnapshotStats {
+  if (!itemsJson || typeof itemsJson !== 'object' || Array.isArray(itemsJson)) {
+    return {
+      activeDealCount: normalizeCatalogDealPageSnapshotItems(itemsJson).length,
+    };
+  }
+
+  const stats = (itemsJson as { stats?: unknown }).stats;
+
+  if (!stats || typeof stats !== 'object' || Array.isArray(stats)) {
+    return {
+      activeDealCount: normalizeCatalogDealPageSnapshotItems(itemsJson).length,
+    };
+  }
+
+  const candidate = stats as Partial<CatalogDealPageSnapshotStats>;
+
+  return {
+    activeDealCount:
+      typeof candidate.activeDealCount === 'number'
+        ? candidate.activeDealCount
+        : normalizeCatalogDealPageSnapshotItems(itemsJson).length,
+    ...(typeof candidate.averageDiscountPercent === 'number'
+      ? { averageDiscountPercent: candidate.averageDiscountPercent }
+      : {}),
+    ...(typeof candidate.averagePricePerBrickMinor === 'number'
+      ? { averagePricePerBrickMinor: candidate.averagePricePerBrickMinor }
+      : {}),
+    ...(typeof candidate.highestDiscountPercent === 'number'
+      ? { highestDiscountPercent: candidate.highestDiscountPercent }
+      : {}),
+    ...(typeof candidate.lowestPricePerBrickMinor === 'number'
+      ? { lowestPricePerBrickMinor: candidate.lowestPricePerBrickMinor }
+      : {}),
+  };
 }
 
 export async function getCatalogDealPageSnapshot({
@@ -3735,6 +3798,7 @@ export async function getCatalogDealPageSnapshot({
 
   return {
     snapshotGeneratedAt: snapshot.generated_at,
+    stats: normalizeCatalogDealPageSnapshotStats(snapshot.items_json),
     setCards: normalizeCatalogDealPageSnapshotItems(snapshot.items_json),
     totalSetCount: snapshot.total_count,
   };

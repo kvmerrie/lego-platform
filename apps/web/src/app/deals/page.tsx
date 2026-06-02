@@ -19,7 +19,6 @@ import {
   cacheTags,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { ActionLink, SectionHeading } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { getCachedPublicBrowsePageData } from '../lib/public-browse-page-cache';
 import {
@@ -31,37 +30,129 @@ import styles from './deals-page.module.css';
 export const revalidate = false;
 
 const DEALS_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
-const dealsMetadataTitle = 'LEGO deals en actuele prijzen';
-const dealsMetadataDescription =
-  'Bekijk LEGO-sets met actuele prijzen, kooplinks en prijsbewegingen bij Brickhunt.';
 
-const dealSortLabels: Record<CatalogDealPageSortKey, string> = {
-  'discount-desc': 'Grootste korting',
-  'price-per-brick': 'Prijs per steen',
-  recommended: 'Beste deals',
-  'under-50': 'Onder €50',
-};
+interface DealSortViewConfig {
+  description: string;
+  label: string;
+  metadataDescription: string;
+  metadataTitle: string;
+  sortKey: CatalogDealPageSortKey;
+  title: string;
+}
 
-const dealSortKeys: readonly CatalogDealPageSortKey[] = [
+const dealSortViewConfigs = [
+  {
+    description:
+      'Begin hier als je snel wilt zien welke LEGO-set vandaag echt aantrekkelijk geprijsd is.',
+    label: 'Aanraders',
+    metadataDescription:
+      'Bekijk actuele LEGO deals met sterke korting, goede prijs per steen en betrouwbare kooplinks.',
+    metadataTitle: 'LEGO deals van vandaag',
+    sortKey: 'recommended',
+    title: 'LEGO deals die nu de moeite waard zijn',
+  },
+  {
+    description:
+      'Kijk hier als je vooral veel euro’s onder de LEGO-prijs wilt zitten.',
+    label: 'Grootste kortingen',
+    metadataDescription:
+      'Vind LEGO sets met de grootste korting ten opzichte van LEGO, inclusief actuele prijs en kooplink.',
+    metadataTitle: 'LEGO deals met de grootste korting',
+    sortKey: 'discount-desc',
+    title: 'De grootste LEGO kortingen',
+  },
+  {
+    description:
+      'Handig voor grote builds, displaysets en dozen waar je veel bouwtijd uit haalt.',
+    label: 'Prijs per steen',
+    metadataDescription:
+      'Bekijk LEGO aanbiedingen gesorteerd op de beste prijs per steen, met actuele winkelprijzen.',
+    metadataTitle: 'Beste LEGO prijs per steen',
+    sortKey: 'price-per-brick',
+    title: 'De beste prijs per steen',
+  },
+  {
+    description:
+      'Goede cadeaus en compacte sets die niet meteen je hele budget pakken.',
+    label: 'Onder €50',
+    metadataDescription:
+      'Bekijk actuele LEGO deals onder 50 euro, met kooplinks en prijscontext.',
+    metadataTitle: 'LEGO deals onder 50 euro',
+    sortKey: 'under-50',
+    title: 'LEGO deals onder €50',
+  },
+  {
+    description:
+      'Verse koopmomenten uit de laatste snapshots, zonder live winkelwerk tijdens het laden.',
+    label: 'Nieuwe deals',
+    metadataDescription:
+      'Bekijk nieuwe LEGO deals uit de laatste prijssnapshot, met actuele winkelprijzen.',
+    metadataTitle: 'Nieuwe LEGO deals',
+    sortKey: 'new-deals',
+    title: 'Nieuwe LEGO deals',
+  },
+  {
+    description:
+      'Kleine dozen, leuke figuren en slimme extra’s voor een scherp bedrag.',
+    label: 'Onder €20',
+    metadataDescription:
+      'Bekijk actuele LEGO deals onder 20 euro, met prijscontext en kooplinks.',
+    metadataTitle: 'LEGO deals onder 20 euro',
+    sortKey: 'under-20',
+    title: 'LEGO deals onder €20',
+  },
+  {
+    description:
+      'Grote dozen waar de korting pas echt telt: Icons, Technic en displaysets.',
+    label: 'Premium deals',
+    metadataDescription:
+      'Bekijk premium LEGO deals boven 100 euro met sterke korting of opvallend lage prijs per steen.',
+    metadataTitle: 'Premium LEGO deals',
+    sortKey: 'premium-deals',
+    title: 'Premium LEGO deals',
+  },
+  {
+    description:
+      'Dezelfde dealgroep als prijs per steen, klaar voor vaste categorie-links.',
+    label: 'Beste prijs per steen',
+    metadataDescription:
+      'Bekijk LEGO deals met de beste prijs per steen uit de actuele deal-snapshot.',
+    metadataTitle: 'Beste LEGO prijs per steen',
+    sortKey: 'best-price-per-brick',
+    title: 'Beste LEGO prijs per steen',
+  },
+  {
+    description:
+      'Dezelfde dealgroep als grootste kortingen, klaar voor vaste categorie-links.',
+    label: 'Grootste korting',
+    metadataDescription:
+      'Bekijk LEGO deals met de grootste korting uit de actuele deal-snapshot.',
+    metadataTitle: 'Grootste LEGO korting',
+    sortKey: 'largest-discount',
+    title: 'Grootste LEGO korting',
+  },
+] as const satisfies readonly DealSortViewConfig[];
+
+const dealSortKeys = dealSortViewConfigs.map(
+  (config) => config.sortKey,
+) as readonly CatalogDealPageSortKey[];
+
+const primaryDealSortKeys: readonly CatalogDealPageSortKey[] = [
   'recommended',
   'discount-desc',
   'price-per-brick',
   'under-50',
+  'new-deals',
 ];
 
-export const metadata: Metadata = {
-  title: dealsMetadataTitle,
-  description: dealsMetadataDescription,
-  alternates: {
-    canonical: buildCanonicalUrl(buildWebPath(webPathnames.deals)),
-  },
-  openGraph: {
-    title: dealsMetadataTitle,
-    description: dealsMetadataDescription,
-    type: 'website',
-    url: buildCanonicalUrl(buildWebPath(webPathnames.deals)),
-  },
-};
+const secondaryDealSortKeys: readonly CatalogDealPageSortKey[] = [
+  'under-20',
+  'premium-deals',
+];
+
+const dealSortConfigByKey = new Map(
+  dealSortViewConfigs.map((config) => [config.sortKey, config]),
+);
 
 function readSearchParam(
   value: string | string[] | undefined,
@@ -81,10 +172,65 @@ function normalizeDealSortKey(value?: string): CatalogDealPageSortKey {
     : 'recommended';
 }
 
+function getDealSortConfig(sortKey: CatalogDealPageSortKey) {
+  return (
+    dealSortConfigByKey.get(sortKey) ??
+    dealSortConfigByKey.get('recommended') ??
+    dealSortViewConfigs[0]
+  );
+}
+
 function getDealSortHref(sortKey: CatalogDealPageSortKey): string {
   return sortKey === 'recommended'
     ? webPathnames.deals
     : `${webPathnames.deals}?sort=${sortKey}`;
+}
+
+function formatDealStatNumber(value: number): string {
+  return new Intl.NumberFormat('nl-NL').format(value);
+}
+
+function formatDealPercent(value?: number): string {
+  return typeof value === 'number' ? `${value}%` : 'n.b.';
+}
+
+function formatPricePerBrick(value?: number): string {
+  return typeof value === 'number' ? `${value} cent` : 'n.b.';
+}
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    sort?: string | string[];
+  }>;
+}): Promise<Metadata> {
+  const resolvedSearchParams = await searchParams;
+  const sortKey = normalizeDealSortKey(
+    readSearchParam(resolvedSearchParams?.sort),
+  );
+  const config = getDealSortConfig(sortKey);
+  const canonicalPath =
+    sortKey === 'recommended'
+      ? buildWebPath(webPathnames.deals)
+      : `${buildWebPath(webPathnames.deals)}?sort=${sortKey}`;
+  const canonicalUrl = buildCanonicalUrl(canonicalPath, {
+    allowedSearchParams: ['sort'],
+  });
+
+  return {
+    title: config.metadataTitle,
+    description: config.metadataDescription,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: config.metadataTitle,
+      description: config.metadataDescription,
+      type: 'website',
+      url: canonicalUrl,
+    },
+  };
 }
 
 async function getCachedDealPageSnapshot({
@@ -142,6 +288,7 @@ export default async function DealsPage({
   const sortKey = normalizeDealSortKey(
     readSearchParam(resolvedSearchParams?.sort),
   );
+  const sortConfig = getDealSortConfig(sortKey);
   const currentPage = normalizeDealPageNumber(
     readSearchParam(resolvedSearchParams?.page),
   );
@@ -167,55 +314,89 @@ export default async function DealsPage({
   return (
     <ShellWeb>
       <main className={styles.page}>
-        <section className={styles.intro}>
-          <SectionHeading
-            description="Alleen sets met actuele prijzen en kooplinks. Hier draait het om wat je vandaag echt kunt kopen."
-            eyebrow="Deals"
-            title="Deals die nu iets waard zijn"
-            titleAs="h1"
-          />
-          <p className={styles.introMeta}>
-            {dealsPage.totalSetCount} sets met actuele koopdata
-          </p>
-          <ul className={styles.merchandisingGroups} aria-label="Dealgroepen">
-            <li className={styles.merchandisingGroup}>Beste deals</li>
-            <li className={styles.merchandisingGroup}>Grootste korting</li>
-            <li className={styles.merchandisingGroup}>Prijs per steen</li>
-            <li className={styles.merchandisingGroup}>Onder €50</li>
-          </ul>
-          <ActionLink href="#deals" size="hero" tone="accent">
-            Bekijk de deals
-          </ActionLink>
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <p className={styles.heroEyebrow}>LEGO deals</p>
+            <h1 className={styles.heroTitle}>{sortConfig.title}</h1>
+            <p className={styles.heroDescription}>{sortConfig.description}</p>
+          </div>
+
+          <dl className={styles.dealStats} aria-label="Dealstatistieken">
+            <div className={styles.dealStat}>
+              <dt>Actieve deals</dt>
+              <dd>{formatDealStatNumber(dealsPage.stats.activeDealCount)}</dd>
+            </div>
+            <div className={styles.dealStat}>
+              <dt>Gemiddelde korting</dt>
+              <dd>
+                {formatDealPercent(dealsPage.stats.averageDiscountPercent)}
+              </dd>
+            </div>
+            <div className={styles.dealStat}>
+              <dt>Grootste korting</dt>
+              <dd>
+                {formatDealPercent(dealsPage.stats.highestDiscountPercent)}
+              </dd>
+            </div>
+            <div className={styles.dealStat}>
+              <dt>Laagste prijs per steen</dt>
+              <dd>
+                {formatPricePerBrick(dealsPage.stats.lowestPricePerBrickMinor)}
+              </dd>
+            </div>
+          </dl>
+
+          <nav aria-label="Deal categorieen" className={styles.dealNav}>
+            {primaryDealSortKeys.map((dealSortKey) => {
+              const config = getDealSortConfig(dealSortKey);
+
+              return (
+                <a
+                  aria-current={dealSortKey === sortKey ? 'page' : undefined}
+                  className={styles.dealNavLink}
+                  href={getDealSortHref(dealSortKey)}
+                  key={dealSortKey}
+                >
+                  {config.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          <nav
+            aria-label="Extra deal categorieen"
+            className={styles.secondaryDealNav}
+          >
+            {secondaryDealSortKeys.map((dealSortKey) => {
+              const config = getDealSortConfig(dealSortKey);
+
+              return (
+                <a
+                  aria-current={dealSortKey === sortKey ? 'page' : undefined}
+                  className={styles.secondaryDealNavLink}
+                  href={getDealSortHref(dealSortKey)}
+                  key={dealSortKey}
+                >
+                  {config.label}
+                </a>
+              );
+            })}
+          </nav>
         </section>
 
         <CatalogSectionShell
           as="section"
           bodySpacing="relaxed"
           className={styles.browseSection}
-          description="Een vaste browsepagina uit de deal-snapshot. Geen live winkelrefresh tijdens het laden, wel actuele prijscontext uit de laatste commerce-sync."
+          description="Deze lijst komt uit de deal-snapshot. Geen live winkelrefresh tijdens het laden, wel actuele prijscontext uit de laatste commerce-sync."
           eyebrow="Dealbrowser"
           id="deals"
           padding="default"
           signal={`${dealsPage.totalSetCount} deals`}
           spacing="relaxed"
-          title={dealSortLabels[sortKey]}
+          title={sortConfig.label}
           titleAs="h2"
           tone="default"
-          utility={
-            <nav aria-label="Sorteer deals" className={styles.sortNav}>
-              {dealSortKeys.map((dealSortKey) => (
-                <a
-                  aria-current={dealSortKey === sortKey ? 'true' : undefined}
-                  className={styles.sortLink}
-                  href={getDealSortHref(dealSortKey)}
-                  key={dealSortKey}
-                >
-                  {dealSortLabels[dealSortKey]}
-                </a>
-              ))}
-            </nav>
-          }
-          utilityPlacement="below-heading"
         >
           {dealsPage.setCards.length ? (
             <>

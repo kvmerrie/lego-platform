@@ -214,6 +214,7 @@ describe('CatalogSetCardRail', () => {
           eyebrow="Hierna kijken"
           itemCount={3}
           title="Vergelijkbare LEGO sets"
+          tone="default"
         />,
       );
     });
@@ -221,8 +222,69 @@ describe('CatalogSetCardRail', () => {
     expect(container.textContent).toContain('Vergelijkbare LEGO sets');
     expect(container.textContent).toContain('We zoeken vergelijkbare sets.');
     expect(
+      container.querySelector('[class*="sectionShellDefault"]'),
+    ).not.toBeNull();
+    expect(
       container.querySelectorAll('[class*="setCardRailSkeletonCard"]'),
     ).toHaveLength(3);
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const skeletonSectionRule =
+      css.match(/\.setCardRailSkeletonSection \{[^}]+\}/u)?.[0] ?? '';
+    const inverseSkeletonSectionRule =
+      css.match(
+        /\.sectionShellInverse\.setCardRailSkeletonSection \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const skeletonCardRule =
+      css.match(/\.setCardRailSkeletonCard \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(skeletonSectionRule).toContain(
+      '--rail-skeleton-card-background: var(--lego-surface-default);',
+    );
+    expect(skeletonSectionRule).toContain(
+      '--rail-skeleton-card-border: var(--lego-border-subtle);',
+    );
+    expect(skeletonSectionRule).toContain(
+      '--rail-skeleton-card-min-block-size: clamp(27rem, 58vw, 31.25rem);',
+    );
+    expect(inverseSkeletonSectionRule).toContain(
+      '--rail-skeleton-card-background: color-mix(',
+    );
+    expect(inverseSkeletonSectionRule).toContain(
+      '--rail-skeleton-card-border: color-mix(',
+    );
+    expect(skeletonCardRule).toContain(
+      'background: var(--rail-skeleton-card-background);',
+    );
+    expect(skeletonCardRule).toContain(
+      'border: var(--lego-border-width-1) solid var(--rail-skeleton-card-border);',
+    );
+    expect(skeletonCardRule).toContain(
+      'min-block-size: var(--rail-skeleton-card-min-block-size);',
+    );
+  });
+
+  it('keeps inverse skeleton rails on the inverse section treatment', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRailSkeletonSection
+          ariaLabel="Donkere rail laden"
+          itemCount={2}
+          title="Donkere rail"
+          tone="inverse"
+        />,
+      );
+    });
+
+    expect(
+      container.querySelector('[class*="sectionShellInverse"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[class*="sectionShellDefault"]'),
+    ).toBeNull();
   });
 
   it('renders the custom desktop scrollbar layer when the native rail overflows', () => {
@@ -696,9 +758,8 @@ describe('CatalogSetCardRail', () => {
     );
     expect(css).not.toContain('--article-theme-surface-text: inherit;');
     expect(css).toContain('.setCardRailSectionThemed {');
-    expect(css).toContain(
-      '--rail-card-border: color-mix(\n      in srgb,\n      var(--article-theme-surface-text, currentColor) 16%,',
-    );
+    expect(css).toContain('--rail-card-border: transparent;');
+    expect(css).toContain('--rail-card-border-hover: transparent;');
     expect(css).toContain(
       '--rail-scrollbar-thumb-hover: color-mix(\n      in srgb,\n      var(--article-theme-surface-text, currentColor) 48%,',
     );
@@ -707,10 +768,187 @@ describe('CatalogSetCardRail', () => {
     expect(css).toContain('background: var(--rail-scrollbar-thumb-hover);');
     expect(css).toContain('.setCardRailSectionThemed .setCard');
     expect(css).toContain('.setCardRailSectionThemed .setCardLink');
+    expect(css).toContain('--catalog-card-hover-border-color: transparent;');
+    expect(css).toContain('--catalog-card-hover-outline-color: transparent;');
     expect(css).toContain('color: var(--lego-text);');
     expect(css).toContain(
       '--lego-text-muted: var(--catalog-card-muted-text, #5d677c);',
     );
+  });
+
+  it('keeps neutral rail card borders and removes them only on rich rail backgrounds', () => {
+    act(() => {
+      root.render(
+        <>
+          <CatalogSetCardRailSection
+            ariaLabel="White rail"
+            items={[
+              {
+                id: '10316',
+                setSummary: {
+                  id: '10316',
+                  slug: 'rivendell-10316',
+                  name: 'Rivendell',
+                  theme: 'Icons',
+                  releaseYear: 2023,
+                  pieces: 6181,
+                  imageUrl: 'https://images.example/rivendell.jpg',
+                },
+              },
+            ]}
+            title="White rail"
+            tone="default"
+            variant="compact"
+          />
+          <CatalogSetCardRailSection
+            ariaLabel="Muted rail"
+            items={[
+              {
+                id: '21060',
+                setSummary: {
+                  id: '21060',
+                  slug: 'himeji-castle-21060',
+                  name: 'Himeji Castle',
+                  theme: 'Architecture',
+                  releaseYear: 2023,
+                  pieces: 2125,
+                  imageUrl: 'https://images.example/himeji.jpg',
+                },
+              },
+            ]}
+            title="Muted rail"
+            tone="muted"
+            variant="compact"
+          />
+          <CatalogSetCardRailSection
+            ariaLabel="Inverse rail"
+            items={[
+              {
+                id: '75313',
+                setSummary: {
+                  id: '75313',
+                  slug: 'at-at-75313',
+                  name: 'AT-AT',
+                  theme: 'Star Wars',
+                  releaseYear: 2021,
+                  pieces: 6785,
+                  imageUrl: 'https://images.example/atat.jpg',
+                },
+              },
+            ]}
+            title="Inverse rail"
+            tone="inverse"
+            variant="compact"
+          />
+          <CatalogSetCardRailSection
+            ariaLabel="Themed rail"
+            items={[
+              {
+                id: '10305',
+                setSummary: {
+                  id: '10305',
+                  slug: 'lion-knights-castle-10305',
+                  name: "Lion Knights' Castle",
+                  theme: 'Icons',
+                  releaseYear: 2022,
+                  pieces: 4514,
+                  imageUrl: 'https://images.example/castle.jpg',
+                },
+              },
+            ]}
+            surfaceVariant="themed"
+            title="Themed rail"
+            variant="compact"
+          />
+        </>,
+      );
+    });
+
+    expect(
+      container.querySelector('[class*="sectionShellDefault"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[class*="sectionShellMuted"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelector('[class*="sectionShellInverse"]'),
+    ).not.toBeNull();
+    expect(
+      container.querySelectorAll('[class*="setCardRailTrack"]').length,
+    ).toBe(4);
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const themePageCss = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-theme-page/src/lib/catalog-feature-theme-page.module.css',
+      ),
+      'utf-8',
+    );
+    const themePageSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-theme-page/src/lib/catalog-feature-theme-page.tsx',
+      ),
+      'utf-8',
+    );
+    const railCardRule =
+      css.match(/\.setCardRailTrack > \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const themedRailCardRule =
+      css.match(/\.setCardRailSectionThemed \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const inverseRailCardRule =
+      css.match(
+        /\.sectionShellInverse \.setCardRailTrack > \.setCard \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const railHoverRule =
+      css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
+    const focusRule =
+      css.match(/\n  \.setCard:focus-within \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(railCardRule).not.toContain('--rail-card-border: transparent;');
+    expect(railCardRule).not.toContain(
+      '--catalog-card-hover-border-color: transparent;',
+    );
+    expect(css).toContain('--rail-card-border: var(--lego-border-subtle);');
+    expect(css).toContain('.sectionShellMuted');
+    expect(themedRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(themedRailCardRule).toContain(
+      '--catalog-card-hover-border-color: transparent;',
+    );
+    expect(themedRailCardRule).toContain(
+      '--catalog-card-hover-outline-color: transparent;',
+    );
+    expect(inverseRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(inverseRailCardRule).toContain(
+      '--catalog-card-hover-border-color: transparent;',
+    );
+    expect(inverseRailCardRule).toContain(
+      '--catalog-card-hover-outline-color: transparent;',
+    );
+    expect(railCardRule).toContain('scroll-snap-align: start;');
+    expect(themedRailCardRule).toContain(
+      '--catalog-card-interaction-border-color: color-mix(',
+    );
+    expect(inverseRailCardRule).toContain(
+      '--catalog-card-interaction-outline-color: color-mix(',
+    );
+    expect(railHoverRule).toContain(
+      'border-color: var(--catalog-card-hover-border-color);',
+    );
+    expect(railHoverRule).toContain(
+      'box-shadow: inset 0 0 0 1px var(--catalog-card-hover-outline-color);',
+    );
+    expect(focusRule).toContain(
+      'border-color: var(--catalog-card-interaction-border-color);',
+    );
+    expect(themePageCss).toContain('.dealSection');
+    expect(themePageSource).toContain('className={styles.dealSection}');
+    expect(themePageSource).not.toContain('surfaceVariant="themed"');
+    expect(themePageSource).toContain('tone="default"');
+    expect(themePageSource).toContain('<CatalogSetCardRailSection');
   });
 
   it('keeps native rail panning available while custom touch drag stays vertical-safe', () => {

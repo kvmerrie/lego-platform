@@ -35,6 +35,7 @@ import {
   PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
   getSnapshotPageHealth,
 } from '../lib/snapshot-page-health';
+import { buildBrowseSetCardPriceContext } from '../lib/current-set-card-price-context';
 
 export const dynamicParams = false;
 export const revalidate = 21_600;
@@ -75,13 +76,6 @@ function buildCollectionCanonicalPath({
   return page > 1
     ? `${config.canonicalPath}?page=${page}`
     : config.canonicalPath;
-}
-
-function formatCollectionPrice(minorUnits: number): string {
-  return new Intl.NumberFormat('nl-NL', {
-    currency: 'EUR',
-    style: 'currency',
-  }).format(minorUnits / 100);
 }
 
 function toSerializableCollectionLandingPageResult(
@@ -346,17 +340,15 @@ export default async function CollectionLandingPage({
   ];
   const setCards = collectionPage.setCards.map((setCard) => {
     const bestPriceMinor = collectionPage.bestPriceMinorBySetId[setCard.id];
+    const priceContext = buildBrowseSetCardPriceContext({
+      priceMinor: bestPriceMinor,
+    });
 
     return {
       ...setCard,
-      ...(bestPriceMinor
+      ...(priceContext
         ? {
-            priceContext: {
-              coverageLabel: 'Actuele prijs gevonden',
-              currentPrice: `Vanaf ${formatCollectionPrice(bestPriceMinor)}`,
-              merchantLabel: 'Laagste bekende prijs',
-              reviewedLabel: 'Server-side bijgewerkt',
-            },
+            priceContext,
           }
         : {}),
     };

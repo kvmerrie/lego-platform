@@ -35,7 +35,10 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
-import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
+import {
+  buildBrowseSetCardPriceContextBySetId,
+  buildCurrentSetCardPriceContextBySetId,
+} from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import { getCachedPublicBrowsePageData } from '../../lib/public-browse-page-cache';
 import {
@@ -430,6 +433,58 @@ async function loadThemeDealSetCards({
   });
 }
 
+async function withThemeBrowsePriceContexts({
+  slug,
+  themePage,
+}: {
+  slug: string;
+  themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
+}): Promise<
+  NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>
+> {
+  if (!themePage.setCards.length) {
+    return themePage;
+  }
+
+  const currentOfferSummaryBySetId = await measureThemePageFetch({
+    label: 'browse-current-offers',
+    slug,
+    load: () =>
+      listCatalogCurrentOfferSummariesBySetIds({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: [
+            cacheTags.theme(slug),
+            cacheTags.prices(),
+            ...themePage.setCards.map((setCard) => cacheTags.set(setCard.id)),
+          ],
+        },
+        liveFallbackSetIdLimit: 0,
+        setIds: themePage.setCards.map((setCard) => setCard.id),
+      }),
+  });
+  const priceContextBySetId = buildBrowseSetCardPriceContextBySetId({
+    currentOfferSummaryBySetId,
+    setCards: themePage.setCards,
+  });
+
+  if (!priceContextBySetId.size) {
+    return themePage;
+  }
+
+  return {
+    ...themePage,
+    setCards: themePage.setCards.map((setCard) => {
+      const priceContext = priceContextBySetId.get(setCard.id);
+
+      return {
+        ...setCard,
+        ...(priceContext ? { priceContext } : {}),
+      };
+    }),
+  };
+}
+
 export async function generateStaticParams() {
   return (await listCatalogThemePageSlugs()).map((slug) => ({
     slug,
@@ -506,9 +561,13 @@ export default async function ThemePage({
     notFound();
   }
 
+  const pricedThemePage = await withThemeBrowsePriceContexts({
+    slug,
+    themePage,
+  });
   const canonicalUrl = buildThemeCanonicalUrl(slug);
-  const title = `Brickhunt – ${themePage.themeSnapshot.name} LEGO sets`;
-  const description = `Ontdek ${themePage.themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${themePage.themeSnapshot.momentum}`;
+  const title = `Brickhunt – ${pricedThemePage.themeSnapshot.name} LEGO sets`;
+  const description = `Ontdek ${pricedThemePage.themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${pricedThemePage.themeSnapshot.momentum}`;
   const jsonLd = [
     buildCollectionPageJsonLd({
       description,
@@ -516,7 +575,7 @@ export default async function ThemePage({
       url: canonicalUrl,
     }),
     buildThemeBreadcrumbJsonLd({
-      themeName: themePage.themeSnapshot.name,
+      themeName: pricedThemePage.themeSnapshot.name,
       themeUrl: canonicalUrl,
     }),
   ];
@@ -525,9 +584,10 @@ export default async function ThemePage({
     details: {
       currentPage,
       lcpImageCandidate:
-        themePage.visual?.imageUrl ?? themePage.setCards[0]?.imageUrl,
-      setCardCount: themePage.setCards.length,
-      totalSetCount: themePage.themeSnapshot.setCount,
+        pricedThemePage.visual?.imageUrl ??
+        pricedThemePage.setCards[0]?.imageUrl,
+      setCardCount: pricedThemePage.setCards.length,
+      totalSetCount: pricedThemePage.themeSnapshot.setCount,
     },
     durationMs: Date.now() - serverRenderStartedAt,
     label: 'server-render-total',
@@ -549,7 +609,7 @@ export default async function ThemePage({
                 eyebrow="Nu interessant"
                 itemCount={5}
                 title={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name}`}
-                tone="inverse"
+                tone="default"
               />
             }
           >
@@ -565,7 +625,7 @@ export default async function ThemePage({
             />
           </Suspense>
         }
-        themePage={themePage}
+        themePage={pricedThemePage}
       />
     </ShellWeb>
   );

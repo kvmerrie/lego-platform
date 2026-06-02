@@ -103,6 +103,17 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).not.toContain(
       'Hier vergelijk je sets binnen een lijn in plaats van losse winkelhits.',
     );
+    const dealSectionMarkup = markup.slice(
+      Math.max(0, markup.indexOf('Hier wil je nu als eerste kijken in') - 500),
+      markup.indexOf('Kies je set'),
+    );
+    expect(dealSectionMarkup).toContain('sectionShellDefault');
+    expect(dealSectionMarkup).not.toContain('sectionShellInverse');
+    expect(dealSectionMarkup).not.toContain('setCardRailSectionThemed');
+    expect(dealSectionMarkup).toContain('sectionHeaderTitle');
+    expect(dealSectionMarkup).toContain('sectionHeaderDescription');
+    expect(dealSectionMarkup).toContain('sectionHeaderSignal');
+    expect(dealSectionMarkup).toContain('setCard');
     expect(markup).toContain('Kies je set');
     expect(markup).toContain('Alle');
     expect(markup).not.toContain('Scroll All Marvel sets forward');

@@ -1,9 +1,13 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const pageMocks = vi.hoisted(() => ({
   catalogFeatureSetList: vi.fn(),
+  catalogFeatureThemeList: vi.fn(),
+  catalogFeatureThemeSpotlight: vi.fn(),
   getHomepagePage: vi.fn(),
   getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
   getCatalogHomepageDealQualityDiagnostics: vi.fn(),
@@ -61,13 +65,51 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: (props: unknown) => {
     pageMocks.catalogFeatureSetList(props);
-    return null;
+    const typedProps = props as {
+      sectionId?: string;
+      surfaceVariant?: string;
+      title?: string;
+      tone?: string;
+    };
+
+    return React.createElement(
+      'section',
+      {
+        'data-homepage-set-list': typedProps.sectionId ?? typedProps.title,
+        'data-surface-variant': typedProps.surfaceVariant ?? 'default',
+        'data-tone': typedProps.tone ?? 'muted',
+      },
+      typedProps.title,
+    );
   },
 }));
 
 vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
-  CatalogFeatureThemeList: () => null,
-  CatalogFeatureThemeSpotlight: () => null,
+  CatalogFeatureThemeList: (props: unknown) => {
+    pageMocks.catalogFeatureThemeList(props);
+    const typedProps = props as { tone?: string };
+
+    return React.createElement(
+      'section',
+      {
+        'data-homepage-theme-list': 'explore-themes',
+        'data-tone': typedProps.tone ?? 'default',
+      },
+      'Fantasy, Star Wars of strak design?',
+    );
+  },
+  CatalogFeatureThemeSpotlight: (props: unknown) => {
+    pageMocks.catalogFeatureThemeSpotlight(props);
+
+    return React.createElement(
+      'section',
+      {
+        'data-homepage-theme-spotlight': 'theme-spotlight',
+        'data-tone': 'plain',
+      },
+      'Botanicals, kunst of modulaire straten?',
+    );
+  },
 }));
 
 vi.mock('@lego-platform/content/data-access', () => ({
@@ -238,6 +280,27 @@ describe('home metadata', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).not.toContain('sectionShellInverse');
+    expect(markup).toContain(
+      'data-homepage-theme-list="explore-themes" data-tone="default"',
+    );
+    expect(markup).toContain('Fantasy, Star Wars of strak design?');
+    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
+    expect(markup).toContain(
+      'data-homepage-theme-spotlight="theme-spotlight" data-tone="plain"',
+    );
+    expect(markup).toContain('Waarom Brickhunt');
+    const whyBrickhuntMarkup = markup.slice(
+      Math.max(0, markup.indexOf('Waarom Brickhunt') - 500),
+      markup.indexOf('Waarom Brickhunt') + 500,
+    );
+    expect(whyBrickhuntMarkup).toContain('surfaceMuted');
+    const discoveryMarkup = markup.slice(
+      Math.max(0, markup.indexOf('Ontdek LEGO op jouw manier') - 500),
+      markup.indexOf('data-visual-tile="new-sets"'),
+    );
+    expect(discoveryMarkup).toContain('sectionShellDefault');
+    expect(discoveryMarkup).not.toContain('sectionHeaderInverse');
     expect(markup).toContain('data-visual-tile="new-sets"');
     expect(markup).toContain('--theme-surface:#3aaee8');
     expect(markup).toContain('--theme-surface:#08636f');
@@ -298,6 +361,45 @@ describe('home metadata', () => {
     expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Nu te vergelijken',
+        tone: 'default',
+      }),
+    );
+    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Populair om te volgen',
+        tone: 'default',
+      }),
+    );
+    const setListProps = pageMocks.catalogFeatureSetList.mock.calls.map(
+      ([props]) =>
+        props as {
+          sectionId?: string;
+          surfaceVariant?: string;
+          title?: string;
+          tone?: string;
+        },
+    );
+    const normalRailSetListProps = setListProps.filter((props) =>
+      ['Nu te vergelijken', 'Populair om te volgen'].includes(
+        props.title ?? '',
+      ),
+    );
+    expect(normalRailSetListProps).toEqual([
+      expect.objectContaining({
+        title: 'Nu te vergelijken',
+        tone: 'default',
+      }),
+      expect.objectContaining({
+        title: 'Populair om te volgen',
+        tone: 'default',
+      }),
+    ]);
+    expect(
+      normalRailSetListProps.map((props) => props.surfaceVariant ?? 'default'),
+    ).toEqual(['default', 'default']);
+    expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tone: 'default',
       }),
     );
     expect(pageMocks.getCachedPublicLandingPageData).toHaveBeenCalledWith(

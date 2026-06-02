@@ -130,9 +130,16 @@ vi.mock('@lego-platform/shared/config', () => ({
     prices: () => 'prices',
     sets: () => 'sets',
   },
+  getDefaultFormattingLocale: () => 'nl-NL',
+  isCommerceCommercialUnitComparableForDeals: () => true,
   platformConfig: {
     productName: 'Brickhunt',
   },
+  resolvePublicMerchantDisplayName: ({
+    merchantName,
+  }: {
+    merchantName?: string;
+  }) => merchantName ?? 'winkel',
   webPathnames: {
     home: '/',
   },
@@ -331,6 +338,46 @@ describe('collection landing page route', () => {
         }
       ).config,
     ).not.toHaveProperty('visual');
+  });
+
+  it('keeps collection cards without snapshot price data on the current fallback state', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPage.mockResolvedValue({
+      bestPriceMinorBySetId: new Map(),
+      setCards: [
+        {
+          id: '10307',
+          imageUrl: 'https://cdn.example.com/10307.jpg',
+          name: 'Eiffeltoren',
+          pieces: 10001,
+          releaseYear: 2022,
+          slug: 'eiffel-tower-10307',
+          theme: 'Icons',
+        },
+      ],
+      totalSetCount: 1,
+    });
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-sets-onder-100-euro',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [
+          expect.not.objectContaining({
+            priceContext: expect.anything(),
+          }),
+        ],
+      }),
+    );
   });
 
   it('reads phase 1 collection pages from collection_page_snapshots without runtime candidate building', async () => {

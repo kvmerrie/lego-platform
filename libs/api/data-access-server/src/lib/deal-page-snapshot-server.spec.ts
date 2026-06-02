@@ -49,6 +49,8 @@ function createCommerceSnapshot(overrides: Record<string, unknown> = {}) {
 }
 
 function createSupabaseClient(rows: readonly Record<string, unknown>[]) {
+  const upsertSnapshots = vi.fn().mockResolvedValue({ error: null });
+
   return {
     from: vi.fn((table: string) => {
       if (table === 'commerce_current_offer_snapshots') {
@@ -70,12 +72,13 @@ function createSupabaseClient(rows: readonly Record<string, unknown>[]) {
 
       if (table === 'collection_page_snapshots') {
         return {
-          upsert: vi.fn().mockResolvedValue({ error: null }),
+          upsert: upsertSnapshots,
         };
       }
 
       throw new Error(`Unexpected table ${table}`);
     }),
+    upsertSnapshots,
   };
 }
 
@@ -101,7 +104,7 @@ describe('deal page snapshot server', () => {
       listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
         createCatalogSet({
           name: 'Expensive Small Set',
-          pieceCount: 100,
+          pieceCount: 300,
           setId: '10000',
           slug: 'expensive-small-set-10000',
         }),
@@ -134,6 +137,100 @@ describe('deal page snapshot server', () => {
     ]);
   });
 
+  test('builds the phase 2 deal categories from snapshot data', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Tiny Deal',
+          pieceCount: 220,
+          setId: 'under20',
+          slug: 'tiny-deal',
+        }),
+        createCatalogSet({
+          name: 'Premium Deal',
+          pieceCount: 2200,
+          primaryTheme: 'Icons',
+          setId: 'premium',
+          slug: 'premium-deal',
+        }),
+        createCatalogSet({
+          name: 'Fresh Deal',
+          pieceCount: 800,
+          primaryTheme: 'Star Wars',
+          setId: 'fresh',
+          slug: 'fresh-deal',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 1_999,
+          set_id: 'under20',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 14_000,
+          set_id: 'premium',
+        }),
+        createCommerceSnapshot({
+          best_checked_at: '2026-05-31T09:00:00.000Z',
+          best_price_minor: 6_000,
+          set_id: 'fresh',
+        }),
+      ]) as never,
+    });
+
+    expect(result.summaryBySortKey['best-price-per-brick']?.totalCount).toBe(3);
+    expect(result.summaryBySortKey['largest-discount']?.totalCount).toBe(3);
+    expect(result.summaryBySortKey['under-20']?.totalCount).toBe(1);
+    expect(result.summaryBySortKey['under-50']?.totalCount).toBe(1);
+    expect(result.summaryBySortKey['premium-deals']?.totalCount).toBe(1);
+    expect(result.summaryBySortKey['new-deals']?.totalCount).toBe(3);
+  });
+
+  test('largest-discount snapshots sort by discount percentage before savings', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue([
+          createCatalogSet({ setId: 'bigger-savings', slug: 'bigger-savings' }),
+          createCatalogSet({ setId: 'higher-percent', slug: 'higher-percent' }),
+        ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 15_000,
+          offers: [
+            {
+              availability: 'in_stock',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 30_000,
+            },
+          ],
+          set_id: 'bigger-savings',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 4_000,
+          offers: [
+            {
+              availability: 'in_stock',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 10_000,
+            },
+          ],
+          set_id: 'higher-percent',
+        }),
+      ]) as never,
+    });
+    const largestDiscountSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'largest-discount',
+    );
+
+    expect(largestDiscountSnapshot?.items.map((item) => item.id)).toEqual([
+      'higher-percent',
+      'bigger-savings',
+    ]);
+  });
+
   test('keeps useful recommended deals without a LEGO reference price', async () => {
     const result = await buildDealPageSnapshots({
       listCanonicalCatalogSetsFn: vi
@@ -159,6 +256,9 @@ describe('deal page snapshot server', () => {
     expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
       '10308',
     ]);
+    expect(recommendedSnapshot?.items[0]?.recommendedDealScore).toEqual(
+      expect.any(Number),
+    );
     expect(recommendedSnapshot?.items[0]?.savingsVsLegoMinor).toBeUndefined();
     expect(
       recommendedSnapshot?.items[0]?.priceContext.discountMetric,
@@ -166,6 +266,234 @@ describe('deal page snapshot server', () => {
     expect(recommendedSnapshot?.items[0]?.priceContext.decisionLabel).toBe(
       'Beste prijs',
     );
+  });
+
+  test('excludes zero-piece sets from recommended deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Unknown Piece Count Deal',
+          pieceCount: 0,
+          setId: 'zero',
+          slug: 'zero',
+        }),
+        createCatalogSet({
+          name: 'Known Piece Count Deal',
+          pieceCount: 1000,
+          setId: 'known',
+          slug: 'known',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({ set_id: 'zero' }),
+        createCommerceSnapshot({ set_id: 'known' }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+
+    expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
+      'known',
+    ]);
+  });
+
+  test('excludes sub-10-euro sets from recommended deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Cheap But Too Small',
+          pieceCount: 200,
+          setId: 'cheap',
+          slug: 'cheap',
+        }),
+        createCatalogSet({
+          name: 'Useful Deal',
+          pieceCount: 400,
+          setId: 'useful',
+          slug: 'useful',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 995,
+          set_id: 'cheap',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 2_000,
+          set_id: 'useful',
+        }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+
+    expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
+      'useful',
+    ]);
+  });
+
+  test('excludes polybags from price-per-brick deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'White Seaplane',
+          pieceCount: 220,
+          setId: '30736',
+          slug: 'white-seaplane',
+          sourceSetNumber: '30736-1',
+        }),
+        createCatalogSet({
+          name: 'Real Boxed Value Set',
+          pieceCount: 420,
+          setId: 'boxed',
+          slug: 'boxed',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 1_500,
+          set_id: '30736',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 2_000,
+          set_id: 'boxed',
+        }),
+      ]) as never,
+    });
+    const pricePerBrickSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'price-per-brick',
+    );
+
+    expect(pricePerBrickSnapshot?.items.map((item) => item.id)).toEqual([
+      'boxed',
+    ]);
+  });
+
+  test('excludes promotional sets from recommended and price-per-brick deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Promotional Gift',
+          pieceCount: 300,
+          setId: '40524',
+          slug: 'promotional-gift',
+          sourceSetNumber: '40524-1',
+        }),
+        createCatalogSet({
+          name: 'Regular Display Deal',
+          pieceCount: 900,
+          setId: 'regular',
+          slug: 'regular',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 2_000,
+          set_id: '40524',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 4_000,
+          set_id: 'regular',
+        }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+    const pricePerBrickSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'price-per-brick',
+    );
+
+    expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
+      'regular',
+    ]);
+    expect(pricePerBrickSnapshot?.items.map((item) => item.id)).toEqual([
+      'regular',
+    ]);
+  });
+
+  test('excludes football highlight sets from recommended deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Cristiano Ronaldo - Football Highlights',
+          pieceCount: 490,
+          primaryTheme: 'Other',
+          setId: '43012',
+          slug: 'cristiano-football-highlights',
+        }),
+        createCatalogSet({
+          name: 'Porsche 911 GT3 RS Super Car',
+          pieceCount: 355,
+          primaryTheme: 'Speed Champions',
+          setId: 'speed',
+          slug: 'speed',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 2_000,
+          set_id: '43012',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 2_000,
+          set_id: 'speed',
+        }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+
+    expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
+      'speed',
+    ]);
+  });
+
+  test('keeps premium display sets in recommended and premium deals', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Neuschwanstein Castle',
+          pieceCount: 3455,
+          primaryTheme: 'Architecture',
+          setId: '21063',
+          slug: 'neuschwanstein-castle',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 21_899,
+          offers: [
+            {
+              availability: 'in_stock',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 26_999,
+            },
+          ],
+          set_id: '21063',
+        }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+    const premiumSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'premium-deals',
+    );
+
+    expect(recommendedSnapshot?.items.map((item) => item.id)).toEqual([
+      '21063',
+    ]);
+    expect(premiumSnapshot?.items.map((item) => item.id)).toEqual(['21063']);
   });
 
   test('keeps price-per-brick and under-50 deals without a reference discount', async () => {
@@ -256,6 +584,52 @@ describe('deal page snapshot server', () => {
     expect(under50Snapshot?.items.map((item) => item.id)).toEqual(['cheap']);
   });
 
+  test('under-20 snapshots require enough pieces and a strong value signal', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'Tiny Duplo Deal',
+          pieceCount: 22,
+          setId: 'tiny',
+          slug: 'tiny',
+        }),
+        createCatalogSet({
+          name: 'No Value Signal',
+          pieceCount: 100,
+          setId: 'weak',
+          slug: 'weak',
+        }),
+        createCatalogSet({
+          name: 'Good Under Twenty Deal',
+          pieceCount: 220,
+          setId: 'good',
+          slug: 'good',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({
+          best_price_minor: 1_895,
+          set_id: 'tiny',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 1_895,
+          offers: [],
+          set_id: 'weak',
+        }),
+        createCommerceSnapshot({
+          best_price_minor: 1_895,
+          set_id: 'good',
+        }),
+      ]) as never,
+    });
+    const under20Snapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'under-20',
+    );
+
+    expect(under20Snapshot?.items.map((item) => item.id)).toEqual(['good']);
+  });
+
   test('paginates deal snapshots', async () => {
     const result = await buildDealPageSnapshots({
       listCanonicalCatalogSetsFn: vi
@@ -280,6 +654,28 @@ describe('deal page snapshot server', () => {
     ).toHaveLength(2);
   });
 
+  test('adds snapshot-level stats to each deal page snapshot', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue([createCatalogSet({ setId: '10307' })]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient([
+        createCommerceSnapshot({ set_id: '10307' }),
+      ]) as never,
+    });
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+
+    expect(recommendedSnapshot?.stats).toMatchObject({
+      activeDealCount: 1,
+      averageDiscountPercent: 33,
+      highestDiscountPercent: 33,
+      lowestPricePerBrickMinor: 10,
+    });
+  });
+
   test('dry-run does not write snapshots', async () => {
     const supabaseClient = createSupabaseClient([
       createCommerceSnapshot({ set_id: '10307' }),
@@ -296,6 +692,33 @@ describe('deal page snapshot server', () => {
     expect(result.upsertedCount).toBe(0);
     expect(supabaseClient.from).not.toHaveBeenCalledWith(
       'collection_page_snapshots',
+    );
+  });
+
+  test('persists deal snapshots with items and stats in items_json', async () => {
+    const supabaseClient = createSupabaseClient([
+      createCommerceSnapshot({ set_id: '10307' }),
+    ]);
+    const result = await syncDealPageSnapshots({
+      dryRun: false,
+      listCanonicalCatalogSetsFn: vi
+        .fn()
+        .mockResolvedValue([createCatalogSet()]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: supabaseClient as never,
+    });
+
+    expect(result.upsertedCount).toBeGreaterThan(0);
+    expect(supabaseClient.upsertSnapshots).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          items_json: expect.objectContaining({
+            items: expect.any(Array),
+            stats: expect.objectContaining({ activeDealCount: 1 }),
+          }),
+        }),
+      ]),
+      expect.any(Object),
     );
   });
 

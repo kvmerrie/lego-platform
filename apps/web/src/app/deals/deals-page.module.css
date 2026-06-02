@@ -3,10 +3,7 @@
   gap: var(--lego-page-section-gap, var(--lego-space-5));
 }
 
-.intro {
-  --lego-section-heading-description: var(--deals-page-muted);
-  --lego-section-heading-eyebrow: var(--deals-page-text);
-  --lego-section-heading-text: var(--deals-page-text);
+.hero {
   --deals-page-surface: var(--lego-surface-accent);
   --deals-page-text: var(--lego-text);
   --deals-page-muted: var(--lego-text-muted);
@@ -15,48 +12,81 @@
   color: var(--deals-page-text);
   display: grid;
   gap: var(--lego-space-4);
-  max-width: min(52rem, 100%);
+  max-width: min(70rem, 100%);
   padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
-.introMeta {
+.heroCopy {
+  display: grid;
+  gap: var(--lego-space-2);
+  max-width: 45rem;
+}
+
+.heroEyebrow {
+  color: var(--deals-page-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0;
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  color: var(--deals-page-text);
+  font-size: var(--lego-text-role-display-sm-size);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.heroDescription {
+  color: var(--deals-page-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+  max-width: 38rem;
+}
+
+.dealStats {
+  border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding-block: var(--lego-space-3);
+}
+
+.dealStat {
+  display: grid;
+  gap: var(--lego-space-1);
+  min-width: 0;
+}
+
+.dealStat dt {
   color: var(--deals-page-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
-  margin: 0;
 }
 
-.merchandisingGroups {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.merchandisingGroup {
-  background: color-mix(in srgb, var(--deals-page-text) 12%, transparent);
-  border-radius: var(--lego-radius-pill);
+.dealStat dd {
   color: var(--deals-page-text);
-  font-size: var(--lego-text-role-meta-size);
-  font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.2;
-  padding: 0.42rem 0.64rem;
+  font-size: var(--lego-text-role-heading-sm-size);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: var(--lego-text-role-heading-sm-line-height);
+  margin: 0;
 }
 
-.browseSection {
-  scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
-}
-
-.sortNav {
+.dealNav,
+.secondaryDealNav {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lego-space-1);
 }
 
-.sortLink {
+.dealNavLink,
+.secondaryDealNavLink {
+  align-items: center;
   border: var(--lego-border-width-1) solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-pill);
   color: var(--lego-text-muted);
@@ -64,25 +94,37 @@
   font-size: var(--lego-text-role-meta-size);
   font-weight: var(--lego-font-weight-bold);
   line-height: 1;
-  min-height: 2.25rem;
-  padding: 0.62rem var(--lego-space-3);
+  min-height: 2.5rem;
+  padding: 0.7rem var(--lego-space-3);
   text-decoration: none;
 }
 
-.sortLink:hover {
+.secondaryDealNavLink {
+  min-height: 2.25rem;
+  padding-block: 0.58rem;
+}
+
+.dealNavLink:hover,
+.secondaryDealNavLink:hover {
   color: var(--lego-text);
   text-decoration: none;
 }
 
-.sortLink[aria-current='true'] {
+.dealNavLink[aria-current='page'],
+.secondaryDealNavLink[aria-current='page'] {
   background: var(--lego-accent);
   border-color: transparent;
   color: var(--lego-accent-contrast);
 }
 
-.sortLink:focus-visible {
+.dealNavLink:focus-visible,
+.secondaryDealNavLink:focus-visible {
   outline: 3px solid var(--lego-focus-ring);
   outline-offset: 2px;
+}
+
+.browseSection {
+  scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
 }
 
 .grid {
@@ -98,6 +140,10 @@
 }
 
 @media (min-width: 48rem) {
+  .dealStats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .grid {
     --catalog-browse-grid-inline-border-size: var(
       --catalog-browse-grid-divider-size,

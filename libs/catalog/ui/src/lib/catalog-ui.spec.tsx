@@ -193,9 +193,367 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('6.181 stenen');
     expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('aria-label="Bekijk set"');
+    expect(markup).toContain('title="Bekijk set"');
     expect(markup).not.toContain('A flagship fantasy build');
     expect(markup).not.toContain('Reviewed prijs');
     expect(markup).not.toContain('Dekking');
+  });
+
+  it('renders compact browse metadata before the title', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Actuele prijs gevonden',
+          currentPrice: 'Vanaf € 489,99',
+          decisionLabel: 'Beste prijs',
+          merchantLabel: 'Laagst bij Brickshop',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+    const factsIndex = markup.indexOf('cardFactRow');
+    const titleIndex = markup.indexOf('<h3');
+
+    expect(factsIndex).toBeGreaterThan(-1);
+    expect(titleIndex).toBeGreaterThan(-1);
+    expect(factsIndex).toBeLessThan(titleIndex);
+    expect(markup).toContain('2023');
+    expect(markup).toContain('6.181 stenen');
+  });
+
+  it('styles compact browse spacing, metadata, price, and CTA alignment', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      ".setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink {",
+    );
+    expect(css).toContain('gap: 0.78rem;');
+    expect(css).toContain('padding-block-start: 0.72rem;');
+    expect(css).toContain('aspect-ratio: 1 / 1.08;');
+    expect(css).toContain('min-height: 11.65rem;');
+    expect(css).toContain('padding: 0.78rem 0.45rem 0.92rem;');
+    expect(css).toMatch(/\.cardCompactBody \{[\s\S]*gap: 0\.48rem;/u);
+    expect(css).toMatch(/\.cardFactItem \{[\s\S]*font-size: 0\.875rem;/u);
+    expect(css).toMatch(
+      /\.cardCompactBrowsePriceValue \{[\s\S]*font-weight: 700;/u,
+    );
+    const compactFooterBlock =
+      css.match(/\.cardCompactFooter \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(compactFooterBlock).toContain('justify-content: flex-start;');
+    expect(compactFooterBlock).not.toContain('justify-content: flex-end;');
+  });
+
+  it('uses compact blue browse CTA styling without changing featured actions', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const compactCardBlock =
+      css.match(/\.setCardCompact \{[^}]+\}/u)?.[0] ?? '';
+    const collectionBrowseBlock =
+      css.match(/\.setCardCollectionBrowse \{[^}]+\}/u)?.[0] ?? '';
+    const collectionBrowseFocusBlock =
+      css.match(
+        /\.setCardCollectionBrowse > \.setCard:focus-within \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const compactBrowseActionBlock =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{[\s\S]+?\n  \}/u,
+      )?.[0] ?? '';
+    const compactBrowseActionIconBlock =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionIcon \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const compactBrowseActionLabelBlock =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionLabel \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const desktopCompactBrowseActionBlock =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{[\s\S]+?\n    \}/u,
+      )?.[0] ?? '';
+    const desktopCompactBrowseActionLabelBlock =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse\s+\.cardCompactActionLabel \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(compactCardBlock).toContain(
+      '--rail-card-border: color-mix(\n      in srgb,\n      var(--lego-border-subtle) 86%,\n      transparent\n    );',
+    );
+    expect(collectionBrowseBlock).toContain(
+      '--catalog-browse-grid-divider-color: color-mix(\n      in srgb,\n      var(--lego-border-subtle) 86%,\n      transparent\n    );',
+    );
+    expect(collectionBrowseBlock).toContain(
+      '--catalog-browse-grid-hover-ring-color: transparent;',
+    );
+    expect(collectionBrowseBlock).toContain(
+      '--catalog-browse-grid-focus-ring-color: color-mix(\n      in srgb,\n      var(--lego-border) 42%,\n      transparent\n    );',
+    );
+    expect(collectionBrowseFocusBlock).toContain(
+      'var(--catalog-browse-grid-focus-ring-color)',
+    );
+    expect(compactBrowseActionBlock).toContain(
+      'background: var(--lego-accent);',
+    );
+    expect(compactBrowseActionBlock).toContain('border-color: transparent;');
+    expect(compactBrowseActionBlock).toContain(
+      'color: var(--lego-accent-contrast, #ffffff);',
+    );
+    expect(compactBrowseActionBlock).toContain(
+      'font-size: var(--lego-text-role-meta-size);',
+    );
+    expect(compactBrowseActionBlock).toContain('inline-size: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain('min-height: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain('min-width: 2.75rem;');
+    expect(compactBrowseActionBlock).toContain('padding-inline: 0;');
+    expect(compactBrowseActionIconBlock).toContain('display: block;');
+    expect(compactBrowseActionLabelBlock).toContain('display: none;');
+    expect(desktopCompactBrowseActionBlock).toContain('min-height: 2.2rem;');
+    expect(desktopCompactBrowseActionBlock).toContain(
+      'padding-inline: 0.7rem;',
+    );
+    expect(desktopCompactBrowseActionBlock).toContain('gap: 0.34rem;');
+    expect(desktopCompactBrowseActionLabelBlock).toContain('display: inline;');
+    expect(css).toContain('.setCardCollectionFeatured');
+    expect(css).toContain('.cardCompactActionCommerce,');
+    expect(css).toContain('background: var(--lego-accent);');
+  });
+
+  it('neutralizes compact hover borders while preserving focus visibility', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const compactCardBlock =
+      css.match(/\.setCardCompact \{[^}]+\}/u)?.[0] ?? '';
+    const focusWithinBlock =
+      css.match(/\n  \.setCard:focus-within \{[^}]+\}/u)?.[0] ?? '';
+    const clickLayerFocusBlock =
+      css.match(/\.setCardClickLayer:focus-visible::after \{[^}]+\}/u)?.[0] ??
+      '';
+    const hoverBlock = css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(compactCardBlock).toContain(
+      '--rail-card-border: color-mix(\n      in srgb,\n      var(--lego-border-subtle) 86%,\n      transparent\n    );',
+    );
+    expect(compactCardBlock).toContain(
+      '--catalog-card-hover-border-color: var(--rail-card-border);',
+    );
+    expect(compactCardBlock).toContain(
+      '--catalog-card-hover-outline-color: transparent;',
+    );
+    expect(focusWithinBlock).toContain(
+      'border-color: var(--catalog-card-interaction-border-color);',
+    );
+    expect(clickLayerFocusBlock).toContain(
+      'box-shadow: 0 0 0 4px var(--lego-focus-ring);',
+    );
+    expect(hoverBlock).toContain(
+      'border-color: var(--catalog-card-hover-border-color);',
+    );
+    expect(hoverBlock).toContain(
+      'box-shadow: inset 0 0 0 1px var(--catalog-card-hover-outline-color);',
+    );
+  });
+
+  it('keeps rich rail borderless styling scoped away from the light theme deal rail', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const themePageSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/feature-theme-page/src/lib/catalog-feature-theme-page.tsx',
+      ),
+      'utf-8',
+    );
+    const themedRailCardRule =
+      css.match(/\.setCardRailSectionThemed \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const inverseRailCardRule =
+      css.match(
+        /\.sectionShellInverse \.setCardRailTrack > \.setCard \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(themedRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(inverseRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(themePageSource).toContain('className={styles.dealSection}');
+    expect(themePageSource).toContain('tone="default"');
+    expect(themePageSource).not.toContain('tone="inverse"');
+    expect(themePageSource).not.toContain('surfaceVariant="themed"');
+  });
+
+  it('keeps the theme detail deal rail skeleton on the light section tone', () => {
+    const themeRouteSource = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/themes/[slug]/page.tsx'),
+      'utf-8',
+    );
+    const fallbackStart = themeRouteSource.indexOf(
+      '<CatalogSetCardRailSkeletonSection',
+    );
+    const fallbackEnd = themeRouteSource.indexOf('/>', fallbackStart);
+    const fallbackSource = themeRouteSource.slice(fallbackStart, fallbackEnd);
+
+    expect(fallbackSource).toContain('eyebrow="Nu interessant"');
+    expect(fallbackSource).toContain('itemCount={5}');
+    expect(fallbackSource).toContain('tone="default"');
+    expect(fallbackSource).not.toContain('tone="inverse"');
+    expect(fallbackSource).not.toContain('surfaceVariant="themed"');
+  });
+
+  it('keeps compact visual badge positioning untouched', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toMatch(/\.visualOverlay \{[\s\S]*right: 0;[\s\S]*top: 0;/u);
+    expect(css).not.toContain(
+      "[data-catalog-set-card-variant='compact'] .visualOverlay",
+    );
+  });
+
+  it('renders only the visible price on compact browse set cards', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Actuele prijs gevonden',
+          currentPrice: 'Vanaf € 489,99',
+          decisionLabel: 'Beste prijs',
+          merchantLabel: 'Laagst bij Brickshop',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('€ 489,99');
+    expect(markup).not.toContain('Vanaf € 489,99');
+    expect(markup).not.toContain('Beste prijs');
+    expect(markup).not.toContain('Reviewed prijs');
+    expect(markup).not.toContain('Dekking');
+  });
+
+  it('keeps the browse price prefix available to assistive technology', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Actuele prijs gevonden',
+          currentPrice: 'Vanaf € 489,99',
+          merchantLabel: 'Laagst bij Brickshop',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('visuallyHidden');
+    expect(markup).toContain('>Vanaf </span>€ 489,99');
+  });
+
+  it('does not show the set number on regular compact browse cards', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).not.toContain('cardCompactMeta');
+    expect(markup).not.toContain('Set 10316');
+  });
+
+  it('keeps deal-specific price copy on featured cards', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        ctaMode="commerce"
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: '4 actuele winkels',
+          currentPrice: 'Vanaf € 489,99',
+          dealReason: '€ 80 onder de adviesprijs',
+          decisionLabel: 'Sterke deal',
+          discountMetric: '14% korting',
+          merchantLabel: 'Laagst bij Brickshop',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Sterke deal');
+    expect(markup).toContain('Vanaf € 489,99');
+    expect(markup).toContain('14% korting');
+    expect(markup).toContain('€ 80 onder de adviesprijs');
+  });
+
+  it('keeps featured deal card layout selectors separate from compact browse cards', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      '.setCardCollectionFeatured > .setCardCompact > .setCardLink {',
+    );
+    expect(css).toContain('grid-row: 1 / span 4;');
+    expect(css).toContain('.setCardCollectionFeatured');
+    expect(css).toContain('> .priceCompactBlock');
+    expect(css).toContain('.cardCompactDecisionZone {');
   });
 
   it('allows callers to prioritize a known above-the-fold set image', () => {
@@ -337,6 +695,7 @@ describe('CatalogSetCard', () => {
       />,
     );
 
+    expect(markup).toContain('--card-theme-badge-accent:#171717');
     expect(markup).toContain('--card-theme-badge-bg:#171717');
     expect(markup).toContain('--card-theme-badge-text:#ffffff');
     expect(markup).toContain('>Star Wars<');
@@ -364,6 +723,7 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).not.toContain('--card-theme-badge-bg:');
+    expect(markup).not.toContain('--card-theme-badge-accent:');
     expect(markup).not.toContain('--card-theme-badge-text:');
     expect(markup).toContain('>City<');
   });
@@ -2508,6 +2868,12 @@ describe('CatalogSetCardCollection', () => {
     );
     expect(css).toMatch(
       /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCard:nth-child\(even\) \{\s+border-right: 0;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\] \{\s+--catalog-card-action-icon-size: 0\.88rem;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionBrowse:visited \{\s+inline-size: 2\.25rem;\s+min-height: 2\.25rem;\s+min-width: 2\.25rem;/u,
     );
     expect(css).toMatch(
       /@media \(min-width: 48rem\) \{\s+\.setCardMobileLayoutToggle \{\s+display: none;/u,

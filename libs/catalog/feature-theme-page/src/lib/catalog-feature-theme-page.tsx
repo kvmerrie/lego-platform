@@ -31,6 +31,10 @@ export interface CatalogFeatureThemePageDealItem
   priceContext?: CatalogSetCardPriceContext;
 }
 
+export interface CatalogFeatureThemePageSetCard extends CatalogHomepageSetCard {
+  priceContext?: CatalogSetCardPriceContext;
+}
+
 export interface CatalogFeatureThemePageArticleLink {
   date?: string;
   description?: string;
@@ -65,7 +69,9 @@ export function CatalogFeatureThemePage({
   pageSize?: number;
   relatedArticles?: readonly CatalogFeatureThemePageArticleLink[];
   relatedArticlesRail?: ReactNode;
-  themePage: CatalogThemeLandingPage;
+  themePage: Omit<CatalogThemeLandingPage, 'setCards'> & {
+    setCards: readonly CatalogFeatureThemePageSetCard[];
+  };
 }) {
   const { setCards, themeSnapshot } = themePage;
   const themeName = themeSnapshot.name;
@@ -243,6 +249,7 @@ export function CatalogFeatureThemePage({
               href={buildSetDetailPath(setCard.slug)}
               imageLoading={index < 6 ? 'eager' : 'lazy'}
               key={setCard.id}
+              priceContext={setCard.priceContext}
               setSummary={setCard}
               showThemeBadge={false}
               variant="compact"
@@ -318,7 +325,7 @@ export function CatalogFeatureThemeDealRail({
         </>
       }
       titleAs="h2"
-      tone="inverse"
+      tone="default"
       variant="featured"
     />
   );

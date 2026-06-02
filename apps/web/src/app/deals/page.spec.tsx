@@ -64,6 +64,9 @@ describe('deals page snapshots', () => {
     });
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 0,
+      },
       setCards: [],
       totalSetCount: 0,
     });
@@ -72,6 +75,12 @@ describe('deals page snapshots', () => {
   it('reads /deals from deal snapshots without live commerce rail loaders', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 41,
+        averageDiscountPercent: 18,
+        highestDiscountPercent: 33,
+        lowestPricePerBrickMinor: 7,
+      },
       setCards: [
         {
           id: '10307',
@@ -80,6 +89,7 @@ describe('deals page snapshots', () => {
           priceContext: {
             coverageLabel: '2 actuele winkels',
             currentPrice: 'Vanaf €100,00',
+            decisionLabel: 'Sterke deal',
             merchantLabel: 'Laagst bij MediaMarkt',
             reviewedLabel: 'Snapshot bijgewerkt',
           },
@@ -107,6 +117,10 @@ describe('deals page snapshots', () => {
       expect.objectContaining({
         ctaMode: 'commerce',
         href: '/sets/eiffel-tower-10307',
+        priceContext: expect.objectContaining({
+          currentPrice: 'Vanaf €100,00',
+          decisionLabel: 'Sterke deal',
+        }),
         variant: 'featured',
       }),
     );
@@ -115,6 +129,9 @@ describe('deals page snapshots', () => {
   it('renders pagination with the active sort query', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 80,
+      },
       setCards: [
         {
           id: '10307',
@@ -160,9 +177,52 @@ describe('deals page snapshots', () => {
     expect(css).toContain('--deals-page-surface: var(--lego-surface-accent);');
   });
 
+  it('renders snapshot deal stats and phase 2 category navigation', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 1234,
+        averageDiscountPercent: 21,
+        highestDiscountPercent: 45,
+        lowestPricePerBrickMinor: 6,
+      },
+      setCards: [],
+      totalSetCount: 1234,
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default({}));
+
+    expect(markup).toContain('1.234');
+    expect(markup).toContain('21%');
+    expect(markup).toContain('45%');
+    expect(markup).toContain('6 cent');
+    expect(markup).toContain('Nieuwe deals');
+    expect(markup).toContain('Premium deals');
+    expect(markup).toContain('/deals?sort=new-deals');
+  });
+
+  it('emits unique metadata and canonical URLs for sorted deal pages', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({ sort: 'price-per-brick' }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: expect.stringContaining('/deals?sort=price-per-brick'),
+      },
+      description: expect.stringContaining('prijs per steen'),
+      title: 'Beste LEGO prijs per steen',
+    });
+  });
+
   it('renders an intentional empty state when a fresh snapshot has total_count=0', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 0,
+      },
       setCards: [],
       totalSetCount: 0,
     });
@@ -188,6 +248,9 @@ describe('deals page snapshots', () => {
   it('does not render a normal indexable page when the deal snapshot is stale', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: '2020-01-01T00:00:00.000Z',
+      stats: {
+        activeDealCount: 1,
+      },
       setCards: [
         {
           id: '10307',

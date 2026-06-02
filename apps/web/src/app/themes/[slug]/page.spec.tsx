@@ -102,11 +102,46 @@ async function renderToStreamedMarkup(element: React.ReactElement) {
   return new Response(stream).text();
 }
 
+function createCurrentOfferSummary({
+  checkedAt = '2026-05-31T09:00:00.000Z',
+  merchantName = 'Brickshop',
+  priceCents = 6_400,
+  setId = '75355',
+}: {
+  checkedAt?: string;
+  merchantName?: string;
+  priceCents?: number;
+  setId?: string;
+} = {}) {
+  const bestOffer = {
+    availability: 'in_stock',
+    checkedAt,
+    condition: 'new',
+    commercialUnitType: 'full_set',
+    currency: 'EUR',
+    market: 'NL',
+    merchant: merchantName.toLowerCase(),
+    merchantName,
+    priceCents,
+    setId,
+    url: 'https://example.com/deal',
+  };
+
+  return {
+    bestOffer,
+    offers: [bestOffer],
+    setId,
+  };
+}
+
 describe('theme page JSON-LD', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     themePageMocks.getCachedPublicBrowsePageData.mockImplementation(
       async ({ load }) => load(),
+    );
+    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
     );
   });
 
@@ -249,7 +284,7 @@ describe('theme page JSON-LD', () => {
     );
   });
 
-  it('does not load current offer summaries when discovery has no scoped signals', async () => {
+  it('adds snapshot-backed price context to theme browse cards', async () => {
     themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
       setCards: [
         {
@@ -272,18 +307,94 @@ describe('theme page JSON-LD', () => {
     themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
     );
+    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map([['75355', createCurrentOfferSummary()]]),
+    );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
     const pageModule = await import('./page');
-    await pageModule.default({
-      params: Promise.resolve({
-        slug: 'star-wars',
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars',
+        }),
       }),
-    });
+    );
 
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).not.toHaveBeenCalled();
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        liveFallbackSetIdLimit: 0,
+        setIds: ['75355'],
+      }),
+    );
+    expect(themePageMocks.catalogFeatureThemePage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themePage: expect.objectContaining({
+          setCards: [
+            expect.objectContaining({
+              id: '75355',
+              priceContext: expect.objectContaining({
+                currentPrice: 'Vanaf € 64,00',
+                decisionLabel: 'Beste prijs',
+                merchantLabel: 'Laagst bij Brickshop',
+              }),
+            }),
+          ],
+        }),
+      }),
+    );
+  });
+
+  it('keeps theme browse cards without a current offer snapshot on the fallback state', async () => {
+    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
+      setCards: [
+        {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+      ],
+      themeSnapshot: {
+        momentum: 'R2-D2, X-wings en displaysets houden dit thema sterk.',
+        name: 'Star Wars',
+        setCount: 1,
+        slug: 'star-wars',
+      },
+    });
+    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listPublishedArticles.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars',
+        }),
+      }),
+    );
+
+    expect(themePageMocks.catalogFeatureThemePage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themePage: expect.objectContaining({
+          setCards: [
+            expect.not.objectContaining({
+              priceContext: expect.anything(),
+            }),
+          ],
+        }),
+      }),
+    );
   });
 
   it('does not block the first HTML on optional deal or article rails', async () => {
@@ -332,7 +443,15 @@ describe('theme page JSON-LD', () => {
     );
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).not.toHaveBeenCalled();
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        liveFallbackSetIdLimit: 0,
+        setIds: ['75355'],
+      }),
+    );
   });
 
   it('streams the deal rail after slow discovery resolves on client navigation', async () => {

@@ -879,6 +879,10 @@ function CatalogSetCardClickLayer({
   );
 }
 
+function formatCompactBrowsePrice(priceLabel: string): string {
+  return priceLabel.replace(/^Vanaf\s+/u, '').trim();
+}
+
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
     return 'Nog niet bekend';
@@ -1014,6 +1018,7 @@ function getCatalogThemeStyleVariables({
   return {
     ...(resolvedVisual.backgroundColor
       ? ({
+          '--card-theme-badge-accent': resolvedVisual.backgroundColor,
           '--catalog-theme-badge-surface': resolvedVisual.backgroundColor,
           '--card-theme-badge-bg': resolvedVisual.backgroundColor,
           '--theme-surface': resolvedVisual.backgroundColor,
@@ -1107,7 +1112,6 @@ export function CatalogSetCard({
         theme={setSummary.theme}
       />
     );
-
     const browseCardContent = (
       <>
         <CatalogSetVisual
@@ -1122,19 +1126,33 @@ export function CatalogSetCard({
           variant="card"
         />
         <div className={styles.cardCompactBody}>
-          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
-            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
-          </h3>
           <CatalogSetFactRow
             className={styles.cardCompactSupportingSlot}
             setSummary={setSummary}
           />
+          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
+            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
+          </h3>
+          <div
+            aria-hidden={priceContext ? undefined : 'true'}
+            className={`${styles.cardCompactBrowsePrice} ${
+              priceContext ? '' : styles.cardCompactBrowsePriceEmpty
+            }`.trim()}
+          >
+            {priceContext ? (
+              <p className={styles.cardCompactBrowsePriceValue}>
+                <VisuallyHidden>Vanaf </VisuallyHidden>
+                {formatCompactBrowsePrice(priceContext.currentPrice)}
+              </p>
+            ) : null}
+          </div>
           {!compactUsesDecisionZone ? (
             <div className={styles.cardCompactFooter}>
-              <CatalogSetNumberMeta setId={setSummary.id} />
               {href ? (
                 <span
+                  aria-label={primaryAction.label}
                   className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
+                  title={primaryAction.label}
                 >
                   <PrimaryActionIcon
                     aria-hidden="true"
