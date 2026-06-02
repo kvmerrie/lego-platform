@@ -19,10 +19,15 @@
           {
             "glob": "**/*",
             "input": "apps/admin/public"
+          },
+          {
+            "glob": "admin-env.js",
+            "input": "tmp/admin"
           }
         ],
         "styles": ["apps/admin/src/styles.scss"]
       },
+      "dependsOn": ["generate-env"],
       "configurations": {
         "production": {
           "budgets": [
@@ -53,6 +58,7 @@
         "buildTarget": "admin:build",
         "proxyConfig": "apps/admin/proxy.conf.json"
       },
+      "dependsOn": ["generate-env"],
       "configurations": {
         "production": {
           "buildTarget": "admin:build:production"
@@ -66,6 +72,13 @@
     "lint": {
       "executor": "@nx/eslint:lint"
     },
+    "generate-env": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/generate-admin-browser-env.mjs",
+        "cwd": "."
+      }
+    },
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {}
@@ -75,7 +88,7 @@
       "executor": "@nx/web:file-server",
       "options": {
         "buildTarget": "admin:build",
-        "staticFilePath": "dist/apps/admin/browser",
+        "staticFilePath": "dist/apps/admin",
         "spa": true
       }
     }

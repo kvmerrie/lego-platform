@@ -218,57 +218,6 @@ const adminApiPaths = {
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
 } as const;
 
-function readStoredSupabaseAccessToken(): string | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  try {
-    for (let index = 0; index < window.localStorage.length; index += 1) {
-      const key = window.localStorage.key(index);
-
-      if (!key?.startsWith('sb-') || !key.endsWith('-auth-token')) {
-        continue;
-      }
-
-      const rawValue = window.localStorage.getItem(key);
-
-      if (!rawValue) {
-        continue;
-      }
-
-      const parsedValue = JSON.parse(rawValue) as {
-        access_token?: unknown;
-        currentSession?: { access_token?: unknown };
-      };
-      const accessToken =
-        typeof parsedValue.access_token === 'string'
-          ? parsedValue.access_token
-          : typeof parsedValue.currentSession?.access_token === 'string'
-            ? parsedValue.currentSession.access_token
-            : undefined;
-
-      if (accessToken?.trim()) {
-        return accessToken.trim();
-      }
-    }
-  } catch {
-    return undefined;
-  }
-
-  return undefined;
-}
-
-function buildBrowserAuthorizationHeaders(): Record<string, string> {
-  const accessToken = readStoredSupabaseAccessToken();
-
-  return accessToken
-    ? {
-        Authorization: `Bearer ${accessToken}`,
-      }
-    : {};
-}
-
 @Injectable({ providedIn: 'root' })
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
@@ -470,9 +419,6 @@ export class CommerceAdminApiService {
       this.http.post<CommerceAdminCacheRevalidationResult>(
         adminApiPaths.adminCacheRevalidation,
         input,
-        {
-          headers: buildBrowserAuthorizationHeaders(),
-        },
       ),
     );
   }

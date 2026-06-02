@@ -52,6 +52,7 @@ import {
 import { normalizeTheme } from '@lego-platform/catalog/util';
 import { revalidatePublicWeb } from '@lego-platform/api/data-access-server';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { createAdminPreHandler } from '../lib/admin-authorization';
 
 export interface AdminEditorialAgentService {
   extractFacts(input: {
@@ -942,11 +943,15 @@ function readFeedItemDraftSaveInput(value: unknown): {
 }
 
 export function createAdminEditorialAgentRoutes({
+  adminPreHandler = createAdminPreHandler(),
   editorialAgentService = createAdminEditorialAgentService(),
 }: {
+  adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   editorialAgentService?: AdminEditorialAgentService;
 } = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.addHook('preHandler', adminPreHandler);
+
     fastify.post<{ Body: unknown }>(
       apiPaths.adminEditorialAgentExtract,
       async function (request, reply) {

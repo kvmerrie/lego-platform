@@ -147,10 +147,17 @@ describe('collection landing page route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     collectionPageMocks.loadedCacheResults = [];
+    collectionPageMocks.notFound.mockImplementation(() => {
+      throw new Error('NEXT_NOT_FOUND');
+    });
     collectionPageMocks.getCachedPublicBrowsePageData.mockImplementation(
       async ({ load, ...cacheOptions }) => {
         const loaded = await load();
         collectionPageMocks.loadedCacheResults.push(loaded);
+
+        if (loaded === null) {
+          return null;
+        }
 
         return JSON.parse(
           JSON.stringify({
@@ -178,6 +185,7 @@ describe('collection landing page route', () => {
     collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
       {
         bestPriceMinorBySetId: new Map(),
+        snapshotGeneratedAt: new Date().toISOString(),
         setCards: [
           {
             id: '60430',
@@ -368,6 +376,106 @@ describe('collection landing page route', () => {
         ],
       }),
     );
+  });
+
+  it('renders an intentional empty state when a fresh snapshot has total_count=0', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      {
+        bestPriceMinorBySetId: new Map(),
+        snapshotGeneratedAt: new Date().toISOString(),
+        setCards: [],
+        totalSetCount: 0,
+      },
+    );
+
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-sets-onder-50-euro',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [],
+        totalSetCount: 0,
+      }),
+    );
+  });
+
+  it('does not render an indexable empty page when a required snapshot is missing', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      undefined,
+    );
+
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-sets-onder-50-euro',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('NEXT_NOT_FOUND');
+
+    expect(collectionPageMocks.notFound).toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not render a normal indexable page when a required snapshot is stale', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      {
+        bestPriceMinorBySetId: new Map(),
+        snapshotGeneratedAt: '2020-01-01T00:00:00.000Z',
+        setCards: [
+          {
+            id: '60430',
+            imageUrl: 'https://cdn.example.com/60430.jpg',
+            name: 'Ruimteschip',
+            pieces: 240,
+            releaseYear: 2026,
+            slug: 'spaceship-60430',
+            theme: 'City',
+          },
+        ],
+        totalSetCount: 1,
+      },
+    );
+
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-sets-onder-50-euro',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('NEXT_NOT_FOUND');
+
+    expect(collectionPageMocks.notFound).toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).not.toHaveBeenCalled();
   });
 
   it('reads lego-voor-volwassenen from collection_page_snapshots', async () => {

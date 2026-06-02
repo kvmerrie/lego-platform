@@ -3,11 +3,12 @@ import {
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
 import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
+import React, { cache, Suspense } from 'react';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   type CatalogPrimaryOfferAvailabilityState,
   type CatalogCurrentOfferSummary,
+  type CatalogRuntimeOffer,
   type CatalogDiscoverySignal,
   listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummariesBySetIds,
@@ -18,6 +19,7 @@ import {
   listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
+  summarizeCatalogCurrentOffers,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogFeatureSetList,
@@ -368,6 +370,30 @@ async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
     },
   )();
 }
+
+const getRequestCachedCatalogSetBySlug = cache(async (slug: string) =>
+  getCachedCatalogSetBySlug({ slug }),
+);
+
+const getRequestCachedSetDetailLiveOffersBySetId = cache(
+  async (setId: string) => loadSetDetailLiveOffers({ setId }),
+);
+
+const getRequestCachedSnapshotCurrentOfferSummaryBySetId = cache(
+  async (setId: string) => {
+    const currentOfferSummaryBySetId =
+      await listCatalogCurrentOfferSummariesBySetIds({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: [cacheTags.prices(), cacheTags.set(setId)],
+        },
+        liveFallbackSetIdLimit: 0,
+        setIds: [setId],
+      });
+
+    return currentOfferSummaryBySetId.get(setId);
+  },
+);
 
 async function withSetPageOptionalTimeout<T>({
   fallback,
@@ -787,6 +813,34 @@ function getCatalogOfferMerchantSlug(
   return typeof merchantSlug === 'string' && merchantSlug.trim()
     ? merchantSlug.trim()
     : undefined;
+}
+
+function toCatalogRuntimeOffer(
+  catalogOffer: CatalogOffer,
+): CatalogRuntimeOffer {
+  return {
+    ...catalogOffer,
+    merchantSlug:
+      getCatalogOfferMerchantSlug(catalogOffer) ?? catalogOffer.merchant,
+  };
+}
+
+function summarizeSetDetailCurrentOffersFromLiveOffers({
+  liveOffers,
+  setId,
+}: {
+  liveOffers: readonly CatalogOffer[];
+  setId: string;
+}): CatalogCurrentOfferSummary | undefined {
+  if (!liveOffers.length) {
+    return undefined;
+  }
+
+  return summarizeCatalogCurrentOffers({
+    generatedOffers: [],
+    liveOffers: liveOffers.map(toCatalogRuntimeOffer),
+    setId,
+  });
 }
 
 function getCatalogOfferPublicMerchantName(catalogOffer: CatalogOffer): string {
@@ -2027,34 +2081,19 @@ export async function generateMetadata({
   const catalogSetDetail = await measureSetPageFetch({
     label: 'metadata:set-detail',
     slug,
-    load: () => getCachedCatalogSetBySlug({ slug }),
+    load: () => getRequestCachedCatalogSetBySlug(slug),
   });
 
   if (!catalogSetDetail) {
     return {};
   }
 
-  const metadataOffers = await measureSetPageFetch({
-    label: 'metadata:offers',
+  const metadataCurrentOfferSummary = await measureSetPageFetch({
+    label: 'metadata:current-offer-summary',
     slug,
     load: () =>
-      loadSetDetailLiveOffers({
-        setId: catalogSetDetail.id,
-      }),
+      getRequestCachedSnapshotCurrentOfferSummaryBySetId(catalogSetDetail.id),
   });
-  const localizedMetadataOffers = metadataOffers.filter(isEuroCatalogOffer);
-  const metadataCurrentOfferSummaryBySetId = localizedMetadataOffers.length
-    ? await listCatalogCurrentOfferSummariesBySetIds({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [cacheTags.prices(), cacheTags.set(catalogSetDetail.id)],
-        },
-        setIds: [catalogSetDetail.id],
-      })
-    : new Map();
-  const metadataCurrentOfferSummary = metadataCurrentOfferSummaryBySetId.get(
-    catalogSetDetail.id,
-  );
 
   const metadata = measureSetPageSync({
     label: 'metadata:build',
@@ -2092,7 +2131,7 @@ export default async function SetDetailPage({
   const catalogSetDetail = await measureSetPageFetch({
     label: 'set-detail',
     slug,
-    load: () => getCachedCatalogSetBySlug({ slug }),
+    load: () => getRequestCachedCatalogSetBySlug(slug),
   });
 
   if (!catalogSetDetail) {
@@ -2102,10 +2141,7 @@ export default async function SetDetailPage({
   const liveSetDetailOffers = await measureSetPageFetch({
     label: 'offers',
     slug,
-    load: () =>
-      loadSetDetailLiveOffers({
-        setId: catalogSetDetail.id,
-      }),
+    load: () => getRequestCachedSetDetailLiveOffersBySetId(catalogSetDetail.id),
   });
   // Only live validated offers count as current public pricing.
   const localizedSetDetailOffers = dedupeCatalogOffersByPublicMerchant(
@@ -2138,23 +2174,18 @@ export default async function SetDetailPage({
   });
   const hasTrackedAvailabilityFallback =
     availabilityFallbackState !== 'available';
-  const currentOfferSummaryBySetId = localizedSetDetailOffers.length
-    ? await measureSetPageFetch({
-        label: 'current-offer-summary',
-        slug,
-        load: () =>
-          listCatalogCurrentOfferSummariesBySetIds({
-            cacheOptions: {
-              revalidateSeconds: revalidate,
-              tags: [cacheTags.prices(), cacheTags.set(catalogSetDetail.id)],
-            },
-            setIds: [catalogSetDetail.id],
-          }),
-      })
-    : new Map();
-  const currentOfferSummary = currentOfferSummaryBySetId.get(
-    catalogSetDetail.id,
-  );
+  const snapshotCurrentOfferSummary = await measureSetPageFetch({
+    label: 'current-offer-summary',
+    slug,
+    load: () =>
+      getRequestCachedSnapshotCurrentOfferSummaryBySetId(catalogSetDetail.id),
+  });
+  const currentOfferSummary =
+    snapshotCurrentOfferSummary ??
+    summarizeSetDetailCurrentOffersFromLiveOffers({
+      liveOffers: localizedSetDetailOffers,
+      setId: catalogSetDetail.id,
+    });
   const bestOffer = currentOfferSummary?.bestOffer;
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
   const hasLiveCurrentOffer =

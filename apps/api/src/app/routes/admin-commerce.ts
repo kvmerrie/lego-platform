@@ -56,6 +56,7 @@ import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
+import { createAdminPreHandler } from '../lib/admin-authorization';
 
 export interface AdminCommerceService {
   importAlternateFeed(
@@ -485,6 +486,8 @@ async function revalidateMerchantSurfaces({
 }
 
 export function createAdminCommerceRoutes({
+  adminOrMachinePreHandler,
+  adminPreHandler,
   commerceService = createAdminCommerceService(),
   getExpectedAdminSecret = () => getAdminPromotionConfig().secret,
   isProductionEnvironment = () =>
@@ -492,21 +495,46 @@ export function createAdminCommerceRoutes({
     process.env['APP_ENV'] === 'production' ||
     process.env['VERCEL_ENV'] === 'production',
 }: {
+  adminOrMachinePreHandler?: ReturnType<typeof createAdminPreHandler>;
+  adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   commerceService?: AdminCommerceService;
   getExpectedAdminSecret?: () => string;
   isProductionEnvironment?: () => boolean;
 } = {}) {
   return async function (fastify: FastifyInstance) {
-    fastify.get(apiPaths.adminCommerceCoverageQueue, async function () {
-      return commerceService.listCoverageQueue();
-    });
+    const requireAdmin = adminPreHandler ?? createAdminPreHandler();
+    const requireAdminOrMachineSecret =
+      adminOrMachinePreHandler ??
+      createAdminPreHandler({
+        allowMachineSecret: true,
+        getExpectedMachineSecret: getExpectedAdminSecret,
+      });
+    const adminRouteOptions = {
+      preHandler: requireAdmin,
+    };
+    const machineRouteOptions = {
+      preHandler: requireAdminOrMachineSecret,
+    };
 
-    fastify.get(apiPaths.adminCommerceBenchmarkSets, async function () {
-      return commerceService.listBenchmarkSets();
-    });
+    fastify.get(
+      apiPaths.adminCommerceCoverageQueue,
+      adminRouteOptions,
+      async function () {
+        return commerceService.listCoverageQueue();
+      },
+    );
+
+    fastify.get(
+      apiPaths.adminCommerceBenchmarkSets,
+      adminRouteOptions,
+      async function () {
+        return commerceService.listBenchmarkSets();
+      },
+    );
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceBenchmarkSets,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const input = normalizeBenchmarkSetInput(
@@ -529,6 +557,7 @@ export function createAdminCommerceRoutes({
 
     fastify.delete<{ Params: { setId: string } }>(
       `${apiPaths.adminCommerceBenchmarkSets}/:setId`,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           await commerceService.deleteBenchmarkSet(
@@ -547,12 +576,17 @@ export function createAdminCommerceRoutes({
       },
     );
 
-    fastify.get(apiPaths.adminCommerceMerchants, async function () {
-      return commerceService.listMerchants();
-    });
+    fastify.get(
+      apiPaths.adminCommerceMerchants,
+      adminRouteOptions,
+      async function () {
+        return commerceService.listMerchants();
+      },
+    );
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceMerchants,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const input = validateCommerceMerchantInput(request.body);
@@ -575,6 +609,7 @@ export function createAdminCommerceRoutes({
 
     fastify.put<{ Body: unknown; Params: { merchantId: string } }>(
       `${apiPaths.adminCommerceMerchants}/:merchantId`,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const input = validateCommerceMerchantInput(request.body);
@@ -599,9 +634,13 @@ export function createAdminCommerceRoutes({
       },
     );
 
-    fastify.get(apiPaths.adminCommerceOfferSeeds, async function () {
-      return commerceService.listOfferSeeds();
-    });
+    fastify.get(
+      apiPaths.adminCommerceOfferSeeds,
+      adminRouteOptions,
+      async function () {
+        return commerceService.listOfferSeeds();
+      },
+    );
 
     fastify.get<{
       Querystring: {
@@ -611,6 +650,7 @@ export function createAdminCommerceRoutes({
       };
     }>(
       apiPaths.adminCommerceAffiliateDiscoveredSets,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           return commerceService.listAffiliateDiscoveredSets(
@@ -629,6 +669,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown }>(
       `${apiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           return await commerceService.importDiscoveredSets(
@@ -647,6 +688,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown; Params: { discoveredSetId: string } }>(
       `${apiPaths.adminCommerceAffiliateDiscoveredSets}/:discoveredSetId/status`,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const { status } = readAffiliateDiscoveredSetStatusBody(request.body);
@@ -668,6 +710,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceAlternateFeedImports,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const rows = readAlternateAffiliateFeedRows(request.body);
@@ -686,6 +729,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceProductionSync,
+      machineRouteOptions,
       async function (request, reply) {
         if (isProductionEnvironment()) {
           return reply.status(403).send({
@@ -738,6 +782,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceSetRefreshes,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const setId = readRequiredSetId(request.body);
@@ -757,6 +802,7 @@ export function createAdminCommerceRoutes({
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceOfferSeeds,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const input = normalizeOfferSeedInput(
@@ -782,6 +828,7 @@ export function createAdminCommerceRoutes({
 
     fastify.put<{ Body: unknown; Params: { offerSeedId: string } }>(
       `${apiPaths.adminCommerceOfferSeeds}/:offerSeedId`,
+      adminRouteOptions,
       async function (request, reply) {
         try {
           const input = normalizeOfferSeedInput(

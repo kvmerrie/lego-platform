@@ -22,6 +22,10 @@ import {
 import { ActionLink, SectionHeading } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { getCachedPublicBrowsePageData } from '../lib/public-browse-page-cache';
+import {
+  PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
+  getSnapshotPageHealth,
+} from '../lib/snapshot-page-health';
 import styles from './deals-page.module.css';
 
 export const revalidate = false;
@@ -93,15 +97,31 @@ async function getCachedDealPageSnapshot({
   sortKey: CatalogDealPageSortKey;
 }) {
   return getCachedPublicBrowsePageData({
-    load: async () =>
-      (await getCatalogDealPageSnapshot({
+    load: async () => {
+      const snapshot = await getCatalogDealPageSnapshot({
         limit,
         offset,
         sortKey,
-      })) ?? {
-        setCards: [],
-        totalSetCount: 0,
-      },
+      });
+      const health = getSnapshotPageHealth({
+        generatedAt: snapshot?.snapshotGeneratedAt,
+        maxAgeMs: PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
+      });
+
+      if (health !== 'fresh') {
+        console.warn('[deal-page-snapshot] unsafe page render blocked', {
+          generated_at: snapshot?.snapshotGeneratedAt ?? null,
+          health,
+          limit,
+          offset,
+          sort_key: sortKey,
+        });
+
+        return null;
+      }
+
+      return snapshot;
+    },
     pageType: 'deals',
     params: ['sort', sortKey, 'limit', limit, 'offset', offset],
     revalidateSeconds: revalidate,
@@ -130,13 +150,18 @@ export default async function DealsPage({
     offset: (currentPage - 1) * DEALS_PAGE_SIZE,
     sortKey,
   });
+
+  if (!dealsPage) {
+    return notFound();
+  }
+
   const pageCount = Math.max(
     1,
     Math.ceil(dealsPage.totalSetCount / DEALS_PAGE_SIZE),
   );
 
   if (currentPage > pageCount) {
-    notFound();
+    return notFound();
   }
 
   return (

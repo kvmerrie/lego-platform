@@ -19,6 +19,9 @@ async function createServer({
       }),
   ),
   principal = {
+    appMetadata: {
+      role: 'admin',
+    },
     email: 'admin@example.test',
     state: 'authenticated',
     userId: 'admin-1',
@@ -125,6 +128,35 @@ describe('admin cache revalidation routes', () => {
         tags: ['homepage', 'deals'],
       }),
     });
+
+    await server.close();
+  });
+
+  test('rejects a normal authenticated user', async () => {
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    process.env.WEB_REVALIDATE_SECRET = 'server-secret';
+    const { fetchImpl, server } = await createServer({
+      principal: {
+        email: 'collector@example.test',
+        state: 'authenticated',
+        userId: 'collector-1',
+      },
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/cache/revalidate',
+      headers: {
+        authorization: 'Bearer collector-token',
+      },
+      payload: {
+        paths: ['/'],
+        reason: 'manual_homepage_fix',
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(fetchImpl).not.toHaveBeenCalled();
 
     await server.close();
   });

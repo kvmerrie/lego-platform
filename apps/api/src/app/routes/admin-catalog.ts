@@ -26,6 +26,7 @@ import {
   buildThemePath,
 } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
+import { createAdminPreHandler } from '../lib/admin-authorization';
 
 export interface AdminCatalogSetSummary {
   collectorAngle?: string;
@@ -247,11 +248,15 @@ function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
 }
 
 export function createAdminCatalogRoutes({
+  adminPreHandler = createAdminPreHandler(),
   catalogService = createAdminCatalogService(),
 }: {
+  adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   catalogService?: AdminCatalogService;
 } = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.addHook('preHandler', adminPreHandler);
+
     fastify.get(apiPaths.adminCatalogSets, async function () {
       return catalogService.listCatalogSets();
     });

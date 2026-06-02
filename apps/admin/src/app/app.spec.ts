@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { CommerceAdminApiService } from '@lego-platform/commerce/feature-admin';
+import { AdminAuthService } from './admin-auth.service';
 import { App } from './app';
 import { appRoutes } from './app.routes';
 
@@ -10,6 +12,19 @@ describe('App', () => {
       imports: [App],
       providers: [
         provideRouter(appRoutes),
+        {
+          provide: AdminAuthService,
+          useValue: {
+            initialize: async () => undefined,
+            loginNotice: signal(null),
+            signInWithEmail: async () => undefined,
+            signOut: async () => undefined,
+            state: signal({
+              email: 'kvmerrie@gmail.com',
+              status: 'authenticated',
+            }),
+          },
+        },
         {
           provide: CommerceAdminApiService,
           useValue: {

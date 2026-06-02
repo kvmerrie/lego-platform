@@ -817,10 +817,16 @@ describe('ImageGallery', () => {
         clientX: 240,
         clientY: 120,
       });
-      dispatchPointerEvent(mainButton, 'pointermove', {
-        clientX: 156,
-        clientY: 124,
-      });
+      const horizontalMoveEvent = dispatchPointerEvent(
+        mainButton,
+        'pointermove',
+        {
+          clientX: 156,
+          clientY: 124,
+        },
+      );
+
+      expect(horizontalMoveEvent?.defaultPrevented).toBe(true);
     });
 
     expect(swipeTrack?.dataset['swipePhase']).toBe('dragging');
@@ -1124,10 +1130,6 @@ describe('ImageGallery', () => {
             clientY: 124,
           },
         );
-        dispatchPointerEvent(mediaFrame, 'pointerup', {
-          clientX: 132,
-          clientY: 124,
-        });
 
         expect(horizontalMoveEvent?.defaultPrevented).toBe(true);
       });
@@ -1135,6 +1137,16 @@ describe('ImageGallery', () => {
       const swipeTrack = document.body.querySelector<HTMLElement>(
         '[data-swipe-track="lightbox"]',
       );
+
+      expect(swipeTrack?.dataset['swipePhase']).toBe('dragging');
+      expect(swipeTrack?.style.transform).toContain('-100px');
+
+      act(() => {
+        dispatchPointerEvent(mediaFrame, 'pointerup', {
+          clientX: 132,
+          clientY: 124,
+        });
+      });
 
       expect(
         document.body.querySelector('[data-lightbox-active-index="0"]'),
@@ -1151,6 +1163,78 @@ describe('ImageGallery', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('keeps vertical lightbox viewer gestures available for page scrolling', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Eiffeltoren hoofdbeeld',
+              src: 'https://images.example/10307-main.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 1',
+              src: 'https://images.example/10307-alt1.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Alle afbeeldingen weergeven"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const mediaFrame = document.body.querySelector(
+      '[data-swipe-target="lightbox"]',
+    );
+
+    act(() => {
+      dispatchPointerEvent(mediaFrame, 'pointerdown', {
+        clientX: 240,
+        clientY: 120,
+      });
+      const verticalMoveEvent = dispatchPointerEvent(
+        mediaFrame,
+        'pointermove',
+        {
+          clientX: 220,
+          clientY: 190,
+        },
+      );
+      dispatchPointerEvent(mediaFrame, 'pointerup', {
+        clientX: 214,
+        clientY: 230,
+      });
+
+      expect(verticalMoveEvent?.defaultPrevented).toBe(false);
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
   });
 
   it('keeps short and vertical detail gallery gestures from changing images', () => {
@@ -1197,6 +1281,60 @@ describe('ImageGallery', () => {
 
     expect(container.textContent).toContain('1/2');
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('lets vertical gestures over the detail thumbnail row chain to page scroll', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Eiffeltoren hoofdbeeld',
+              src: 'https://images.example/10307-main.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 1',
+              src: 'https://images.example/10307-alt1.jpg',
+            },
+            {
+              alt: 'Eiffeltoren detail 2',
+              src: 'https://images.example/10307-alt2.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const thumbRow = container.querySelector('[class*="detailThumbRow"]');
+
+    act(() => {
+      dispatchPointerEvent(thumbRow, 'pointerdown', {
+        clientX: 120,
+        clientY: 120,
+      });
+      const verticalMoveEvent = dispatchPointerEvent(thumbRow, 'pointermove', {
+        clientX: 126,
+        clientY: 190,
+      });
+      const horizontalMoveEvent = dispatchPointerEvent(
+        thumbRow,
+        'pointermove',
+        {
+          clientX: 48,
+          clientY: 122,
+        },
+      );
+      dispatchPointerEvent(thumbRow, 'pointerup', {
+        clientX: 48,
+        clientY: 122,
+      });
+
+      expect(verticalMoveEvent?.defaultPrevented).toBe(false);
+      expect(horizontalMoveEvent?.defaultPrevented).toBe(false);
+    });
+
+    expect(container.textContent).toContain('1/3');
   });
 
   it('opens multi-image detail galleries into an all-images overview first', async () => {
@@ -1403,6 +1541,8 @@ describe('ImageGallery', () => {
     expect(css).toContain('width: min(130px, 100%);');
     expect(css).toContain('grid-auto-flow: row;');
     expect(css).toContain('overflow-y: auto;');
+    expect(css).toContain('overscroll-behavior-y: auto;');
+    expect(css).toContain('touch-action: auto;');
     expect(css).toContain('box-shadow: 0 0 0 3px var(--lego-accent);');
     expect(css).toContain(
       ".detailGallery[data-has-multiple-images='true'] .detailMainButton {",
@@ -1415,6 +1555,7 @@ describe('ImageGallery', () => {
     expect(css).toContain('background: rgba(12, 18, 32, 0.68);');
     expect(css).toContain('.detailMainButton,\n.lightboxMediaFrame {');
     expect(css).toContain('touch-action: pan-y;');
+    expect(css).not.toContain('touch-action: pan-x;');
     expect(css).toContain('.swipeViewport {');
     expect(css).toContain('.swipeTrack {');
     expect(css).toContain("data-swipe-phase='dragging'");

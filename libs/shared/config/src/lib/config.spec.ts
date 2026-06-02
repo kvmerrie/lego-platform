@@ -161,7 +161,10 @@ describe('shared config browser Supabase helpers', () => {
   const originalEnv = { ...process.env };
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     process.env = { ...originalEnv };
+    delete (globalThis as { __BRICKHUNT_ADMIN_ENV__?: unknown })
+      .__BRICKHUNT_ADMIN_ENV__;
   });
 
   test('reads NEXT_PUBLIC browser config from direct process.env references by default', () => {
@@ -188,6 +191,41 @@ describe('shared config browser Supabase helpers', () => {
       url: 'https://override.supabase.co',
       anonKey: 'override-anon-key',
     });
+  });
+
+  test('reads Angular admin browser runtime config without process.env values', () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    (
+      globalThis as {
+        __BRICKHUNT_ADMIN_ENV__?: Record<string, string | undefined>;
+      }
+    ).__BRICKHUNT_ADMIN_ENV__ = {
+      NEXT_PUBLIC_SUPABASE_URL: 'https://admin-runtime.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'runtime-anon-key',
+    };
+
+    expect(hasBrowserSupabaseConfig()).toBe(true);
+    expect(getMissingBrowserSupabaseEnvKeys()).toEqual([]);
+    expect(getBrowserSupabaseConfig()).toEqual({
+      url: 'https://admin-runtime.supabase.co',
+      anonKey: 'runtime-anon-key',
+    });
+  });
+
+  test('keeps the browser setup error path when public Supabase vars are missing', () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    expect(hasBrowserSupabaseConfig()).toBe(false);
+    expect(getMissingBrowserSupabaseEnvKeys()).toEqual([
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    ]);
+    expect(() => getBrowserSupabaseConfig()).toThrow(
+      'Missing required environment variable: NEXT_PUBLIC_SUPABASE_URL.',
+    );
   });
 });
 

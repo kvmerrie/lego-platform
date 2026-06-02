@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'node:crypto';
 import {
   logAdminOperation,
   type AdminOperationLogInput,
@@ -14,8 +13,12 @@ import {
   publicWebRevalidationEnvKeys,
   validateRevalidationReason,
 } from '@lego-platform/shared/config';
-import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import type { FastifyInstance } from 'fastify';
+import {
+  authorizeAdminRequest,
+  readAdminSecretHeader,
+  type AdminAuthorizationActor,
+} from '../lib/admin-authorization';
 
 const REVALIDATION_TIMEOUT_MS = 10_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -57,17 +60,7 @@ type LogAdminOperationFn = typeof logAdminOperation;
 
 const rateLimitState = new Map<string, number[]>();
 
-type AdminCacheRevalidationActor =
-  | {
-      email: string | null;
-      id: string;
-      kind: 'bearer_session';
-    }
-  | {
-      email: null;
-      id: 'admin-secret';
-      kind: 'admin_secret';
-    };
+type AdminCacheRevalidationActor = AdminAuthorizationActor;
 
 function readStringArray(value: unknown, fieldName: string): string[] {
   if (value === undefined) {
@@ -87,85 +80,12 @@ function readStringArray(value: unknown, fieldName: string): string[] {
   });
 }
 
-function isAuthenticatedAdmin(
-  requestPrincipal: RequestPrincipal | null,
-): requestPrincipal is Extract<RequestPrincipal, { state: 'authenticated' }> {
-  return requestPrincipal?.state === 'authenticated';
-}
-
-function readAdminSecretHeader(
-  headerValue: string | string[] | undefined,
-): string | undefined {
-  if (Array.isArray(headerValue)) {
-    return typeof headerValue[0] === 'string'
-      ? headerValue[0].trim()
-      : undefined;
-  }
-
-  return typeof headerValue === 'string' ? headerValue.trim() : undefined;
-}
-
-function matchesSecret({
-  expectedSecret,
-  providedSecret,
-}: {
-  expectedSecret: string;
-  providedSecret?: string;
-}): boolean {
-  if (!providedSecret) {
-    return false;
-  }
-
-  const expectedBuffer = Buffer.from(expectedSecret, 'utf8');
-  const providedBuffer = Buffer.from(providedSecret, 'utf8');
-
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(expectedBuffer, providedBuffer);
-}
-
 function readExpectedAdminCacheRevalidationSecret(): string | undefined {
   return (
     process.env[adminCacheRevalidationEnvKeys.secret]?.trim() ||
     process.env[adminPromotionEnvKeys.secret]?.trim() ||
     undefined
   );
-}
-
-function resolveAdminCacheRevalidationActor({
-  providedAdminSecret,
-  requestPrincipal,
-}: {
-  providedAdminSecret?: string;
-  requestPrincipal: RequestPrincipal | null;
-}): AdminCacheRevalidationActor | null {
-  if (isAuthenticatedAdmin(requestPrincipal)) {
-    return {
-      email: requestPrincipal.email,
-      id: requestPrincipal.userId,
-      kind: 'bearer_session',
-    };
-  }
-
-  const expectedAdminSecret = readExpectedAdminCacheRevalidationSecret();
-
-  if (
-    expectedAdminSecret &&
-    matchesSecret({
-      expectedSecret: expectedAdminSecret,
-      providedSecret: providedAdminSecret,
-    })
-  ) {
-    return {
-      email: null,
-      id: 'admin-secret',
-      kind: 'admin_secret',
-    };
-  }
-
-  return null;
 }
 
 function getRateLimitKey({
@@ -329,19 +249,23 @@ export function createAdminCacheRevalidationRoutes({
       apiPaths.adminCacheRevalidation,
       async function (request, reply) {
         const requestPrincipal = request.requestPrincipal;
-        const actor = resolveAdminCacheRevalidationActor({
-          providedAdminSecret: readAdminSecretHeader(
+        const authorization = authorizeAdminRequest({
+          allowMachineSecret: true,
+          getExpectedMachineSecret: readExpectedAdminCacheRevalidationSecret,
+          providedMachineSecret: readAdminSecretHeader(
             request.headers['x-admin-secret'],
           ),
           requestPrincipal,
         });
 
-        if (!actor) {
-          return reply.status(401).send({
-            message: 'Admin authentication is required.',
+        if (authorization.authorized === false) {
+          return reply.status(authorization.statusCode).send({
+            message: authorization.message,
             status: 'error',
           });
         }
+
+        const actor = authorization.actor;
 
         if (
           isRateLimited({

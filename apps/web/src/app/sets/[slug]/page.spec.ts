@@ -246,6 +246,9 @@ beforeEach(() => {
   delete process.env['BRICKSET_GALLERY_RENDER_MODE'];
   delete process.env['SET_DETAIL_STATIC_PARAMS_LIMIT'];
   delete process.env['SKIP_SET_DETAIL_SSG_OPTIONAL_RAILS'];
+  setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+    new Map(),
+  );
 });
 
 function createCurrentOfferSummaryMap({
@@ -805,6 +808,101 @@ describe('set detail metadata', () => {
     expect(JSON.stringify(metadata.robots)).not.toContain('noimageindex');
     expect(metadata.twitter?.title).toBe(metadata.title);
     expect(metadata.twitter?.description).toBe(metadata.description);
+  });
+
+  it('generates price-aware metadata from snapshot summaries without loading live offers', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue(baseSet);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-05T08:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'other',
+            merchantName: 'Coolblue',
+            merchantSlug: 'coolblue',
+            priceCents: 10395,
+            url: 'https://partner.example/75459',
+          },
+        ],
+        setId: '75459',
+      }),
+    );
+
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      params: Promise.resolve({
+        slug: 'imperial-lambda-class-shuttle-75459',
+      }),
+    });
+
+    expect(metadata.title).toBe('Imperial Lambda-Class Shuttle. Nu € 103,95');
+    expect(metadata.alternates?.canonical).toBe(
+      'https://www.brickhunt.nl/sets/imperial-lambda-class-shuttle-75459',
+    );
+    expect(metadata.openGraph?.title).toBe(metadata.title);
+    expect(metadata.openGraph?.url).toBe(
+      'https://www.brickhunt.nl/sets/imperial-lambda-class-shuttle-75459',
+    );
+    expect(setPageMocks.listCatalogSetLiveOffersBySetId).not.toHaveBeenCalled();
+    expect(
+      setPageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).toHaveBeenCalledWith({
+      cacheOptions: {
+        revalidateSeconds: 21_600,
+        tags: ['prices', 'set:75459'],
+      },
+      liveFallbackSetIdLimit: 0,
+      setIds: ['75459'],
+    });
+  });
+
+  it('shares the set detail cache key between metadata and page rendering where the cache is observable', async () => {
+    const cachedValues = new Map<string, unknown>();
+
+    setPageMocks.unstableCache.mockImplementation((callback, keyParts) => {
+      return () => {
+        const cacheKey = JSON.stringify(keyParts);
+
+        if (!cachedValues.has(cacheKey)) {
+          cachedValues.set(cacheKey, callback());
+        }
+
+        return cachedValues.get(cacheKey);
+      };
+    });
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue(baseSet);
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+
+    await pageModule.generateMetadata({
+      params: Promise.resolve({
+        slug: 'imperial-lambda-class-shuttle-75459',
+      }),
+    });
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'imperial-lambda-class-shuttle-75459',
+        }),
+      }),
+    );
+
+    expect(setPageMocks.getCatalogSetBySlug).toHaveBeenCalledTimes(1);
+    expect(setPageMocks.getCatalogSetBySlug).toHaveBeenCalledWith({
+      slug: 'imperial-lambda-class-shuttle-75459',
+    });
   });
 
   it('allows set detail metadata to index when launch indexing is enabled', async () => {

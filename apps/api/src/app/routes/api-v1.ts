@@ -27,10 +27,17 @@ import {
   type CollectorProfile,
   validateUpdateCollectorProfileInput,
 } from '@lego-platform/user/util';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-const CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT = 100;
-const CATALOG_DISCOVERY_SIGNAL_GET_SET_ID_LIMIT = 100;
+const PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT = 100;
+const PUBLIC_CATALOG_POST_BODY_LIMIT_BYTES = 16 * 1024;
+const PUBLIC_CATALOG_RATE_LIMIT_WINDOW_MS = 60_000;
+const PUBLIC_CATALOG_RATE_LIMIT_MAX_REQUESTS = 120;
+
+export interface ApiV1PublicRateLimitOptions {
+  maxRequests?: number;
+  windowMs?: number;
+}
 
 export interface ApiV1RouteDependencies {
   listCatalogCurrentOfferSummariesBySetIds?: (
@@ -53,6 +60,7 @@ export interface ApiV1RouteDependencies {
     Awaited<ReturnType<typeof listCatalogSetLiveOffersBySetIdServer>>
   >;
   userProfileRepository?: UserProfileRepository;
+  publicRateLimit?: ApiV1PublicRateLimitOptions;
   userSessionService?: UserSessionService;
   userSetStatusRepository?: UserSetStatusRepository;
 }
@@ -118,6 +126,7 @@ export function createApiV1Routes({
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
+  publicRateLimit,
   userProfileRepository = createUserProfileRepository(),
   userSetStatusRepository = createUserSetStatusRepository(),
   userSessionService = createUserSessionService({
@@ -125,25 +134,91 @@ export function createApiV1Routes({
     userSetStatusRepository,
   }),
 }: ApiV1RouteDependencies = {}) {
-  function parseCatalogSetIds(value?: string): string[] {
+  const publicLookupRateLimitState = new Map<string, number[]>();
+  const publicLookupRateLimitWindowMs =
+    publicRateLimit?.windowMs ?? PUBLIC_CATALOG_RATE_LIMIT_WINDOW_MS;
+  const publicLookupRateLimitMaxRequests =
+    publicRateLimit?.maxRequests ?? PUBLIC_CATALOG_RATE_LIMIT_MAX_REQUESTS;
+
+  function parseCatalogSetIds(value?: string): {
+    submittedSetIdCount: number;
+    setIds: string[];
+  } {
     if (!value) {
-      return [];
+      return {
+        submittedSetIdCount: 0,
+        setIds: [],
+      };
     }
 
-    return [
-      ...new Set(value.split(',').map((setId) => normalizeCatalogSetId(setId))),
-    ].filter((setId) => setId.length > 0);
+    const submittedSetIds = value
+      .split(',')
+      .map((setId) => normalizeCatalogSetId(setId))
+      .filter((setId) => setId.length > 0);
+
+    return {
+      submittedSetIdCount: submittedSetIds.length,
+      setIds: [...new Set(submittedSetIds)],
+    };
   }
 
   function normalizeRouteSetId(setId: string): string {
     return normalizeCatalogSetId(setId);
   }
 
+  function createSetIdLimitResponse(routeLabel: string) {
+    return {
+      message: `Too many setIds for ${routeLabel}; chunk requests to ${PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT} setIds or fewer.`,
+      maxSetIds: PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT,
+    };
+  }
+
+  function checkPublicLookupRateLimit(requestIp: string): boolean {
+    if (publicLookupRateLimitMaxRequests <= 0) {
+      return true;
+    }
+
+    const now = Date.now();
+    const windowStart = now - publicLookupRateLimitWindowMs;
+    const recentRequests = (
+      publicLookupRateLimitState.get(requestIp) ?? []
+    ).filter((timestamp) => timestamp > windowStart);
+
+    if (recentRequests.length >= publicLookupRateLimitMaxRequests) {
+      publicLookupRateLimitState.set(requestIp, recentRequests);
+
+      return false;
+    }
+
+    recentRequests.push(now);
+    publicLookupRateLimitState.set(requestIp, recentRequests);
+
+    return true;
+  }
+
+  async function validatePublicLookupRateLimit(
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) {
+    if (checkPublicLookupRateLimit(request.ip)) {
+      return;
+    }
+
+    reply.status(429).send({
+      message: 'Too many public catalog lookup requests. Please retry later.',
+    });
+  }
+
   return async function (fastify: FastifyInstance) {
     fastify.get<{ Querystring: { setIds?: string } }>(
       buildCatalogDiscoverySignalsApiPath(),
+      {
+        preHandler: validatePublicLookupRateLimit,
+      },
       async function (request, reply) {
-        const setIds = parseCatalogSetIds(request.query.setIds);
+        const { setIds, submittedSetIdCount } = parseCatalogSetIds(
+          request.query.setIds,
+        );
 
         if (!setIds.length) {
           return reply.status(400).send({
@@ -151,12 +226,10 @@ export function createApiV1Routes({
           });
         }
 
-        if (setIds.length > CATALOG_DISCOVERY_SIGNAL_GET_SET_ID_LIMIT) {
-          return reply.status(413).send({
-            message:
-              'Too many setIds for GET discovery-signals; use POST body or chunk requests.',
-            maxSetIds: CATALOG_DISCOVERY_SIGNAL_GET_SET_ID_LIMIT,
-          });
+        if (submittedSetIdCount > PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT) {
+          return reply
+            .status(400)
+            .send(createSetIdLimitResponse('GET discovery-signals'));
         }
 
         return listCatalogDiscoverySignalsDependency(setIds);
@@ -165,6 +238,10 @@ export function createApiV1Routes({
 
     fastify.post<{ Body: { setIds?: readonly string[] | string } }>(
       buildCatalogDiscoverySignalsApiPath(),
+      {
+        bodyLimit: PUBLIC_CATALOG_POST_BODY_LIMIT_BYTES,
+        preHandler: validatePublicLookupRateLimit,
+      },
       async function (request, reply) {
         const rawBodySetIds = request.body?.setIds;
         const rawSetIds =
@@ -173,12 +250,18 @@ export function createApiV1Routes({
             : Array.isArray(rawBodySetIds)
               ? rawBodySetIds.join(',')
               : undefined;
-        const setIds = parseCatalogSetIds(rawSetIds);
+        const { setIds, submittedSetIdCount } = parseCatalogSetIds(rawSetIds);
 
         if (!setIds.length) {
           return reply.status(400).send({
             message: 'catalog discovery signals require setIds.',
           });
+        }
+
+        if (submittedSetIdCount > PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT) {
+          return reply
+            .status(400)
+            .send(createSetIdLimitResponse('POST discovery-signals'));
         }
 
         return listCatalogDiscoverySignalsDependency(setIds);
@@ -208,15 +291,18 @@ export function createApiV1Routes({
 
     fastify.get<{ Querystring: { setIds?: string } }>(
       buildCatalogCurrentOfferSummariesApiPath(),
+      {
+        preHandler: validatePublicLookupRateLimit,
+      },
       async function (request, reply) {
-        const setIds = parseCatalogSetIds(request.query.setIds);
+        const { setIds, submittedSetIdCount } = parseCatalogSetIds(
+          request.query.setIds,
+        );
 
-        if (setIds.length > CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT) {
-          return reply.status(413).send({
-            message:
-              'Too many setIds for GET current-offer-summaries; use POST body or chunk requests.',
-            maxSetIds: CATALOG_CURRENT_OFFER_SUMMARY_GET_SET_ID_LIMIT,
-          });
+        if (submittedSetIdCount > PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT) {
+          return reply
+            .status(400)
+            .send(createSetIdLimitResponse('GET current-offer-summaries'));
         }
 
         return listCatalogCurrentOfferSummariesBySetIdsDependency(setIds);
@@ -225,6 +311,10 @@ export function createApiV1Routes({
 
     fastify.post<{ Body: { setIds?: readonly string[] | string } }>(
       buildCatalogCurrentOfferSummariesApiPath(),
+      {
+        bodyLimit: PUBLIC_CATALOG_POST_BODY_LIMIT_BYTES,
+        preHandler: validatePublicLookupRateLimit,
+      },
       async function (request, reply) {
         const rawBodySetIds = request.body?.setIds;
         const rawSetIds =
@@ -233,12 +323,18 @@ export function createApiV1Routes({
             : Array.isArray(rawBodySetIds)
               ? rawBodySetIds.join(',')
               : undefined;
-        const setIds = parseCatalogSetIds(rawSetIds);
+        const { setIds, submittedSetIdCount } = parseCatalogSetIds(rawSetIds);
 
         if (!setIds.length) {
           return reply.status(400).send({
             message: 'current offer summaries require setIds.',
           });
+        }
+
+        if (submittedSetIdCount > PUBLIC_CATALOG_LOOKUP_SET_ID_LIMIT) {
+          return reply
+            .status(400)
+            .send(createSetIdLimitResponse('POST current-offer-summaries'));
         }
 
         return listCatalogCurrentOfferSummariesBySetIdsDependency(setIds);
@@ -247,6 +343,9 @@ export function createApiV1Routes({
 
     fastify.get<{ Params: { setId: string } }>(
       `${apiPaths.catalogSets}/:setId/live-offers`,
+      {
+        preHandler: validatePublicLookupRateLimit,
+      },
       async function (request) {
         return listCatalogSetLiveOffersBySetIdDependency(
           normalizeRouteSetId(request.params.setId),

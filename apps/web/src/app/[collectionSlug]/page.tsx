@@ -30,6 +30,11 @@ import {
   buildBreadcrumbListJsonLd,
   buildCollectionPageJsonLd,
 } from '../lib/structured-data';
+import {
+  COLLECTION_PAGE_SNAPSHOT_MAX_AGE_MS,
+  PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
+  getSnapshotPageHealth,
+} from '../lib/snapshot-page-health';
 
 export const dynamicParams = false;
 export const revalidate = 21_600;
@@ -91,6 +96,39 @@ function toSerializableCollectionLandingPageResult(
   };
 }
 
+function getCollectionSnapshotMaxAgeMs(
+  config: CatalogCollectionLandingPageConfig,
+): number {
+  return config.slug === 'lego-sets-onder-50-euro'
+    ? PRICE_SNAPSHOT_PAGE_MAX_AGE_MS
+    : COLLECTION_PAGE_SNAPSHOT_MAX_AGE_MS;
+}
+
+function logUnsafeCollectionSnapshot({
+  config,
+  generatedAt,
+  health,
+  limit,
+  offset,
+  sortKey,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  generatedAt?: string | null;
+  health: 'missing' | 'stale';
+  limit: number;
+  offset: number;
+  sortKey: CatalogCollectionLandingPageSortKey;
+}): void {
+  console.warn('[collection-page-snapshot] unsafe page render blocked', {
+    collection_slug: config.slug,
+    generated_at: generatedAt ?? null,
+    health,
+    limit,
+    offset,
+    sort_key: sortKey,
+  });
+}
+
 async function getCachedSerializableCollectionLandingPage({
   config,
   limit,
@@ -101,39 +139,55 @@ async function getCachedSerializableCollectionLandingPage({
   limit: number;
   offset: number;
   sortKey: CatalogCollectionLandingPageSortKey;
-}): Promise<SerializableCollectionLandingPageResult> {
+}): Promise<SerializableCollectionLandingPageResult | null> {
   const tags = buildPublicBrowseCollectionCacheTags({
     collectionSlug: config.slug,
   });
 
   return getCachedPublicBrowsePageData({
-    load: async () =>
-      toSerializableCollectionLandingPageResult(
-        isCatalogCollectionPageSnapshotSlug(config.slug)
-          ? await getCatalogCollectionLandingPageSnapshot({
-              config,
-              limit,
-              offset,
-              sortKey,
-            }).then(
-              (snapshot) =>
-                snapshot ?? {
-                  bestPriceMinorBySetId: new Map(),
-                  setCards: [],
-                  totalSetCount: 0,
-                },
-            )
-          : await getCatalogCollectionLandingPage({
-              cacheOptions: {
-                revalidateSeconds: revalidate,
-                tags,
-              },
-              config,
-              limit,
-              offset,
-              sortKey,
-            }),
-      ),
+    load: async () => {
+      const collectionPage = isCatalogCollectionPageSnapshotSlug(config.slug)
+        ? await getCatalogCollectionLandingPageSnapshot({
+            config,
+            limit,
+            offset,
+            sortKey,
+          }).then((snapshot) => {
+            const health = getSnapshotPageHealth({
+              generatedAt: snapshot?.snapshotGeneratedAt,
+              maxAgeMs: getCollectionSnapshotMaxAgeMs(config),
+            });
+
+            if (health !== 'fresh') {
+              logUnsafeCollectionSnapshot({
+                config,
+                generatedAt: snapshot?.snapshotGeneratedAt,
+                health,
+                limit,
+                offset,
+                sortKey,
+              });
+
+              return null;
+            }
+
+            return snapshot;
+          })
+        : await getCatalogCollectionLandingPage({
+            cacheOptions: {
+              revalidateSeconds: revalidate,
+              tags,
+            },
+            config,
+            limit,
+            offset,
+            sortKey,
+          });
+
+      return collectionPage
+        ? toSerializableCollectionLandingPageResult(collectionPage)
+        : null;
+    },
     pageType: 'collection',
     params: ['sort', sortKey, 'limit', limit, 'offset', offset],
     revalidateSeconds: revalidate,
@@ -235,7 +289,7 @@ export default async function CollectionLandingPage({
   const config = getCatalogCollectionLandingPageConfig(collectionSlug);
 
   if (!config) {
-    notFound();
+    return notFound();
   }
 
   if (config.redirectPath) {
@@ -256,13 +310,18 @@ export default async function CollectionLandingPage({
     offset: (currentPage - 1) * COLLECTION_LANDING_PAGE_SIZE,
     sortKey,
   });
+
+  if (!collectionPage) {
+    return notFound();
+  }
+
   const pageCount = Math.max(
     1,
     Math.ceil(collectionPage.totalSetCount / COLLECTION_LANDING_PAGE_SIZE),
   );
 
   if (currentPage > pageCount) {
-    notFound();
+    return notFound();
   }
 
   const canonicalUrl = buildCanonicalUrl(

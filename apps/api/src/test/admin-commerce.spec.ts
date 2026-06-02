@@ -307,6 +307,8 @@ async function createAdminCommerceServer({
 
   await server.register(
     createAdminCommerceRoutes({
+      adminOrMachinePreHandler: async () => undefined,
+      adminPreHandler: async () => undefined,
       commerceService: nextCommerceService,
       getExpectedAdminSecret,
       isProductionEnvironment,

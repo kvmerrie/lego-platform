@@ -67,6 +67,7 @@ async function createAdminArticlesServer({
 
   await server.register(
     createAdminArticlesRoutes({
+      adminPreHandler: async () => undefined,
       articlesService: nextArticlesService,
     }),
   );
@@ -87,6 +88,7 @@ describe('admin articles routes', () => {
 
     await enabledServer.register(
       createAdminArticlesRoutes({
+        adminPreHandler: async () => undefined,
         articlesService,
         isPreviewEnabled: () => true,
       }),
@@ -245,6 +247,7 @@ describe('admin articles routes', () => {
 
     await enabledServer.register(
       createAdminArticlesRoutes({
+        adminPreHandler: async () => undefined,
         articlesService,
         isPreviewEnabled: () => true,
       }),
@@ -310,6 +313,7 @@ describe('admin articles routes', () => {
 
     await enabledServer.register(
       createAdminArticlesRoutes({
+        adminPreHandler: async () => undefined,
         articlesService: {
           createPreview: vi.fn(async () => {
             throw new ContentArticleAdminValidationError(
@@ -374,6 +378,7 @@ describe('admin articles routes', () => {
 
     await disabledServer.register(
       createAdminArticlesRoutes({
+        adminPreHandler: async () => undefined,
         articlesService,
         isPreviewEnabled: () => false,
       }),

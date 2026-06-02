@@ -27,6 +27,7 @@ import {
 import { normalizeTheme } from '@lego-platform/catalog/util';
 import { revalidatePublicWeb } from '@lego-platform/api/data-access-server';
 import type { FastifyInstance } from 'fastify';
+import { createAdminPreHandler } from '../lib/admin-authorization';
 
 export interface AdminArticlesService {
   createPreview(input: {
@@ -155,13 +156,17 @@ async function revalidateArticleSurfaces({
 }
 
 export function createAdminArticlesRoutes({
+  adminPreHandler = createAdminPreHandler(),
   articlesService = createAdminArticlesService(),
   isPreviewEnabled = () => isArticlePreviewEnabled(),
 }: {
+  adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   articlesService?: AdminArticlesService;
   isPreviewEnabled?: () => boolean;
 } = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.addHook('preHandler', adminPreHandler);
+
     fastify.get(apiPaths.adminRuntimeConfig, async function () {
       return {
         articlePreviewEnabled: isPreviewEnabled(),

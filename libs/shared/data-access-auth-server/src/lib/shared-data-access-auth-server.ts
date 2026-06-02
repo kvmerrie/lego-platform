@@ -17,6 +17,8 @@ export interface AuthenticatedRequestPrincipal {
   state: 'authenticated';
   userId: string;
   email: string | null;
+  appMetadata?: Record<string, unknown>;
+  role?: string | null;
 }
 
 export type RequestPrincipal =
@@ -35,9 +37,11 @@ function toAuthenticatedRequestPrincipal(
   user: User,
 ): AuthenticatedRequestPrincipal {
   return {
+    appMetadata: user.app_metadata,
     state: 'authenticated',
     userId: user.id,
     email: user.email ?? null,
+    role: user.role ?? null,
   };
 }
 

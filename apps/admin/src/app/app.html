@@ -1,3 +1,55 @@
+@if (adminAuth.state().status === 'authenticated') {
 <lego-shell-admin>
   <router-outlet></router-outlet>
 </lego-shell-admin>
+} @else {
+<main class="admin-login">
+  <section class="admin-login__panel" aria-labelledby="admin-login-title">
+    <p class="admin-login__eyebrow">Brickhunt Admin</p>
+    <h1 id="admin-login-title">Login vereist</h1>
+
+    @if (adminAuth.state().status === 'loading') {
+    <p class="admin-login__copy">Je adminsessie wordt gecontroleerd.</p>
+    } @else if (adminAuth.state().status === 'forbidden') {
+    <p class="admin-login__copy admin-login__copy--error">
+      {{ forbiddenEmail }} heeft geen toegang tot Brickhunt Admin.
+    </p>
+
+    <button
+      class="admin-login__button admin-login__button--secondary"
+      type="button"
+      (click)="signOut()"
+    >
+      Log uit
+    </button>
+    } @else if (adminAuth.state().status === 'error') {
+    <p class="admin-login__copy admin-login__copy--error">
+      {{ authErrorMessage }}
+    </p>
+    } @else {
+    <p class="admin-login__copy">
+      Log in met je toegestane admin-account om catalogus en commerce te
+      beheren.
+    </p>
+
+    <label class="admin-login__field">
+      <span>E-mailadres</span>
+      <input
+        autocomplete="email"
+        inputmode="email"
+        name="email"
+        type="email"
+        [value]="loginEmail()"
+        (input)="updateLoginEmail($event)"
+      />
+    </label>
+
+    <button class="admin-login__button" type="button" (click)="signIn()">
+      Stuur loginlink
+    </button>
+    } @if (adminAuth.loginNotice()) {
+    <p class="admin-login__notice">{{ adminAuth.loginNotice() }}</p>
+    }
+  </section>
+</main>
+}

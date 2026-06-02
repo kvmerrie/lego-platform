@@ -3520,6 +3520,7 @@ export async function listCatalogSetCards({
 
 export interface CatalogCollectionLandingPageResult {
   bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  snapshotGeneratedAt?: string | null;
   setCards: readonly CatalogHomepageSetCard[];
   totalSetCount: number;
 }
@@ -3580,11 +3581,12 @@ export async function getCatalogCollectionLandingPageSnapshot({
     supabaseClient ?? getWebCatalogSupabaseReadClient();
 
   if (!activeSupabaseClient) {
-    return {
-      bestPriceMinorBySetId: new Map(),
-      setCards: [],
-      totalSetCount: 0,
-    };
+    console.warn('[collection-page-snapshot] missing Supabase client', {
+      collection_slug: config.slug,
+      sort_key: sortKey,
+    });
+
+    return undefined;
   }
 
   const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
@@ -3615,15 +3617,12 @@ export async function getCatalogCollectionLandingPageSnapshot({
       sort_key: sortKey,
     });
 
-    return {
-      bestPriceMinorBySetId: new Map(),
-      setCards: [],
-      totalSetCount: 0,
-    };
+    return undefined;
   }
 
   return {
     bestPriceMinorBySetId: new Map(),
+    snapshotGeneratedAt: snapshot.generated_at,
     setCards: normalizeCatalogCollectionPageSnapshotItems(snapshot.items_json),
     totalSetCount: snapshot.total_count,
   };
@@ -3636,6 +3635,7 @@ export type CatalogDealPageSortKey =
   | 'under-50';
 
 export interface CatalogDealPageSnapshotResult {
+  snapshotGeneratedAt?: string | null;
   setCards: readonly (CatalogHomepageSetCard & {
     priceContext?: {
       coverageLabel: string;
@@ -3696,10 +3696,11 @@ export async function getCatalogDealPageSnapshot({
     supabaseClient ?? getWebCatalogSupabaseReadClient();
 
   if (!activeSupabaseClient) {
-    return {
-      setCards: [],
-      totalSetCount: 0,
-    };
+    console.warn('[deal-page-snapshot] missing Supabase client', {
+      sort_key: sortKey,
+    });
+
+    return undefined;
   }
 
   const safeLimit = normalizeCatalogReadLimit(limit, CATALOG_BROWSE_PAGE_SIZE);
@@ -3729,13 +3730,11 @@ export async function getCatalogDealPageSnapshot({
       sort_key: sortKey,
     });
 
-    return {
-      setCards: [],
-      totalSetCount: 0,
-    };
+    return undefined;
   }
 
   return {
+    snapshotGeneratedAt: snapshot.generated_at,
     setCards: normalizeCatalogDealPageSnapshotItems(snapshot.items_json),
     totalSetCount: snapshot.total_count,
   };

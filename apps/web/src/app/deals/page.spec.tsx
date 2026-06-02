@@ -8,6 +8,7 @@ const dealsPageMocks = vi.hoisted(() => ({
   catalogBrowsePagination: vi.fn(),
   catalogSetCard: vi.fn(),
   getCatalogDealPageSnapshot: vi.fn(),
+  notFound: vi.fn(),
 }));
 
 vi.mock('next/cache', () => ({
@@ -16,6 +17,10 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogDealPageSnapshot: dealsPageMocks.getCatalogDealPageSnapshot,
+}));
+
+vi.mock('next/navigation', () => ({
+  notFound: dealsPageMocks.notFound,
 }));
 
 vi.mock('@lego-platform/catalog/ui', async () => {
@@ -54,7 +59,11 @@ vi.mock('@lego-platform/shell/web', () => ({
 describe('deals page snapshots', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    dealsPageMocks.notFound.mockImplementation(() => {
+      throw new Error('NEXT_NOT_FOUND');
+    });
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
       setCards: [],
       totalSetCount: 0,
     });
@@ -62,6 +71,7 @@ describe('deals page snapshots', () => {
 
   it('reads /deals from deal snapshots without live commerce rail loaders', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
       setCards: [
         {
           id: '10307',
@@ -104,6 +114,7 @@ describe('deals page snapshots', () => {
 
   it('renders pagination with the active sort query', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
       setCards: [
         {
           id: '10307',
@@ -147,5 +158,54 @@ describe('deals page snapshots', () => {
     );
 
     expect(css).toContain('--deals-page-surface: var(--lego-surface-accent);');
+  });
+
+  it('renders an intentional empty state when a fresh snapshot has total_count=0', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
+      setCards: [],
+      totalSetCount: 0,
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default({}));
+
+    expect(dealsPageMocks.notFound).not.toHaveBeenCalled();
+    expect(markup).toContain('De deal-snapshot is nog leeg');
+  });
+
+  it('does not render an indexable empty page when the deal snapshot is missing', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue(undefined);
+
+    const pageModule = await import('./page');
+
+    await expect(pageModule.default({})).rejects.toThrow('NEXT_NOT_FOUND');
+
+    expect(dealsPageMocks.notFound).toHaveBeenCalled();
+    expect(dealsPageMocks.catalogSetCard).not.toHaveBeenCalled();
+  });
+
+  it('does not render a normal indexable page when the deal snapshot is stale', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: '2020-01-01T00:00:00.000Z',
+      setCards: [
+        {
+          id: '10307',
+          name: 'Eiffeltoren',
+          pieces: 10001,
+          releaseYear: 2022,
+          slug: 'eiffel-tower-10307',
+          theme: 'Icons',
+        },
+      ],
+      totalSetCount: 1,
+    });
+
+    const pageModule = await import('./page');
+
+    await expect(pageModule.default({})).rejects.toThrow('NEXT_NOT_FOUND');
+
+    expect(dealsPageMocks.notFound).toHaveBeenCalled();
+    expect(dealsPageMocks.catalogSetCard).not.toHaveBeenCalled();
   });
 });

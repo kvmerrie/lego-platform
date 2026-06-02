@@ -31,6 +31,7 @@ async function createApiServer({
   listCatalogDiscoverySignals = vi.fn().mockResolvedValue([]) as NonNullable<
     ApiV1RouteDependencies['listCatalogDiscoverySignals']
   >,
+  publicRateLimit,
   requestPrincipal = {
     state: 'anonymous',
   } satisfies RequestPrincipal,
@@ -51,6 +52,7 @@ async function createApiServer({
   listCatalogSetLiveOffersBySetId?: NonNullable<
     ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
   >;
+  publicRateLimit?: ApiV1RouteDependencies['publicRateLimit'];
   requestPrincipal?: RequestPrincipal;
   userProfileRepository?: UserProfileRepository;
   userSession?: UserSession;
@@ -119,6 +121,7 @@ async function createApiServer({
       listCatalogCurrentOfferSummariesBySetIds,
       listCatalogDiscoverySignals,
       listCatalogSetLiveOffersBySetId,
+      publicRateLimit,
       userProfileRepository: nextUserProfileRepository,
       userSessionService,
       userSetStatusRepository,
@@ -213,7 +216,7 @@ describe('api v1 auth and set-status routes', () => {
       url: buildCatalogCurrentOfferSummariesApiPath(setIds),
     });
 
-    expect(response.statusCode).toBe(413);
+    expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({
       maxSetIds: 100,
     });
@@ -241,6 +244,35 @@ describe('api v1 auth and set-status routes', () => {
       '42172',
       '75398',
     ]);
+
+    await server.close();
+  });
+
+  test('rejects oversized POST current offer summary batches before lookup work', async () => {
+    const { listCatalogCurrentOfferSummariesBySetIds, server } =
+      await createApiServer();
+    const setIds = Array.from(
+      {
+        length: 101,
+      },
+      (_, index) => String(20_000 + index),
+    );
+
+    const response = await server.inject({
+      method: 'POST',
+      url: buildCatalogCurrentOfferSummariesApiPath(),
+      payload: {
+        setIds,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({
+      maxSetIds: 100,
+      message:
+        'Too many setIds for POST current-offer-summaries; chunk requests to 100 setIds or fewer.',
+    });
+    expect(listCatalogCurrentOfferSummariesBySetIds).not.toHaveBeenCalled();
 
     await server.close();
   });
@@ -289,7 +321,7 @@ describe('api v1 auth and set-status routes', () => {
       url: buildCatalogDiscoverySignalsApiPath(setIds),
     });
 
-    expect(response.statusCode).toBe(413);
+    expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({
       maxSetIds: 100,
     });
@@ -316,6 +348,90 @@ describe('api v1 auth and set-status routes', () => {
       '42172',
       '75398',
     ]);
+
+    await server.close();
+  });
+
+  test('rejects oversized POST catalog discovery signal batches before lookup work', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer();
+    const setIds = Array.from(
+      {
+        length: 101,
+      },
+      (_, index) => String(40_000 + index),
+    );
+
+    const response = await server.inject({
+      method: 'POST',
+      url: buildCatalogDiscoverySignalsApiPath(),
+      payload: {
+        setIds,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({
+      maxSetIds: 100,
+      message:
+        'Too many setIds for POST discovery-signals; chunk requests to 100 setIds or fewer.',
+    });
+    expect(listCatalogDiscoverySignals).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('rejects oversized public catalog JSON bodies', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: buildCatalogDiscoverySignalsApiPath(),
+      headers: {
+        'content-type': 'application/json',
+      },
+      payload: JSON.stringify({
+        setIds: ['42172'],
+        padding: 'x'.repeat(20 * 1024),
+      }),
+    });
+
+    expect(response.statusCode).toBe(413);
+    expect(listCatalogDiscoverySignals).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('rate limits expensive public catalog lookup endpoints by IP', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer({
+      publicRateLimit: {
+        maxRequests: 2,
+        windowMs: 60_000,
+      },
+    });
+
+    const firstResponse = await server.inject({
+      method: 'GET',
+      remoteAddress: '203.0.113.10',
+      url: buildCatalogDiscoverySignalsApiPath(['42172']),
+    });
+    const secondResponse = await server.inject({
+      method: 'GET',
+      remoteAddress: '203.0.113.10',
+      url: buildCatalogDiscoverySignalsApiPath(['75398']),
+    });
+    const rateLimitedResponse = await server.inject({
+      method: 'GET',
+      remoteAddress: '203.0.113.10',
+      url: buildCatalogDiscoverySignalsApiPath(['21061']),
+    });
+
+    expect(firstResponse.statusCode).toBe(200);
+    expect(secondResponse.statusCode).toBe(200);
+    expect(rateLimitedResponse.statusCode).toBe(429);
+    expect(rateLimitedResponse.json()).toEqual({
+      message: 'Too many public catalog lookup requests. Please retry later.',
+    });
+    expect(listCatalogDiscoverySignals).toHaveBeenCalledTimes(2);
 
     await server.close();
   });

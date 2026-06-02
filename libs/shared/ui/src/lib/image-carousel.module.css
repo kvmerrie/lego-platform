@@ -289,7 +289,9 @@
   grid-auto-flow: column;
   overflow-x: auto;
   overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
   scrollbar-width: none;
+  touch-action: auto;
 }
 
 .detailThumbRow::-webkit-scrollbar {
@@ -321,7 +323,6 @@
 .detailGalleryShowAllButton,
 .detailGalleryNavButton {
   align-items: center;
-  backdrop-filter: blur(8px);
   background: rgba(12, 18, 32, 0.68);
   border: var(--lego-border-width-1) solid rgba(255, 255, 255, 0.16);
   color: var(--lego-contrast-white);
@@ -716,9 +717,10 @@
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-x: auto;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;
     padding: var(--lego-space-3);
     scrollbar-width: thin;
+    touch-action: auto;
   }
 
   .detailThumbRow::-webkit-scrollbar {

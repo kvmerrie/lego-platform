@@ -166,6 +166,7 @@ async function createAdminCatalogServer({
 
   await server.register(
     createAdminCatalogRoutes({
+      adminPreHandler: async () => undefined,
       catalogService: nextCatalogService,
     }),
   );

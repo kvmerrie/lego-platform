@@ -1,5 +1,11 @@
 type ValueOf<T> = T[keyof T];
 
+type BrowserRuntimeEnvironment = {
+  __BRICKHUNT_ADMIN_ENV__?: Record<string, string | undefined>;
+};
+
+const emptyRuntimeEnvironment: Record<string, string | undefined> = {};
+
 export const appLanguageConfigs = {
   nl: {
     code: 'nl',
@@ -747,7 +753,15 @@ export interface RakutenLegoFeedConfig {
 }
 
 function getRuntimeEnvironment(): Record<string, string | undefined> {
-  return typeof process === 'undefined' ? {} : process.env;
+  return typeof process === 'undefined'
+    ? emptyRuntimeEnvironment
+    : (process.env ?? emptyRuntimeEnvironment);
+}
+
+function getBrowserRuntimeEnvironment(): Record<string, string | undefined> {
+  return (
+    (globalThis as BrowserRuntimeEnvironment).__BRICKHUNT_ADMIN_ENV__ ?? {}
+  );
 }
 
 export function isArticlePreviewEnabled(
@@ -1039,17 +1053,39 @@ export function getWebNavigation(
 export const webNavigation = getWebNavigation(0);
 
 function getDefaultBrowserSupabaseUrl(): string | undefined {
+  const browserRuntimeValue =
+    getBrowserRuntimeEnvironment()[supabaseEnvKeys.browserUrl];
+
+  if (browserRuntimeValue) {
+    return browserRuntimeValue;
+  }
+
+  if (typeof process === 'undefined') {
+    return undefined;
+  }
+
   return process.env['NEXT_PUBLIC_SUPABASE_URL'];
 }
 
 function getDefaultBrowserSupabaseAnonKey(): string | undefined {
+  const browserRuntimeValue =
+    getBrowserRuntimeEnvironment()[supabaseEnvKeys.browserAnonKey];
+
+  if (browserRuntimeValue) {
+    return browserRuntimeValue;
+  }
+
+  if (typeof process === 'undefined') {
+    return undefined;
+  }
+
   return process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 }
 
 function getBrowserSupabaseUrl(
   environment: Record<string, string | undefined>,
 ): string | undefined {
-  return environment === process.env
+  return environment === getRuntimeEnvironment()
     ? getDefaultBrowserSupabaseUrl()
     : environment[supabaseEnvKeys.browserUrl];
 }
@@ -1057,7 +1093,7 @@ function getBrowserSupabaseUrl(
 function getBrowserSupabaseAnonKey(
   environment: Record<string, string | undefined>,
 ): string | undefined {
-  return environment === process.env
+  return environment === getRuntimeEnvironment()
     ? getDefaultBrowserSupabaseAnonKey()
     : environment[supabaseEnvKeys.browserAnonKey];
 }
@@ -1277,7 +1313,7 @@ function requirePositiveIntegerEnvValue({
 }
 
 export function getBrowserSupabaseConfig(
-  environment: Record<string, string | undefined> = process.env,
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
 ): BrowserSupabaseConfig {
   const url = getBrowserSupabaseUrl(environment);
   const anonKey = getBrowserSupabaseAnonKey(environment);
@@ -1301,7 +1337,7 @@ export function getBrowserSupabaseConfig(
 }
 
 export function hasBrowserSupabaseConfig(
-  environment: Record<string, string | undefined> = process.env,
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
 ): boolean {
   return Boolean(
     getBrowserSupabaseUrl(environment) &&
@@ -1310,7 +1346,7 @@ export function hasBrowserSupabaseConfig(
 }
 
 export function getMissingBrowserSupabaseEnvKeys(
-  environment: Record<string, string | undefined> = process.env,
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
 ): string[] {
   const missingKeys: string[] = [];
 

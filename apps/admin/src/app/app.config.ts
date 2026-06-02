@@ -3,7 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideAppInitializer,
 } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import {
   applyThemeMode,
@@ -12,11 +12,12 @@ import {
   persistThemeMode,
 } from '@lego-platform/shared/design-tokens';
 import { appRoutes } from './app.routes';
+import { adminAuthInterceptor } from './admin-auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([adminAuthInterceptor])),
     provideRouter(appRoutes),
     provideAppInitializer(() => {
       ensureThemeStyles();

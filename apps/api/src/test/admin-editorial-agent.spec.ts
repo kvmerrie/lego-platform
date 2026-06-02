@@ -407,6 +407,7 @@ async function createAdminEditorialAgentServer({
 
   await server.register(
     createAdminEditorialAgentRoutes({
+      adminPreHandler: async () => undefined,
       editorialAgentService: nextEditorialAgentService,
     }),
   );
