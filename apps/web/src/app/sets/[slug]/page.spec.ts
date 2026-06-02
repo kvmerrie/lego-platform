@@ -6,6 +6,7 @@ import { renderToReadableStream } from 'react-dom/server.browser';
 
 const setPageMocks = vi.hoisted(() => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId: vi.fn(),
+  getCatalogSetDetailRelatedThemeSnapshot: vi.fn(),
   getCatalogSetBySlug: vi.fn(),
   listCatalogCurrentOfferCandidateSetIds: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
@@ -30,6 +31,8 @@ vi.mock('next/cache', () => ({
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId:
     setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
+  getCatalogSetDetailRelatedThemeSnapshot:
+    setPageMocks.getCatalogSetDetailRelatedThemeSnapshot,
   getCatalogSetBySlug: setPageMocks.getCatalogSetBySlug,
   listCatalogCurrentOfferCandidateSetIds:
     setPageMocks.listCatalogCurrentOfferCandidateSetIds,
@@ -249,6 +252,9 @@ beforeEach(() => {
   setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
     new Map(),
   );
+  setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue(
+    undefined,
+  );
 });
 
 function createCurrentOfferSummaryMap({
@@ -371,17 +377,26 @@ describe('set detail static generation', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([
-      {
-        id: '75446',
-        imageUrl: 'https://cdn.example.com/75446.jpg',
-        name: 'Grogu with Hover Pram',
-        pieces: 1048,
-        releaseYear: 2026,
-        slug: 'grogu-mandalorian-apprentice-75446',
-        theme: 'Star Wars',
-      },
-    ]);
+    setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue({
+      setCards: [
+        {
+          id: '75446',
+          imageUrl: 'https://cdn.example.com/75446.jpg',
+          name: 'Grogu with Hover Pram',
+          pieces: 1048,
+          priceContext: {
+            coverageLabel: 'Actuele prijs gevonden',
+            currentPrice: 'Vanaf € 99,99',
+            merchantLabel: 'Laagst bij Goodbricks',
+            reviewedLabel: 'Nagekeken 5 mei',
+          },
+          releaseYear: 2026,
+          slug: 'grogu-mandalorian-apprentice-75446',
+          theme: 'Star Wars',
+        },
+      ],
+      totalSetCount: 1,
+    });
     setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
       new Map(),
     );
@@ -457,7 +472,12 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain('data-surface-variant="themed"');
     expect(railHtml).toContain('--article-theme-surface:#112244');
     expect(railHtml).toContain('--article-theme-surface-text:#ffffff');
-    expect(setPageMocks.listCatalogSimilarSetCards).toHaveBeenCalled();
+    expect(
+      setPageMocks.getCatalogSetDetailRelatedThemeSnapshot,
+    ).toHaveBeenCalledWith({
+      setId: '75355',
+    });
+    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
   });
 
   it('keys set detail cache by Brickset gallery render mode', async () => {
@@ -1681,26 +1701,29 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([
-      {
-        id: '75461',
-        imageUrl: 'https://cdn.example.com/75461.jpg',
-        name: 'Up-Scaled Darth Vader Minifigure',
-        pieces: 0,
-        releaseYear: 2026,
-        slug: 'up-scaled-darth-vader-minifigure-75461',
-        theme: 'Star Wars',
-      },
-      {
-        id: '75280',
-        imageUrl: 'https://cdn.example.com/75280.jpg',
-        name: '501st Legion Clone Troopers',
-        pieces: 285,
-        releaseYear: 2020,
-        slug: '501st-legion-clone-troopers-75280',
-        theme: 'Star Wars',
-      },
-    ]);
+    setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue({
+      setCards: [
+        {
+          id: '75461',
+          imageUrl: 'https://cdn.example.com/75461.jpg',
+          name: 'Up-Scaled Darth Vader Minifigure',
+          pieces: 0,
+          releaseYear: 2026,
+          slug: 'up-scaled-darth-vader-minifigure-75461',
+          theme: 'Star Wars',
+        },
+        {
+          id: '75280',
+          imageUrl: 'https://cdn.example.com/75280.jpg',
+          name: '501st Legion Clone Troopers',
+          pieces: 285,
+          releaseYear: 2020,
+          slug: '501st-legion-clone-troopers-75280',
+          theme: 'Star Wars',
+        },
+      ],
+      totalSetCount: 2,
+    });
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
@@ -1717,6 +1740,8 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('Meer uit dit thema');
     expect(html).not.toContain('Vergelijkbare LEGO sets');
+    expect(html).not.toContain('Sets uit hetzelfde thema laden');
+    expect(html).not.toContain('We zoeken sets uit hetzelfde thema.');
     expect(html).toContain('Up-Scaled Darth Vader Minifigure');
     expect(html).toContain(
       'href="/sets/up-scaled-darth-vader-minifigure-75461"',
@@ -1725,14 +1750,13 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
     expect(html).not.toContain('data-rail-layout-mode="stable-square"');
+    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
     expect(html.indexOf('Meer uit dit thema')).toBeLessThan(
       html.indexOf('Recent bekeken LEGO sets'),
     );
   });
 
-  it('keeps optional similar and article rail slots from blocking the initial render', async () => {
-    let similarRailAbortSignal: AbortSignal | undefined;
-
+  it('omits a missing snapshot-backed related theme rail while keeping async article slots non-blocking', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '75355',
       imageUrl: 'https://cdn.example.com/75355.jpg',
@@ -1754,9 +1778,10 @@ describe('set detail page JSON-LD', () => {
         validPrimaryOfferCount: 0,
       },
     );
-    setPageMocks.listCatalogSimilarSetCards.mockImplementation(({ signal }) => {
-      similarRailAbortSignal = signal;
-
+    setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue(
+      undefined,
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockImplementation(() => {
       return new Promise(() => undefined);
     });
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockImplementation(
@@ -1775,8 +1800,18 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('data-testid="set-detail"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).not.toContain('href="/deals"');
+    expect(html).not.toContain('Meer uit dit thema');
+    expect(html).not.toContain('Sets uit hetzelfde thema laden');
+    expect(html).not.toContain('We zoeken sets uit hetzelfde thema.');
+    expect(html).toContain('Verder ontdekken');
+    expect(html).toContain('data-testid="recently-slot"');
 
-    expect(similarRailAbortSignal?.aborted).toBe(false);
+    expect(
+      setPageMocks.getCatalogSetDetailRelatedThemeSnapshot,
+    ).toHaveBeenCalledWith({
+      setId: '75355',
+    });
+    expect(setPageMocks.listCatalogSimilarSetCards).not.toHaveBeenCalled();
   });
 
   it('links set breadcrumbs to a public curated parent theme when available', async () => {

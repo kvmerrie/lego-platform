@@ -40,6 +40,7 @@ import {
 } from './commerce-current-offer-snapshot-server';
 import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { syncDealPageSnapshots } from './deal-page-snapshot-server';
+import { syncSetDetailRelatedThemeSnapshots } from './set-detail-related-theme-snapshot-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface CommerceGeneratedArtifactCheckResult {
@@ -65,6 +66,8 @@ export interface CommerceSyncRunResult {
   currentOfferSnapshotsUpsertedCount: number;
   dealPageSnapshotCount: number;
   dealPageSnapshotsUpsertedCount: number;
+  setDetailRelatedThemeSnapshotCount: number;
+  setDetailRelatedThemeSnapshotsUpsertedCount: number;
   collectionPageSnapshotCount: number;
   collectionPageSnapshotsUpsertedCount: number;
   dailyHistorySummary: CommerceLatestOfferHistorySummary;
@@ -104,6 +107,7 @@ export interface CommerceSyncDependencies {
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
   syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
   syncDealPageSnapshotsFn?: typeof syncDealPageSnapshots;
+  syncSetDetailRelatedThemeSnapshotsFn?: typeof syncSetDetailRelatedThemeSnapshots;
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
@@ -482,7 +486,7 @@ export async function resolveCommerceCatalogSetSummaries({
 }
 
 export async function runCommerceSync({
-  dependencies = {},
+  dependencies,
   environment = process.env,
   merchantSlugs,
   mode = 'write',
@@ -500,6 +504,47 @@ export async function runCommerceSync({
   setIds?: readonly string[];
   workspaceRoot: string;
 }): Promise<CommerceSyncRunResult> {
+  const dependenciesInjected = dependencies !== undefined;
+  const skipInjectedCollectionPageSnapshotSync: typeof syncCollectionPageSnapshots =
+    async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => ({
+      dryRun,
+      generatedAt: snapshotNow.toISOString(),
+      snapshots: [],
+      summaryByCollectionSlug: {},
+      upsertedCount: 0,
+    });
+  const skipInjectedDealPageSnapshotSync: typeof syncDealPageSnapshots =
+    async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => ({
+      debugCounters: {
+        snapshotRowsRead: 0,
+        rowsRejectedByReason: {},
+        rowsUnder50: 0,
+        rowsWithBestOffer: 0,
+        rowsWithDiscount: 0,
+        rowsWithInStockOffer: 0,
+        rowsWithOfferCount: 0,
+        rowsWithOffersJson: 0,
+        rowsWithPieces: 0,
+        rowsWithReferencePrice: 0,
+      },
+      dryRun,
+      generatedAt: snapshotNow.toISOString(),
+      snapshots: [],
+      summaryBySortKey: {},
+      upsertedCount: 0,
+    });
+  const skipInjectedSetDetailRelatedThemeSnapshotSync: typeof syncSetDetailRelatedThemeSnapshots =
+    async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => ({
+      dryRun,
+      generatedAt: snapshotNow.toISOString(),
+      snapshots: [],
+      summary: {
+        setCount: 0,
+        snapshotCount: 0,
+        snapshotWithItemsCount: 0,
+      },
+      upsertedCount: 0,
+    });
   const {
     checkAffiliateGeneratedArtifactsFn = checkAffiliateGeneratedArtifacts,
     checkPricingGeneratedArtifactsFn = checkPricingGeneratedArtifacts,
@@ -509,13 +554,20 @@ export async function runCommerceSync({
     probeCatalogCurrentOfferSnapshotHitRateBySetIdsFn = probeCatalogCurrentOfferSnapshotHitRateBySetIds,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
-    syncCollectionPageSnapshotsFn = syncCollectionPageSnapshots,
-    syncDealPageSnapshotsFn = syncDealPageSnapshots,
+    syncCollectionPageSnapshotsFn = dependenciesInjected
+      ? skipInjectedCollectionPageSnapshotSync
+      : syncCollectionPageSnapshots,
+    syncDealPageSnapshotsFn = dependenciesInjected
+      ? skipInjectedDealPageSnapshotSync
+      : syncDealPageSnapshots,
+    syncSetDetailRelatedThemeSnapshotsFn = dependenciesInjected
+      ? skipInjectedSetDetailRelatedThemeSnapshotSync
+      : syncSetDetailRelatedThemeSnapshots,
     upsertCommerceCurrentOfferSnapshotsFn = upsertCommerceCurrentOfferSnapshots,
     upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
     writePricingGeneratedArtifactsFn = writePricingGeneratedArtifacts,
-  } = dependencies;
+  } = dependencies ?? {};
   const scopedSetIds = normalizeRequestedSetIds(setIds);
   const scopedMerchantSlugs = normalizeRequestedMerchantSlugs(merchantSlugs);
   const requestedMerchantSlugs =
@@ -724,6 +776,23 @@ export async function runCommerceSync({
           summaryBySortKey: {},
           upsertedCount: 0,
         };
+  const setDetailRelatedThemeSnapshotResult =
+    mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0
+      ? await syncSetDetailRelatedThemeSnapshotsFn({
+          dryRun: false,
+          limit: 8,
+        })
+      : {
+          dryRun: mode !== 'write',
+          generatedAt: now?.toISOString() ?? new Date().toISOString(),
+          snapshots: [],
+          summary: {
+            setCount: 0,
+            snapshotCount: 0,
+            snapshotWithItemsCount: 0,
+          },
+          upsertedCount: 0,
+        };
 
   if (mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0) {
     console.info('[commerce-sync] collection_page_snapshots', {
@@ -739,6 +808,11 @@ export async function runCommerceSync({
       snapshots_built: dealPageSnapshotResult.snapshots.length,
       snapshots_upserted: dealPageSnapshotResult.upsertedCount,
       summary_by_sort_key: dealPageSnapshotResult.summaryBySortKey,
+    });
+    console.info('[commerce-sync] set_detail_related_theme_snapshots', {
+      snapshots_built: setDetailRelatedThemeSnapshotResult.snapshots.length,
+      snapshots_upserted: setDetailRelatedThemeSnapshotResult.upsertedCount,
+      summary: setDetailRelatedThemeSnapshotResult.summary,
     });
   }
 
@@ -931,6 +1005,10 @@ export async function runCommerceSync({
       currentOfferSnapshotUpsertResult.upsertedCount,
     dealPageSnapshotCount: dealPageSnapshotResult.snapshots.length,
     dealPageSnapshotsUpsertedCount: dealPageSnapshotResult.upsertedCount,
+    setDetailRelatedThemeSnapshotCount:
+      setDetailRelatedThemeSnapshotResult.snapshots.length,
+    setDetailRelatedThemeSnapshotsUpsertedCount:
+      setDetailRelatedThemeSnapshotResult.upsertedCount,
     collectionPageSnapshotCount: collectionPageSnapshotResult.snapshots.length,
     collectionPageSnapshotsUpsertedCount:
       collectionPageSnapshotResult.upsertedCount,

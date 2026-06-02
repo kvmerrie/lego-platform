@@ -13,10 +13,10 @@ import {
   listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
+  getCatalogSetDetailRelatedThemeSnapshot,
   getCatalogSetBySlug,
   listCatalogSetCards,
   listCatalogSetCardsByIds,
-  listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
   summarizeCatalogCurrentOffers,
@@ -31,7 +31,6 @@ import {
   CatalogRecentlyViewedSetTracker,
 } from '@lego-platform/catalog/feature-recently-viewed';
 import {
-  CatalogSetCardRailSkeletonSection,
   type CatalogSetDetailBestDeal,
   type CatalogSetDetailOfferItem,
   type CatalogSetDetailSupportItem,
@@ -100,7 +99,6 @@ const SET_DETAIL_CACHE_VERSION = 'v2';
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT = 8;
-const SET_DETAIL_INTERNAL_LINK_CANDIDATE_LIMIT = 80;
 const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_STATIC_PARAMS_DEFAULT_LIMIT = 240;
 const SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS = 350;
@@ -2306,6 +2304,20 @@ export default async function SetDetailPage({
         (item): item is Exclude<typeof item, undefined> => item !== undefined,
       ),
   });
+  const similarSetsRail = await withSetPageOptionalTimeout({
+    fallback: null,
+    label: 'similar-sets:rail',
+    load: (signal) =>
+      loadSetDetailSimilarSetsRail({
+        bestPriceMinor:
+          bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
+        catalogSetDetail,
+        signal,
+        slug,
+      }),
+    slug,
+    timeoutMs: SET_DETAIL_SIMILAR_RAIL_TIMEOUT_MS,
+  });
 
   logSetPagePerf({
     details: {
@@ -2447,28 +2459,7 @@ export default async function SetDetailPage({
         recentlyViewedRail={
           <CatalogFeatureRecentlyViewed currentSetNum={catalogSetDetail.id} />
         }
-        similarSetsRail={
-          <Suspense
-            fallback={
-              <CatalogSetCardRailSkeletonSection
-                ariaLabel="Sets uit hetzelfde thema laden"
-                description="We zoeken sets uit hetzelfde thema."
-                eyebrow="Zelfde thema"
-                itemCount={5}
-                title="Meer uit dit thema"
-                tone="muted"
-              />
-            }
-          >
-            <SetDetailSimilarSetsRailSlot
-              bestPriceMinor={
-                bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor
-              }
-              catalogSetDetail={catalogSetDetail}
-              slug={slug}
-            />
-          </Suspense>
-        }
+        similarSetsRail={similarSetsRail}
         setNewsRail={
           <Suspense fallback={null}>
             <SetDetailNewsRailSlot setId={catalogSetDetail.id} slug={slug} />
@@ -2519,30 +2510,6 @@ export default async function SetDetailPage({
   );
 }
 
-async function SetDetailSimilarSetsRailSlot({
-  bestPriceMinor,
-  catalogSetDetail,
-  slug,
-}: {
-  bestPriceMinor?: number;
-  catalogSetDetail: CatalogSetDetail;
-  slug: string;
-}) {
-  return withSetPageOptionalTimeout({
-    fallback: null,
-    label: 'similar-sets:rail',
-    load: (signal) =>
-      loadSetDetailSimilarSetsRail({
-        bestPriceMinor,
-        catalogSetDetail,
-        signal,
-        slug,
-      }),
-    slug,
-    timeoutMs: SET_DETAIL_SIMILAR_RAIL_TIMEOUT_MS,
-  });
-}
-
 export async function loadSetDetailSimilarSetsRail({
   bestPriceMinor,
   catalogSetDetail,
@@ -2556,14 +2523,6 @@ export async function loadSetDetailSimilarSetsRail({
 }) {
   throwIfSimilarRailAborted(signal);
 
-  const currentSetCard = {
-    id: catalogSetDetail.id,
-    name: getCatalogSetDisplayTitle(catalogSetDetail),
-    pieces: catalogSetDetail.pieces,
-    releaseYear: catalogSetDetail.releaseYear,
-    theme: catalogSetDetail.theme,
-  };
-
   logSimilarSetRailDebug({
     current_set_id: catalogSetDetail.id,
     current_set_slug: catalogSetDetail.slug,
@@ -2573,24 +2532,21 @@ export async function loadSetDetailSimilarSetsRail({
     reference_best_price_minor: bestPriceMinor,
   });
 
-  const similarSetCandidateCards = await measureSetPageFetch({
-    label: 'similar-sets:candidates',
+  const relatedThemeSnapshot = await measureSetPageFetch({
+    label: 'similar-sets:snapshot',
     slug,
     load: () =>
-      listCatalogSimilarSetCards({
-        currentSetCard,
-        limit: SET_DETAIL_INTERNAL_LINK_CANDIDATE_LIMIT,
-        referenceBestPriceMinor: bestPriceMinor,
-        signal,
+      getCatalogSetDetailRelatedThemeSnapshot({
+        setId: catalogSetDetail.id,
       }),
   });
 
   logSimilarSetRailDebug({
-    candidate_count: similarSetCandidateCards.length,
-    candidate_sample: similarSetCandidateCards
-      .slice(0, 5)
-      .map((setCard) => setCard.id),
-    label: 'candidates',
+    candidate_count: relatedThemeSnapshot?.setCards.length ?? 0,
+    candidate_sample:
+      relatedThemeSnapshot?.setCards.slice(0, 5).map((setCard) => setCard.id) ??
+      [],
+    label: relatedThemeSnapshot ? 'snapshot' : 'snapshot-missing',
     page_slug: slug,
   });
 
@@ -2598,18 +2554,19 @@ export async function loadSetDetailSimilarSetsRail({
 
   throwIfSimilarRailAborted(signal);
 
-  const internalLinkBlocks = measureSetPageSync({
-    label: 'internal-links:select',
-    slug,
-    load: () =>
-      buildSetDetailInternalLinkBlocks({
-        candidateSetCards: similarSetCandidateCards,
-        currentSetCard: {
-          ...currentSetCard,
-          publicTheme: catalogSetDetail.publicTheme,
+  const internalLinkBlocks: SetDetailInternalLinkBlock[] = relatedThemeSnapshot
+    ?.setCards.length
+    ? [
+        {
+          id: 'same-theme',
+          items: relatedThemeSnapshot.setCards.map((setCard) => ({
+            ...setCard,
+            ctaMode: 'default' as const,
+          })),
+          title: 'Meer uit dit thema',
         },
-      }),
-  });
+      ]
+    : [];
   const discoveryLinks = buildSetDetailCollectionDiscoveryLinks({
     bestPriceMinor,
     catalogSetDetail,

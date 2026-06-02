@@ -92,6 +92,9 @@ const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LIMIT = 240;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_MULTIPLIER = 8;
 const CATALOG_CURRENT_OFFER_MERCHANDISING_CANDIDATE_LOOKUP_LIMIT = 2_000;
 const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+const SET_DETAIL_RELATED_THEME_SNAPSHOT_SORT_KEY = 'same-theme';
+const SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE = 1;
+const SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE_SIZE = 20;
 const LEGO_NL_DISPLAY_TITLE_SOURCE = 'rakuten-lego-eu' as const;
 const LEGO_NL_DISPLAY_TITLE_LOCALE = 'nl-NL';
 const LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE = 'exact_set_number';
@@ -3535,6 +3538,10 @@ interface CatalogCollectionPageSnapshotRow {
   total_count: number;
 }
 
+export function buildSetDetailRelatedThemeSnapshotSlug(setId: string): string {
+  return `set-detail-related-theme:${getCanonicalCatalogSetId(setId)}`;
+}
+
 function normalizeCatalogCollectionPageSnapshotItems(
   itemsJson: unknown,
 ): CatalogHomepageSetCard[] {
@@ -3622,6 +3629,67 @@ export async function getCatalogCollectionLandingPageSnapshot({
 
   return {
     bestPriceMinorBySetId: new Map(),
+    snapshotGeneratedAt: snapshot.generated_at,
+    setCards: normalizeCatalogCollectionPageSnapshotItems(snapshot.items_json),
+    totalSetCount: snapshot.total_count,
+  };
+}
+
+export interface CatalogSetDetailRelatedThemeSnapshotResult {
+  snapshotGeneratedAt?: string | null;
+  setCards: readonly CatalogHomepageSetCard[];
+  totalSetCount: number;
+}
+
+export async function getCatalogSetDetailRelatedThemeSnapshot({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogSetDetailRelatedThemeSnapshotResult | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    console.warn(
+      '[set-detail-related-theme-snapshot] missing Supabase client',
+      {
+        set_id: setId,
+      },
+    );
+
+    return undefined;
+  }
+
+  const snapshotSlug = buildSetDetailRelatedThemeSnapshotSlug(setId);
+  const { data, error } = await activeSupabaseClient
+    .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
+    .select(
+      'collection_slug, sort_key, page, page_size, total_count, items_json, generated_at',
+    )
+    .eq('collection_slug', snapshotSlug)
+    .eq('sort_key', SET_DETAIL_RELATED_THEME_SNAPSHOT_SORT_KEY)
+    .eq('page', SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE)
+    .eq('page_size', SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE_SIZE)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load set detail related theme snapshot.');
+  }
+
+  const snapshot = data as CatalogCollectionPageSnapshotRow | null;
+
+  if (!snapshot) {
+    console.warn('[set-detail-related-theme-snapshot] missing', {
+      collection_slug: snapshotSlug,
+      set_id: setId,
+    });
+
+    return undefined;
+  }
+
+  return {
     snapshotGeneratedAt: snapshot.generated_at,
     setCards: normalizeCatalogCollectionPageSnapshotItems(snapshot.items_json),
     totalSetCount: snapshot.total_count,

@@ -24,6 +24,7 @@ import {
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
+  getCatalogSetDetailRelatedThemeSnapshot,
   type CatalogResolvedOffer,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
@@ -405,6 +406,7 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
 function createCatalogSupabaseClientMock({
   catalogRows = [],
+  collectionSnapshotRows = [],
   maxInFilterValues,
   primaryThemeRows = [],
   latestOfferRows,
@@ -421,6 +423,7 @@ function createCatalogSupabaseClientMock({
   themeSummaryRows = [],
 }: {
   catalogRows?: readonly Record<string, unknown>[];
+  collectionSnapshotRows?: readonly Record<string, unknown>[];
   maxInFilterValues?: number;
   primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
@@ -500,6 +503,13 @@ function createCatalogSupabaseClientMock({
         });
       }
 
+      if (table === 'collection_page_snapshots') {
+        return createSupabaseTableBuilder(collectionSnapshotRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
       if (table === 'commerce_offer_seeds') {
         return createSupabaseTableBuilder(offerSeedRows, {
           maxInFilterValues,
@@ -560,6 +570,59 @@ describe('catalog effective data access web', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
+  });
+
+  test('reads set detail related-theme rail snapshots by set id', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [
+        {
+          collection_slug: 'set-detail-related-theme:75355',
+          generated_at: '2026-06-02T10:00:00.000Z',
+          items_json: [
+            {
+              id: '75446',
+              slug: 'grogu-mandalorian-apprentice-75446',
+              name: 'Grogu with Hover Pram',
+              theme: 'Star Wars',
+              releaseYear: 2026,
+              pieces: 1048,
+            },
+          ],
+          page: 1,
+          page_size: 20,
+          sort_key: 'same-theme',
+          total_count: 1,
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+    });
+
+    const result = await getCatalogSetDetailRelatedThemeSnapshot({
+      setId: '75355',
+      supabaseClient,
+    });
+    const missingResult = await getCatalogSetDetailRelatedThemeSnapshot({
+      setId: '10316',
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      snapshotGeneratedAt: '2026-06-02T10:00:00.000Z',
+      setCards: [
+        {
+          id: '75446',
+          slug: 'grogu-mandalorian-apprentice-75446',
+          name: 'Grogu with Hover Pram',
+          theme: 'Star Wars',
+          releaseYear: 2026,
+          pieces: 1048,
+        },
+      ],
+      totalSetCount: 1,
+    });
+    expect(missingResult).toBeUndefined();
   });
 
   test('prefers normalized theme joins for UCS-like canonical reads', async () => {
