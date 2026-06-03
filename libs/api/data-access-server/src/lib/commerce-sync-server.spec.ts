@@ -6,6 +6,20 @@ import {
 import { buildCommerceSyncInputs } from './commerce-refresh-server';
 
 describe('commerce sync server', () => {
+  const expectedCollectionSnapshotSlugs = [
+    'nieuwe-lego-sets',
+    'retiring-lego-sets',
+    'lego-sets-onder-50-euro',
+    'lego-sets-onder-100-euro',
+    'lego-voor-volwassenen',
+  ];
+  const expectedCollectionSnapshotPaths = expectedCollectionSnapshotSlugs.map(
+    (collectionSlug) => `/${collectionSlug}`,
+  );
+  const expectedCollectionSnapshotTags = expectedCollectionSnapshotSlugs.map(
+    (collectionSlug) => `collection:${collectionSlug}`,
+  );
+
   test('derives fallback affiliate merchant hosts from TradeTracker destination URLs', () => {
     const syncInputs = buildCommerceSyncInputs({
       refreshSeeds: [
@@ -336,10 +350,10 @@ describe('commerce sync server', () => {
       setIds: ['10316'],
     });
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
-      additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+      additionalPaths: [...expectedCollectionSnapshotPaths, '/deals'],
       additionalTags: [
         'collections',
-        'collection:lego-sets-onder-50-euro',
+        ...expectedCollectionSnapshotTags,
         'deals',
         'prices',
       ],
@@ -353,22 +367,28 @@ describe('commerce sync server', () => {
       ],
     });
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
-      collectionSlugs: ['lego-sets-onder-50-euro'],
+      collectionSlugs: expectedCollectionSnapshotSlugs,
       dryRun: false,
       pageSize: 40,
     });
     expect(
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
-    ).not.toContain('/nieuwe-lego-sets');
+    ).toContain('/nieuwe-lego-sets');
     expect(
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
-    ).not.toContain('/lego-voor-volwassenen');
+    ).toContain('/lego-voor-volwassenen');
     expect(
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
-    ).not.toContain('collection:nieuwe-lego-sets');
+    ).toContain('collection:nieuwe-lego-sets');
     expect(
       revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
-    ).not.toContain('collection:lego-voor-volwassenen');
+    ).toContain('collection:lego-voor-volwassenen');
+    expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalPaths,
+    ).toContain('/lego-sets-onder-100-euro');
+    expect(
+      revalidatePublicCatalogPathsFn.mock.calls[0]?.[0].additionalTags,
+    ).toContain('collection:lego-sets-onder-100-euro');
     expect(result.collectionPageSnapshotCount).toBe(1);
     expect(result.collectionPageSnapshotsUpsertedCount).toBe(1);
     expect(result.refreshSuccessCount).toBe(1);
@@ -509,10 +529,10 @@ describe('commerce sync server', () => {
     });
 
     expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
-      additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+      additionalPaths: [...expectedCollectionSnapshotPaths, '/deals'],
       additionalTags: [
         'collections',
-        'collection:lego-sets-onder-50-euro',
+        ...expectedCollectionSnapshotTags,
         'deals',
         'prices',
       ],
@@ -777,7 +797,7 @@ describe('commerce sync server', () => {
     });
     expect(result.currentOfferSnapshotsUpsertedCount).toBe(1);
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
-      collectionSlugs: ['lego-sets-onder-50-euro'],
+      collectionSlugs: expectedCollectionSnapshotSlugs,
       dryRun: false,
       pageSize: 40,
     });

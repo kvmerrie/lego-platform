@@ -19,6 +19,7 @@ import {
   Surface,
   VisuallyHidden,
 } from '@lego-platform/shared/ui';
+import { PriceHistoryCanvasChart } from './price-history-canvas-chart';
 import styles from './pricing-ui.module.css';
 
 function formatObservedAt(observedAt: string): string {
@@ -33,6 +34,36 @@ function formatRecordedOn(recordedOn: string): string {
     day: 'numeric',
     month: 'short',
   }).format(new Date(`${recordedOn}T00:00:00.000Z`));
+}
+
+const knownPriceHistoryMerchantLabels: ReadonlyMap<string, string> = new Map([
+  ['alternate', 'Alternate'],
+  ['amazon-nl', 'Amazon'],
+  ['bol', 'bol'],
+  ['brickfever', 'Brickfever'],
+  ['conrad', 'Conrad'],
+  ['coolblue', 'Coolblue'],
+  ['coppenswarenhuis', 'Coppenswarenhuis'],
+  ['goodbricks', 'Goodbricks'],
+  ['intertoys', 'Intertoys'],
+  ['joybuy', 'Joybuy'],
+  ['kruidvat', 'Kruidvat'],
+  ['lego-nl', 'LEGO'],
+  ['lidl', 'Lidl'],
+  ['mediamarkt', 'MediaMarkt'],
+  ['misterbricks', 'MisterBricks'],
+  ['top1toys', 'Top1Toys'],
+  ['wehkamp', 'Wehkamp'],
+]);
+
+function getPriceHistoryMerchantLabel(
+  lowestMerchantId: string | undefined,
+): string | undefined {
+  if (!lowestMerchantId) {
+    return undefined;
+  }
+
+  return knownPriceHistoryMerchantLabels.get(lowestMerchantId);
 }
 
 function getDeltaLabel(currencyCode: string, deltaMinor?: number): string {
@@ -161,87 +192,42 @@ function getPricingScopeLabel(suffix?: string): string {
   });
 }
 
-function getHistoryChartCoordinates(
-  priceHistoryPoints: readonly PriceHistoryPoint[],
-): Array<{ x: number; y: number }> {
-  const chartWidth = 100;
-  const chartHeight = 48;
-  const padding = 6;
-  const values = priceHistoryPoints.map(
-    (priceHistoryPoint) => priceHistoryPoint.headlinePriceMinor,
-  );
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const valueRange = Math.max(maxValue - minValue, 1);
-
-  return priceHistoryPoints.map((priceHistoryPoint, index) => {
-    const x =
-      priceHistoryPoints.length === 1
-        ? chartWidth / 2
-        : padding +
-          ((chartWidth - padding * 2) * index) /
-            (priceHistoryPoints.length - 1);
-    const y =
-      chartHeight -
-      padding -
-      ((chartHeight - padding * 2) *
-        (priceHistoryPoint.headlinePriceMinor - minValue)) /
-        valueRange;
-
-    return { x, y };
-  });
-}
-
-function buildHistoryChartPoints(
-  priceHistoryPoints: readonly PriceHistoryPoint[],
-): string {
-  return getHistoryChartCoordinates(priceHistoryPoints)
-    .map(({ x, y }) => `${x},${y}`)
-    .join(' ');
-}
-
-function buildHistoryAreaPoints(
-  priceHistoryPoints: readonly PriceHistoryPoint[],
-): string {
-  const coordinates = getHistoryChartCoordinates(priceHistoryPoints);
-  const firstPoint = coordinates[0];
-  const lastPoint = coordinates.at(-1);
-
-  if (!firstPoint || !lastPoint) {
-    return '';
-  }
-
-  return [
-    `${firstPoint.x},42`,
-    ...coordinates.map(({ x, y }) => `${x},${y}`),
-    `${lastPoint.x},42`,
-  ].join(' ');
-}
-
 function getHistoryRangeSummary(
   priceHistoryPoints: readonly PriceHistoryPoint[],
 ): {
   high: PriceHistoryPoint;
+  highIndex: number;
   latest: PriceHistoryPoint;
+  latestIndex: number;
   low: PriceHistoryPoint;
+  lowIndex: number;
 } {
-  const sortedByValue = [...priceHistoryPoints].sort(
-    (left, right) => left.headlinePriceMinor - right.headlinePriceMinor,
+  const indexedPoints = priceHistoryPoints.map((point, index) => ({
+    index,
+    point,
+  }));
+  const sortedByValue = [...indexedPoints].sort(
+    (left, right) =>
+      left.point.headlinePriceMinor - right.point.headlinePriceMinor,
   );
-  const low = sortedByValue[0];
-  const high = sortedByValue.at(-1);
-  const latest = priceHistoryPoints.at(-1);
+  const lowEntry = sortedByValue[0];
+  const highEntry = sortedByValue.at(-1);
+  const latestIndex = priceHistoryPoints.length - 1;
+  const latest = priceHistoryPoints[latestIndex];
 
-  if (!low || !high || !latest) {
+  if (!lowEntry || !highEntry || !latest) {
     throw new Error(
       'Price history summary requires at least one history point.',
     );
   }
 
   return {
-    low,
-    high,
+    high: highEntry.point,
+    highIndex: highEntry.index,
     latest,
+    latestIndex,
+    low: lowEntry.point,
+    lowIndex: lowEntry.index,
   };
 }
 
@@ -634,7 +620,7 @@ export function PriceHistoryCard({
         />
         <PricingScopeLine>
           {getPricingScopeLabel(
-            `Prijsverloop bouwt op · ${getDailyPointLabel(1)}`,
+            `Prijsverloop bouwt nog op · ${getDailyPointLabel(1)}`,
           )}
         </PricingScopeLine>
         <div className={styles.metricBlock}>
@@ -655,7 +641,7 @@ export function PriceHistoryCard({
             label="Opgenomen op"
             value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
           />
-          <PricingMetaItem label="Status" value="Prijsverloop bouwt op" />
+          <PricingMetaItem label="Status" value="Prijsverloop bouwt nog op" />
         </dl>
         <p className={styles.referenceNote}>
           Het bijgehouden prijsbereik start vanaf deze eerste reviewed dag.
@@ -664,9 +650,8 @@ export function PriceHistoryCard({
     );
   }
 
-  const { high, latest, low } = getHistoryRangeSummary(priceHistoryPoints);
-  const historyCoordinates = getHistoryChartCoordinates(priceHistoryPoints);
-  const latestPoint = historyCoordinates.at(-1);
+  const { high, highIndex, latest, latestIndex, low, lowIndex } =
+    getHistoryRangeSummary(priceHistoryPoints);
 
   return (
     <Surface
@@ -699,72 +684,23 @@ export function PriceHistoryCard({
             })}
           </span>
         </div>
-        <svg
-          aria-label={`Recent ${getDefaultMarketAdjective()} prijsverloop`}
-          className={styles.historyChart}
-          role="img"
-          viewBox="0 0 100 48"
-        >
-          <defs>
-            <linearGradient
-              id={`history-fill-${id ?? 'default'}`}
-              x1="0"
-              x2="0"
-              y1="0"
-              y2="1"
-            >
-              <stop
-                offset="0%"
-                stopColor="var(--lego-accent)"
-                stopOpacity="0.22"
-              />
-              <stop
-                offset="100%"
-                stopColor="var(--lego-accent)"
-                stopOpacity="0"
-              />
-            </linearGradient>
-          </defs>
-          <line
-            className={styles.historyGridLine}
-            x1="6"
-            x2="94"
-            y1="8"
-            y2="8"
-          />
-          <line
-            className={styles.historyGridLine}
-            x1="6"
-            x2="94"
-            y1="24"
-            y2="24"
-          />
-          <line
-            className={styles.historyGridLine}
-            x1="6"
-            x2="94"
-            y1="40"
-            y2="40"
-          />
-          <polygon
-            className={styles.historyArea}
-            fill={`url(#history-fill-${id ?? 'default'})`}
-            points={buildHistoryAreaPoints(priceHistoryPoints)}
-          />
-          <polyline
-            className={styles.historyLine}
-            fill="none"
-            points={buildHistoryChartPoints(priceHistoryPoints)}
-          />
-          {latestPoint ? (
-            <circle
-              className={styles.historyPoint}
-              cx={latestPoint.x}
-              cy={latestPoint.y}
-              r="2.3"
-            />
-          ) : null}
-        </svg>
+        <PriceHistoryCanvasChart
+          ariaLabel={`Recent ${getDefaultMarketAdjective()} prijsverloop`}
+          highIndex={highIndex}
+          latestIndex={latestIndex}
+          lowIndex={lowIndex}
+          points={priceHistoryPoints.map((priceHistoryPoint) => ({
+            headlinePriceMinor: priceHistoryPoint.headlinePriceMinor,
+            label: formatRecordedOn(priceHistoryPoint.recordedOn),
+            merchantLabel: getPriceHistoryMerchantLabel(
+              priceHistoryPoint.lowestMerchantId,
+            ),
+            valueLabel: formatPriceMinor({
+              currencyCode: priceHistoryPoint.currencyCode,
+              minorUnits: priceHistoryPoint.headlinePriceMinor,
+            }),
+          }))}
+        />
       </div>
       <div className={styles.historyLabels}>
         <span>{formatRecordedOn(firstPriceHistoryPoint.recordedOn)}</span>
@@ -834,7 +770,7 @@ export function PriceHistoryEmptyCard({
         title="Recent prijsverloop"
       />
       <PricingScopeLine>
-        {getPricingScopeLabel('Prijsverloop bouwt op')}
+        {getPricingScopeLabel('Prijsverloop bouwt nog op')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         {isLoading

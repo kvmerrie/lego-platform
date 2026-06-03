@@ -132,6 +132,7 @@ export function CatalogFeatureRecentlyViewed({
         },
       }))}
       padding="default"
+      railLayoutMode="default"
       spacing="relaxed"
       title="Recent bekeken LEGO sets"
       tone="inverse"

@@ -141,10 +141,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 67999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
+    "lowestMerchantId": "rakuten-lego-eu",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 2,
-    "observedAt": "2026-06-01T18:50:59.333Z",
+    "observedAt": "2026-06-03T16:33:58.889Z",
     "referencePriceMinor": 67999,
     "deltaMinor": 0
   },
@@ -156,9 +156,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 16999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z"
+    "observedAt": "2026-06-03T16:33:58.889Z"
   },
   {
     "setId": "10297",
@@ -216,9 +216,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 62999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z"
+    "observedAt": "2026-06-03T16:33:58.889Z"
   },
   {
     "setId": "10311",
@@ -276,9 +276,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 49999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z",
+    "observedAt": "2026-06-03T16:33:58.889Z",
     "referencePriceMinor": 49999,
     "deltaMinor": 0
   },
@@ -316,7 +316,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 29999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -392,7 +392,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 45999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 45999,
@@ -406,7 +406,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -418,7 +418,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 26999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 26999,
@@ -592,7 +592,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 37999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -640,7 +640,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 22999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2020,7 +2020,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 24999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2080,7 +2080,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 64999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2092,7 +2092,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 21999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2152,7 +2152,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 8999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2406,7 +2406,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2599,7 +2599,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 1,
     "observedAt": "2026-06-01T18:11:12.809Z"
   },
   {
@@ -2658,9 +2658,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 16999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z",
+    "observedAt": "2026-06-03T16:33:58.889Z",
     "referencePriceMinor": 16999,
     "deltaMinor": 0
   },
@@ -2722,7 +2722,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 10999,
@@ -2736,7 +2736,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 14999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 15999,
@@ -2810,7 +2810,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -2846,7 +2846,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -3867,7 +3867,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 5,
+    "merchantCount": 4,
     "observedAt": "2026-06-01T18:21:03.657Z"
   },
   {
@@ -4262,7 +4262,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 11999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4418,7 +4418,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 11999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4478,7 +4478,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4790,7 +4790,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 1299,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4826,7 +4826,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4850,7 +4850,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 1299,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4910,7 +4910,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 5999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 2,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4958,7 +4958,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4970,7 +4970,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -4982,7 +4982,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -5006,7 +5006,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 14999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -5018,7 +5018,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -5270,9 +5270,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 44999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z"
+    "observedAt": "2026-06-03T16:33:58.889Z"
   },
   {
     "setId": "42146",
@@ -6656,7 +6656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 12999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -6824,7 +6824,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -7412,7 +7412,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 27999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -7880,7 +7880,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -7892,7 +7892,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -7904,7 +7904,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -7916,7 +7916,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -8121,7 +8121,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 4,
     "observedAt": "2026-06-01T18:01:41.171Z"
   },
   {
@@ -8840,7 +8840,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -10136,7 +10136,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 29999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -10472,7 +10472,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 64999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 2,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -10508,9 +10508,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 84999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z"
+    "observedAt": "2026-06-03T16:33:58.889Z"
   },
   {
     "setId": "75202",
@@ -10870,7 +10870,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 64999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 2,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 64999,
@@ -11150,7 +11150,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 6999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11186,7 +11186,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 29999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11306,7 +11306,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 12999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11318,7 +11318,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 7999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11330,7 +11330,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 11999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11582,7 +11582,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 6999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -11594,7 +11594,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 6999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -12110,7 +12110,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 49999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 49999,
@@ -12232,7 +12232,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 32999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z",
     "referencePriceMinor": 32999,
@@ -12282,7 +12282,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 29999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -12548,7 +12548,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 14999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -12776,9 +12776,9 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 42999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
-    "observedAt": "2026-06-01T18:46:04.513Z"
+    "observedAt": "2026-06-03T16:33:58.889Z"
   },
   {
     "setId": "76419",
@@ -12876,7 +12876,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 25999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -13250,7 +13250,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -13262,7 +13262,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 11999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -14162,7 +14162,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 2799,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -14366,7 +14366,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 19999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -14414,7 +14414,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 4999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },
@@ -14426,7 +14426,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "headlinePriceMinor": 10999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantName": "LEGO EU",
     "merchantCount": 1,
     "observedAt": "2026-06-01T18:46:04.513Z"
   },

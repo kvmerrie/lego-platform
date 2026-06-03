@@ -165,6 +165,19 @@ export interface BricksetEnrichmentSyncResult {
   }[];
 }
 
+export interface BricksetSetMetadataLookupOptions {
+  bricksetApiKey?: string;
+  fetchFn?: typeof fetch;
+  includeAdditionalImages?: boolean;
+  setNumbers: readonly string[];
+}
+
+export interface BricksetSetMetadataLookupResult {
+  fetchedSetCount: number;
+  metadataRecords: readonly BricksetEnrichmentRecord[];
+  unmatchedSetNumbers: readonly string[];
+}
+
 function normalizeBricksetDate(value: string | undefined): string | undefined {
   if (!value) {
     return undefined;
@@ -290,6 +303,87 @@ async function fetchBricksetSets({
   }
 
   return response.sets ?? [];
+}
+
+export async function lookupBricksetSetMetadata({
+  bricksetApiKey = process.env.BRICKSET_API_KEY,
+  fetchFn = fetch,
+  includeAdditionalImages = false,
+  setNumbers,
+}: BricksetSetMetadataLookupOptions): Promise<BricksetSetMetadataLookupResult> {
+  const normalizedRequestedSetNumbers = [
+    ...new Set(setNumbers.map(normalizeBricksetNumber).filter(Boolean)),
+  ];
+
+  if (!normalizedRequestedSetNumbers.length) {
+    return {
+      fetchedSetCount: 0,
+      metadataRecords: [],
+      unmatchedSetNumbers: [],
+    };
+  }
+
+  if (!bricksetApiKey?.trim()) {
+    return {
+      fetchedSetCount: 0,
+      metadataRecords: [],
+      unmatchedSetNumbers: normalizedRequestedSetNumbers,
+    };
+  }
+
+  const bricksetSets = await fetchBricksetSets({
+    apiKey: bricksetApiKey,
+    fetchFn,
+    setNumbers: normalizedRequestedSetNumbers,
+  });
+  const metadataRecords: BricksetEnrichmentRecord[] = [];
+  const matchedSetNumbers = new Set<string>();
+
+  for (const bricksetSet of bricksetSets) {
+    const returnedSetNumber = normalizeBricksetNumber(
+      toBricksetReturnedSetNumber(bricksetSet),
+    );
+
+    if (
+      !returnedSetNumber ||
+      !normalizedRequestedSetNumbers.includes(returnedSetNumber) ||
+      typeof bricksetSet.setID !== 'number'
+    ) {
+      continue;
+    }
+
+    const additionalImages = includeAdditionalImages
+      ? await fetchBricksetAdditionalImages({
+          apiKey: bricksetApiKey,
+          fetchFn,
+          setId: bricksetSet.setID,
+        })
+      : [];
+    const metadataJson = buildBricksetMetadataJson({
+      additionalImages,
+      set: bricksetSet,
+    });
+
+    if (!metadataJson) {
+      continue;
+    }
+
+    matchedSetNumbers.add(returnedSetNumber);
+    metadataRecords.push({
+      catalogSetId: returnedSetNumber.replace(/-\d+$/u, ''),
+      catalogSetName: bricksetSet.name ?? returnedSetNumber,
+      metadataJson,
+      setNumber: returnedSetNumber,
+    });
+  }
+
+  return {
+    fetchedSetCount: bricksetSets.length,
+    metadataRecords,
+    unmatchedSetNumbers: normalizedRequestedSetNumbers.filter(
+      (setNumber) => !matchedSetNumbers.has(setNumber),
+    ),
+  };
 }
 
 async function fetchBricksetAdditionalImages({

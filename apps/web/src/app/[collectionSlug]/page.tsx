@@ -94,7 +94,8 @@ function toSerializableCollectionLandingPageResult(
 function getCollectionSnapshotMaxAgeMs(
   config: CatalogCollectionLandingPageConfig,
 ): number {
-  return config.slug === 'lego-sets-onder-50-euro'
+  return config.slug === 'lego-sets-onder-50-euro' ||
+    config.slug === 'lego-sets-onder-100-euro'
     ? PRICE_SNAPSHOT_PAGE_MAX_AGE_MS
     : COLLECTION_PAGE_SNAPSHOT_MAX_AGE_MS;
 }

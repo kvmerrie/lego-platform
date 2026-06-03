@@ -147,6 +147,12 @@ describe('CatalogSetCard', () => {
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
+    const galleryVisualRule =
+      css.match(/\.galleryMainVisual \{[^}]+\}/u)?.[0] ?? '';
+    const galleryImageLayerRule =
+      css.match(/\.galleryMainImageLayer \{[^}]+\}/u)?.[0] ?? '';
+    const galleryThumbRule =
+      css.match(/\.galleryThumbButton \{[^}]+\}/u)?.[0] ?? '';
 
     expect(css).toContain('.galleryMainButton {');
     expect(css).toContain('border-radius: var(--lego-radius-md);');
@@ -157,6 +163,12 @@ describe('CatalogSetCard', () => {
     );
     expect(css).toContain('border-radius: 0;');
     expect(css).toMatch(/\.galleryMainVisual \{\s+border: 0;/u);
+    expect(galleryVisualRule).toContain('contain: paint;');
+    expect(galleryVisualRule).toContain('transition: border-color');
+    expect(galleryVisualRule).not.toContain('box-shadow var(');
+    expect(galleryImageLayerRule).toContain('contain: paint;');
+    expect(galleryThumbRule).toContain('transition: border-color');
+    expect(galleryThumbRule).not.toContain('box-shadow var(');
   });
 
   it('renders a lighter compact-card variant for dense catalog exploration', () => {
@@ -1150,6 +1162,8 @@ describe('CatalogSetCard', () => {
     expect(offerHoverRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('0 0.55rem');
     expect(offerCardRule).toContain('border: var(--lego-border-width-1) solid');
+    expect(offerCardRule).toContain('transition: border-color');
+    expect(offerCardRule).not.toContain('box-shadow var(');
     expect(offerHoverRule).toContain(
       'border-color: var(--catalog-offer-card-interaction-border-color);',
     );
@@ -1205,6 +1219,7 @@ describe('CatalogSetCard', () => {
       )?.[0] ?? '';
 
     expect(viewportRule).toContain('margin-inline: calc(50% - 50vw);');
+    expect(viewportRule).toContain('contain: paint;');
     expect(viewportRule).toContain('--catalog-offer-rail-inline-padding: var(');
     expect(viewportRule).toContain(
       'padding: 0.25rem var(--catalog-offer-rail-inline-padding) 0.35rem;',

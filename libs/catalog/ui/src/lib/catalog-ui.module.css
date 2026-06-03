@@ -1516,12 +1516,10 @@
     border: var(--lego-border-width-1) solid
       color-mix(in srgb, var(--lego-border-subtle) 88%, white 12%);
     box-shadow: none;
+    contain: paint;
     min-height: 0;
-    transition:
-      border-color var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard),
-      box-shadow var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard);
+    transition: border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
     width: 100%;
   }
 
@@ -1542,6 +1540,7 @@
   }
 
   .galleryMainImageLayer {
+    contain: paint;
     height: 100%;
     width: 100%;
   }
@@ -1638,11 +1637,8 @@
     min-width: 0;
     overflow: hidden;
     padding: 0.35rem;
-    transition:
-      border-color var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard),
-      box-shadow var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard);
+    transition: border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
   }
 
   .galleryThumbButton[data-active='true'] {
@@ -2315,6 +2311,7 @@
       --catalog-section-inline-padding,
       var(--lego-space-4)
     );
+    contain: paint;
     margin-inline: calc(50% - 50vw);
     overflow-x: auto;
     overflow-y: hidden;
@@ -2376,11 +2373,8 @@
     min-width: 0;
     overflow: hidden;
     padding: 0.72rem;
-    transition:
-      border-color var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard),
-      box-shadow var(--lego-motion-duration-fast)
-        var(--lego-motion-ease-standard);
+    transition: border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
     width: clamp(11.75rem, 61vw, 13.35rem);
   }
 

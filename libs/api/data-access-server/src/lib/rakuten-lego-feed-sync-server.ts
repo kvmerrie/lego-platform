@@ -20,6 +20,10 @@ import {
   type AlternateAffiliateFeedImportResult,
   type AlternateAffiliateFeedRow,
 } from './alternate-affiliate-feed-server';
+import {
+  buildCatalogDiscoveryCandidatesFromRakutenMissingSets,
+  type CatalogDiscoveryCandidatePipelineResult,
+} from './catalog-discovery-candidates-server';
 
 type RakutenXmlProduct = Readonly<Record<string, string | undefined>>;
 
@@ -305,6 +309,44 @@ export interface RakutenLegoFeedSyncOptions {
   unmatchedSampleLimit?: number;
 }
 
+export interface RakutenLegoMissingSetCandidate {
+  availability?: string;
+  category?: string;
+  confidence: 'strict_rakuten_lego_candidate';
+  currency?: string;
+  feedFilename: string;
+  imageUrl?: string;
+  price?: string;
+  productId?: string;
+  productTitle?: string;
+  productUrl: string;
+  reason: 'missing_from_catalog_sets';
+  setNumber: string;
+  source: 'rakuten-lego-eu';
+}
+
+export interface RakutenLegoMissingSetDiscoveryOptions {
+  autoCreateHighConfidenceCatalogSets?: boolean;
+  maxProducts?: number;
+  persistCatalogDiscoveryCandidates?: boolean;
+  persistDiscoveredSets?: boolean;
+  sampleLimit?: number;
+}
+
+export interface RakutenLegoMissingSetDiscoveryReport {
+  candidateCount: number;
+  catalogSetCount: number;
+  feedFilename: string;
+  fetchedProductCount: number;
+  missingCandidates: readonly RakutenLegoMissingSetCandidate[];
+  parseFailureCount: number;
+  pipelineResult?: CatalogDiscoveryCandidatePipelineResult;
+  persistedDiscoveredSetCount: number;
+  persistedDiscoveryCandidateCount: number;
+  source: 'rakuten-lego-eu';
+  uniqueMissingSetCount: number;
+}
+
 export interface RakutenLegoFeedSyncResult
   extends AlternateAffiliateFeedImportResult {
   debugInfo?: RakutenLegoDebugInfo;
@@ -368,6 +410,7 @@ interface RakutenSftpClient {
 }
 
 export interface RakutenLegoFeedSyncDependencies {
+  buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn?: typeof buildCatalogDiscoveryCandidatesFromRakutenMissingSets;
   createSftpClientFn?: () => RakutenSftpClient;
   getRakutenLegoFeedConfigFn?: typeof getRakutenLegoFeedConfig;
   importAffiliateFeedRowsForMerchantFn?: typeof importAffiliateFeedRowsForMerchant;
@@ -2979,6 +3022,166 @@ function assertRakutenLegoPhaseOneCronGuards({
       `Rakuten LEGO Phase 1 cron guard failed: ${failures.join(', ')}.`,
     );
   }
+}
+
+function toMissingSetDiscoveryCandidate({
+  feedFilename,
+  row,
+}: {
+  feedFilename: string;
+  row: AlternateAffiliateFeedRow;
+}): RakutenLegoMissingSetCandidate | undefined {
+  const productUrl = row.affiliateDeeplink?.trim();
+  const setNumber = row.legoSetNumber?.trim();
+
+  if (!productUrl || !setNumber) {
+    return undefined;
+  }
+
+  return {
+    ...(row.availabilityText ? { availability: row.availabilityText } : {}),
+    ...(row.category ? { category: row.category } : {}),
+    confidence: 'strict_rakuten_lego_candidate',
+    ...(row.currency ? { currency: row.currency } : {}),
+    feedFilename,
+    ...(row.imageUrl ? { imageUrl: row.imageUrl } : {}),
+    ...(row.price === undefined ? {} : { price: String(row.price) }),
+    ...(row.productId ? { productId: row.productId } : {}),
+    ...(row.productTitle ? { productTitle: row.productTitle } : {}),
+    productUrl,
+    reason: 'missing_from_catalog_sets',
+    setNumber,
+    source: 'rakuten-lego-eu',
+  };
+}
+
+export async function discoverRakutenLegoMissingSets({
+  dependencies,
+  options,
+}: {
+  dependencies?: RakutenLegoFeedSyncDependencies;
+  options?: RakutenLegoMissingSetDiscoveryOptions;
+} = {}): Promise<RakutenLegoMissingSetDiscoveryReport> {
+  const getRakutenLegoFeedConfigFn =
+    dependencies?.getRakutenLegoFeedConfigFn ?? getRakutenLegoFeedConfig;
+  const createSftpClientFn =
+    dependencies?.createSftpClientFn ?? createDefaultSftpClient;
+  const buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn =
+    dependencies?.buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn ??
+    buildCatalogDiscoveryCandidatesFromRakutenMissingSets;
+  const importAffiliateFeedRowsForMerchantFn =
+    dependencies?.importAffiliateFeedRowsForMerchantFn ??
+    importAffiliateFeedRowsForMerchant;
+  const listCanonicalCatalogSetsFn =
+    dependencies?.listCanonicalCatalogSetsFn ?? listCanonicalCatalogSets;
+  const config = getRakutenLegoFeedConfigFn();
+
+  if (config.merchantSlug !== RAKUTEN_LEGO_PHASE_ONE_MERCHANT_SLUG) {
+    throw new Error(
+      `Rakuten LEGO discovery requires merchant slug ${RAKUTEN_LEGO_PHASE_ONE_MERCHANT_SLUG}; received ${config.merchantSlug}.`,
+    );
+  }
+
+  const filename = resolveRakutenLegoFeedRemotePath(config);
+  const [catalogSets, xmlStream] = await Promise.all([
+    listCanonicalCatalogSetsFn(),
+    downloadRakutenFeedXmlStream({
+      config,
+      createSftpClientFn,
+      filename,
+    }),
+  ]);
+  const catalogSetByIdentifier = buildCatalogSetIdLookupForAudit(catalogSets);
+  const rowsByMissingSetNumber = new Map<string, AlternateAffiliateFeedRow>();
+  let fetchedProductCount = 0;
+  let parseFailureCount = 0;
+
+  try {
+    for await (const product of parseRakutenLegoProductFeedStream(xmlStream, {
+      maxProducts: options?.maxProducts,
+      onParseFailure: () => {
+        parseFailureCount += 1;
+      },
+    })) {
+      fetchedProductCount += 1;
+
+      if (getRakutenLegoPhaseOneImportExclusionReason(product)) {
+        continue;
+      }
+
+      const row = normalizeRakutenLegoProductToAffiliateFeedRow(product);
+      const matchedCatalogSet = resolveAuditCatalogSet({
+        catalogSetByIdentifier,
+        setNumber: row.legoSetNumber,
+      });
+
+      if (!matchedCatalogSet && row.legoSetNumber) {
+        rowsByMissingSetNumber.set(row.legoSetNumber, row);
+      }
+    }
+  } finally {
+    if (typeof xmlStream.destroy === 'function') {
+      xmlStream.destroy();
+    }
+  }
+
+  const missingRows = [...rowsByMissingSetNumber.values()].sort((left, right) =>
+    (left.legoSetNumber ?? '').localeCompare(right.legoSetNumber ?? ''),
+  );
+  const sampleLimit =
+    typeof options?.sampleLimit === 'number' && options.sampleLimit > 0
+      ? Math.floor(options.sampleLimit)
+      : missingRows.length;
+  const allMissingCandidates = missingRows.flatMap((row) => {
+    const candidate = toMissingSetDiscoveryCandidate({
+      feedFilename: filename,
+      row,
+    });
+
+    return candidate ? [candidate] : [];
+  });
+  const missingCandidates = allMissingCandidates.slice(0, sampleLimit);
+  const pipelineResult = options?.persistCatalogDiscoveryCandidates
+    ? await buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn({
+        candidates: allMissingCandidates,
+        options: {
+          autoCreateHighConfidenceCatalogSets:
+            options.autoCreateHighConfidenceCatalogSets,
+        },
+      })
+    : undefined;
+  const importResult = options?.persistDiscoveredSets
+    ? await importAffiliateFeedRowsForMerchantFn({
+        merchant: {
+          affiliateNetwork: 'Rakuten',
+          name: config.merchantName,
+          notes: RAKUTEN_LEGO_MERCHANT_NOTES,
+          slug: config.merchantSlug,
+          sourceType: 'affiliate',
+        },
+        options: {
+          collectUnmatchedDebug: true,
+          dryRun: false,
+          persistDiscoveredSets: true,
+        },
+        rows: missingRows,
+      })
+    : undefined;
+
+  return {
+    candidateCount: missingRows.length,
+    catalogSetCount: catalogSets.length,
+    feedFilename: filename,
+    fetchedProductCount,
+    missingCandidates,
+    parseFailureCount,
+    pipelineResult,
+    persistedDiscoveredSetCount: importResult?.discoveredMissingSetCount ?? 0,
+    persistedDiscoveryCandidateCount:
+      pipelineResult?.persistedCandidateCount ?? 0,
+    source: 'rakuten-lego-eu',
+    uniqueMissingSetCount: missingRows.length,
+  };
 }
 
 export async function syncRakutenLegoFeed({

@@ -174,12 +174,14 @@ async function renderToStreamedMarkup(element: ReactElement) {
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: ({
     className,
+    railLayoutMode,
     setCards,
     style,
     surfaceVariant,
     title,
   }: {
     className?: string;
+    railLayoutMode?: string;
     setCards: readonly { slug: string; name: string }[];
     style?: Record<string, string>;
     surfaceVariant?: string;
@@ -189,6 +191,7 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
       'section',
       {
         className,
+        'data-rail-layout-mode': railLayoutMode,
         'data-surface-variant': surfaceVariant,
         'data-testid': 'set-list',
         style,
@@ -460,7 +463,7 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain(
       'href="/sets/grogu-mandalorian-apprentice-75446"',
     );
-    expect(railHtml).not.toContain('data-rail-layout-mode="stable-square"');
+    expect(railHtml).toContain('data-rail-layout-mode="default"');
     expect(railHtml).toContain('Verder ontdekken');
     expect(railHtml).toContain('href="/nieuwe-lego-sets"');
     expect(railHtml).toContain('href="/themes/star-wars"');
@@ -1677,7 +1680,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('href="/nieuwe-lego-sets"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
-    expect(html).not.toContain('data-rail-layout-mode="stable-square"');
+    expect(html).toContain('data-rail-layout-mode="default"');
     expect(html.indexOf('Meer uit dit thema')).toBeLessThan(
       html.indexOf('Recent bekeken LEGO sets'),
     );

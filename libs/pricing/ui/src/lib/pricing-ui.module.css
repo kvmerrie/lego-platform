@@ -174,10 +174,33 @@
 }
 
 .historyChartShell {
+  --pricing-history-chart-grid: color-mix(
+    in srgb,
+    var(--lego-border) 58%,
+    transparent
+  );
+  --pricing-history-chart-height: 10.5rem;
+  --pricing-history-chart-high: color-mix(
+    in srgb,
+    var(--lego-text-muted) 84%,
+    white
+  );
+  --pricing-history-chart-line: color-mix(
+    in srgb,
+    var(--lego-accent) 92%,
+    white 8%
+  );
+  --pricing-history-chart-low: color-mix(
+    in srgb,
+    var(--lego-color-success, #178c5f) 88%,
+    black 12%
+  );
+  --pricing-history-chart-marker: #ffffff;
   align-items: stretch;
   background: color-mix(in srgb, var(--lego-surface-muted) 72%, white);
   border: 1px solid color-mix(in srgb, var(--lego-border) 68%, transparent);
   border-radius: var(--lego-radius-md);
+  contain: paint;
   display: grid;
   gap: var(--lego-space-2);
   grid-template-columns: auto minmax(0, 1fr);
@@ -198,35 +221,11 @@
   min-width: 4.75rem;
 }
 
-.historyChart {
+.historyCanvas {
+  block-size: var(--pricing-history-chart-height);
   display: block;
-  height: auto;
   inline-size: 100%;
-}
-
-.historyGridLine {
-  stroke: color-mix(in srgb, var(--lego-border) 58%, transparent);
-  stroke-width: 1;
-}
-
-.historyArea {
-  opacity: 1;
-}
-
-.historyLine {
-  filter: drop-shadow(
-    0 2px 4px color-mix(in srgb, var(--lego-accent) 14%, transparent)
-  );
-  stroke: color-mix(in srgb, var(--lego-accent) 92%, white 8%);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2.75;
-}
-
-.historyPoint {
-  fill: #ffffff;
-  stroke: var(--lego-accent);
-  stroke-width: 1.7;
+  max-inline-size: 100%;
 }
 
 .historyLabels {

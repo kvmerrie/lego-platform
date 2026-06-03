@@ -8,6 +8,7 @@ const snapshotBackedCollectionHeaderSources = [
   '/nieuwe-lego-sets',
   '/retiring-lego-sets',
   '/lego-sets-onder-50-euro',
+  '/lego-sets-onder-100-euro',
   '/lego-voor-volwassenen',
 ];
 

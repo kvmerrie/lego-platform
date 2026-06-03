@@ -936,7 +936,9 @@ async function upsertBootstrapRows<TRow extends Record<string, unknown>>({
   }
 
   for (const chunk of chunkValues(rows, 100)) {
-    const { error } = await supabaseClient.from(table).upsert(chunk, {
+    const tableClient = supabaseClient.from(table);
+    const payload = chunk as Parameters<typeof tableClient.upsert>[0];
+    const { error } = await tableClient.upsert(payload, {
       onConflict,
     });
 

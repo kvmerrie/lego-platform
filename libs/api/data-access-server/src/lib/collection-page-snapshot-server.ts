@@ -970,7 +970,13 @@ export async function buildCollectionPageSnapshots({
     let candidates: CollectionPageSnapshotCard[] = [];
     let missingPriceSnapshotCount = 0;
 
-    if (collectionSlug === 'lego-sets-onder-50-euro') {
+    if (
+      collectionSlug === 'lego-sets-onder-50-euro' ||
+      collectionSlug === 'lego-sets-onder-100-euro'
+    ) {
+      const maxBestPriceMinor =
+        collectionSlug === 'lego-sets-onder-50-euro' ? 5_000 : 10_000;
+
       candidates = cards.filter((card) => {
         const priceSnapshot = priceSnapshots.get(card.id);
         const priceMinor = priceSnapshot?.best_price_minor;
@@ -982,7 +988,7 @@ export async function buildCollectionPageSnapshots({
         return (
           typeof priceMinor === 'number' &&
           priceMinor > 0 &&
-          priceMinor <= 5_000 &&
+          priceMinor <= maxBestPriceMinor &&
           (priceSnapshot.best_availability === 'in_stock' ||
             priceSnapshot.best_availability === 'limited')
         );

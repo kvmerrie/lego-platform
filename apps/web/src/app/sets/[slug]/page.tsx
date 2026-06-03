@@ -1865,6 +1865,7 @@ export function SetDetailInternalLinkRails({
           description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${displayTitle} staan.`}
           eyebrow="Zelfde thema"
           key={block.id}
+          railLayoutMode="default"
           sectionId="same-theme-sets"
           setCards={block.items.slice(0, SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT)}
           signalText={`${block.items.length} sets uit ${catalogSetDetail.theme}`}

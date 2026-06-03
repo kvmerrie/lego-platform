@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import {
   auditRakutenLegoFeedDiscovery,
   auditRakutenLegoFeed,
+  discoverRakutenLegoMissingSets,
   listRakutenLegoFeedFiles,
   logScheduledJobFailure,
   revalidatePublicCatalogPriceChanges,
@@ -110,61 +111,133 @@ function parseOptionalNonNegativeIntegerFlag({
   return parsedValue;
 }
 
-async function main() {
-  const argv = process.argv.slice(2);
+export function parseRakutenLegoFeedSyncCliOptions(argv: readonly string[]): {
+  auditDiscovery: boolean;
+  auditFeedFilename?: string;
+  auditOnly: boolean;
+  auditRedirectSamples?: number;
+  auditReportPath?: string;
+  auditTemplateFilename?: string;
+  debugSamples?: number;
+  debugUnmatchedSamples?: number;
+  autoCreateHighConfidenceCatalogSets: boolean;
+  discoverMissingSets: boolean;
+  dryRun: boolean;
+  listFiles: boolean;
+  maxProducts?: number;
+  persistDiscoveredSets: boolean;
+  persistCatalogDiscoveryCandidates: boolean;
+  reportMissingSetsPath?: string;
+  reportUnmatchedPath?: string;
+  titleAuditReportPath?: string;
+} {
+  const discoverMissingSets = hasBooleanFlag({
+    argv,
+    flag: '--discover-missing-sets',
+  });
+
+  return {
+    auditDiscovery: hasBooleanFlag({
+      argv,
+      flag: '--audit-discovery',
+    }),
+    auditFeedFilename: parseOptionalStringFlag({
+      argv,
+      flag: '--audit-feed-filename',
+    }),
+    auditOnly: hasBooleanFlag({
+      argv,
+      flag: '--audit-only',
+    }),
+    auditRedirectSamples: parseOptionalNonNegativeIntegerFlag({
+      argv,
+      flag: '--audit-redirect-samples',
+    }),
+    auditReportPath: parseOptionalStringFlag({
+      argv,
+      flag: '--audit-report-path',
+    }),
+    auditTemplateFilename: parseOptionalStringFlag({
+      argv,
+      flag: '--audit-template-filename',
+    }),
+    debugSamples: parseOptionalPositiveIntegerFlag({
+      argv,
+      flag: '--debug-samples',
+    }),
+    debugUnmatchedSamples: parseOptionalPositiveIntegerFlag({
+      argv,
+      flag: '--debug-unmatched-samples',
+    }),
+    autoCreateHighConfidenceCatalogSets:
+      discoverMissingSets &&
+      hasBooleanFlag({
+        argv,
+        flag: '--auto-create-high-confidence-catalog-sets',
+      }),
+    discoverMissingSets,
+    dryRun: hasBooleanFlag({
+      argv,
+      flag: '--dry-run',
+    }),
+    listFiles: hasBooleanFlag({
+      argv,
+      flag: '--list-files',
+    }),
+    maxProducts: parseOptionalPositiveIntegerFlag({
+      argv,
+      flag: '--max-products',
+    }),
+    persistDiscoveredSets:
+      discoverMissingSets &&
+      hasBooleanFlag({
+        argv,
+        flag: '--persist-discovered-sets',
+      }),
+    persistCatalogDiscoveryCandidates:
+      discoverMissingSets &&
+      !hasBooleanFlag({
+        argv,
+        flag: '--skip-catalog-discovery-candidates',
+      }),
+    reportMissingSetsPath: parseOptionalStringFlag({
+      argv,
+      flag: '--report-missing-sets-path',
+    }),
+    reportUnmatchedPath: parseOptionalStringFlag({
+      argv,
+      flag: '--report-unmatched-path',
+    }),
+    titleAuditReportPath: parseOptionalStringFlag({
+      argv,
+      flag: '--title-audit-report-path',
+    }),
+  };
+}
+
+export async function main(argv = process.argv.slice(2)) {
+  const options = parseRakutenLegoFeedSyncCliOptions(argv);
   const startedAt = Date.now();
-  const dryRun = hasBooleanFlag({
-    argv,
-    flag: '--dry-run',
-  });
-  const auditOnly = hasBooleanFlag({
-    argv,
-    flag: '--audit-only',
-  });
-  const auditDiscovery = hasBooleanFlag({
-    argv,
-    flag: '--audit-discovery',
-  });
-  const listFiles = hasBooleanFlag({
-    argv,
-    flag: '--list-files',
-  });
-  const debugSamples = parseOptionalPositiveIntegerFlag({
-    argv,
-    flag: '--debug-samples',
-  });
-  const debugUnmatchedSamples = parseOptionalPositiveIntegerFlag({
-    argv,
-    flag: '--debug-unmatched-samples',
-  });
-  const maxProducts = parseOptionalPositiveIntegerFlag({
-    argv,
-    flag: '--max-products',
-  });
-  const reportUnmatchedPath = parseOptionalStringFlag({
-    argv,
-    flag: '--report-unmatched-path',
-  });
-  const titleAuditReportPath = parseOptionalStringFlag({
-    argv,
-    flag: '--title-audit-report-path',
-  });
-  const auditReportPath = parseOptionalStringFlag({
-    argv,
-    flag: '--audit-report-path',
-  });
-  const auditTemplateFilename = parseOptionalStringFlag({
-    argv,
-    flag: '--audit-template-filename',
-  });
-  const auditFeedFilename = parseOptionalStringFlag({
-    argv,
-    flag: '--audit-feed-filename',
-  });
-  const auditRedirectSamples = parseOptionalNonNegativeIntegerFlag({
-    argv,
-    flag: '--audit-redirect-samples',
-  });
+  const {
+    auditDiscovery,
+    auditFeedFilename,
+    auditOnly,
+    auditRedirectSamples,
+    auditReportPath,
+    auditTemplateFilename,
+    debugSamples,
+    debugUnmatchedSamples,
+    autoCreateHighConfidenceCatalogSets,
+    discoverMissingSets,
+    dryRun,
+    listFiles,
+    maxProducts,
+    persistDiscoveredSets,
+    persistCatalogDiscoveryCandidates,
+    reportMissingSetsPath,
+    reportUnmatchedPath,
+    titleAuditReportPath,
+  } = options;
 
   if (!hasRakutenLegoFeedConfig()) {
     throw new Error(
@@ -318,6 +391,67 @@ async function main() {
     return;
   }
 
+  if (discoverMissingSets) {
+    if (!hasServerSupabaseConfig()) {
+      throw new Error(
+        `Rakuten LEGO missing-set discovery requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
+      );
+    }
+
+    console.log(
+      `[rakuten-lego-feed-sync] start source=rakuten merchant=rakuten-lego-eu mode=discover-missing-sets persist_discovered_sets=${persistDiscoveredSets} max_products=${maxProducts ?? 0} report_missing_sets_path=${JSON.stringify(reportMissingSetsPath ?? '')}`,
+    );
+
+    const report = await discoverRakutenLegoMissingSets({
+      options: {
+        maxProducts,
+        autoCreateHighConfidenceCatalogSets,
+        persistCatalogDiscoveryCandidates,
+        persistDiscoveredSets,
+        sampleLimit: debugUnmatchedSamples,
+      },
+    });
+
+    console.log(
+      `[rakuten-lego-feed-sync] missing_set_discovery fetched_products=${report.fetchedProductCount} missing_candidates=${report.candidateCount} unique_missing_sets=${report.uniqueMissingSetCount} persisted_discovered_sets=${report.persistedDiscoveredSetCount} persisted_catalog_discovery_candidates=${report.persistedDiscoveryCandidateCount} auto_create_attempted=${report.pipelineResult?.autoCreateAttemptedCount ?? 0} auto_created_catalog_sets=${report.pipelineResult?.createdCatalogSetCount ?? 0}`,
+    );
+    console.log(
+      JSON.stringify(
+        {
+          report,
+        },
+        null,
+        2,
+      ),
+    );
+
+    if (reportMissingSetsPath) {
+      await mkdir(dirname(reportMissingSetsPath), {
+        recursive: true,
+      });
+      await writeFile(
+        reportMissingSetsPath,
+        JSON.stringify(
+          {
+            generatedAt: new Date().toISOString(),
+            report,
+          },
+          null,
+          2,
+        ),
+      );
+      console.log(
+        `[rakuten-lego-feed-sync] missing_sets_report_written path=${JSON.stringify(reportMissingSetsPath)} candidates=${report.candidateCount} unique_sets=${report.uniqueMissingSetCount}`,
+      );
+    }
+
+    console.log(
+      `[rakuten-lego-feed-sync] end status=discover-missing-sets duration_ms=${Date.now() - startedAt}`,
+    );
+
+    return;
+  }
+
   if (!hasServerSupabaseConfig() && !dryRun) {
     throw new Error(
       `Rakuten LEGO feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
@@ -466,14 +600,16 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  const classification = logScheduledJobFailure({
-    context: 'source=rakuten merchant=rakuten-lego-eu',
-    error,
-    jobName: 'rakuten-lego-feed-sync',
-  });
+if (typeof require !== 'undefined' && require.main === module) {
+  main().catch((error) => {
+    const classification = logScheduledJobFailure({
+      context: 'source=rakuten merchant=rakuten-lego-eu',
+      error,
+      jobName: 'rakuten-lego-feed-sync',
+    });
 
-  if (!classification.recoverable) {
-    process.exit(1);
-  }
-});
+    if (!classification.recoverable) {
+      process.exit(1);
+    }
+  });
+}

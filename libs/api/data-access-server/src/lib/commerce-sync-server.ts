@@ -9,7 +9,10 @@ import {
   probeCatalogCurrentOfferSnapshotHitRateBySetIds,
 } from '@lego-platform/catalog/data-access-server';
 import type { CatalogCurrentOfferSummaryRecord } from '@lego-platform/catalog/data-access-server';
-import type { CatalogSetSummary } from '@lego-platform/catalog/util';
+import {
+  catalogCollectionPageSnapshotSlugs,
+  type CatalogSetSummary,
+} from '@lego-platform/catalog/util';
 import {
   buildDailyPriceHistoryPointsFromCommerceLatestOffers,
   buildPricingSyncArtifacts,
@@ -116,6 +119,16 @@ export interface CommerceSyncDependencies {
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
 }
+
+const commerceSyncCollectionSnapshotSlugs = catalogCollectionPageSnapshotSlugs;
+const commerceSyncCollectionSnapshotPaths =
+  commerceSyncCollectionSnapshotSlugs.map((collectionSlug) => {
+    return `/${collectionSlug}`;
+  });
+const commerceSyncCollectionSnapshotTags =
+  commerceSyncCollectionSnapshotSlugs.map((collectionSlug) => {
+    return cacheTags.collection(collectionSlug);
+  });
 
 function hasRequiredCommerceCheckSupabaseEnv(
   environment: Record<string, string | undefined>,
@@ -783,9 +796,9 @@ export async function runCommerceSync({
         })
       : { upsertedCount: 0 };
   const collectionPageSnapshotResult =
-    mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0
+    mode === 'write'
       ? await syncCollectionPageSnapshotsFn({
-          collectionSlugs: ['lego-sets-onder-50-euro'],
+          collectionSlugs: commerceSyncCollectionSnapshotSlugs,
           dryRun: false,
           pageSize: 40,
         })
@@ -839,16 +852,20 @@ export async function runCommerceSync({
           upsertedCount: 0,
         };
 
-  if (mode === 'write' && currentOfferSnapshotUpsertResult.upsertedCount > 0) {
-    console.info('[commerce-sync] collection_page_snapshots', {
-      collection_slug: 'lego-sets-onder-50-euro',
-      snapshots_built: collectionPageSnapshotResult.snapshots.length,
-      snapshots_upserted: collectionPageSnapshotResult.upsertedCount,
-      summary:
-        collectionPageSnapshotResult.summaryByCollectionSlug[
-          'lego-sets-onder-50-euro'
-        ],
-    });
+  if (mode === 'write') {
+    for (const collectionSlug of commerceSyncCollectionSnapshotSlugs) {
+      const snapshotsBuilt = collectionPageSnapshotResult.snapshots.filter(
+        (snapshot) => snapshot.collectionSlug === collectionSlug,
+      ).length;
+
+      console.info('[commerce-sync] collection_page_snapshots', {
+        collection_slug: collectionSlug,
+        snapshots_built: snapshotsBuilt,
+        snapshots_upserted: snapshotsBuilt,
+        summary:
+          collectionPageSnapshotResult.summaryByCollectionSlug[collectionSlug],
+      });
+    }
     console.info('[commerce-sync] deal_page_snapshots', {
       snapshots_built: dealPageSnapshotResult.snapshots.length,
       snapshots_upserted: dealPageSnapshotResult.upsertedCount,
@@ -959,10 +976,10 @@ export async function runCommerceSync({
   if (mode === 'write' && revalidationCatalogSetSummaries.length > 0) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
         additionalTags: [
           cacheTags.collections(),
-          cacheTags.collection('lego-sets-onder-50-euro'),
+          ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
         ],
@@ -982,10 +999,10 @@ export async function runCommerceSync({
   } else if (aggregateArtifactsChanged) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
         additionalTags: [
           cacheTags.collections(),
-          cacheTags.collection('lego-sets-onder-50-euro'),
+          ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
         ],
@@ -1007,10 +1024,10 @@ export async function runCommerceSync({
   ) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: ['/lego-sets-onder-50-euro', '/deals'],
+        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
         additionalTags: [
           cacheTags.collections(),
-          cacheTags.collection('lego-sets-onder-50-euro'),
+          ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
         ],

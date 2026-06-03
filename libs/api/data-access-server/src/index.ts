@@ -6,6 +6,7 @@ export * from './lib/awin-feed-sync-server';
 export * from './lib/awin-coolblue-sync-server';
 export * from './lib/awin-joybuy-feed-sync-server';
 export * from './lib/catalog-bulk-onboarding-server';
+export * from './lib/catalog-discovery-candidates-server';
 export * from './lib/catalog-minifig-onboarding-server';
 export * from './lib/catalog-promotion-server';
 export * from './lib/commerce-refresh-server';

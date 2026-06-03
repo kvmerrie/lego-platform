@@ -4,6 +4,7 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   auditRakutenLegoFeedDiscovery,
   auditRakutenLegoFeed,
+  discoverRakutenLegoMissingSets,
   extractRakutenLegoSetNumberFromHumanFields,
   extractRakutenLegoSetNumberFromProductFields,
   isStrictRakutenLegoSetCandidate,
@@ -818,6 +819,157 @@ describe('Rakuten LEGO feed sync server', () => {
     });
     expect(result.sourceMetadataUpsertedCount).toBe(0);
     expect(upsertCatalogSetSourceMetadataFn).not.toHaveBeenCalled();
+  });
+
+  test('discovers missing Rakuten LEGO set candidates without persisting by default', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Icons 10316 Rivendell</productname>
+    <price>399.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
+    <part_number>10316</part_number>
+  </product>
+  <product>
+    <productname>LEGO Icons 99999 Missing Castle</productname>
+    <price>129.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999</linkurl>
+    <part_number>99999</part_number>
+  </product>
+</products>`,
+    });
+    const importAffiliateFeedRowsForMerchantFn = vi.fn();
+
+    const report = await discoverRakutenLegoMissingSets({
+      dependencies: {
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        importAffiliateFeedRowsForMerchantFn,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316',
+            sourceSetNumber: '10316-1',
+          },
+        ]),
+      },
+    });
+
+    expect(importAffiliateFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(report).toMatchObject({
+      candidateCount: 1,
+      fetchedProductCount: 2,
+      persistedDiscoveredSetCount: 0,
+      uniqueMissingSetCount: 1,
+    });
+    expect(report.missingCandidates).toEqual([
+      expect.objectContaining({
+        availability: 'In stock',
+        confidence: 'strict_rakuten_lego_candidate',
+        currency: 'EUR',
+        price: '129.99',
+        productTitle: 'LEGO Icons 99999 Missing Castle',
+        productUrl:
+          'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999',
+        reason: 'missing_from_catalog_sets',
+        setNumber: '99999',
+        source: 'rakuten-lego-eu',
+      }),
+    ]);
+  });
+
+  test('does not report catalog matches that require -1 source number normalization', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Icons 10316 Rivendell</productname>
+    <price>399.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Frivendell-10316</linkurl>
+    <part_number>10316</part_number>
+  </product>
+</products>`,
+    });
+
+    const report = await discoverRakutenLegoMissingSets({
+      dependencies: {
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        importAffiliateFeedRowsForMerchantFn: vi.fn(),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316-1',
+            sourceSetNumber: '10316-1',
+          },
+        ]),
+      },
+    });
+
+    expect(report.candidateCount).toBe(0);
+    expect(report.missingCandidates).toEqual([]);
+  });
+
+  test('persists discovered Rakuten missing set candidates only when requested', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Icons 99999 Missing Castle</productname>
+    <price>129.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999</linkurl>
+    <part_number>99999</part_number>
+  </product>
+</products>`,
+    });
+    const importAffiliateFeedRowsForMerchantFn = vi.fn().mockResolvedValue(
+      createImportResult({
+        discoveredMissingSetCount: 1,
+        reviewNeededMissingSetCount: 1,
+        skippedUnmatchedSetCount: 1,
+      }),
+    );
+
+    const report = await discoverRakutenLegoMissingSets({
+      dependencies: {
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        importAffiliateFeedRowsForMerchantFn,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([]),
+      },
+      options: {
+        persistDiscoveredSets: true,
+      },
+    });
+
+    expect(importAffiliateFeedRowsForMerchantFn).toHaveBeenCalledWith({
+      merchant: {
+        affiliateNetwork: 'Rakuten',
+        name: 'LEGO',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the LEGO Rakuten Product Catalog feed.',
+        slug: 'rakuten-lego-eu',
+        sourceType: 'affiliate',
+      },
+      options: {
+        collectUnmatchedDebug: true,
+        dryRun: false,
+        persistDiscoveredSets: true,
+      },
+      rows: [
+        expect.objectContaining({
+          affiliateDeeplink:
+            'https://click.linksynergy.com/link?id=test&murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999',
+          legoSetNumber: '99999',
+          productTitle: 'LEGO Icons 99999 Missing Castle',
+        }),
+      ],
+    });
+    expect(report.persistedDiscoveredSetCount).toBe(1);
   });
 
   test('builds a metadata-only LEGO NL title audit for exact catalog matches', async () => {

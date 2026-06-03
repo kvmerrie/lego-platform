@@ -32,6 +32,8 @@ import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_TABLE = 'catalog_sets';
+export const CATALOG_DISCOVERY_CANDIDATES_TABLE =
+  'catalog_discovery_candidates';
 export const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_SET_SOURCE_METADATA_PAGE_SIZE = 1000;
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
@@ -63,6 +65,63 @@ export interface CatalogSetSourceMetadataInput {
   source: string;
 }
 
+export type CatalogDiscoveryCandidateConfidence = 'high' | 'low' | 'medium';
+
+export type CatalogDiscoveryCandidateStatus =
+  | 'ignored'
+  | 'imported'
+  | 'new'
+  | 'rejected';
+
+export interface CatalogDiscoveryCandidateInput {
+  autoCreateEligible: boolean;
+  bricksetPayload?: Readonly<Record<string, unknown>>;
+  confidence: CatalogDiscoveryCandidateConfidence;
+  confidenceScore: number;
+  evidence: Readonly<Record<string, unknown>>;
+  firstSeenAt: string;
+  importError?: string | null;
+  importedSetId?: string | null;
+  lastSeenAt: string;
+  normalizedSetId: string;
+  rebrickablePayload?: Readonly<Record<string, unknown>>;
+  requiredFieldsPresent: boolean;
+  source: string;
+  sourceCurrencyCode?: string;
+  sourceImageUrl?: string;
+  sourcePayload: Readonly<Record<string, unknown>>;
+  sourcePriceMinor?: number;
+  sourceProductTitle?: string;
+  sourceProductUrl: string;
+  sourceSetNumber: string;
+  status?: CatalogDiscoveryCandidateStatus;
+}
+
+export interface CatalogDiscoveryCandidate {
+  autoCreateEligible: boolean;
+  bricksetPayload?: Readonly<Record<string, unknown>>;
+  confidence: CatalogDiscoveryCandidateConfidence;
+  confidenceScore: number;
+  evidence: Readonly<Record<string, unknown>>;
+  firstSeenAt: string;
+  id: string;
+  importError?: string | null;
+  importedSetId?: string | null;
+  lastSeenAt: string;
+  normalizedSetId: string;
+  rebrickablePayload?: Readonly<Record<string, unknown>>;
+  requiredFieldsPresent: boolean;
+  source: string;
+  sourceCurrencyCode?: string;
+  sourceImageUrl?: string;
+  sourcePayload: Readonly<Record<string, unknown>>;
+  sourcePriceMinor?: number;
+  sourceProductTitle?: string;
+  sourceProductUrl: string;
+  sourceSetNumber: string;
+  status: CatalogDiscoveryCandidateStatus;
+}
+
 export interface CatalogSetSourceMetadataBackfillResult {
   found: boolean;
   missing: boolean;
@@ -74,6 +133,31 @@ interface CatalogSetSourceMetadataRow {
   metadata_json: Record<string, unknown> | null;
   policy: string | null;
   set_number: string;
+}
+
+interface CatalogDiscoveryCandidateRow {
+  auto_create_eligible: boolean;
+  brickset_payload: Record<string, unknown> | null;
+  confidence: string;
+  confidence_score: number;
+  evidence: Record<string, unknown> | null;
+  first_seen_at: string;
+  id: string;
+  import_error: string | null;
+  imported_set_id: string | null;
+  last_seen_at: string;
+  normalized_set_id: string;
+  rebrickable_payload: Record<string, unknown> | null;
+  required_fields_present: boolean;
+  source: string;
+  source_currency_code: string | null;
+  source_image_url: string | null;
+  source_payload: Record<string, unknown> | null;
+  source_price_minor: number | null;
+  source_product_title: string | null;
+  source_product_url: string;
+  source_set_number: string;
+  status: string;
 }
 
 const RAKUTEN_LEGO_SOURCE = 'rakuten-lego-eu';
@@ -2651,6 +2735,120 @@ export async function upsertCatalogSetSourceMetadata({
   }
 
   return upsertedCount;
+}
+
+function toCatalogDiscoveryCandidate(
+  row: CatalogDiscoveryCandidateRow,
+): CatalogDiscoveryCandidate {
+  const confidence =
+    row.confidence === 'high' ||
+    row.confidence === 'medium' ||
+    row.confidence === 'low'
+      ? row.confidence
+      : 'low';
+  const status =
+    row.status === 'imported' ||
+    row.status === 'ignored' ||
+    row.status === 'rejected' ||
+    row.status === 'new'
+      ? row.status
+      : 'new';
+
+  return {
+    autoCreateEligible: row.auto_create_eligible,
+    ...(row.brickset_payload ? { bricksetPayload: row.brickset_payload } : {}),
+    confidence,
+    confidenceScore: row.confidence_score,
+    evidence: row.evidence ?? {},
+    firstSeenAt: row.first_seen_at,
+    id: row.id,
+    importError: row.import_error,
+    importedSetId: row.imported_set_id,
+    lastSeenAt: row.last_seen_at,
+    normalizedSetId: row.normalized_set_id,
+    ...(row.rebrickable_payload
+      ? { rebrickablePayload: row.rebrickable_payload }
+      : {}),
+    requiredFieldsPresent: row.required_fields_present,
+    source: row.source,
+    ...(row.source_currency_code
+      ? { sourceCurrencyCode: row.source_currency_code }
+      : {}),
+    ...(row.source_image_url ? { sourceImageUrl: row.source_image_url } : {}),
+    sourcePayload: row.source_payload ?? {},
+    ...(typeof row.source_price_minor === 'number'
+      ? { sourcePriceMinor: row.source_price_minor }
+      : {}),
+    ...(row.source_product_title
+      ? { sourceProductTitle: row.source_product_title }
+      : {}),
+    sourceProductUrl: row.source_product_url,
+    sourceSetNumber: row.source_set_number,
+    status,
+  };
+}
+
+export async function upsertCatalogDiscoveryCandidates({
+  inputs,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  inputs: readonly CatalogDiscoveryCandidateInput[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogDiscoveryCandidate[]> {
+  if (inputs.length === 0) {
+    return [];
+  }
+
+  const upsertedRows: CatalogDiscoveryCandidateRow[] = [];
+
+  for (const chunk of chunkCatalogRows(inputs, 250)) {
+    const { data, error } = await supabaseClient
+      .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+      .upsert(
+        chunk.map((input) => ({
+          auto_create_eligible: input.autoCreateEligible,
+          brickset_payload: input.bricksetPayload ?? null,
+          confidence: input.confidence,
+          confidence_score: Math.max(
+            0,
+            Math.min(100, Math.floor(input.confidenceScore)),
+          ),
+          evidence: input.evidence,
+          first_seen_at: input.firstSeenAt,
+          import_error: input.importError ?? null,
+          imported_set_id: input.importedSetId ?? null,
+          last_seen_at: input.lastSeenAt,
+          normalized_set_id: input.normalizedSetId,
+          rebrickable_payload: input.rebrickablePayload ?? null,
+          required_fields_present: input.requiredFieldsPresent,
+          source: input.source,
+          source_currency_code: input.sourceCurrencyCode ?? null,
+          source_image_url: input.sourceImageUrl ?? null,
+          source_payload: input.sourcePayload,
+          source_price_minor: input.sourcePriceMinor ?? null,
+          source_product_title: input.sourceProductTitle ?? null,
+          source_product_url: input.sourceProductUrl,
+          source_set_number: input.sourceSetNumber,
+          status: input.status ?? 'new',
+        })),
+        {
+          onConflict: 'normalized_set_id',
+        },
+      )
+      .select(
+        'id, normalized_set_id, source_set_number, source, source_product_url, source_product_title, source_image_url, source_price_minor, source_currency_code, source_payload, rebrickable_payload, brickset_payload, evidence, confidence, confidence_score, required_fields_present, auto_create_eligible, status, imported_set_id, import_error, first_seen_at, last_seen_at',
+      );
+
+    if (error) {
+      throw new Error('Unable to upsert catalog discovery candidates.');
+    }
+
+    upsertedRows.push(
+      ...((data as CatalogDiscoveryCandidateRow[] | null) ?? []),
+    );
+  }
+
+  return upsertedRows.map(toCatalogDiscoveryCandidate);
 }
 
 export async function listCatalogSetSourceMetadataSetIds({

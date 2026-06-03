@@ -270,7 +270,7 @@ function CatalogSetCardRailViewport({
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
-  railLayoutMode = 'default',
+  railLayoutMode = 'stable-square',
   render,
   variant = 'featured',
 }: CatalogSetCardRailProps & {
@@ -710,7 +710,7 @@ export function CatalogSetCardRail({
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
-  railLayoutMode = 'default',
+  railLayoutMode = 'stable-square',
   showControls = false,
   variant = 'featured',
 }: CatalogSetCardRailProps) {
@@ -743,7 +743,7 @@ export function CatalogSetCardRailSection({
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
-  railLayoutMode = 'default',
+  railLayoutMode = 'stable-square',
   railClassName,
   surfaceVariant = 'default',
   tone = surfaceVariant === 'themed' ? 'default' : 'plain',

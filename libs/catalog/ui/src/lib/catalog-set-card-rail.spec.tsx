@@ -1593,12 +1593,14 @@ describe('CatalogSetCardRail', () => {
     });
 
     expect(resizeObserverCallback).toBeNull();
-    expect(container.querySelector('[data-rail-layout-mode]')).toBeNull();
+    expect(
+      container.querySelector('[data-rail-layout-mode="stable-square"]'),
+    ).not.toBeNull();
     expect(container.textContent).toContain('Golden Retriever Puppy');
     expect(container.innerHTML).toContain('cardCompactFooterActions');
   });
 
-  it('applies the stable-square layout only when explicitly requested', () => {
+  it('uses the stable-square layout by default and allows an explicit default opt-out', () => {
     act(() => {
       root.render(
         <CatalogSetCardRail
@@ -1618,7 +1620,6 @@ describe('CatalogSetCardRail', () => {
               },
             },
           ]}
-          railLayoutMode="stable-square"
           variant="featured"
         />,
       );
@@ -1627,6 +1628,33 @@ describe('CatalogSetCardRail', () => {
     expect(
       container.querySelector('[data-rail-layout-mode="stable-square"]'),
     ).not.toBeNull();
+
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Meer uit dit thema"
+          items={[
+            {
+              href: '/sets/rivendell-10316',
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6181,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+          ]}
+          railLayoutMode="default"
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-rail-layout-mode]')).toBeNull();
   });
 
   it('keeps rails off resize, mutation, and image-load observer loops', () => {

@@ -312,6 +312,53 @@ describe('collection page snapshots', () => {
     );
   });
 
+  test('uses commerce current offer snapshots for under 100 euro', async () => {
+    listCanonicalCatalogSetsMock.mockResolvedValue([
+      createCatalogSet({
+        setId: '30000-1',
+        slug: 'budget-set-30000',
+        sourceSetNumber: '30000',
+      }),
+      createCatalogSet({
+        setId: '30001-1',
+        slug: 'too-expensive-set-30001',
+        sourceSetNumber: '30001',
+      }),
+    ]);
+    const { client } = createSupabaseClient({
+      commerceSnapshots: [
+        {
+          best_availability: 'in_stock',
+          best_merchant_name: 'Brickfever',
+          best_price_minor: 9999,
+          set_id: '30000-1',
+        },
+        {
+          best_availability: 'in_stock',
+          best_merchant_name: 'Brickfever',
+          best_price_minor: 10001,
+          set_id: '30001-1',
+        },
+      ],
+    });
+
+    const result = await buildCollectionPageSnapshots({
+      collectionSlugs: ['lego-sets-onder-100-euro'],
+      supabaseClient: client,
+    });
+
+    expect(
+      result.summaryByCollectionSlug['lego-sets-onder-100-euro']?.totalCount,
+    ).toBe(1);
+    expect(result.snapshots[0]?.collectionSlug).toBe(
+      'lego-sets-onder-100-euro',
+    );
+    expect(result.snapshots[0]?.items[0]?.id).toBe('30000-1');
+    expect(result.snapshots[0]?.items[0]?.priceContext?.currentPrice).toBe(
+      'Vanaf € 99,99',
+    );
+  });
+
   test('builds adult collector snapshots from Brickset adult signals', async () => {
     listCanonicalCatalogSetsMock.mockResolvedValue([
       createCatalogSet({

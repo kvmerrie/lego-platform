@@ -82,12 +82,25 @@ vi.mock('@lego-platform/catalog/util', () => ({
                 options: ['recommended', 'pieces-desc', 'newest'],
               },
             }
-          : undefined,
+          : slug === 'nieuwe-lego-sets'
+            ? {
+                ...collectionPageMocks.collectionConfig,
+                canonicalPath: '/nieuwe-lego-sets',
+                h1: 'Nieuwe LEGO sets',
+                metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+                slug: 'nieuwe-lego-sets',
+                sort: {
+                  default: 'newest',
+                  options: ['newest', 'recommended', 'pieces-desc'],
+                },
+              }
+            : undefined,
   isCatalogCollectionPageSnapshotSlug: (slug: string) =>
     [
       'nieuwe-lego-sets',
       'retiring-lego-sets',
       'lego-sets-onder-50-euro',
+      'lego-sets-onder-100-euro',
       'lego-voor-volwassenen',
     ].includes(slug),
   listCatalogCollectionLandingPageConfigs: () => [
@@ -224,7 +237,7 @@ describe('collection landing page route', () => {
     );
   });
 
-  it('uses the shared browse cache with a serializable collection result shape', async () => {
+  it('uses the shared browse cache with a serializable snapshot result shape', async () => {
     const pageModule = await import('./page');
 
     const renderPage = async () =>
@@ -286,26 +299,17 @@ describe('collection landing page route', () => {
     );
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
     ).toHaveBeenCalledWith(
       expect.objectContaining({
-        cacheOptions: expect.objectContaining({
-          revalidateSeconds: 21_600,
-          tags: [
-            'catalog',
-            'sets',
-            'collections',
-            'collection:lego-sets-onder-100-euro',
-            'prices',
-            'deals',
-          ],
+        config: expect.objectContaining({
+          slug: 'lego-sets-onder-100-euro',
         }),
-      }),
-    );
-    expect(collectionPageMocks.loadedCacheResults[0]).toEqual(
-      expect.objectContaining({
-        bestPriceMinorBySetId: {
-          '10307': 9_999,
-        },
+        limit: 40,
+        offset: 0,
+        sortKey: 'price-asc',
       }),
     );
     expect(
@@ -324,11 +328,9 @@ describe('collection landing page route', () => {
         pageSize: 40,
         setCards: [
           expect.objectContaining({
-            id: '10307',
+            id: '60430',
             priceContext: expect.objectContaining({
-              coverageLabel: 'Actuele prijs gevonden',
-              merchantLabel: 'Laagste bekende prijs',
-              reviewedLabel: 'Server-side bijgewerkt',
+              currentPrice: 'Vanaf € 39,99',
             }),
           }),
         ],
@@ -366,21 +368,24 @@ describe('collection landing page route', () => {
   });
 
   it('keeps collection cards without snapshot price data on the current fallback state', async () => {
-    collectionPageMocks.getCatalogCollectionLandingPage.mockResolvedValue({
-      bestPriceMinorBySetId: new Map(),
-      setCards: [
-        {
-          id: '10307',
-          imageUrl: 'https://cdn.example.com/10307.jpg',
-          name: 'Eiffeltoren',
-          pieces: 10001,
-          releaseYear: 2022,
-          slug: 'eiffel-tower-10307',
-          theme: 'Icons',
-        },
-      ],
-      totalSetCount: 1,
-    });
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      {
+        bestPriceMinorBySetId: new Map(),
+        setCards: [
+          {
+            id: '10307',
+            imageUrl: 'https://cdn.example.com/10307.jpg',
+            name: 'Eiffeltoren',
+            pieces: 10001,
+            releaseYear: 2022,
+            slug: 'eiffel-tower-10307',
+            theme: 'Icons',
+          },
+        ],
+        totalSetCount: 1,
+        snapshotGeneratedAt: new Date().toISOString(),
+      },
+    );
     const pageModule = await import('./page');
 
     renderToStaticMarkup(
@@ -577,5 +582,43 @@ describe('collection landing page route', () => {
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
     ).not.toHaveBeenCalled();
+  });
+
+  it('renders nieuwe-lego-sets from a fresh collection_page_snapshot instead of 404ing', async () => {
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'nieuwe-lego-sets',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          slug: 'nieuwe-lego-sets',
+        }),
+        limit: 40,
+        offset: 0,
+        sortKey: 'newest',
+      }),
+    );
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPage,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [expect.objectContaining({ id: '60430' })],
+        totalSetCount: 1,
+      }),
+    );
   });
 });

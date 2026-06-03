@@ -30,7 +30,7 @@ export function CatalogFeatureSetList({
   eyebrow = 'Pronkstukken',
   layout = 'rail',
   prioritizeFirstImage = false,
-  railLayoutMode = 'default',
+  railLayoutMode = 'stable-square',
   sectionId = 'featured-sets',
   setCards,
   showSignal = true,

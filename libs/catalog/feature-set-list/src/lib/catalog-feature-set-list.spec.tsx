@@ -204,7 +204,7 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('Homepage set 20');
   });
 
-  it('passes the stable-square rail layout only when explicitly requested', () => {
+  it('uses the stable-square rail layout by default and allows explicit opt-out', () => {
     const setCards = [
       {
         id: '10316',
@@ -217,14 +217,20 @@ describe('CatalogFeatureSetList', () => {
       },
     ];
     const markup = renderToStaticMarkup(
-      <CatalogFeatureSetList
-        railLayoutMode="stable-square"
-        setCards={setCards}
-        title="Nu te vergelijken"
-      />,
+      <CatalogFeatureSetList setCards={setCards} title="Nu te vergelijken" />,
     );
 
     expect(markup).toContain('data-rail-layout-mode="stable-square"');
+
+    const defaultMarkup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        railLayoutMode="default"
+        setCards={setCards}
+        title="Meer uit dit thema"
+      />,
+    );
+
+    expect(defaultMarkup).not.toContain('data-rail-layout-mode');
   });
 
   it('preserves theme badge colors from set-card public theme presentation', () => {
