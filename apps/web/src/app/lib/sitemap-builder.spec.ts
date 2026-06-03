@@ -242,6 +242,12 @@ describe('sitemap generation', () => {
     expect(entries.map((entry) => entry.url)).toEqual([
       'https://www.brickhunt.nl/',
       'https://www.brickhunt.nl/deals',
+      'https://www.brickhunt.nl/deals/grootste-kortingen',
+      'https://www.brickhunt.nl/deals/prijs-per-steen',
+      'https://www.brickhunt.nl/deals/onder-50',
+      'https://www.brickhunt.nl/deals/nieuwe-deals',
+      'https://www.brickhunt.nl/deals/onder-20',
+      'https://www.brickhunt.nl/deals/premium',
       'https://www.brickhunt.nl/lego-sets-onder-50-euro',
       'https://www.brickhunt.nl/lego-sets-onder-100-euro',
       'https://www.brickhunt.nl/nieuwe-lego-sets',
@@ -254,6 +260,9 @@ describe('sitemap generation', () => {
       'https://www.brickhunt.nl/cookiebeleid',
       'https://www.brickhunt.nl/affiliate-disclosure',
     ]);
+    expect(entries.map((entry) => entry.url).join('\n')).not.toContain(
+      '?sort=',
+    );
   });
 
   it('excludes empty theme pages when they are detectable', async () => {

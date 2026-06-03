@@ -25,6 +25,7 @@ import {
   publicSiteRobotsPolicy,
   webPathnames,
 } from '@lego-platform/shared/config';
+import { dealCategorySitemapPaths } from '../deals/deal-category-routes';
 
 export interface SitemapUrlEntry {
   lastModified?: Date | string;
@@ -355,10 +356,12 @@ export async function collectDealsSitemapEntries({
       allowIndexing,
       pathname: buildWebPath(webPathnames.home),
     }),
-    createSitemapUrlEntry({
-      allowIndexing,
-      pathname: buildWebPath(webPathnames.deals),
-    }),
+    ...dealCategorySitemapPaths.map((pathname) =>
+      createSitemapUrlEntry({
+        allowIndexing,
+        pathname,
+      }),
+    ),
     ...listIndexableCatalogCollectionLandingPageConfigs().map((config) =>
       createSitemapUrlEntry({
         allowIndexing,

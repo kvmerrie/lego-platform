@@ -16,12 +16,11 @@ import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 import {
   buildCanonicalUrl,
   buildSetDetailPath,
-  buildWebPath,
   cacheTags,
-  webPathnames,
 } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
+import { buildDealSortPath } from './deal-category-routes';
 import { getCachedPublicBrowsePageData } from '../lib/public-browse-page-cache';
 import {
   PRICE_SNAPSHOT_PAGE_MAX_AGE_MS,
@@ -231,9 +230,7 @@ function getDealSortConfig(sortKey: CatalogDealPageSortKey) {
 }
 
 function getDealSortHref(sortKey: CatalogDealPageSortKey): string {
-  return sortKey === 'recommended'
-    ? webPathnames.deals
-    : `${webPathnames.deals}?sort=${sortKey}`;
+  return buildDealSortPath(sortKey);
 }
 
 function getDealDiscoveryHref(sortKey: CatalogDealPageSortKey): string {
@@ -247,12 +244,8 @@ function buildDealsCanonicalPath({
   page: number;
   sortKey: CatalogDealPageSortKey;
 }): string {
-  const canonicalPath = buildWebPath(webPathnames.deals);
+  const canonicalPath = buildDealSortPath(sortKey);
   const searchParams = new URLSearchParams();
-
-  if (sortKey !== 'recommended') {
-    searchParams.set('sort', sortKey);
-  }
 
   if (page > 1) {
     searchParams.set('page', String(page));
@@ -293,16 +286,18 @@ function formatPricePerBrick(value?: number): string {
 
 export async function generateMetadata({
   searchParams,
+  sortKey: providedSortKey,
 }: {
   searchParams?: Promise<{
     page?: string | string[];
     sort?: string | string[];
   }>;
+  sortKey?: CatalogDealPageSortKey;
 }): Promise<Metadata> {
   const resolvedSearchParams = await searchParams;
-  const sortKey = normalizeDealSortKey(
-    readSearchParam(resolvedSearchParams?.sort),
-  );
+  const sortKey =
+    providedSortKey ??
+    normalizeDealSortKey(readSearchParam(resolvedSearchParams?.sort));
   const currentPage = normalizeDealPageNumber(
     readSearchParam(resolvedSearchParams?.page),
   );
@@ -312,7 +307,7 @@ export async function generateMetadata({
     sortKey,
   });
   const canonicalUrl = buildCanonicalUrl(canonicalPath, {
-    allowedSearchParams: ['sort', 'page'],
+    allowedSearchParams: ['page'],
   });
 
   return {
@@ -373,18 +368,20 @@ async function getCachedDealPageSnapshot({
   });
 }
 
-export default async function DealsPage({
+export async function renderDealsPage({
   searchParams,
+  sortKey: providedSortKey,
 }: {
   searchParams?: Promise<{
     page?: string | string[];
     sort?: string | string[];
   }>;
+  sortKey?: CatalogDealPageSortKey;
 }) {
   const resolvedSearchParams = await searchParams;
-  const sortKey = normalizeDealSortKey(
-    readSearchParam(resolvedSearchParams?.sort),
-  );
+  const sortKey =
+    providedSortKey ??
+    normalizeDealSortKey(readSearchParam(resolvedSearchParams?.sort));
   const sortConfig = getDealSortConfig(sortKey);
   const currentPage = normalizeDealPageNumber(
     readSearchParam(resolvedSearchParams?.page),
@@ -545,12 +542,9 @@ export default async function DealsPage({
               </CatalogSetCardCollection>
               <CatalogBrowsePagination
                 ariaLabel="Deals pagina's"
-                basePath={webPathnames.deals}
+                basePath={buildDealSortPath(sortKey)}
                 currentPage={currentPage}
                 pageCount={pageCount}
-                queryParams={
-                  sortKey !== 'recommended' ? { sort: sortKey } : undefined
-                }
               />
             </>
           ) : (
@@ -563,4 +557,17 @@ export default async function DealsPage({
       </main>
     </ShellWeb>
   );
+}
+
+export default async function DealsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    page?: string | string[];
+    sort?: string | string[];
+  }>;
+}) {
+  return renderDealsPage({
+    searchParams,
+  });
 }

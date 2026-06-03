@@ -13,13 +13,13 @@ describe('robots route', () => {
   });
 
   it('allows public routes and blocks utility and crawl-trap routes in launch mode', () => {
-    expect(
-      buildRobotsRoute(
-        buildPublicSiteRobotsPolicy({
-          allowIndexing: true,
-        }),
-      ),
-    ).toEqual({
+    const route = buildRobotsRoute(
+      buildPublicSiteRobotsPolicy({
+        allowIndexing: true,
+      }),
+    );
+
+    expect(route).toEqual({
       rules: {
         userAgent: '*',
         disallow: [
@@ -38,5 +38,6 @@ describe('robots route', () => {
       },
       sitemap: 'https://www.brickhunt.nl/sitemap.xml',
     });
+    expect(route.rules.disallow).not.toContain('/deals/');
   });
 });

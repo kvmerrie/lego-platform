@@ -158,10 +158,14 @@ describe('deals page snapshots', () => {
 
     expect(dealsPageMocks.catalogBrowsePagination).toHaveBeenCalledWith(
       expect.objectContaining({
-        basePath: '/deals',
+        basePath: '/deals/prijs-per-steen',
         currentPage: 1,
         pageCount: 2,
-        queryParams: { sort: 'price-per-brick' },
+      }),
+    );
+    expect(dealsPageMocks.catalogBrowsePagination).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        queryParams: expect.anything(),
       }),
     );
   });
@@ -216,13 +220,14 @@ describe('deals page snapshots', () => {
     expect(markup).toContain('Nieuwe deals');
     expect(markup).toContain('Premium deals');
     expect(markup).toContain('Onder €20');
-    expect(markup).toContain('/deals?sort=new-deals#deals-collection');
-    expect(markup).toContain('/deals?sort=largest-discount#deals-collection');
-    expect(markup).toContain('/deals?sort=price-per-brick#deals-collection');
-    expect(markup).toContain('/deals?sort=under-50#deals-collection');
-    expect(markup).toContain('/deals?sort=under-20#deals-collection');
-    expect(markup).toContain('/deals?sort=premium-deals#deals-collection');
+    expect(markup).toContain('/deals/nieuwe-deals#deals-collection');
+    expect(markup).toContain('/deals/grootste-kortingen#deals-collection');
+    expect(markup).toContain('/deals/prijs-per-steen#deals-collection');
+    expect(markup).toContain('/deals/onder-50#deals-collection');
+    expect(markup).toContain('/deals/onder-20#deals-collection');
+    expect(markup).toContain('/deals/premium#deals-collection');
     expect(markup).toContain('href="/deals#deals-collection"');
+    expect(markup).not.toContain('/deals?sort=');
     expect(markup.match(/data-visual-tile=/gu)).toHaveLength(7);
   });
 
@@ -305,10 +310,10 @@ describe('deals page snapshots', () => {
 
     expect(metadata).toMatchObject({
       alternates: {
-        canonical: expect.stringContaining('/deals?sort=price-per-brick'),
+        canonical: 'https://www.brickhunt.nl/deals/prijs-per-steen',
       },
       openGraph: {
-        url: expect.stringContaining('/deals?sort=price-per-brick'),
+        url: 'https://www.brickhunt.nl/deals/prijs-per-steen',
       },
       description: expect.stringContaining('prijs per steen'),
       title: 'Beste LEGO prijs per steen',
@@ -369,11 +374,10 @@ describe('deals page snapshots', () => {
 
     expect(metadata).toMatchObject({
       alternates: {
-        canonical:
-          'https://www.brickhunt.nl/deals?sort=largest-discount&page=3',
+        canonical: 'https://www.brickhunt.nl/deals/grootste-kortingen?page=3',
       },
       openGraph: {
-        url: 'https://www.brickhunt.nl/deals?sort=largest-discount&page=3',
+        url: 'https://www.brickhunt.nl/deals/grootste-kortingen?page=3',
       },
       title: 'Grootste LEGO korting',
     });
