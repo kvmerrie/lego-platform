@@ -191,6 +191,80 @@ describe('theme page JSON-LD', () => {
     expect(themePageMocks.getCatalogThemePageBySlug).not.toHaveBeenCalled();
   });
 
+  it('keeps paginated theme metadata canonical and Open Graph URLs on the current page', async () => {
+    themePageMocks.getCatalogThemeMetadataBySlug.mockResolvedValue({
+      momentum: 'X-wings, R2-D2 en displayhelmen blijven goede blikvangers.',
+      name: 'Star Wars',
+      setCount: 120,
+      signatureSet: 'Star Wars',
+      slug: 'star-wars',
+    });
+
+    const { generateMetadata } = await import('./page');
+    const pageTwoMetadata = await generateMetadata({
+      params: Promise.resolve({
+        slug: 'star-wars',
+      }),
+      searchParams: Promise.resolve({
+        page: '2',
+      }),
+    });
+    const pageSevenMetadata = await generateMetadata({
+      params: Promise.resolve({
+        slug: 'star-wars',
+      }),
+      searchParams: Promise.resolve({
+        page: '7',
+      }),
+    });
+
+    expect(pageTwoMetadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/themes/star-wars?page=2',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/themes/star-wars?page=2',
+      },
+    });
+    expect(pageSevenMetadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/themes/star-wars?page=7',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/themes/star-wars?page=7',
+      },
+    });
+  });
+
+  it('normalizes invalid theme metadata page values to the page-one canonical', async () => {
+    themePageMocks.getCatalogThemeMetadataBySlug.mockResolvedValue({
+      momentum: 'X-wings, R2-D2 en displayhelmen blijven goede blikvangers.',
+      name: 'Star Wars',
+      setCount: 120,
+      signatureSet: 'Star Wars',
+      slug: 'star-wars',
+    });
+
+    const { generateMetadata } = await import('./page');
+    const metadata = await generateMetadata({
+      params: Promise.resolve({
+        slug: 'star-wars',
+      }),
+      searchParams: Promise.resolve({
+        page: 'niet-een-pagina',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/themes/star-wars',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/themes/star-wars',
+      },
+    });
+  });
+
   it('renders CollectionPage and BreadcrumbList structured data', async () => {
     themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
       setCards: [
@@ -282,6 +356,58 @@ describe('theme page JSON-LD', () => {
         themeQuery: 'star-wars',
       }),
     );
+  });
+
+  it('uses the paginated canonical URL in theme structured data', async () => {
+    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
+      setCards: [
+        {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+      ],
+      themeSnapshot: {
+        momentum: 'R2-D2, X-wings en displaysets houden dit thema sterk.',
+        name: 'Star Wars',
+        setCount: CATALOG_BROWSE_PAGE_SIZE * 3,
+        slug: 'star-wars',
+      },
+      visual: {
+        backgroundColor: '#1f4f7a',
+        textColor: '#ffffff',
+      },
+    });
+    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listPublishedArticles.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars',
+        }),
+        searchParams: Promise.resolve({
+          page: '2',
+        }),
+      }),
+    );
+
+    expect(html).toContain('https://www.brickhunt.nl/themes/star-wars?page=2');
+    expect(themePageMocks.getCatalogThemePageBySlug).toHaveBeenCalledWith({
+      limit: CATALOG_BROWSE_PAGE_SIZE,
+      offset: CATALOG_BROWSE_PAGE_SIZE,
+      slug: 'star-wars',
+    });
   });
 
   it('adds snapshot-backed price context to theme browse cards', async () => {

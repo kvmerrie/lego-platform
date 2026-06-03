@@ -239,7 +239,9 @@ export async function generateMetadata({
     config,
     page: currentPage,
   });
-  const canonicalUrl = buildCanonicalUrl(canonicalPath);
+  const canonicalUrl = buildCanonicalUrl(canonicalPath, {
+    allowedSearchParams: ['page'],
+  });
 
   if (config.redirectPath) {
     return {
@@ -321,6 +323,9 @@ export default async function CollectionLandingPage({
 
   const canonicalUrl = buildCanonicalUrl(
     buildCollectionCanonicalPath({ config, page: currentPage }),
+    {
+      allowedSearchParams: ['page'],
+    },
   );
   const jsonLd = [
     buildCollectionPageJsonLd({

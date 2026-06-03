@@ -240,6 +240,29 @@ function getDealDiscoveryHref(sortKey: CatalogDealPageSortKey): string {
   return `${getDealSortHref(sortKey)}#${DEALS_COLLECTION_SECTION_ID}`;
 }
 
+function buildDealsCanonicalPath({
+  page,
+  sortKey,
+}: {
+  page: number;
+  sortKey: CatalogDealPageSortKey;
+}): string {
+  const canonicalPath = buildWebPath(webPathnames.deals);
+  const searchParams = new URLSearchParams();
+
+  if (sortKey !== 'recommended') {
+    searchParams.set('sort', sortKey);
+  }
+
+  if (page > 1) {
+    searchParams.set('page', String(page));
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `${canonicalPath}?${queryString}` : canonicalPath;
+}
+
 function isDealDiscoverySortActive(
   discoverySortKey: CatalogDealPageSortKey,
   activeSortKey: CatalogDealPageSortKey,
@@ -272,6 +295,7 @@ export async function generateMetadata({
   searchParams,
 }: {
   searchParams?: Promise<{
+    page?: string | string[];
     sort?: string | string[];
   }>;
 }): Promise<Metadata> {
@@ -279,13 +303,16 @@ export async function generateMetadata({
   const sortKey = normalizeDealSortKey(
     readSearchParam(resolvedSearchParams?.sort),
   );
+  const currentPage = normalizeDealPageNumber(
+    readSearchParam(resolvedSearchParams?.page),
+  );
   const config = getDealSortConfig(sortKey);
-  const canonicalPath =
-    sortKey === 'recommended'
-      ? buildWebPath(webPathnames.deals)
-      : `${buildWebPath(webPathnames.deals)}?sort=${sortKey}`;
+  const canonicalPath = buildDealsCanonicalPath({
+    page: currentPage,
+    sortKey,
+  });
   const canonicalUrl = buildCanonicalUrl(canonicalPath, {
-    allowedSearchParams: ['sort'],
+    allowedSearchParams: ['sort', 'page'],
   });
 
   return {

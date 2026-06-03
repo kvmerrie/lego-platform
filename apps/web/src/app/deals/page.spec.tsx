@@ -307,8 +307,93 @@ describe('deals page snapshots', () => {
       alternates: {
         canonical: expect.stringContaining('/deals?sort=price-per-brick'),
       },
+      openGraph: {
+        url: expect.stringContaining('/deals?sort=price-per-brick'),
+      },
       description: expect.stringContaining('prijs per steen'),
       title: 'Beste LEGO prijs per steen',
+    });
+  });
+
+  it('emits page-one deals canonical metadata without a page query', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({ page: '1' }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/deals',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/deals',
+      },
+    });
+  });
+
+  it('emits paginated deals metadata canonicals for recommended pages', async () => {
+    const pageModule = await import('./page');
+    const pageTwoMetadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({ page: '2' }),
+    });
+    const pageSevenMetadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({ page: '7' }),
+    });
+
+    expect(pageTwoMetadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/deals?page=2',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/deals?page=2',
+      },
+    });
+    expect(pageSevenMetadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/deals?page=7',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/deals?page=7',
+      },
+    });
+  });
+
+  it('preserves sorted deals canonicals on paginated pages', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({
+        page: '3',
+        sort: 'largest-discount',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical:
+          'https://www.brickhunt.nl/deals?sort=largest-discount&page=3',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/deals?sort=largest-discount&page=3',
+      },
+      title: 'Grootste LEGO korting',
+    });
+  });
+
+  it('normalizes invalid deals page values to the page-one canonical', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      searchParams: Promise.resolve({
+        page: 'geen-pagina',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/deals',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/deals',
+      },
     });
   });
 

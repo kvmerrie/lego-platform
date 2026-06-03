@@ -44,7 +44,6 @@ import { getCachedPublicBrowsePageData } from '../../lib/public-browse-page-cach
 import {
   buildCollectionPageJsonLd,
   buildThemeBreadcrumbJsonLd,
-  buildThemeCanonicalUrl,
 } from '../../lib/structured-data';
 
 export const dynamicParams = true;
@@ -264,6 +263,18 @@ function readThemePageParam(value: string | string[] | undefined): number {
   const page = Number.parseInt(rawValue ?? '1', 10);
 
   return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function buildThemeCanonicalPath({
+  page,
+  slug,
+}: {
+  page: number;
+  slug: string;
+}): string {
+  const themePath = buildThemePath(slug);
+
+  return page > 1 ? `${themePath}?page=${page}` : themePath;
 }
 
 function toThemeDealSetCards({
@@ -502,10 +513,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ page?: string | string[] }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const currentPage = readThemePageParam(resolvedSearchParams?.page);
   const themeSnapshot = await measureThemePageFetch({
     label: 'metadata',
     slug,
@@ -518,7 +533,15 @@ export async function generateMetadata({
 
   const title = `Brickhunt – ${themeSnapshot.name} LEGO sets`;
   const description = `Ontdek ${themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${themeSnapshot.momentum}`;
-  const canonicalUrl = buildCanonicalUrl(buildThemePath(slug));
+  const canonicalUrl = buildCanonicalUrl(
+    buildThemeCanonicalPath({
+      page: currentPage,
+      slug,
+    }),
+    {
+      allowedSearchParams: ['page'],
+    },
+  );
 
   return {
     title,
@@ -574,7 +597,15 @@ export default async function ThemePage({
     slug,
     themePage,
   });
-  const canonicalUrl = buildThemeCanonicalUrl(slug);
+  const canonicalUrl = buildCanonicalUrl(
+    buildThemeCanonicalPath({
+      page: currentPage,
+      slug,
+    }),
+    {
+      allowedSearchParams: ['page'],
+    },
+  );
   const title = `Brickhunt – ${pricedThemePage.themeSnapshot.name} LEGO sets`;
   const description = `Ontdek ${pricedThemePage.themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${pricedThemePage.themeSnapshot.momentum}`;
   const jsonLd = [

@@ -344,6 +344,27 @@ describe('collection landing page route', () => {
     ).not.toHaveProperty('visual');
   });
 
+  it('keeps collection pagination canonicals on the current page', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      params: Promise.resolve({
+        collectionSlug: 'lego-sets-onder-100-euro',
+      }),
+      searchParams: Promise.resolve({
+        page: '2',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/lego-sets-onder-100-euro?page=2',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/lego-sets-onder-100-euro?page=2',
+      },
+    });
+  });
+
   it('keeps collection cards without snapshot price data on the current fallback state', async () => {
     collectionPageMocks.getCatalogCollectionLandingPage.mockResolvedValue({
       bestPriceMinorBySetId: new Map(),
