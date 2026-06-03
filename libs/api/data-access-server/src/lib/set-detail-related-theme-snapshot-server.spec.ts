@@ -119,4 +119,84 @@ describe('set detail related theme snapshots', () => {
       merchantLabel: 'Laagst bij Goodbricks',
     });
   });
+
+  test('spreads related-theme exposure across lower-linked same-theme sets', async () => {
+    const catalogSets = Array.from({ length: 8 }, (_, index) =>
+      createSet({
+        name: `Icons Set ${index + 1}`,
+        pieceCount: 1000 - index,
+        primaryTheme: 'Icons',
+        releaseYear: 2026,
+        setId: `1000${index}`,
+      }),
+    );
+
+    const result = await buildSetDetailRelatedThemeSnapshots({
+      catalogSets,
+      limit: 2,
+      now: new Date('2026-06-02T10:00:00.000Z'),
+      priceSnapshots: new Map(),
+    });
+
+    const linkedSetIds = new Set(
+      result.snapshots.flatMap((snapshot) =>
+        snapshot.items.map((item) => item.id),
+      ),
+    );
+
+    expect(linkedSetIds.size).toBe(8);
+  });
+
+  test('keeps diversity deterministic and theme-scoped', async () => {
+    const catalogSets = [
+      createSet({
+        name: 'Icons Current',
+        primaryTheme: 'Icons',
+        setId: '10000',
+      }),
+      createSet({
+        name: 'Icons A',
+        primaryTheme: 'Icons',
+        setId: '10001',
+      }),
+      createSet({
+        name: 'Icons B',
+        primaryTheme: 'Icons',
+        setId: '10002',
+      }),
+      createSet({
+        name: 'Star Wars A',
+        primaryTheme: 'Star Wars',
+        setId: '20001',
+      }),
+      createSet({
+        name: 'Star Wars B',
+        primaryTheme: 'Star Wars',
+        setId: '20002',
+      }),
+    ];
+
+    const first = await buildSetDetailRelatedThemeSnapshots({
+      catalogSets,
+      limit: 2,
+      now: new Date('2026-06-02T10:00:00.000Z'),
+      priceSnapshots: new Map(),
+    });
+    const second = await buildSetDetailRelatedThemeSnapshots({
+      catalogSets,
+      limit: 2,
+      now: new Date('2026-06-02T10:00:00.000Z'),
+      priceSnapshots: new Map(),
+    });
+    const iconsSnapshot = first.snapshots.find(
+      (snapshot) => snapshot.setId === '10000',
+    );
+
+    expect(first.snapshots).toEqual(second.snapshots);
+    expect(iconsSnapshot?.items.map((item) => item.theme)).toEqual([
+      'Icons',
+      'Icons',
+    ]);
+    expect(iconsSnapshot?.items.map((item) => item.id)).not.toContain('10000');
+  });
 });

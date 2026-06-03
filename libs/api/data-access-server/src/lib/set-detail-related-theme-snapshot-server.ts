@@ -202,6 +202,42 @@ function compareRelatedThemeCandidates({
   };
 }
 
+function compareRelatedThemeCurrentSets(
+  left: CatalogCanonicalSet,
+  right: CatalogCanonicalSet,
+): number {
+  return (
+    buildCatalogThemeSlug(left.primaryTheme).localeCompare(
+      buildCatalogThemeSlug(right.primaryTheme),
+    ) ||
+    right.releaseYear - left.releaseYear ||
+    right.pieceCount - left.pieceCount ||
+    left.name.localeCompare(right.name) ||
+    left.setId.localeCompare(right.setId)
+  );
+}
+
+function compareDiverseRelatedThemeCandidates({
+  exposureBySetId,
+  priceSnapshots,
+}: {
+  exposureBySetId: ReadonlyMap<string, number>;
+  priceSnapshots: ReadonlyMap<string, CommerceCurrentOfferSnapshotRow>;
+}) {
+  const qualityComparator = compareRelatedThemeCandidates({ priceSnapshots });
+
+  return (left: CatalogCanonicalSet, right: CatalogCanonicalSet): number => {
+    const exposureDelta =
+      (exposureBySetId.get(left.setId) ?? 0) -
+      (exposureBySetId.get(right.setId) ?? 0);
+
+    // Same-theme relevance is guaranteed by the caller. Within that pool,
+    // spread internal links across lower-exposure sets first, then use the
+    // normal quality order to keep rails useful and deterministic.
+    return exposureDelta || qualityComparator(left, right);
+  };
+}
+
 export async function buildSetDetailRelatedThemeSnapshots({
   catalogSets,
   limit = 8,
@@ -222,9 +258,9 @@ export async function buildSetDetailRelatedThemeSnapshots({
     catalogSets ?? listCanonicalCatalogSets({ supabaseClient }),
     priceSnapshots ?? listCommerceCurrentOfferSnapshots({ supabaseClient }),
   ]);
-  const activeCatalogSets = resolvedCatalogSets.filter(
-    (set) => set.status === 'active',
-  );
+  const activeCatalogSets = resolvedCatalogSets
+    .filter((set) => set.status === 'active')
+    .sort(compareRelatedThemeCurrentSets);
   const setsByThemeSlug = new Map<string, CatalogCanonicalSet[]>();
 
   for (const set of activeCatalogSets) {
@@ -235,22 +271,47 @@ export async function buildSetDetailRelatedThemeSnapshots({
     setsByThemeSlug.set(themeSlug, themeSets);
   }
 
+  for (const themeSets of setsByThemeSlug.values()) {
+    themeSets.sort(
+      compareRelatedThemeCandidates({
+        priceSnapshots: resolvedPriceSnapshots,
+      }),
+    );
+  }
+
+  const exposureByThemeSlug = new Map<string, Map<string, number>>();
+
   const snapshots = activeCatalogSets.map((currentSet) => {
     const themeSlug = buildCatalogThemeSlug(currentSet.primaryTheme);
     const themeSets = setsByThemeSlug.get(themeSlug) ?? [];
+    const exposureBySetId =
+      exposureByThemeSlug.get(themeSlug) ?? new Map<string, number>();
+
+    exposureByThemeSlug.set(themeSlug, exposureBySetId);
+
     const candidates = themeSets
       .filter((set) => set.setId !== currentSet.setId)
       .sort(
-        compareRelatedThemeCandidates({
-          priceSnapshots: resolvedPriceSnapshots,
-        }),
+        themeSets.length > limit + 1
+          ? compareDiverseRelatedThemeCandidates({
+              exposureBySetId,
+              priceSnapshots: resolvedPriceSnapshots,
+            })
+          : compareRelatedThemeCandidates({
+              priceSnapshots: resolvedPriceSnapshots,
+            }),
       );
-    const items = candidates.slice(0, limit).map((set) =>
+    const selectedCandidates = candidates.slice(0, limit);
+    const items = selectedCandidates.map((set) =>
       toSnapshotCard({
         priceSnapshot: resolvedPriceSnapshots.get(set.setId),
         set,
       }),
     );
+
+    for (const set of selectedCandidates) {
+      exposureBySetId.set(set.setId, (exposureBySetId.get(set.setId) ?? 0) + 1);
+    }
 
     return {
       generatedAt,
