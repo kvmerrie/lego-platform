@@ -11,6 +11,7 @@ import {
 } from '@lego-platform/user/util';
 import {
   CollectorHandleConflictError,
+  type RecentlyViewedSetRepository,
   type UserProfileRepository,
   type UserSessionService,
   type UserSetStatusRepository,
@@ -32,6 +33,7 @@ async function createApiServer({
     ApiV1RouteDependencies['listCatalogDiscoverySignals']
   >,
   publicRateLimit,
+  recentlyViewedSetRepository,
   requestPrincipal = {
     state: 'anonymous',
   } satisfies RequestPrincipal,
@@ -53,6 +55,7 @@ async function createApiServer({
     ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
   >;
   publicRateLimit?: ApiV1RouteDependencies['publicRateLimit'];
+  recentlyViewedSetRepository?: RecentlyViewedSetRepository;
   requestPrincipal?: RequestPrincipal;
   userProfileRepository?: UserProfileRepository;
   userSession?: UserSession;
@@ -109,6 +112,17 @@ async function createApiServer({
     setOwnedState: vi.fn().mockResolvedValue(null),
     setWantedState: vi.fn().mockResolvedValue(null),
   };
+  const nextRecentlyViewedSetRepository: RecentlyViewedSetRepository =
+    recentlyViewedSetRepository ?? {
+      listByUserId: vi.fn().mockResolvedValue([]),
+      mergeViewedSets: vi.fn().mockResolvedValue([]),
+      upsertViewedSet: vi.fn().mockResolvedValue({
+        userId: 'user-123',
+        setId: '10316',
+        viewedAt: '2026-06-03T08:00:00.000Z',
+        createdAt: '2026-06-03T08:00:00.000Z',
+      }),
+    };
   const server = Fastify();
 
   await server.register(
@@ -122,6 +136,7 @@ async function createApiServer({
       listCatalogDiscoverySignals,
       listCatalogSetLiveOffersBySetId,
       publicRateLimit,
+      recentlyViewedSetRepository: nextRecentlyViewedSetRepository,
       userProfileRepository: nextUserProfileRepository,
       userSessionService,
       userSetStatusRepository,
@@ -134,6 +149,7 @@ async function createApiServer({
     server,
     resolveRequestPrincipal,
     listCatalogSetLiveOffersBySetId,
+    recentlyViewedSetRepository: nextRecentlyViewedSetRepository,
     userProfileRepository: nextUserProfileRepository,
     userSessionService,
     userSetStatusRepository,
@@ -826,6 +842,166 @@ describe('api v1 auth and set-status routes', () => {
     expect(response.json()).toEqual({
       setId: '10316',
       isOwned: true,
+    });
+
+    await server.close();
+  });
+
+  test('returns 401 for recently viewed routes when no valid user is present', async () => {
+    const { server, recentlyViewedSetRepository } = await createApiServer();
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/me/recently-viewed-sets/10316',
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(recentlyViewedSetRepository.upsertViewedSet).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('upserts recently viewed sets for authenticated users', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const recentlyViewedSetRepository: RecentlyViewedSetRepository = {
+      listByUserId: vi.fn().mockResolvedValue([]),
+      mergeViewedSets: vi.fn().mockResolvedValue([]),
+      upsertViewedSet: vi.fn().mockResolvedValue({
+        userId: 'user-123',
+        setId: '42177',
+        viewedAt: '2026-06-03T08:00:00.000Z',
+        createdAt: '2026-06-03T08:00:00.000Z',
+      }),
+    };
+    const { server } = await createApiServer({
+      recentlyViewedSetRepository,
+      requestPrincipal,
+    });
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/me/recently-viewed-sets/42177-1',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(recentlyViewedSetRepository.upsertViewedSet).toHaveBeenCalledWith({
+      userId: 'user-123',
+      setId: '42177',
+    });
+    expect(response.json()).toEqual({
+      setId: '42177',
+      viewedAt: '2026-06-03T08:00:00.000Z',
+    });
+
+    await server.close();
+  });
+
+  test('lists recently viewed sets newest first through the repository route', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const recentlyViewedSetRepository: RecentlyViewedSetRepository = {
+      listByUserId: vi.fn().mockResolvedValue([
+        {
+          userId: 'user-123',
+          setId: '10316',
+          viewedAt: '2026-06-03T08:00:00.000Z',
+          createdAt: '2026-06-03T08:00:00.000Z',
+        },
+        {
+          userId: 'user-123',
+          setId: '75355',
+          viewedAt: '2026-06-02T08:00:00.000Z',
+          createdAt: '2026-06-02T08:00:00.000Z',
+        },
+      ]),
+      mergeViewedSets: vi.fn().mockResolvedValue([]),
+      upsertViewedSet: vi.fn().mockResolvedValue({
+        userId: 'user-123',
+        setId: '10316',
+        viewedAt: '2026-06-03T08:00:00.000Z',
+        createdAt: '2026-06-03T08:00:00.000Z',
+      }),
+    };
+    const { server } = await createApiServer({
+      recentlyViewedSetRepository,
+      requestPrincipal,
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/me/recently-viewed-sets',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(recentlyViewedSetRepository.listByUserId).toHaveBeenCalledWith(
+      'user-123',
+    );
+    expect(response.json()).toEqual({
+      setIds: ['10316', '75355'],
+    });
+
+    await server.close();
+  });
+
+  test('merges local recently viewed sets into remote history after login', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const recentlyViewedSetRepository: RecentlyViewedSetRepository = {
+      listByUserId: vi.fn().mockResolvedValue([]),
+      mergeViewedSets: vi.fn().mockResolvedValue([
+        {
+          userId: 'user-123',
+          setId: '10316',
+          viewedAt: '2026-06-03T08:00:00.000Z',
+          createdAt: '2026-06-03T08:00:00.000Z',
+        },
+      ]),
+      upsertViewedSet: vi.fn().mockResolvedValue({
+        userId: 'user-123',
+        setId: '10316',
+        viewedAt: '2026-06-03T08:00:00.000Z',
+        createdAt: '2026-06-03T08:00:00.000Z',
+      }),
+    };
+    const { server } = await createApiServer({
+      recentlyViewedSetRepository,
+      requestPrincipal,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/me/recently-viewed-sets/merge',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+      payload: {
+        setIds: ['10316', '10316', '75355-1'],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(recentlyViewedSetRepository.mergeViewedSets).toHaveBeenCalledWith({
+      userId: 'user-123',
+      setIds: ['10316', '10316', '75355-1'],
+    });
+    expect(response.json()).toEqual({
+      setIds: ['10316'],
     });
 
     await server.close();

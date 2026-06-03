@@ -1,8 +1,17 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   addRecentlyViewedSetNum,
+  getRecentlyViewedSetNumsForCurrentUser,
   getRecentlyViewedSetNums,
+  recordRecentlyViewedSetNum,
 } from './recently-viewed-sets-browser';
+
+const authMocks = vi.hoisted(() => ({
+  buildSupabaseAuthorizationHeaders: vi.fn(),
+  notifyBrowserAccountDataChanged: vi.fn(),
+}));
+
+vi.mock('@lego-platform/shared/data-access-auth', () => authMocks);
 
 function installStorageWindow() {
   const storage = new Map<string, string>();
@@ -19,6 +28,11 @@ function installStorageWindow() {
 
 describe('recently viewed sets browser storage', () => {
   afterEach(() => {
+    authMocks.buildSupabaseAuthorizationHeaders.mockReset();
+    authMocks.buildSupabaseAuthorizationHeaders.mockResolvedValue(
+      new Headers(),
+    );
+    authMocks.notifyBrowserAccountDataChanged.mockReset();
     vi.unstubAllGlobals();
   });
 
@@ -89,6 +103,110 @@ describe('recently viewed sets browser storage', () => {
     });
 
     expect(() => addRecentlyViewedSetNum('10316')).not.toThrow();
+    expect(getRecentlyViewedSetNums()).toEqual([]);
+  });
+
+  test('records authenticated views remotely instead of localStorage', async () => {
+    installStorageWindow();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    authMocks.buildSupabaseAuthorizationHeaders.mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer user-token',
+      }),
+    );
+
+    await recordRecentlyViewedSetNum('10316');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/me/recently-viewed-sets/10316',
+      {
+        headers: new Headers({
+          Authorization: 'Bearer user-token',
+        }),
+        method: 'PUT',
+      },
+    );
+    expect(getRecentlyViewedSetNums()).toEqual([]);
+    expect(authMocks.notifyBrowserAccountDataChanged).toHaveBeenCalled();
+  });
+
+  test('falls back to localStorage when authenticated write is rejected', async () => {
+    installStorageWindow();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 401,
+      }),
+    );
+    authMocks.buildSupabaseAuthorizationHeaders.mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer expired-token',
+      }),
+    );
+
+    await recordRecentlyViewedSetNum('10316');
+
+    expect(getRecentlyViewedSetNums()).toEqual(['10316']);
+  });
+
+  test('lists remote recent views for authenticated users', async () => {
+    installStorageWindow();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          setIds: ['10316', '75355'],
+        }),
+      }),
+    );
+    authMocks.buildSupabaseAuthorizationHeaders.mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer user-token',
+      }),
+    );
+
+    await expect(getRecentlyViewedSetNumsForCurrentUser()).resolves.toEqual({
+      isAuthenticated: true,
+      setNums: ['10316', '75355'],
+    });
+  });
+
+  test('merges local recent views into remote history after login', async () => {
+    installStorageWindow();
+    addRecentlyViewedSetNum('10316');
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        setIds: ['10316', '75355'],
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    authMocks.buildSupabaseAuthorizationHeaders.mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer user-token',
+      }),
+    );
+
+    await expect(getRecentlyViewedSetNumsForCurrentUser()).resolves.toEqual({
+      isAuthenticated: true,
+      setNums: ['10316', '75355'],
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/me/recently-viewed-sets/merge',
+      expect.objectContaining({
+        body: JSON.stringify({ setIds: ['10316'] }),
+        method: 'POST',
+      }),
+    );
     expect(getRecentlyViewedSetNums()).toEqual([]);
   });
 });

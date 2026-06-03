@@ -16,9 +16,11 @@ import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
   CollectorHandleConflictError,
+  createRecentlyViewedSetRepository,
   createUserProfileRepository,
   createUserSessionService,
   createUserSetStatusRepository,
+  type RecentlyViewedSetRepository,
   type UserProfileRepository,
   type UserSessionService,
   type UserSetStatusRepository,
@@ -61,6 +63,7 @@ export interface ApiV1RouteDependencies {
   >;
   userProfileRepository?: UserProfileRepository;
   publicRateLimit?: ApiV1PublicRateLimitOptions;
+  recentlyViewedSetRepository?: RecentlyViewedSetRepository;
   userSessionService?: UserSessionService;
   userSetStatusRepository?: UserSetStatusRepository;
 }
@@ -127,6 +130,7 @@ export function createApiV1Routes({
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
   publicRateLimit,
+  recentlyViewedSetRepository = createRecentlyViewedSetRepository(),
   userProfileRepository = createUserProfileRepository(),
   userSetStatusRepository = createUserSetStatusRepository(),
   userSessionService = createUserSessionService({
@@ -480,6 +484,74 @@ export function createApiV1Routes({
         return {
           wishlistAlertsLastViewedAt:
             updatedUserProfileRecord.wishlistAlertsLastViewedAt,
+        };
+      },
+    );
+
+    fastify.get(apiPaths.recentlyViewedSets, async function (request, reply) {
+      if (request.requestPrincipal?.state !== 'authenticated') {
+        return reply.status(401).send(createUnauthorizedResponse());
+      }
+
+      const recentlyViewedRecords =
+        await recentlyViewedSetRepository.listByUserId(
+          request.requestPrincipal.userId,
+        );
+
+      return {
+        setIds: recentlyViewedRecords.map(
+          (recentlyViewedRecord) => recentlyViewedRecord.setId,
+        ),
+      };
+    });
+
+    fastify.post<{ Body: { setIds?: readonly string[] | string } }>(
+      `${apiPaths.recentlyViewedSets}/merge`,
+      {
+        bodyLimit: PUBLIC_CATALOG_POST_BODY_LIMIT_BYTES,
+      },
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        const rawSetIds = request.body?.setIds;
+        const setIds =
+          typeof rawSetIds === 'string'
+            ? rawSetIds.split(',')
+            : Array.isArray(rawSetIds)
+              ? [...rawSetIds]
+              : [];
+        const recentlyViewedRecords =
+          await recentlyViewedSetRepository.mergeViewedSets({
+            setIds,
+            userId: request.requestPrincipal.userId,
+          });
+
+        return {
+          setIds: recentlyViewedRecords.map(
+            (recentlyViewedRecord) => recentlyViewedRecord.setId,
+          ),
+        };
+      },
+    );
+
+    fastify.put<{ Params: { setId: string } }>(
+      `${apiPaths.recentlyViewedSets}/:setId`,
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        const recentlyViewedRecord =
+          await recentlyViewedSetRepository.upsertViewedSet({
+            userId: request.requestPrincipal.userId,
+            setId: normalizeRouteSetId(request.params.setId),
+          });
+
+        return {
+          setId: recentlyViewedRecord.setId,
+          viewedAt: recentlyViewedRecord.viewedAt,
         };
       },
     );

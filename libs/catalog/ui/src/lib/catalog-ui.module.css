@@ -3536,7 +3536,8 @@
     }
   }
 
-  .setCardRailTrack::-webkit-scrollbar {
+  .setCardRailTrack::-webkit-scrollbar,
+  .setCardRailSkeletonTrack::-webkit-scrollbar {
     display: none;
   }
 
@@ -3573,26 +3574,44 @@
   }
 
   .setCardRailSkeletonTrack {
+    align-items: stretch;
     display: grid;
     gap: var(--catalog-rail-card-gap);
-    grid-auto-columns: minmax(
-      0,
-      calc((100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5)
+    grid-auto-columns: calc(
+      (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5
     );
     grid-auto-flow: column;
     margin: 0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     padding-inline: var(--catalog-rail-inline-padding);
+    scroll-padding-inline: var(--catalog-rail-inline-padding);
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    touch-action: auto;
   }
 
   .setCardRailSkeletonCard {
+    --catalog-rail-skeleton-facts-slot: 1.25rem;
+    --catalog-rail-skeleton-title-slot: 2.35rem;
+    --catalog-rail-skeleton-price-slot: 1.75rem;
+    --catalog-rail-skeleton-context-slot: 2.55rem;
+    align-self: stretch;
     background: var(--rail-skeleton-card-background);
+    block-size: 100%;
     border: var(--lego-border-width-1) solid var(--rail-skeleton-card-border);
     border-radius: var(--lego-radius-sm);
     box-sizing: border-box;
     display: grid;
     gap: var(--lego-space-2);
-    grid-template-rows: auto auto auto 1fr;
+    grid-template-rows:
+      auto
+      var(--catalog-rail-skeleton-facts-slot)
+      var(--catalog-rail-skeleton-title-slot)
+      var(--catalog-rail-skeleton-price-slot)
+      var(--catalog-rail-skeleton-context-slot)
+      1fr
+      var(--catalog-card-action-height);
     inline-size: 100%;
     max-inline-size: 100%;
     min-block-size: var(--rail-skeleton-card-min-block-size);
@@ -3611,10 +3630,10 @@
 
   .setCardRailSkeletonImage {
     aspect-ratio: 1 / 1;
-    block-size: clamp(12rem, 34vw, 15.5rem);
     inline-size: 100%;
     max-block-size: 15.5rem;
     max-inline-size: 100%;
+    min-block-size: 0;
     min-inline-size: 0;
     overflow: hidden;
   }

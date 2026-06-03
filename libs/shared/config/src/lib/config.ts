@@ -438,6 +438,7 @@ export const apiPaths = {
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
+  recentlyViewedSets: '/api/v1/me/recently-viewed-sets',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',

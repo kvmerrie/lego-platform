@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import {
-  addRecentlyViewedSetNum,
-  getRecentlyViewedSetNums,
+  getRecentlyViewedSetNumsForCurrentUser,
   listCatalogSetCardsByIdsForBrowser,
+  recordRecentlyViewedSetNum,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
@@ -24,7 +24,7 @@ export function CatalogRecentlyViewedSetTracker({
   setNum: string;
 }) {
   useEffect(() => {
-    addRecentlyViewedSetNum(setNum);
+    void recordRecentlyViewedSetNum(setNum);
     trackBrickhuntAnalyticsEvent({
       event: 'set_view',
       properties: {
@@ -51,20 +51,25 @@ export function CatalogFeatureRecentlyViewed({
   useEffect(() => {
     let isMounted = true;
     setHasCheckedRecentlyViewed(false);
-    const recentlyViewedSetNums = getRecentlyViewedSetNums()
-      .filter((setNum) => setNum !== currentSetNum)
-      .slice(0, RECENTLY_VIEWED_RAIL_LIMIT);
 
-    if (recentlyViewedSetNums.length < RECENTLY_VIEWED_RAIL_MIN_ITEMS) {
-      setSetCards([]);
-      setHasCheckedRecentlyViewed(true);
-      return;
-    }
+    void getRecentlyViewedSetNumsForCurrentUser().then(
+      async ({ setNums }) => {
+        const recentlyViewedSetNums = setNums
+          .filter((setNum) => setNum !== currentSetNum)
+          .slice(0, RECENTLY_VIEWED_RAIL_LIMIT);
 
-    void listCatalogSetCardsByIdsForBrowser({
-      canonicalIds: recentlyViewedSetNums,
-    }).then(
-      (catalogSetCards) => {
+        if (recentlyViewedSetNums.length < RECENTLY_VIEWED_RAIL_MIN_ITEMS) {
+          if (isMounted) {
+            setSetCards([]);
+            setHasCheckedRecentlyViewed(true);
+          }
+          return;
+        }
+
+        const catalogSetCards = await listCatalogSetCardsByIdsForBrowser({
+          canonicalIds: recentlyViewedSetNums,
+        });
+
         if (isMounted) {
           setSetCards(catalogSetCards);
           setHasCheckedRecentlyViewed(true);

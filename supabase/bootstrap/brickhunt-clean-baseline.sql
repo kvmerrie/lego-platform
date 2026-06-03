@@ -95,6 +95,17 @@ create table if not exists public.user_set_statuses (
   primary key (user_id, set_id)
 );
 
+create table if not exists public.recently_viewed_sets (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  set_id text not null,
+  viewed_at timestamptz not null default timezone('utc', now()),
+  created_at timestamptz not null default timezone('utc', now()),
+  primary key (user_id, set_id),
+  constraint recently_viewed_sets_set_id_shape check (
+    set_id ~ '^[A-Za-z0-9-]+$'
+  )
+);
+
 create table if not exists public.admin_operation_logs (
   id uuid primary key default gen_random_uuid(),
   operation_type text not null,
@@ -353,6 +364,9 @@ on public.user_set_statuses (user_id);
 
 create index if not exists wishlist_alert_notification_states_user_id_idx
 on public.wishlist_alert_notification_states (user_id);
+
+create index if not exists recently_viewed_sets_user_viewed_at_idx
+on public.recently_viewed_sets (user_id, viewed_at desc);
 
 create index if not exists catalog_source_themes_source_system_idx
 on public.catalog_source_themes (source_system);
@@ -754,6 +768,7 @@ grant execute on function public.list_catalog_current_offer_candidate_set_ids(in
 
 alter table public.profiles enable row level security;
 alter table public.user_set_statuses enable row level security;
+alter table public.recently_viewed_sets enable row level security;
 alter table public.admin_operation_logs enable row level security;
 alter table public.wishlist_alert_notification_states enable row level security;
 alter table public.catalog_source_themes enable row level security;
@@ -811,6 +826,31 @@ with check ((select auth.uid()) = user_id);
 
 create policy "user_set_statuses_delete_own"
 on public.user_set_statuses
+for delete
+to authenticated
+using ((select auth.uid()) = user_id);
+
+create policy "recently_viewed_sets_select_own"
+on public.recently_viewed_sets
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+
+create policy "recently_viewed_sets_insert_own"
+on public.recently_viewed_sets
+for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+create policy "recently_viewed_sets_update_own"
+on public.recently_viewed_sets
+for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+create policy "recently_viewed_sets_delete_own"
+on public.recently_viewed_sets
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
