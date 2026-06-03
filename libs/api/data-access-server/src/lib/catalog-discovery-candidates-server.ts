@@ -1,5 +1,6 @@
 import {
   createCatalogSet,
+  listCatalogDiscoveryCandidatesBySetIds,
   searchCatalogMissingSets,
   upsertCatalogDiscoveryCandidates,
   type CatalogDiscoveryCandidate,
@@ -34,22 +35,35 @@ export interface CatalogDiscoverySourceCandidate {
 export interface CatalogDiscoveryCandidatePipelineDependencies {
   createCatalogSetFn?: typeof createCatalogSet;
   getNow?: () => Date;
+  listCatalogDiscoveryCandidatesBySetIdsFn?: typeof listCatalogDiscoveryCandidatesBySetIds;
   lookupBricksetSetMetadataFn?: typeof lookupBricksetSetMetadata;
   searchCatalogMissingSetsFn?: typeof searchCatalogMissingSets;
   upsertCatalogDiscoveryCandidatesFn?: typeof upsertCatalogDiscoveryCandidates;
 }
 
+export const CATALOG_DISCOVERY_DEFAULT_MAX_ENRICHMENT_LOOKUPS = 25;
+
 export interface CatalogDiscoveryCandidatePipelineOptions {
   autoCreateHighConfidenceCatalogSets?: boolean;
   bricksetApiKey?: string;
+  enrichMissingSets?: boolean;
   fetchFn?: typeof fetch;
+  maxEnrichmentLookups?: number;
+  onlyNewCandidates?: boolean;
+  setIds?: readonly string[];
+  skipExistingCandidates?: boolean;
 }
 
 export interface CatalogDiscoveryCandidatePipelineResult {
   autoCreateAttemptedCount: number;
   createdCatalogSetCount: number;
+  enrichmentEnabled: boolean;
+  enrichmentLookupCount: number;
+  enrichmentSkippedExistingCount: number;
+  existingCandidateHitCount: number;
   highConfidenceCount: number;
   persistedCandidateCount: number;
+  rebrickable429Count: number;
   skippedAutoCreateCount: number;
   uniqueCandidateCount: number;
 }
@@ -159,6 +173,68 @@ function parsePriceMinor(price: string | undefined): number | undefined {
   return Number.isFinite(normalizedPrice) && normalizedPrice > 0
     ? Math.round(normalizedPrice * 100)
     : undefined;
+}
+
+function isLikelyRebrickableRateLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+
+  return (
+    message.includes('429') ||
+    message.toLowerCase().includes('rate limit') ||
+    message.toLowerCase().includes('too many requests')
+  );
+}
+
+function toCachedRebrickableResult(
+  payload: Readonly<Record<string, unknown>> | undefined,
+): CatalogExternalSetSearchResult | undefined {
+  if (!payload) {
+    return undefined;
+  }
+
+  const setId = typeof payload['setId'] === 'string' ? payload['setId'] : '';
+  const sourceSetNumber =
+    typeof payload['sourceSetNumber'] === 'string'
+      ? payload['sourceSetNumber']
+      : '';
+  const name = typeof payload['name'] === 'string' ? payload['name'] : '';
+  const slug = typeof payload['slug'] === 'string' ? payload['slug'] : '';
+  const theme = typeof payload['theme'] === 'string' ? payload['theme'] : '';
+  const pieces =
+    typeof payload['pieces'] === 'number' ? Math.floor(payload['pieces']) : NaN;
+  const releaseYear =
+    typeof payload['releaseYear'] === 'number'
+      ? Math.floor(payload['releaseYear'])
+      : NaN;
+
+  if (
+    !setId ||
+    !sourceSetNumber ||
+    !name ||
+    !slug ||
+    !theme ||
+    !Number.isInteger(pieces) ||
+    !Number.isInteger(releaseYear)
+  ) {
+    return undefined;
+  }
+
+  return {
+    ...(typeof payload['imageUrl'] === 'string'
+      ? { imageUrl: payload['imageUrl'] }
+      : {}),
+    name,
+    pieces,
+    ...(typeof payload['releaseDate'] === 'string'
+      ? { releaseDate: payload['releaseDate'] }
+      : {}),
+    releaseYear,
+    setId,
+    slug,
+    source: 'rebrickable',
+    sourceSetNumber,
+    theme,
+  };
 }
 
 function scoreCatalogDiscoveryCandidate({
@@ -323,16 +399,24 @@ export async function buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
   const {
     createCatalogSetFn = createCatalogSet,
     getNow = () => new Date(),
+    listCatalogDiscoveryCandidatesBySetIdsFn = listCatalogDiscoveryCandidatesBySetIds,
     lookupBricksetSetMetadataFn = lookupBricksetSetMetadata,
     searchCatalogMissingSetsFn = searchCatalogMissingSets,
     upsertCatalogDiscoveryCandidatesFn = upsertCatalogDiscoveryCandidates,
   } = dependencies;
+  const allowedSetIds = new Set(
+    (options.setIds ?? []).map((setId) => getCanonicalCatalogSetId(setId)),
+  );
   const candidateBySetId = new Map<string, CatalogDiscoverySourceCandidate>();
 
   for (const candidate of candidates) {
     const normalizedSetId = getCanonicalCatalogSetId(candidate.setNumber);
 
-    if (!normalizedSetId || candidateBySetId.has(normalizedSetId)) {
+    if (
+      !normalizedSetId ||
+      candidateBySetId.has(normalizedSetId) ||
+      (allowedSetIds.size > 0 && !allowedSetIds.has(normalizedSetId))
+    ) {
       continue;
     }
 
@@ -340,17 +424,58 @@ export async function buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
   }
 
   const uniqueCandidates = [...candidateBySetId.values()];
+  const uniqueSetIds = uniqueCandidates.map((candidate) =>
+    getCanonicalCatalogSetId(candidate.setNumber),
+  );
+  const existingCandidates = await listCatalogDiscoveryCandidatesBySetIdsFn({
+    setIds: uniqueSetIds,
+  });
+  const existingCandidateBySetId = new Map(
+    existingCandidates.map((candidate) => [
+      candidate.normalizedSetId,
+      candidate,
+    ]),
+  );
+  const processableCandidates = uniqueCandidates.filter((candidate) => {
+    const existingCandidate = existingCandidateBySetId.get(
+      getCanonicalCatalogSetId(candidate.setNumber),
+    );
+
+    return !(
+      existingCandidate &&
+      (options.onlyNewCandidates || options.skipExistingCandidates)
+    );
+  });
+  const enrichmentEnabled = Boolean(
+    options.enrichMissingSets || options.autoCreateHighConfidenceCatalogSets,
+  );
+  const maxEnrichmentLookups = enrichmentEnabled
+    ? Math.max(
+        0,
+        Math.floor(
+          options.maxEnrichmentLookups ??
+            CATALOG_DISCOVERY_DEFAULT_MAX_ENRICHMENT_LOOKUPS,
+        ),
+      )
+    : 0;
   const sourceSetNumbers = uniqueCandidates.map((candidate) =>
     normalizeSourceSetNumber(candidate.setNumber),
   );
-  const bricksetLookup = await lookupBricksetSetMetadataFn({
-    ...(options.bricksetApiKey
-      ? { bricksetApiKey: options.bricksetApiKey }
-      : {}),
-    ...(options.fetchFn ? { fetchFn: options.fetchFn } : {}),
-    includeAdditionalImages: false,
-    setNumbers: sourceSetNumbers,
-  });
+  const bricksetLookup =
+    enrichmentEnabled && sourceSetNumbers.length > 0
+      ? await lookupBricksetSetMetadataFn({
+          ...(options.bricksetApiKey
+            ? { bricksetApiKey: options.bricksetApiKey }
+            : {}),
+          ...(options.fetchFn ? { fetchFn: options.fetchFn } : {}),
+          includeAdditionalImages: false,
+          setNumbers: sourceSetNumbers,
+        })
+      : {
+          fetchedSetCount: 0,
+          metadataRecords: [],
+          unmatchedSetNumbers: sourceSetNumbers,
+        };
   const bricksetRecordBySetNumber = new Map(
     bricksetLookup.metadataRecords.map((record) => [
       normalizeSourceSetNumber(record.setNumber),
@@ -364,18 +489,43 @@ export async function buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
     string,
     CatalogExternalSetSearchResult
   >();
+  let enrichmentLookupCount = 0;
+  let enrichmentSkippedExistingCount = 0;
+  let rebrickable429Count = 0;
 
-  for (const candidate of uniqueCandidates) {
+  for (const candidate of processableCandidates) {
     const normalizedSetId = getCanonicalCatalogSetId(candidate.setNumber);
     const sourceSetNumber = normalizeSourceSetNumber(candidate.setNumber);
-    const rebrickableResult = findExactRebrickableResult({
-      candidates: await searchCatalogMissingSetsFn({
-        ...(options.fetchFn ? { fetchImpl: options.fetchFn } : {}),
-        query: normalizedSetId,
-      }),
-      normalizedSetId,
-      sourceSetNumber,
-    });
+    const existingCandidate = existingCandidateBySetId.get(normalizedSetId);
+    let rebrickableResult = toCachedRebrickableResult(
+      existingCandidate?.rebrickablePayload,
+    );
+
+    if (rebrickableResult) {
+      enrichmentSkippedExistingCount += 1;
+    } else if (
+      enrichmentEnabled &&
+      enrichmentLookupCount < maxEnrichmentLookups
+    ) {
+      try {
+        enrichmentLookupCount += 1;
+        rebrickableResult = findExactRebrickableResult({
+          candidates: await searchCatalogMissingSetsFn({
+            ...(options.fetchFn ? { fetchImpl: options.fetchFn } : {}),
+            query: normalizedSetId,
+          }),
+          normalizedSetId,
+          sourceSetNumber,
+        });
+      } catch (error) {
+        if (isLikelyRebrickableRateLimitError(error)) {
+          rebrickable429Count += 1;
+        } else {
+          throw error;
+        }
+      }
+    }
+
     const candidateInput = toCandidateInput({
       bricksetRecordBySetNumber,
       candidate,
@@ -474,10 +624,15 @@ export async function buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
   return {
     autoCreateAttemptedCount,
     createdCatalogSetCount,
+    enrichmentEnabled,
+    enrichmentLookupCount,
+    enrichmentSkippedExistingCount,
+    existingCandidateHitCount: existingCandidates.length,
     highConfidenceCount: persistedCandidates.filter(
       (candidate: CatalogDiscoveryCandidate) => candidate.confidence === 'high',
     ).length,
     persistedCandidateCount: persistedCandidates.length,
+    rebrickable429Count,
     skippedAutoCreateCount,
     uniqueCandidateCount: uniqueCandidates.length,
   };

@@ -1,7 +1,105 @@
 import { describe, expect, test, vi } from 'vitest';
 import { buildCatalogDiscoveryCandidatesFromRakutenMissingSets } from './catalog-discovery-candidates-server';
 
+function createSourceCandidate(
+  setNumber: string,
+  title = `LEGO Set ${setNumber}`,
+) {
+  return {
+    confidence: 'strict_rakuten_lego_candidate',
+    feedFilename: '/GLOBAL/NL-NL_EUR/feed.xml.gz',
+    productTitle: title,
+    productUrl: `https://lego.example/${setNumber}`,
+    reason: 'missing_from_catalog_sets',
+    setNumber,
+    source: 'rakuten-lego-eu',
+  };
+}
+
+function createExistingCandidate(
+  overrides: Partial<{
+    normalizedSetId: string;
+    rebrickablePayload: Record<string, unknown>;
+  }> = {},
+) {
+  return {
+    autoCreateEligible: true,
+    confidence: 'high',
+    confidenceScore: 97,
+    evidence: {},
+    firstSeenAt: '2026-06-03T09:00:00.000Z',
+    id: 'candidate-existing',
+    lastSeenAt: '2026-06-03T09:00:00.000Z',
+    normalizedSetId: '75401',
+    rebrickablePayload: {
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75401-1/1000.jpg',
+      name: 'Ahsoka Jedi Interceptor',
+      pieces: 290,
+      releaseYear: 2026,
+      setId: '75401',
+      slug: 'ahsoka-jedi-interceptor-75401',
+      source: 'rebrickable',
+      sourceSetNumber: '75401-1',
+      theme: 'Star Wars',
+    },
+    requiredFieldsPresent: true,
+    source: 'rakuten-lego-eu',
+    sourcePayload: {},
+    sourceProductUrl: 'https://lego.example/75401',
+    sourceSetNumber: '75401-1',
+    status: 'new',
+    ...overrides,
+  } as const;
+}
+
 describe('catalog discovery candidate pipeline', () => {
+  test('discovery without enrichment makes zero Rebrickable calls and dedupes duplicate feed products', async () => {
+    const lookupBricksetSetMetadataFn = vi.fn();
+    const searchCatalogMissingSetsFn = vi.fn();
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `candidate-${index}`,
+      })),
+    );
+
+    const result = await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate(
+          '75401',
+          'LEGO Star Wars Ahsoka Jedi Interceptor 75401',
+        ),
+        createSourceCandidate(
+          '75401-1',
+          'LEGO Star Wars Ahsoka Jedi Interceptor 75401',
+        ),
+      ],
+      dependencies: {
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+        lookupBricksetSetMetadataFn,
+        searchCatalogMissingSetsFn,
+        upsertCatalogDiscoveryCandidatesFn,
+      },
+    });
+
+    expect(lookupBricksetSetMetadataFn).not.toHaveBeenCalled();
+    expect(searchCatalogMissingSetsFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      enrichmentEnabled: false,
+      enrichmentLookupCount: 0,
+      persistedCandidateCount: 1,
+      uniqueCandidateCount: 1,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          confidence: 'low',
+          normalizedSetId: '75401',
+        }),
+      ],
+    });
+  });
+
   test('auto-creates only high-confidence candidates with complete Rebrickable metadata', async () => {
     const createCatalogSetFn = vi.fn().mockResolvedValue({
       setId: '75401',
@@ -28,6 +126,7 @@ describe('catalog discovery candidate pipeline', () => {
       dependencies: {
         createCatalogSetFn,
         getNow: () => new Date('2026-06-03T10:00:00.000Z'),
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(async () => ({
           fetchedSetCount: 1,
           metadataRecords: [
@@ -124,6 +223,7 @@ describe('catalog discovery candidate pipeline', () => {
       ],
       dependencies: {
         createCatalogSetFn,
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(async () => ({
           fetchedSetCount: 0,
           metadataRecords: [],
@@ -166,5 +266,154 @@ describe('catalog discovery candidate pipeline', () => {
         }),
       ],
     });
+  });
+
+  test('reuses existing candidate Rebrickable enrichment before live lookup', async () => {
+    const searchCatalogMissingSetsFn = vi.fn();
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `candidate-${index}`,
+      })),
+    );
+
+    const result = await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate(
+          '75401',
+          'LEGO Star Wars Ahsoka Jedi Interceptor 75401',
+        ),
+      ],
+      dependencies: {
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => [
+          createExistingCandidate(),
+        ]),
+        lookupBricksetSetMetadataFn: vi.fn(async () => ({
+          fetchedSetCount: 0,
+          metadataRecords: [],
+          unmatchedSetNumbers: ['75401-1'],
+        })),
+        searchCatalogMissingSetsFn,
+        upsertCatalogDiscoveryCandidatesFn,
+      },
+      options: {
+        enrichMissingSets: true,
+      },
+    });
+
+    expect(searchCatalogMissingSetsFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      enrichmentLookupCount: 0,
+      enrichmentSkippedExistingCount: 1,
+      existingCandidateHitCount: 1,
+      highConfidenceCount: 1,
+    });
+  });
+
+  test('set-ids filter limits candidate work', async () => {
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `candidate-${index}`,
+      })),
+    );
+
+    const result = await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate('72155'),
+        createSourceCandidate('72156'),
+      ],
+      dependencies: {
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+        lookupBricksetSetMetadataFn: vi.fn(),
+        searchCatalogMissingSetsFn: vi.fn(),
+        upsertCatalogDiscoveryCandidatesFn,
+      },
+      options: {
+        setIds: ['72155'],
+      },
+    });
+
+    expect(result.uniqueCandidateCount).toBe(1);
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          normalizedSetId: '72155',
+        }),
+      ],
+    });
+  });
+
+  test('max-enrichment-lookups is respected', async () => {
+    const searchCatalogMissingSetsFn = vi.fn(async () => []);
+
+    const result = await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate('72155'),
+        createSourceCandidate('72156'),
+      ],
+      dependencies: {
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+        lookupBricksetSetMetadataFn: vi.fn(async () => ({
+          fetchedSetCount: 0,
+          metadataRecords: [],
+          unmatchedSetNumbers: ['72155-1', '72156-1'],
+        })),
+        searchCatalogMissingSetsFn,
+        upsertCatalogDiscoveryCandidatesFn: vi.fn(async ({ inputs }) =>
+          inputs.map((input, index) => ({
+            ...input,
+            id: `candidate-${index}`,
+          })),
+        ),
+      },
+      options: {
+        enrichMissingSets: true,
+        maxEnrichmentLookups: 1,
+      },
+    });
+
+    expect(searchCatalogMissingSetsFn).toHaveBeenCalledTimes(1);
+    expect(result.enrichmentLookupCount).toBe(1);
+    expect(result.persistedCandidateCount).toBe(2);
+  });
+
+  test('auto-create implies enrichment but respects explicit lookup limit', async () => {
+    const createCatalogSetFn = vi.fn();
+    const searchCatalogMissingSetsFn = vi.fn();
+
+    const result = await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate(
+          '75401',
+          'LEGO Star Wars Ahsoka Jedi Interceptor 75401',
+        ),
+      ],
+      dependencies: {
+        createCatalogSetFn,
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+        lookupBricksetSetMetadataFn: vi.fn(async () => ({
+          fetchedSetCount: 0,
+          metadataRecords: [],
+          unmatchedSetNumbers: ['75401-1'],
+        })),
+        searchCatalogMissingSetsFn,
+        upsertCatalogDiscoveryCandidatesFn: vi.fn(async ({ inputs }) =>
+          inputs.map((input, index) => ({
+            ...input,
+            id: `candidate-${index}`,
+          })),
+        ),
+      },
+      options: {
+        autoCreateHighConfidenceCatalogSets: true,
+        maxEnrichmentLookups: 0,
+      },
+    });
+
+    expect(result.enrichmentEnabled).toBe(true);
+    expect(result.enrichmentLookupCount).toBe(0);
+    expect(searchCatalogMissingSetsFn).not.toHaveBeenCalled();
+    expect(createCatalogSetFn).not.toHaveBeenCalled();
   });
 });

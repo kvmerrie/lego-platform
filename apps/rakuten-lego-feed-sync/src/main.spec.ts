@@ -59,9 +59,17 @@ describe('Rakuten LEGO feed sync CLI', () => {
         },
       ],
       parseFailureCount: 0,
+      enrichmentEnabled: false,
+      enrichmentLookupCount: 0,
+      enrichmentSkippedExistingCount: 0,
+      existingCandidateHitCount: 0,
+      existingCatalogMatchCount: 0,
+      feedProductsScanned: 2,
       persistedDiscoveredSetCount: 0,
       persistedDiscoveryCandidateCount: 1,
+      rebrickable429Count: 0,
       source: 'rakuten-lego-eu',
+      uniqueCandidateSetNumberCount: 1,
       uniqueMissingSetCount: 1,
     });
   });
@@ -93,6 +101,7 @@ describe('Rakuten LEGO feed sync CLI', () => {
       autoCreateHighConfidenceCatalogSets: false,
       debugUnmatchedSamples: 25,
       discoverMissingSets: true,
+      enrichMissingSets: false,
       persistCatalogDiscoveryCandidates: true,
       persistDiscoveredSets: false,
       reportMissingSetsPath: 'tmp/rakuten-lego-missing-sets.json',
@@ -138,10 +147,15 @@ describe('Rakuten LEGO feed sync CLI', () => {
       {
         options: {
           autoCreateHighConfidenceCatalogSets: false,
+          enrichMissingSets: false,
           maxProducts: undefined,
+          maxEnrichmentLookups: undefined,
+          onlyNewCandidates: false,
           persistCatalogDiscoveryCandidates: true,
           persistDiscoveredSets: false,
           sampleLimit: 10,
+          setIds: undefined,
+          skipExistingCandidates: false,
         },
       },
     );
@@ -167,10 +181,15 @@ describe('Rakuten LEGO feed sync CLI', () => {
       {
         options: {
           autoCreateHighConfidenceCatalogSets: false,
+          enrichMissingSets: false,
           maxProducts: undefined,
+          maxEnrichmentLookups: undefined,
+          onlyNewCandidates: false,
           persistCatalogDiscoveryCandidates: true,
           persistDiscoveredSets: true,
           sampleLimit: undefined,
+          setIds: undefined,
+          skipExistingCandidates: false,
         },
       },
     );
@@ -186,6 +205,7 @@ describe('Rakuten LEGO feed sync CLI', () => {
       ]),
     ).toMatchObject({
       autoCreateHighConfidenceCatalogSets: true,
+      enrichMissingSets: true,
       persistCatalogDiscoveryCandidates: true,
     });
     expect(
@@ -196,6 +216,30 @@ describe('Rakuten LEGO feed sync CLI', () => {
     ).toMatchObject({
       autoCreateHighConfidenceCatalogSets: false,
       persistCatalogDiscoveryCandidates: false,
+    });
+  });
+
+  test('parses targeted enrichment flags for urgent launch flows', async () => {
+    const { parseRakutenLegoFeedSyncCliOptions } = await import('./main');
+
+    expect(
+      parseRakutenLegoFeedSyncCliOptions([
+        '--discover-missing-sets',
+        '--set-ids',
+        '72155,72156,72157',
+        '--enrich-missing-sets',
+        '--max-enrichment-lookups',
+        '20',
+        '--skip-existing-candidates',
+        '--only-new-candidates',
+      ]),
+    ).toMatchObject({
+      discoverMissingSets: true,
+      enrichMissingSets: true,
+      maxEnrichmentLookups: 20,
+      onlyNewCandidates: true,
+      setIds: ['72155', '72156', '72157'],
+      skipExistingCandidates: true,
     });
   });
 });

@@ -111,6 +111,25 @@ function parseOptionalNonNegativeIntegerFlag({
   return parsedValue;
 }
 
+function parseOptionalSetIdsFlag({
+  argv,
+}: {
+  argv: readonly string[];
+}): string[] | undefined {
+  const rawValue = getFlagValue({
+    argv,
+    flag: '--set-ids',
+  });
+  const setIds = rawValue
+    ? rawValue
+        .split(',')
+        .map((setId) => setId.trim())
+        .filter(Boolean)
+    : [];
+
+  return setIds.length ? setIds : undefined;
+}
+
 export function parseRakutenLegoFeedSyncCliOptions(argv: readonly string[]): {
   auditDiscovery: boolean;
   auditFeedFilename?: string;
@@ -123,12 +142,17 @@ export function parseRakutenLegoFeedSyncCliOptions(argv: readonly string[]): {
   autoCreateHighConfidenceCatalogSets: boolean;
   discoverMissingSets: boolean;
   dryRun: boolean;
+  enrichMissingSets: boolean;
   listFiles: boolean;
+  maxEnrichmentLookups?: number;
   maxProducts?: number;
+  onlyNewCandidates: boolean;
   persistDiscoveredSets: boolean;
   persistCatalogDiscoveryCandidates: boolean;
   reportMissingSetsPath?: string;
   reportUnmatchedPath?: string;
+  setIds?: readonly string[];
+  skipExistingCandidates: boolean;
   titleAuditReportPath?: string;
 } {
   const discoverMissingSets = hasBooleanFlag({
@@ -180,14 +204,34 @@ export function parseRakutenLegoFeedSyncCliOptions(argv: readonly string[]): {
       argv,
       flag: '--dry-run',
     }),
+    enrichMissingSets:
+      discoverMissingSets &&
+      (hasBooleanFlag({
+        argv,
+        flag: '--enrich-missing-sets',
+      }) ||
+        hasBooleanFlag({
+          argv,
+          flag: '--auto-create-high-confidence-catalog-sets',
+        })),
     listFiles: hasBooleanFlag({
       argv,
       flag: '--list-files',
+    }),
+    maxEnrichmentLookups: parseOptionalNonNegativeIntegerFlag({
+      argv,
+      flag: '--max-enrichment-lookups',
     }),
     maxProducts: parseOptionalPositiveIntegerFlag({
       argv,
       flag: '--max-products',
     }),
+    onlyNewCandidates:
+      discoverMissingSets &&
+      hasBooleanFlag({
+        argv,
+        flag: '--only-new-candidates',
+      }),
     persistDiscoveredSets:
       discoverMissingSets &&
       hasBooleanFlag({
@@ -208,6 +252,15 @@ export function parseRakutenLegoFeedSyncCliOptions(argv: readonly string[]): {
       argv,
       flag: '--report-unmatched-path',
     }),
+    setIds: parseOptionalSetIdsFlag({
+      argv,
+    }),
+    skipExistingCandidates:
+      discoverMissingSets &&
+      hasBooleanFlag({
+        argv,
+        flag: '--skip-existing-candidates',
+      }),
     titleAuditReportPath: parseOptionalStringFlag({
       argv,
       flag: '--title-audit-report-path',
@@ -230,12 +283,17 @@ export async function main(argv = process.argv.slice(2)) {
     autoCreateHighConfidenceCatalogSets,
     discoverMissingSets,
     dryRun,
+    enrichMissingSets,
     listFiles,
+    maxEnrichmentLookups,
     maxProducts,
+    onlyNewCandidates,
     persistDiscoveredSets,
     persistCatalogDiscoveryCandidates,
     reportMissingSetsPath,
     reportUnmatchedPath,
+    setIds,
+    skipExistingCandidates,
     titleAuditReportPath,
   } = options;
 
@@ -406,14 +464,19 @@ export async function main(argv = process.argv.slice(2)) {
       options: {
         maxProducts,
         autoCreateHighConfidenceCatalogSets,
+        enrichMissingSets,
+        maxEnrichmentLookups,
+        onlyNewCandidates,
         persistCatalogDiscoveryCandidates,
         persistDiscoveredSets,
         sampleLimit: debugUnmatchedSamples,
+        setIds,
+        skipExistingCandidates,
       },
     });
 
     console.log(
-      `[rakuten-lego-feed-sync] missing_set_discovery fetched_products=${report.fetchedProductCount} missing_candidates=${report.candidateCount} unique_missing_sets=${report.uniqueMissingSetCount} persisted_discovered_sets=${report.persistedDiscoveredSetCount} persisted_catalog_discovery_candidates=${report.persistedDiscoveryCandidateCount} auto_create_attempted=${report.pipelineResult?.autoCreateAttemptedCount ?? 0} auto_created_catalog_sets=${report.pipelineResult?.createdCatalogSetCount ?? 0}`,
+      `[rakuten-lego-feed-sync] missing_set_discovery feed_products_scanned=${report.feedProductsScanned} unique_candidate_set_numbers=${report.uniqueCandidateSetNumberCount} existing_catalog_matches=${report.existingCatalogMatchCount} missing_candidates=${report.candidateCount} existing_candidate_hits=${report.existingCandidateHitCount} enrichment_enabled=${report.enrichmentEnabled} enrichment_lookup_count=${report.enrichmentLookupCount} enrichment_skipped_existing_count=${report.enrichmentSkippedExistingCount} rebrickable_429_count=${report.rebrickable429Count} persisted_discovered_sets=${report.persistedDiscoveredSetCount} persisted_catalog_discovery_candidates=${report.persistedDiscoveryCandidateCount} auto_create_attempted=${report.pipelineResult?.autoCreateAttemptedCount ?? 0} auto_created_catalog_sets=${report.pipelineResult?.createdCatalogSetCount ?? 0}`,
     );
     console.log(
       JSON.stringify(

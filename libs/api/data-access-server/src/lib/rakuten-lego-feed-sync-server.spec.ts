@@ -843,9 +843,11 @@ describe('Rakuten LEGO feed sync server', () => {
 </products>`,
     });
     const importAffiliateFeedRowsForMerchantFn = vi.fn();
+    const buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn = vi.fn();
 
     const report = await discoverRakutenLegoMissingSets({
       dependencies: {
+        buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
         createSftpClientFn: () => sftpClient,
         getRakutenLegoFeedConfigFn: () => rakutenConfig,
         importAffiliateFeedRowsForMerchantFn,
@@ -859,10 +861,19 @@ describe('Rakuten LEGO feed sync server', () => {
     });
 
     expect(importAffiliateFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(
+      buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
+    ).not.toHaveBeenCalled();
     expect(report).toMatchObject({
       candidateCount: 1,
+      enrichmentEnabled: false,
+      enrichmentLookupCount: 0,
+      existingCatalogMatchCount: 1,
       fetchedProductCount: 2,
+      feedProductsScanned: 2,
       persistedDiscoveredSetCount: 0,
+      rebrickable429Count: 0,
+      uniqueCandidateSetNumberCount: 1,
       uniqueMissingSetCount: 1,
     });
     expect(report.missingCandidates).toEqual([
@@ -879,6 +890,76 @@ describe('Rakuten LEGO feed sync server', () => {
         source: 'rakuten-lego-eu',
       }),
     ]);
+  });
+
+  test('dedupes duplicate missing feed products before reporting and enrichment', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Icons 99999 Missing Castle</productname>
+    <price>129.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999</linkurl>
+    <part_number>99999</part_number>
+  </product>
+  <product>
+    <productname>LEGO Icons 99999 Missing Castle duplicate</productname>
+    <price>129.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fmissing-castle-99999-duplicate</linkurl>
+    <part_number>99999-1</part_number>
+  </product>
+</products>`,
+    });
+    const buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn = vi
+      .fn()
+      .mockResolvedValue({
+        autoCreateAttemptedCount: 0,
+        createdCatalogSetCount: 0,
+        enrichmentEnabled: false,
+        enrichmentLookupCount: 0,
+        enrichmentSkippedExistingCount: 0,
+        existingCandidateHitCount: 0,
+        highConfidenceCount: 0,
+        persistedCandidateCount: 1,
+        rebrickable429Count: 0,
+        skippedAutoCreateCount: 1,
+        uniqueCandidateCount: 1,
+      });
+
+    const report = await discoverRakutenLegoMissingSets({
+      dependencies: {
+        buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([]),
+      },
+      options: {
+        persistCatalogDiscoveryCandidates: true,
+      },
+    });
+
+    expect(report.candidateCount).toBe(1);
+    expect(report.missingCandidates).toHaveLength(1);
+    expect(
+      buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
+    ).toHaveBeenCalledWith({
+      candidates: [
+        expect.objectContaining({
+          setNumber: '99999',
+        }),
+      ],
+      options: {
+        autoCreateHighConfidenceCatalogSets: undefined,
+        enrichMissingSets: undefined,
+        maxEnrichmentLookups: undefined,
+        onlyNewCandidates: undefined,
+        setIds: undefined,
+        skipExistingCandidates: undefined,
+      },
+    });
   });
 
   test('does not report catalog matches that require -1 source number normalization', async () => {
@@ -910,7 +991,85 @@ describe('Rakuten LEGO feed sync server', () => {
     });
 
     expect(report.candidateCount).toBe(0);
+    expect(report.existingCatalogMatchCount).toBe(1);
     expect(report.missingCandidates).toEqual([]);
+  });
+
+  test('set-ids filter limits missing candidates passed to discovery pipeline', async () => {
+    const sftpClient = createMockSftpClient({
+      xml: `<products>
+  <product>
+    <productname>LEGO Pokemon 72155 Bulbasaur</productname>
+    <price>59.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fbulbasaur-72155</linkurl>
+    <part_number>72155</part_number>
+  </product>
+  <product>
+    <productname>LEGO Pokemon 72156 Charmander</productname>
+    <price>59.99</price>
+    <currency>EUR</currency>
+    <availability>available</availability>
+    <linkurl>https://click.linksynergy.com/link?id=test&amp;murl=https%3A%2F%2Fwww.lego.com%2Fnl-nl%2Fproduct%2Fcharmander-72156</linkurl>
+    <part_number>72156</part_number>
+  </product>
+</products>`,
+    });
+    const buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn = vi
+      .fn()
+      .mockResolvedValue({
+        autoCreateAttemptedCount: 0,
+        createdCatalogSetCount: 0,
+        enrichmentEnabled: true,
+        enrichmentLookupCount: 1,
+        enrichmentSkippedExistingCount: 0,
+        existingCandidateHitCount: 0,
+        highConfidenceCount: 0,
+        persistedCandidateCount: 1,
+        rebrickable429Count: 0,
+        skippedAutoCreateCount: 1,
+        uniqueCandidateCount: 1,
+      });
+
+    const report = await discoverRakutenLegoMissingSets({
+      dependencies: {
+        buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
+        createSftpClientFn: () => sftpClient,
+        getRakutenLegoFeedConfigFn: () => rakutenConfig,
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([]),
+      },
+      options: {
+        enrichMissingSets: true,
+        maxEnrichmentLookups: 20,
+        persistCatalogDiscoveryCandidates: true,
+        setIds: ['72155'],
+      },
+    });
+
+    expect(report.candidateCount).toBe(1);
+    expect(report.missingCandidates).toEqual([
+      expect.objectContaining({
+        setNumber: '72155',
+      }),
+    ]);
+    expect(
+      buildCatalogDiscoveryCandidatesFromRakutenMissingSetsFn,
+    ).toHaveBeenCalledWith({
+      candidates: [
+        expect.objectContaining({
+          setNumber: '72155',
+        }),
+      ],
+      options: {
+        autoCreateHighConfidenceCatalogSets: undefined,
+        enrichMissingSets: true,
+        maxEnrichmentLookups: 20,
+        onlyNewCandidates: undefined,
+        setIds: ['72155'],
+        skipExistingCandidates: undefined,
+      },
+    });
   });
 
   test('persists discovered Rakuten missing set candidates only when requested', async () => {

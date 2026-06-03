@@ -2851,6 +2851,41 @@ export async function upsertCatalogDiscoveryCandidates({
   return upsertedRows.map(toCatalogDiscoveryCandidate);
 }
 
+export async function listCatalogDiscoveryCandidatesBySetIds({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogDiscoveryCandidate[]> {
+  const uniqueSetIds = [
+    ...new Set(
+      setIds.map((setId) => getCanonicalCatalogSetId(setId)).filter(Boolean),
+    ),
+  ];
+
+  if (!uniqueSetIds.length || (!supabaseClient && !hasServerSupabaseConfig())) {
+    return [];
+  }
+
+  const { data, error } = await (
+    supabaseClient ?? getServerSupabaseAdminClient()
+  )
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select(
+      'id, normalized_set_id, source_set_number, source, source_product_url, source_product_title, source_image_url, source_price_minor, source_currency_code, source_payload, rebrickable_payload, brickset_payload, evidence, confidence, confidence_score, required_fields_present, auto_create_eligible, status, imported_set_id, import_error, first_seen_at, last_seen_at',
+    )
+    .in('normalized_set_id', uniqueSetIds);
+
+  if (error) {
+    throw new Error('Unable to load catalog discovery candidates.');
+  }
+
+  return ((data as CatalogDiscoveryCandidateRow[] | null) ?? []).map(
+    toCatalogDiscoveryCandidate,
+  );
+}
+
 export async function listCatalogSetSourceMetadataSetIds({
   locale,
   matchConfidence,

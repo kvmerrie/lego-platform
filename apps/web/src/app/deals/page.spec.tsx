@@ -229,6 +229,27 @@ describe('deals page snapshots', () => {
     expect(markup).toContain('href="/deals#deals-collection"');
     expect(markup).not.toContain('/deals?sort=');
     expect(markup.match(/data-visual-tile=/gu)).toHaveLength(7);
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/76454-1/155297.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/75416-1/154252.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/77071-1/143092.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/31165-1/149769.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/43269-1/155014.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/77244-1/148260.jpg',
+    );
+    expect(markup).toContain(
+      'https://cdn.rebrickable.com/media/sets/10350-1/149051.jpg',
+    );
   });
 
   it('marks the active deal discovery tile and keeps legacy aliases active', async () => {

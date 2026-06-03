@@ -43,6 +43,7 @@ interface DealSortViewConfig {
   tileTitle: string;
   visual: {
     backgroundColor: string;
+    imageUrl?: string;
     textColor: string;
   };
 }
@@ -60,6 +61,7 @@ const dealSortViewConfigs = [
     title: 'LEGO deals die nu de moeite waard zijn',
     visual: {
       backgroundColor: '#3aaee8',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76454-1/155297.jpg',
       textColor: '#08243a',
     },
   },
@@ -75,6 +77,7 @@ const dealSortViewConfigs = [
     title: 'De grootste LEGO kortingen',
     visual: {
       backgroundColor: '#35b765',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75416-1/154252.jpg',
       textColor: '#062817',
     },
   },
@@ -90,6 +93,7 @@ const dealSortViewConfigs = [
     title: 'De beste prijs per steen',
     visual: {
       backgroundColor: '#00a99d',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/77071-1/143092.jpg',
       textColor: '#062927',
     },
   },
@@ -105,6 +109,7 @@ const dealSortViewConfigs = [
     title: 'LEGO deals onder €50',
     visual: {
       backgroundColor: '#f28c28',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/31165-1/149769.jpg',
       textColor: '#281400',
     },
   },
@@ -120,6 +125,7 @@ const dealSortViewConfigs = [
     title: 'Nieuwe LEGO deals',
     visual: {
       backgroundColor: '#8758d8',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/43269-1/155014.jpg',
       textColor: '#ffffff',
     },
   },
@@ -135,6 +141,7 @@ const dealSortViewConfigs = [
     title: 'LEGO deals onder €20',
     visual: {
       backgroundColor: '#f5c542',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/77244-1/148260.jpg',
       textColor: '#2b2100',
     },
   },
@@ -150,6 +157,7 @@ const dealSortViewConfigs = [
     title: 'Premium LEGO deals',
     visual: {
       backgroundColor: '#16213b',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10350-1/149051.jpg',
       textColor: '#ffffff',
     },
   },
@@ -180,6 +188,7 @@ const dealSortViewConfigs = [
     title: 'Grootste LEGO korting',
     visual: {
       backgroundColor: '#35b765',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75416-1/154252.jpg',
       textColor: '#062817',
     },
   },
