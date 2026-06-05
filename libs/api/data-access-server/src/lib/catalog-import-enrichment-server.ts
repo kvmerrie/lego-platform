@@ -17,6 +17,7 @@ import {
   enrichCatalogSetMinifigSummaries,
   type CatalogMinifigOnboardingEnrichmentResult,
 } from './catalog-minifig-onboarding-server';
+import { refreshSetDetailRelatedThemeSnapshotsForSetIds } from './set-detail-related-theme-snapshot-server';
 
 export type CatalogImportEnrichmentStageStatus =
   | 'failed'
@@ -39,6 +40,7 @@ export interface CatalogImportPipelineResult {
   stages: {
     brickset: CatalogImportEnrichmentStageResult;
     minifig: CatalogImportEnrichmentStageResult;
+    relatedThemeSnapshot?: CatalogImportEnrichmentStageResult;
     sourceMetadata?: CatalogImportEnrichmentStageResult;
     theme: CatalogImportEnrichmentStageResult;
   };
@@ -52,6 +54,7 @@ export interface EnrichImportedCatalogSetsDependencies {
   backfillCatalogSetPieceCountsFn?: typeof backfillCatalogSetPieceCounts;
   enrichCatalogSetMinifigSummariesFn?: typeof enrichCatalogSetMinifigSummaries;
   getNow?: () => Date;
+  refreshSetDetailRelatedThemeSnapshotsForSetIdsFn?: typeof refreshSetDetailRelatedThemeSnapshotsForSetIds;
   syncBricksetEnrichmentMetadataFn?: typeof syncBricksetEnrichmentMetadata;
 }
 
@@ -779,6 +782,7 @@ export async function enrichImportedCatalogSets({
     backfillCatalogSetPieceCountsFn = backfillCatalogSetPieceCounts,
     enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummaries,
     getNow = () => new Date(),
+    refreshSetDetailRelatedThemeSnapshotsForSetIdsFn = refreshSetDetailRelatedThemeSnapshotsForSetIds,
     syncBricksetEnrichmentMetadataFn = syncBricksetEnrichmentMetadata,
   } = dependencies;
   const uniqueCatalogSets = [
@@ -893,6 +897,34 @@ export async function enrichImportedCatalogSets({
         stage: 'minifig',
         warning,
       });
+    }
+  }
+
+  try {
+    const relatedThemeSnapshotResult =
+      await refreshSetDetailRelatedThemeSnapshotsForSetIdsFn({
+        setIds: uniqueCatalogSets.map((catalogSet) => catalogSet.setId),
+      });
+
+    for (const result of resultsBySetId.values()) {
+      result.stages.relatedThemeSnapshot = {
+        detail: {
+          affectedSetCount: relatedThemeSnapshotResult.affectedSetIds.length,
+          affectedThemeSlugs: relatedThemeSnapshotResult.affectedThemeSlugs,
+          snapshotCount: relatedThemeSnapshotResult.snapshotCount,
+          upsertedCount: relatedThemeSnapshotResult.upsertedCount,
+        },
+        status: 'success',
+      };
+    }
+  } catch (error) {
+    const warning = toWarningMessage('related theme snapshot', error);
+
+    for (const result of resultsBySetId.values()) {
+      result.stages.relatedThemeSnapshot = {
+        status: 'failed',
+        warning,
+      };
     }
   }
 

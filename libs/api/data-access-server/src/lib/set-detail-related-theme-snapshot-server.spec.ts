@@ -3,6 +3,7 @@ import type { CatalogCanonicalSet } from '@lego-platform/catalog/util';
 import {
   buildSetDetailRelatedThemeSnapshotSlug,
   buildSetDetailRelatedThemeSnapshots,
+  refreshSetDetailRelatedThemeSnapshotsForSetIds,
 } from './set-detail-related-theme-snapshot-server';
 
 function createSet(
@@ -198,5 +199,53 @@ describe('set detail related theme snapshots', () => {
       'Icons',
     ]);
     expect(iconsSnapshot?.items.map((item) => item.id)).not.toContain('10000');
+  });
+
+  test('refreshes snapshots for every set in the affected theme only', async () => {
+    const upserts: unknown[] = [];
+    const supabaseClient = {
+      from: () => ({
+        upsert: (rows: unknown[]) => {
+          upserts.push(...rows);
+
+          return Promise.resolve({ error: null });
+        },
+      }),
+    };
+
+    const result = await refreshSetDetailRelatedThemeSnapshotsForSetIds({
+      catalogSets: [
+        createSet({
+          primaryTheme: 'Architecture',
+          setId: '21065',
+        }),
+        createSet({
+          primaryTheme: 'Architecture',
+          setId: '21060',
+        }),
+        createSet({
+          primaryTheme: 'Editions',
+          setId: '43017',
+        }),
+      ],
+      now: new Date('2026-06-02T10:00:00.000Z'),
+      priceSnapshots: new Map(),
+      setIds: ['21065'],
+      supabaseClient: supabaseClient as never,
+    });
+
+    expect(result.affectedThemeSlugs).toEqual(['architecture']);
+    expect(result.affectedSetIds).toEqual(['21060', '21065']);
+    expect(result.upsertedCount).toBe(2);
+    expect(
+      upserts.map(
+        (row) => (row as { collection_slug: string }).collection_slug,
+      ),
+    ).toEqual(
+      expect.arrayContaining([
+        'set-detail-related-theme:21065',
+        'set-detail-related-theme:21060',
+      ]),
+    );
   });
 });

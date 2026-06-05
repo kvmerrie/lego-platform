@@ -15,6 +15,7 @@ import {
 import {
   type AdminCatalogDiscoveryCandidateBulkImportResult,
   type AdminCatalogSetSummary,
+  buildCatalogDiscoveryCandidateStatusUpdate,
   createAdminCatalogRoutes,
   type AdminCatalogService,
 } from '../app/routes/admin-catalog';
@@ -608,6 +609,93 @@ describe('admin catalog routes', () => {
     );
 
     await server.close();
+  });
+
+  test('accepts restoring a discovery candidate to new status', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        status: 'new',
+      },
+      url: '/api/v1/admin/catalog/discovery-candidates/candidate-75313/status',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.updateDiscoveryCandidateStatus).toHaveBeenCalledWith({
+      candidateId: 'candidate-75313',
+      status: 'new',
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        status: 'new',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('builds ignored restore audit evidence without deleting existing evidence', () => {
+    const candidate = createDiscoveryCandidate({
+      evidence: {
+        importResult: { importedSetId: '75313' },
+        operatorConfidence: 'medium',
+        operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        reviewReason: 'manual_ignore',
+      },
+      status: 'ignored',
+    });
+
+    const update = buildCatalogDiscoveryCandidateStatusUpdate({
+      candidate,
+      now: () => new Date('2026-06-05T10:00:00.000Z'),
+      restoredBy: 'operator@example.test',
+      status: 'new',
+    });
+
+    expect(update.status).toBe('new');
+    expect(update.evidence).toEqual({
+      importResult: { importedSetId: '75313' },
+      operatorConfidence: 'medium',
+      operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+      previousStatus: 'ignored',
+      previous_status: 'ignored',
+      restoredAt: '2026-06-05T10:00:00.000Z',
+      restoredBy: 'operator@example.test',
+      restored_at: '2026-06-05T10:00:00.000Z',
+      restored_by: 'operator@example.test',
+      reviewReason: 'manual_ignore',
+    });
+  });
+
+  test('builds non-set restore audit evidence', () => {
+    const update = buildCatalogDiscoveryCandidateStatusUpdate({
+      candidate: createDiscoveryCandidate({
+        evidence: { reviewReason: 'non_set' },
+        status: 'non_set',
+      }),
+      now: () => new Date('2026-06-05T11:00:00.000Z'),
+      status: 'new',
+    });
+
+    expect(update.evidence).toEqual(
+      expect.objectContaining({
+        previousStatus: 'non_set',
+        restoredAt: '2026-06-05T11:00:00.000Z',
+        restoredBy: 'admin',
+        reviewReason: 'non_set',
+      }),
+    );
+  });
+
+  test('does not allow imported candidates to be restored', () => {
+    expect(() =>
+      buildCatalogDiscoveryCandidateStatusUpdate({
+        candidate: createDiscoveryCandidate({ status: 'imported' }),
+        status: 'new',
+      }),
+    ).toThrow('Geimporteerde discovery candidates zijn immutable.');
   });
 
   test('imports a persisted discovery candidate when cached enrichment exists', async () => {

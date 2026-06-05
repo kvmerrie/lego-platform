@@ -544,7 +544,7 @@ export class CommerceAdminApiService {
     candidateId: string;
     status: Extract<
       CommerceAdminCatalogDiscoveryCandidateStatus,
-      'ignored' | 'non_set' | 'reviewed'
+      'ignored' | 'new' | 'non_set' | 'reviewed'
     >;
   }): Promise<CommerceAdminCatalogDiscoveryCandidate> {
     return firstValueFrom(

@@ -14,6 +14,10 @@ import {
   COMMERCE_OFFER_SEEDS_TABLE,
 } from '@lego-platform/commerce/data-access-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  refreshSetDetailRelatedThemeSnapshotsForSetIds,
+  type SetDetailRelatedThemeSnapshotRefreshResult,
+} from './set-detail-related-theme-snapshot-server';
 
 const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
@@ -463,6 +467,8 @@ export interface CatalogPromotionResult {
   skippedSourceMetadataCount?: number;
   startedAt: string;
   status: 'ok';
+  setDetailRelatedThemeSnapshotRefresh?: SetDetailRelatedThemeSnapshotRefreshResult;
+  setDetailRelatedThemeSnapshotRefreshWarning?: string;
   themeSummaryRefresh?: {
     affectedThemeCount: number;
     affectedThemeSlugs: string[];
@@ -489,6 +495,7 @@ export interface PromoteCatalogFromStagingToProductionDependencies {
   createStagingSupabaseClient?: () => CatalogPromotionSupabaseClient;
   includeCommerceSeeds?: boolean;
   now?: () => Date;
+  refreshSetDetailRelatedThemeSnapshotsForSetIdsFn?: typeof refreshSetDetailRelatedThemeSnapshotsForSetIds;
 }
 
 export type PreviewCatalogPromotionDependencies =
@@ -2435,6 +2442,7 @@ export async function promoteCatalogFromStagingToProduction({
   createStagingSupabaseClient,
   includeCommerceSeeds = false,
   now = () => new Date(),
+  refreshSetDetailRelatedThemeSnapshotsForSetIdsFn = refreshSetDetailRelatedThemeSnapshotsForSetIds,
 }: PromoteCatalogFromStagingToProductionDependencies = {}): Promise<CatalogPromotionResult> {
   const startedAt = now();
   const startedAtIso = startedAt.toISOString();
@@ -2994,6 +3002,32 @@ export async function promoteCatalogFromStagingToProduction({
         supabaseClient: productionSupabaseClient,
       });
     }
+    let setDetailRelatedThemeSnapshotRefresh:
+      | SetDetailRelatedThemeSnapshotRefreshResult
+      | undefined;
+    let setDetailRelatedThemeSnapshotRefreshWarning: string | undefined;
+
+    if (changedThemeSlugs.length > 0) {
+      try {
+        setDetailRelatedThemeSnapshotRefresh =
+          await refreshSetDetailRelatedThemeSnapshotsForSetIdsFn({
+            supabaseClient: productionSupabaseClient,
+            themeSlugs: changedThemeSlugs,
+          });
+      } catch (error) {
+        setDetailRelatedThemeSnapshotRefreshWarning =
+          error instanceof Error
+            ? error.message
+            : 'Set detail related-theme snapshot refresh failed.';
+        console.warn(
+          '[catalog-promotion] set_detail_related_theme_refresh_failed',
+          {
+            error: setDetailRelatedThemeSnapshotRefreshWarning,
+            theme_slugs: changedThemeSlugs,
+          },
+        );
+      }
+    }
 
     if (includeCommerceSeeds && merchantPromotionPlan) {
       tables.commerce_merchants = await upsertMerchantsBySlug({
@@ -3045,6 +3079,12 @@ export async function promoteCatalogFromStagingToProduction({
       skippedSourceMetadataCount,
       startedAt: startedAtIso,
       status: 'ok',
+      ...(setDetailRelatedThemeSnapshotRefresh
+        ? { setDetailRelatedThemeSnapshotRefresh }
+        : {}),
+      ...(setDetailRelatedThemeSnapshotRefreshWarning
+        ? { setDetailRelatedThemeSnapshotRefreshWarning }
+        : {}),
       themeSummaryRefresh,
       excludedTables,
       tables: tables as CatalogPromotionResult['tables'],

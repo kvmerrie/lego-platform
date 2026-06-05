@@ -267,6 +267,23 @@ const bricksetBackedCollectionSlugs = [
   'lego-voor-volwassenen',
   'retiring-lego-sets',
 ] as const;
+const catalogSetPublicThemeOverridesBySetId = new Map([
+  ['21065', 'Architecture'],
+  ['43017', 'Editions'],
+  ['43023', 'Editions'],
+  ['11377', 'Lord of the Rings'],
+]);
+
+function isGenericSourceCategoryThemeName(themeName?: string): boolean {
+  const normalizedThemeName = themeName?.trim().toLowerCase();
+
+  return (
+    normalizedThemeName === 'other' ||
+    normalizedThemeName === 'toys & games' ||
+    normalizedThemeName === 'toys and games' ||
+    normalizedThemeName === 'unknown'
+  );
+}
 
 function readBricksetMetadataText(metadataJson: unknown): string {
   if (!metadataJson || typeof metadataJson !== 'object') {
@@ -300,9 +317,8 @@ function readBricksetMetadataString(
 
 function resolveBricksetPublicThemeNames(metadataJson: unknown): string[] {
   const metadataText = readBricksetMetadataText(metadataJson);
-  const explicitTheme = readBricksetMetadataString(metadataJson, 'theme')
-    ?.toLowerCase()
-    .trim();
+  const explicitTheme = readBricksetMetadataString(metadataJson, 'theme');
+  const normalizedExplicitTheme = explicitTheme?.toLowerCase().trim();
 
   if (!metadataText) {
     return [];
@@ -331,19 +347,39 @@ function resolveBricksetPublicThemeNames(metadataJson: unknown): string[] {
     return ['Botanicals'];
   }
 
+  const themeNames =
+    explicitTheme && !isGenericSourceCategoryThemeName(explicitTheme)
+      ? [explicitTheme]
+      : [];
+
   if (
     metadataText.includes('formula 1') ||
     metadataText.includes('f1 the movie') ||
     /\bf1\b/u.test(metadataText)
   ) {
-    if (explicitTheme === 'technic') {
-      return [];
+    if (
+      normalizedExplicitTheme !== 'technic' &&
+      normalizedExplicitTheme !== 'editions'
+    ) {
+      themeNames.push('Formula 1', 'Speed Champions');
     }
-
-    return ['Formula 1', 'Speed Champions'];
   }
 
-  return [];
+  return [...new Set(themeNames)];
+}
+
+function resolveBricksetPublicThemeNamesForSet({
+  metadataJson,
+  setId,
+}: {
+  metadataJson: unknown;
+  setId: string;
+}): string[] {
+  const overrideTheme = catalogSetPublicThemeOverridesBySetId.get(setId);
+
+  return overrideTheme
+    ? [overrideTheme]
+    : resolveBricksetPublicThemeNames(metadataJson);
 }
 
 function buildPublicThemeLookupIds(themeName: string): string[] {
@@ -419,9 +455,10 @@ export async function applyBricksetPublicThemeMappings({
     ).map((row) => [row.source_theme_id, row.primary_theme_id]),
   );
   const mappings = metadataRecords.flatMap((record) => {
-    const publicThemeNames = resolveBricksetPublicThemeNames(
-      record.metadataJson,
-    );
+    const publicThemeNames = resolveBricksetPublicThemeNamesForSet({
+      metadataJson: record.metadataJson,
+      setId: record.catalogSetId,
+    });
 
     return {
       setId: record.catalogSetId,
@@ -631,8 +668,11 @@ export async function backfillBricksetPublicThemeMappings({
   );
   const candidateThemeIds = new Set<string>();
 
-  for (const metadataJson of metadataBySetId.values()) {
-    for (const themeName of resolveBricksetPublicThemeNames(metadataJson)) {
+  for (const [setId, metadataJson] of metadataBySetId.entries()) {
+    for (const themeName of resolveBricksetPublicThemeNamesForSet({
+      metadataJson,
+      setId,
+    })) {
       for (const themeId of buildPublicThemeLookupIds(themeName)) {
         candidateThemeIds.add(themeId);
       }
@@ -683,7 +723,10 @@ export async function backfillBricksetPublicThemeMappings({
       continue;
     }
 
-    const targetThemeId = resolveBricksetPublicThemeNames(metadataJson)
+    const targetThemeId = resolveBricksetPublicThemeNamesForSet({
+      metadataJson,
+      setId: setRow.set_id,
+    })
       .flatMap(buildPublicThemeLookupIds)
       .find((themeId) => {
         const themeRow = themeById.get(themeId);
@@ -747,6 +790,18 @@ export async function backfillBricksetPublicThemeMappings({
           `Unable to backfill Brickset public theme mapping for ${setRow.set_id}.`,
         );
       }
+    }
+  }
+
+  if (!dryRun && remapDetails.length) {
+    const { error: refreshError } = await supabaseClient.rpc(
+      'refresh_catalog_theme_summaries',
+    );
+
+    if (refreshError) {
+      throw new Error(
+        `Unable to refresh catalog theme summaries after Brickset theme backfill: ${refreshError.message}`,
+      );
     }
   }
 

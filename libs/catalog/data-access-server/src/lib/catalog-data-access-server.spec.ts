@@ -3692,7 +3692,9 @@ describe('catalog data access server', () => {
     expect(canonicalInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'New York Postcard',
+        primary_theme_id: 'theme:postcards',
         slug: 'new-york-postcard-40519',
+        source_theme_id: 'rebrickable:696',
         source_set_number: '40519-1',
       }),
     );
@@ -3748,6 +3750,86 @@ describe('catalog data access server', () => {
     );
     expect(supabaseClient.from).not.toHaveBeenCalledWith(
       'commerce_offer_seeds',
+    );
+  });
+
+  test('creates a discovery-imported set with local Rebrickable source theme instead of generic Rakuten category', async () => {
+    const { canonicalInsert, supabaseClient, themeMappingUpsert } =
+      createCatalogOverlaySupabaseClient({
+        canonicalInsertResult: {
+          data: createCatalogOverlayRow({
+            image_url: 'https://cdn.rebrickable.com/media/sets/43017-1.jpg',
+            name: 'McLaren Mastercard F1 Team Oscar Piastri Helmet',
+            piece_count: 793,
+            release_year: 2026,
+            set_id: '43017',
+            slug: 'mclaren-mastercard-f1-team-oscar-piastri-helmet-43017',
+            source_set_number: '43017-1',
+            theme: undefined,
+          }),
+          error: null,
+        },
+        rebrickableSetRows: [
+          {
+            img_url: 'https://cdn.rebrickable.com/media/sets/43017-1.jpg',
+            name: 'McLaren Mastercard F1 Team Oscar Piastri Helmet',
+            num_parts: 793,
+            set_img_url: null,
+            set_num: '43017-1',
+            theme_id: 787,
+            year: 2026,
+          },
+        ],
+        rebrickableThemeRows: [
+          {
+            id: 787,
+            name: 'Editions',
+            parent_id: null,
+          },
+        ],
+      });
+
+    await createCatalogSetFromDiscoveryCandidate({
+      candidate: {
+        autoCreateEligible: false,
+        confidence: 'medium',
+        confidenceScore: 72,
+        evidence: {},
+        firstSeenAt: '2026-06-04T10:00:00.000Z',
+        id: 'candidate-43017',
+        lastSeenAt: '2026-06-04T10:00:00.000Z',
+        normalizedSetId: '43017',
+        operatorConfidence: 'medium',
+        operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        requiredFieldsPresent: true,
+        source: 'rakuten-lego-eu',
+        sourcePayload: {
+          category: 'Toys & Games',
+        },
+        sourceProductTitle: 'McLaren Mastercard F1 Team helm van Oscar Piastri',
+        sourceProductUrl: 'https://lego.example/43017',
+        sourceSetNumber: '43017-1',
+        status: 'new',
+      },
+      supabaseClient,
+    });
+
+    expect(canonicalInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'McLaren Mastercard F1 Team Oscar Piastri Helmet',
+        primary_theme_id: 'theme:editions',
+        source_theme_id: 'rebrickable:787',
+        source_set_number: '43017-1',
+      }),
+    );
+    expect(themeMappingUpsert).toHaveBeenCalledWith(
+      {
+        primary_theme_id: 'theme:editions',
+        source_theme_id: 'rebrickable:787',
+      },
+      {
+        onConflict: 'source_theme_id',
+      },
     );
   });
 

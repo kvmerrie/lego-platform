@@ -24,6 +24,11 @@ import {
   type CommerceAdminCatalogDiscoveryCandidateStatus,
   type CommerceAdminOperationsSummary,
 } from './commerce-admin-api.service';
+import {
+  canRestoreDiscoveryCandidate,
+  getDiscoveryCandidateRestoreDisabledReason,
+  isDiscoveryCandidateSelectableForBulk,
+} from './commerce-admin-discovery-candidate-actions';
 
 type CandidateFilter =
   | CommerceAdminCatalogDiscoveryCandidateStatus
@@ -304,6 +309,15 @@ function bulkStatusTone(
           >
             Mark non-set
           </button>
+          <button
+            class="admin-button admin-button--small admin-button--subtle"
+            type="button"
+            [title]="getBulkRestoreDisabledReason() ?? 'Restore selected'"
+            [disabled]="getBulkRestoreDisabledReason() !== null"
+            (click)="bulkUpdateSelectedStatus('new')"
+          >
+            Restore selected
+          </button>
           @if (getBulkImportDisabledReason(); as bulkImportReason) {
             <span class="admin-data-table__cell-meta">
               Import disabled: {{ bulkImportReason }}
@@ -312,6 +326,11 @@ function bulkStatusTone(
           @if (getBulkReviewDisabledReason(); as bulkReviewReason) {
             <span class="admin-data-table__cell-meta">
               Review disabled: {{ bulkReviewReason }}
+            </span>
+          }
+          @if (getBulkRestoreDisabledReason(); as bulkRestoreReason) {
+            <span class="admin-data-table__cell-meta">
+              Restore disabled: {{ bulkRestoreReason }}
             </span>
           }
         </div>
@@ -531,6 +550,25 @@ function bulkStatusTone(
                     >
                       Non-set
                     </button>
+                    @if (canRestoreCandidate(candidate)) {
+                      <button
+                        class="admin-button admin-button--small admin-button--subtle"
+                        type="button"
+                        [title]="
+                          getRestoreDisabledReason(candidate) ??
+                          'Restore candidate'
+                        "
+                        [disabled]="
+                          getRestoreDisabledReason(candidate) !== null
+                        "
+                        (click)="
+                          updateStatus(candidate, 'new');
+                          $event.stopPropagation()
+                        "
+                      >
+                        Restore
+                      </button>
+                    }
                     @if (getImportDisabledReason(candidate); as importReason) {
                       <span class="admin-data-table__cell-meta">
                         Import disabled: {{ importReason }}
@@ -542,6 +580,15 @@ function bulkStatusTone(
                     ) {
                       <span class="admin-data-table__cell-meta">
                         Review disabled: {{ statusReason }}
+                      </span>
+                    }
+                    @if (
+                      canRestoreCandidate(candidate) &&
+                        getRestoreDisabledReason(candidate);
+                      as restoreReason
+                    ) {
+                      <span class="admin-data-table__cell-meta">
+                        Restore disabled: {{ restoreReason }}
                       </span>
                     }
                     <button
@@ -1016,7 +1063,7 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
   isCandidateSelectableForBulk(
     candidate: CommerceAdminCatalogDiscoveryCandidate,
   ): boolean {
-    return candidate.status === 'new' || candidate.status === 'failed';
+    return isDiscoveryCandidateSelectableForBulk(candidate);
   }
 
   isSelected(candidate: CommerceAdminCatalogDiscoveryCandidate): boolean {
@@ -1144,6 +1191,21 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
     return null;
   }
 
+  canRestoreCandidate(
+    candidate: CommerceAdminCatalogDiscoveryCandidate,
+  ): boolean {
+    return canRestoreDiscoveryCandidate(candidate);
+  }
+
+  getRestoreDisabledReason(
+    candidate: CommerceAdminCatalogDiscoveryCandidate,
+  ): string | null {
+    return getDiscoveryCandidateRestoreDisabledReason({
+      candidate,
+      environmentIsReadOnly: this.environmentIsReadOnly(),
+    });
+  }
+
   getBulkImportDisabledReason(): string | null {
     if (this.environmentIsReadOnly()) {
       return 'writable environment is not staging';
@@ -1187,6 +1249,30 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
 
     if (reviewableCount === 0) {
       return 'no selected candidate can be reviewed';
+    }
+
+    return null;
+  }
+
+  getBulkRestoreDisabledReason(): string | null {
+    if (this.environmentIsReadOnly()) {
+      return 'writable environment is not staging';
+    }
+
+    if (this.busyAction()) {
+      return `action ${this.busyAction()} is already running`;
+    }
+
+    if (this.selectedCount() === 0) {
+      return 'no candidates selected';
+    }
+
+    const restorableCount = this.selectedCandidates().filter(
+      (candidate) => this.getRestoreDisabledReason(candidate) === null,
+    ).length;
+
+    if (restorableCount === 0) {
+      return 'no selected candidate can be restored';
     }
 
     return null;
@@ -1332,6 +1418,7 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
             importDisabledReason: this.getImportDisabledReason(candidate),
             normalizedSetId: candidate.normalizedSetId,
             operatorConfidence: candidate.operatorConfidence,
+            restoreDisabledReason: this.getRestoreDisabledReason(candidate),
             status: candidate.status,
             statusActionDisabledReason:
               this.getStatusActionDisabledReason(candidate),
@@ -1339,6 +1426,7 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
           .filter(
             (candidate) =>
               candidate.importDisabledReason ||
+              candidate.restoreDisabledReason ||
               candidate.statusActionDisabledReason,
           ),
       });
@@ -1467,11 +1555,18 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
     this.busyAction.set(null);
   }
 
-  async bulkUpdateSelectedStatus(status: 'ignored' | 'non_set'): Promise<void> {
-    const disabledReason = this.getBulkReviewDisabledReason();
+  async bulkUpdateSelectedStatus(
+    status: 'ignored' | 'new' | 'non_set',
+  ): Promise<void> {
+    const isRestoreAction = status === 'new';
+    const disabledReason = isRestoreAction
+      ? this.getBulkRestoreDisabledReason()
+      : this.getBulkReviewDisabledReason();
 
     if (disabledReason) {
-      this.errorMessage.set(`Review disabled: ${disabledReason}`);
+      this.errorMessage.set(
+        `${isRestoreAction ? 'Restore' : 'Review'} disabled: ${disabledReason}`,
+      );
       return;
     }
 
@@ -1490,7 +1585,9 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
     );
 
     for (const candidate of selectedCandidates) {
-      const skipReason = this.getStatusActionDisabledReason(candidate);
+      const skipReason = isRestoreAction
+        ? this.getRestoreDisabledReason(candidate)
+        : this.getStatusActionDisabledReason(candidate);
 
       if (skipReason) {
         this.updateBulkProgressItem(candidate.id, {
@@ -1526,7 +1623,7 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
 
     await this.loadCandidates();
     this.feedbackMessage.set(
-      `Bulk review klaar. ${this.bulkProgressSummary()}`,
+      `Bulk ${isRestoreAction ? 'restore' : 'review'} klaar. ${this.bulkProgressSummary()}`,
     );
     this.busyAction.set(null);
   }
@@ -1573,8 +1670,20 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
 
   async updateStatus(
     candidate: CommerceAdminCatalogDiscoveryCandidate,
-    status: 'ignored' | 'non_set' | 'reviewed',
+    status: 'ignored' | 'new' | 'non_set' | 'reviewed',
   ): Promise<void> {
+    const disabledReason =
+      status === 'new'
+        ? this.getRestoreDisabledReason(candidate)
+        : this.getStatusActionDisabledReason(candidate);
+
+    if (disabledReason) {
+      this.errorMessage.set(
+        `${status === 'new' ? 'Restore' : 'Review'} disabled: ${disabledReason}`,
+      );
+      return;
+    }
+
     this.busyAction.set(`${status}:${candidate.id}`);
     this.feedbackMessage.set(null);
     this.errorMessage.set(null);
@@ -1584,7 +1693,11 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
         candidateId: candidate.id,
         status,
       });
-      this.feedbackMessage.set('Discovery candidate bijgewerkt.');
+      this.feedbackMessage.set(
+        status === 'new'
+          ? 'Discovery candidate hersteld.'
+          : 'Discovery candidate bijgewerkt.',
+      );
       await this.loadCandidates();
     } catch (error) {
       this.errorMessage.set(toApiErrorMessage(error));

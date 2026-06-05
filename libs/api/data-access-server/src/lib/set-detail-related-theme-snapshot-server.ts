@@ -73,6 +73,16 @@ export interface SetDetailRelatedThemeSnapshotBuildResult {
   upsertedCount: number;
 }
 
+export interface SetDetailRelatedThemeSnapshotRefreshResult {
+  affectedSetIds: readonly string[];
+  affectedThemeSlugs: readonly string[];
+  dryRun: boolean;
+  generatedAt: string;
+  snapshotCount: number;
+  snapshotWithItemsCount: number;
+  upsertedCount: number;
+}
+
 function chunkRows<T>(rows: readonly T[], size: number): T[][] {
   const chunks: T[][] = [];
 
@@ -405,6 +415,103 @@ export async function syncSetDetailRelatedThemeSnapshots({
   return {
     ...buildResult,
     dryRun,
+    upsertedCount,
+  };
+}
+
+export async function refreshSetDetailRelatedThemeSnapshotsForSetIds({
+  catalogSets,
+  dryRun = false,
+  limit = 8,
+  now = new Date(),
+  priceSnapshots,
+  setIds,
+  supabaseClient = getServerSupabaseAdminClient(),
+  themeSlugs,
+}: {
+  catalogSets?: readonly CatalogCanonicalSet[];
+  dryRun?: boolean;
+  limit?: number;
+  now?: Date;
+  priceSnapshots?: ReadonlyMap<string, CommerceCurrentOfferSnapshotRow>;
+  setIds?: readonly string[];
+  supabaseClient?: SetDetailRelatedThemeSnapshotSupabaseClient;
+  themeSlugs?: readonly string[];
+} = {}): Promise<SetDetailRelatedThemeSnapshotRefreshResult> {
+  const resolvedCatalogSets =
+    catalogSets ?? (await listCanonicalCatalogSets({ supabaseClient }));
+  const activeCatalogSets = resolvedCatalogSets.filter(
+    (catalogSet) => catalogSet.status === 'active',
+  );
+  const requestedSetIds = new Set(
+    setIds?.map(getCanonicalCatalogSetId).filter(Boolean) ?? [],
+  );
+  const affectedThemeSlugs = new Set(
+    themeSlugs?.map(buildCatalogThemeSlug).filter(Boolean) ?? [],
+  );
+
+  if (requestedSetIds.size > 0) {
+    for (const catalogSet of activeCatalogSets) {
+      if (requestedSetIds.has(catalogSet.setId)) {
+        affectedThemeSlugs.add(buildCatalogThemeSlug(catalogSet.primaryTheme));
+      }
+    }
+  }
+
+  if (requestedSetIds.size === 0 && affectedThemeSlugs.size === 0) {
+    for (const catalogSet of activeCatalogSets) {
+      affectedThemeSlugs.add(buildCatalogThemeSlug(catalogSet.primaryTheme));
+    }
+  }
+
+  if (affectedThemeSlugs.size === 0) {
+    return {
+      affectedSetIds: [],
+      affectedThemeSlugs: [],
+      dryRun,
+      generatedAt: now.toISOString(),
+      snapshotCount: 0,
+      snapshotWithItemsCount: 0,
+      upsertedCount: 0,
+    };
+  }
+
+  const buildResult = await buildSetDetailRelatedThemeSnapshots({
+    catalogSets: activeCatalogSets,
+    limit,
+    now,
+    priceSnapshots,
+    supabaseClient,
+  });
+  const activeSetThemeSlugBySetId = new Map(
+    activeCatalogSets.map((catalogSet) => [
+      catalogSet.setId,
+      buildCatalogThemeSlug(catalogSet.primaryTheme),
+    ]),
+  );
+  const snapshots = buildResult.snapshots.filter((snapshot) =>
+    affectedThemeSlugs.has(activeSetThemeSlugBySetId.get(snapshot.setId) ?? ''),
+  );
+  const upsertedCount = dryRun
+    ? 0
+    : await upsertSetDetailRelatedThemeSnapshots({
+        snapshots,
+        supabaseClient,
+      });
+
+  return {
+    affectedSetIds: snapshots
+      .map((snapshot) => snapshot.setId)
+      .sort((left, right) => left.localeCompare(right)),
+    affectedThemeSlugs: [...affectedThemeSlugs].sort((left, right) =>
+      left.localeCompare(right),
+    ),
+    dryRun,
+    generatedAt: buildResult.generatedAt,
+    snapshotCount: snapshots.length,
+    snapshotWithItemsCount: snapshots.filter(
+      (snapshot) => snapshot.items.length > 0,
+    ).length,
     upsertedCount,
   };
 }

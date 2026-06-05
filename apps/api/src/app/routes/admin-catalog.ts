@@ -86,12 +86,73 @@ export interface AdminCatalogService {
     candidateId: string;
     status: Extract<
       CatalogDiscoveryCandidateStatus,
-      'ignored' | 'non_set' | 'reviewed'
+      'ignored' | 'new' | 'non_set' | 'reviewed'
     >;
   }): Promise<CatalogDiscoveryCandidate>;
   listCatalogSets(): Promise<AdminCatalogSetSummary[]>;
   listSuggestedSets(): Promise<CatalogSuggestedSet[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
+}
+
+export function buildCatalogDiscoveryCandidateStatusUpdate({
+  candidate,
+  now = () => new Date(),
+  restoredBy = 'admin',
+  status,
+}: {
+  candidate: CatalogDiscoveryCandidate;
+  now?: () => Date;
+  restoredBy?: string;
+  status: Extract<
+    CatalogDiscoveryCandidateStatus,
+    'ignored' | 'new' | 'non_set' | 'reviewed'
+  >;
+}): {
+  evidence: Readonly<Record<string, unknown>>;
+  status: Extract<
+    CatalogDiscoveryCandidateStatus,
+    'ignored' | 'new' | 'non_set' | 'reviewed'
+  >;
+} {
+  if (candidate.status === 'imported') {
+    throw new Error('Geimporteerde discovery candidates zijn immutable.');
+  }
+
+  if (
+    status === 'new' &&
+    candidate.status !== 'ignored' &&
+    candidate.status !== 'non_set'
+  ) {
+    throw new Error(
+      'Alleen ignored of non-set discovery candidates kunnen worden hersteld.',
+    );
+  }
+
+  if (status !== 'new' && candidate.status !== 'new') {
+    throw new Error(
+      'Alleen nieuwe discovery candidates kunnen worden beoordeeld.',
+    );
+  }
+
+  const restoredAt = now().toISOString();
+
+  return {
+    evidence: {
+      ...candidate.evidence,
+      ...(status === 'non_set' ? { reviewReason: 'non_set' } : {}),
+      ...(status === 'new'
+        ? {
+            previousStatus: candidate.status,
+            previous_status: candidate.status,
+            restoredAt,
+            restoredBy,
+            restored_at: restoredAt,
+            restored_by: restoredBy,
+          }
+        : {}),
+    },
+    status,
+  };
 }
 
 export type AdminCatalogDiscoveryCandidateBulkImportItemStatus =
@@ -263,13 +324,15 @@ function createAdminCatalogService(): AdminCatalogService {
         throw new Error('Discovery candidate niet gevonden.');
       }
 
-      return updateCatalogDiscoveryCandidateReviewStatus({
-        evidence: {
-          ...candidate.evidence,
-          ...(status === 'non_set' ? { reviewReason: 'non_set' } : {}),
-        },
-        id: candidateId,
+      const statusUpdate = buildCatalogDiscoveryCandidateStatusUpdate({
+        candidate,
         status,
+      });
+
+      return updateCatalogDiscoveryCandidateReviewStatus({
+        evidence: statusUpdate.evidence,
+        id: candidateId,
+        status: statusUpdate.status,
       });
     },
     listCatalogSets: async () =>
@@ -797,7 +860,7 @@ function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
 function readDiscoveryCandidateStatusInput(value: unknown): {
   status: Extract<
     CatalogDiscoveryCandidateStatus,
-    'ignored' | 'non_set' | 'reviewed'
+    'ignored' | 'new' | 'non_set' | 'reviewed'
   >;
 } {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -806,7 +869,12 @@ function readDiscoveryCandidateStatusInput(value: unknown): {
 
   const status = (value as { status?: unknown }).status;
 
-  if (status !== 'ignored' && status !== 'non_set' && status !== 'reviewed') {
+  if (
+    status !== 'ignored' &&
+    status !== 'new' &&
+    status !== 'non_set' &&
+    status !== 'reviewed'
+  ) {
     throw new Error('Discovery status is ongeldig.');
   }
 

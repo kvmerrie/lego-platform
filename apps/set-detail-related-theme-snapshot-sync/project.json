@@ -1,0 +1,38 @@
+{
+  "name": "set-detail-related-theme-snapshot-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/set-detail-related-theme-snapshot-sync/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/set-detail-related-theme-snapshot-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/set-detail-related-theme-snapshot-sync/src/main.ts",
+        "tsConfig": "apps/set-detail-related-theme-snapshot-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/set-detail-related-theme-snapshot-sync/main.cjs"
+      }
+    }
+  }
+}

@@ -928,7 +928,7 @@ const catalogThemeNormalizationRulesByRawTheme = new Map<
     { primaryTheme: 'Creator', secondaryTheme: 'Creator 3-in-1' },
   ],
   ['Easter', { primaryTheme: 'Seasonal', secondaryTheme: 'Easter' }],
-  ['Editions', { primaryTheme: 'Other', secondaryTheme: 'Editions' }],
+  ['Editions', { primaryTheme: 'Editions' }],
   [
     'Educational and Dacta',
     { primaryTheme: 'Other', secondaryTheme: 'Educational and Dacta' },

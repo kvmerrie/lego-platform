@@ -1,0 +1,38 @@
+{
+  "name": "theme-presentation-repair",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/theme-presentation-repair/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/theme-presentation-repair",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/theme-presentation-repair/src/main.ts",
+        "tsConfig": "apps/theme-presentation-repair/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/theme-presentation-repair/main.cjs"
+      }
+    }
+  }
+}

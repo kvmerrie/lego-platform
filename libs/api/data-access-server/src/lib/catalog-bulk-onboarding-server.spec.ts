@@ -591,7 +591,7 @@ describe('catalog bulk onboarding server', () => {
     );
   });
 
-  test('maps Brickset subthemes to supported public themes without changing the source theme', async () => {
+  test('maps Brickset themes and subthemes to supported public themes without changing the source theme', async () => {
     const updates: Array<{ setId: string; values: Record<string, unknown> }> =
       [];
     const supabaseClient = {
@@ -605,6 +605,16 @@ describe('catalog bulk onboarding server', () => {
                     primary_theme_id: 'theme:icons',
                     set_id: '11377',
                     source_theme_id: 'rebrickable:721',
+                  },
+                  {
+                    primary_theme_id: 'theme:toys-and-games',
+                    set_id: '21065',
+                    source_theme_id: 'rebrickable:operator:toys-and-games',
+                  },
+                  {
+                    primary_theme_id: 'theme:speed-champions',
+                    set_id: '43017',
+                    source_theme_id: 'rebrickable:787',
                   },
                 ],
                 error: null,
@@ -632,6 +642,14 @@ describe('catalog bulk onboarding server', () => {
                     primary_theme_id: 'theme:icons',
                     source_theme_id: 'rebrickable:721',
                   },
+                  {
+                    primary_theme_id: 'theme:toys-and-games',
+                    source_theme_id: 'rebrickable:operator:toys-and-games',
+                  },
+                  {
+                    primary_theme_id: 'theme:editions',
+                    source_theme_id: 'rebrickable:787',
+                  },
                 ],
                 error: null,
               }),
@@ -646,6 +664,16 @@ describe('catalog bulk onboarding server', () => {
                 data: [
                   {
                     id: 'theme:lord-of-the-rings',
+                    is_public: true,
+                    status: 'active',
+                  },
+                  {
+                    id: 'theme:architecture',
+                    is_public: true,
+                    status: 'active',
+                  },
+                  {
+                    id: 'theme:editions',
                     is_public: true,
                     status: 'active',
                   },
@@ -681,22 +709,155 @@ describe('catalog bulk onboarding server', () => {
           },
           setNumber: '11377-1',
         },
+        {
+          catalogSetId: '21065',
+          catalogSetName: 'Sagrada Familia',
+          metadataJson: {
+            category: 'Normal',
+            images: [],
+            sourceSeen: true,
+            subtheme: 'Landmark Series',
+            theme: 'Architecture',
+          },
+          setNumber: '21065-1',
+        },
+        {
+          catalogSetId: '43017',
+          catalogSetName: 'McLaren Mastercard F1 Team Oscar Piastri Helmet',
+          metadataJson: {
+            category: 'Normal',
+            images: [],
+            sourceSeen: true,
+            subtheme: 'F1 Helmets',
+            tags: ['Formula 1', 'McLaren'],
+            theme: 'Editions',
+          },
+          setNumber: '43017-1',
+        },
       ],
       supabaseClient: supabaseClient as unknown as Parameters<
         typeof applyBricksetPublicThemeMappings
       >[0]['supabaseClient'],
     });
 
-    expect(result.updatedCount).toBe(1);
-    expect(updates).toEqual([
-      {
-        setId: '11377',
-        values: expect.objectContaining({
-          primary_theme_id: 'theme:lord-of-the-rings',
-        }),
-      },
-    ]);
+    expect(updates).toEqual(
+      expect.arrayContaining([
+        {
+          setId: '11377',
+          values: expect.objectContaining({
+            primary_theme_id: 'theme:lord-of-the-rings',
+          }),
+        },
+        {
+          setId: '21065',
+          values: expect.objectContaining({
+            primary_theme_id: 'theme:architecture',
+          }),
+        },
+        {
+          setId: '43017',
+          values: expect.objectContaining({
+            primary_theme_id: 'theme:editions',
+          }),
+        },
+      ]),
+    );
+    expect(result.updatedCount).toBe(3);
     expect(updates[0]?.values).not.toHaveProperty('source_theme_id');
+  });
+
+  test('does not map generic Rakuten categories to public themes', async () => {
+    const updates: Array<{ setId: string; values: Record<string, unknown> }> =
+      [];
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    primary_theme_id: 'theme:lego',
+                    set_id: '99999',
+                    source_theme_id: 'rebrickable:operator:toys-and-games',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+            update: vi.fn((values: Record<string, unknown>) => ({
+              eq: vi.fn((_column: string, setId: string) => {
+                updates.push({
+                  setId,
+                  values,
+                });
+
+                return Promise.resolve({ error: null });
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_theme_mappings') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_themes') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: 'theme:toys-and-games',
+                    is_public: true,
+                    status: 'active',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn().mockResolvedValue({
+              data: [],
+              error: null,
+            }),
+          })),
+        };
+      }),
+    };
+
+    const result = await applyBricksetPublicThemeMappings({
+      metadataRecords: [
+        {
+          catalogSetId: '99999',
+          catalogSetName: 'Generic feed category set',
+          metadataJson: {
+            category: 'Toys & Games',
+            images: [],
+            sourceSeen: true,
+            theme: 'Toys & Games',
+          },
+          setNumber: '99999-1',
+        },
+      ],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof applyBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(result.updatedCount).toBe(0);
+    expect(updates).toEqual([]);
   });
 
   test('keeps Technic F1 sets mapped to Technic instead of Speed Champions', async () => {
@@ -919,6 +1080,10 @@ describe('catalog bulk onboarding server', () => {
 
         throw new Error(`Unexpected table ${table}`);
       }),
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
+      }),
     };
 
     const result = await backfillBricksetPublicThemeMappings({
@@ -952,8 +1117,9 @@ describe('catalog bulk onboarding server', () => {
         }),
         expect.objectContaining({
           action: 'skipped',
+          afterThemeSlug: 'icons',
           beforeThemeSlug: 'icons',
-          reason: 'no_supported_public_theme_mapping',
+          reason: 'already_mapped',
           setId: '10300',
         }),
       ]),
@@ -1032,6 +1198,10 @@ describe('catalog bulk onboarding server', () => {
             }),
           })),
         };
+      }),
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
       }),
     };
 
@@ -1139,6 +1309,10 @@ describe('catalog bulk onboarding server', () => {
             }),
           })),
         };
+      }),
+      rpc: vi.fn().mockResolvedValue({
+        data: null,
+        error: null,
       }),
     };
 

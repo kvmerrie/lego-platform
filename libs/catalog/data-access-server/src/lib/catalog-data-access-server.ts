@@ -2024,6 +2024,17 @@ function resolveCandidateThemeName({
     return payloadTheme.trim();
   }
 
+  const isGenericSourceTheme = (value: string): boolean => {
+    const normalizedValue = value.trim().toLowerCase();
+
+    return (
+      normalizedValue === 'other' ||
+      normalizedValue === 'toys & games' ||
+      normalizedValue === 'toys and games' ||
+      normalizedValue === 'unknown'
+    );
+  };
+
   for (const key of [
     'theme',
     'sourceTheme',
@@ -2033,7 +2044,11 @@ function resolveCandidateThemeName({
   ]) {
     const value = sourcePayload?.[key];
 
-    if (typeof value === 'string' && value.trim()) {
+    if (
+      typeof value === 'string' &&
+      value.trim() &&
+      !isGenericSourceTheme(value)
+    ) {
       return value.trim();
     }
   }
@@ -5035,6 +5050,32 @@ function buildCatalogSetInputFromDiscoveryCandidate(
   };
 }
 
+async function resolveDiscoveryCandidateThemePersistence({
+  localMirrorMetadata,
+  supabaseClient,
+  themeName,
+}: {
+  localMirrorMetadata?: LocalRebrickableSetMirrorMetadata;
+  supabaseClient: CatalogSupabaseClient;
+  themeName: string;
+}): Promise<CatalogResolvedThemePersistence> {
+  if (localMirrorMetadata) {
+    const sourceTheme = await getLocalRebrickableThemeRow({
+      supabaseClient,
+      themeId: localMirrorMetadata.themeId,
+    });
+
+    if (sourceTheme) {
+      return resolveLocalRebrickableThemePersistence({
+        sourceTheme,
+        supabaseClient,
+      });
+    }
+  }
+
+  return buildCatalogThemePersistenceFromCandidateTheme(themeName);
+}
+
 async function upsertDiscoveryCandidateImportMetadata({
   catalogSet,
   candidate,
@@ -5237,9 +5278,11 @@ export async function createCatalogSetFromDiscoveryCandidate({
     );
   }
 
-  const themePersistence = buildCatalogThemePersistenceFromCandidateTheme(
-    normalizedSet.theme,
-  );
+  const themePersistence = await resolveDiscoveryCandidateThemePersistence({
+    localMirrorMetadata,
+    supabaseClient: activeSupabaseClient,
+    themeName: normalizedSet.theme,
+  });
 
   await ensureCatalogThemePersistence({
     supabaseClient: activeSupabaseClient,

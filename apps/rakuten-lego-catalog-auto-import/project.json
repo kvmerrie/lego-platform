@@ -1,0 +1,38 @@
+{
+  "name": "rakuten-lego-catalog-auto-import",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/rakuten-lego-catalog-auto-import/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/rakuten-lego-catalog-auto-import",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/rakuten-lego-catalog-auto-import/src/main.ts",
+        "tsConfig": "apps/rakuten-lego-catalog-auto-import/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/rakuten-lego-catalog-auto-import/main.cjs"
+      }
+    }
+  }
+}
