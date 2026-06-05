@@ -123,6 +123,38 @@ const CATALOG_PUBLIC_SEARCH_MATCH_LIMIT = 500;
 const CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT = 100;
 const CATALOG_THEME_REPRESENTATIVE_SET_LIMIT = 8;
 const CATALOG_SIMILAR_SET_CANDIDATE_CACHE_TTL_MS = 5 * 60 * 1_000;
+const HOMEPAGE_CURATED_THEME_RAIL_ITEMS = [
+  {
+    representativeSetId: '75419',
+    representativeSetTitle: 'Death Star',
+    slug: 'star-wars',
+  },
+  {
+    representativeSetId: '76269',
+    representativeSetTitle: 'Avengers toren',
+    slug: 'marvel',
+  },
+  {
+    representativeSetId: '76417',
+    representativeSetTitle: 'Goudgrijp Tovenaarsbank - Verzameleditie',
+    slug: 'harry-potter',
+  },
+  {
+    representativeSetId: '11384',
+    representativeSetTitle: 'Golden retriever puppy',
+    slug: 'icons',
+  },
+  {
+    representativeSetId: '43222',
+    representativeSetTitle: 'Disney Castle',
+    slug: 'disney',
+  },
+  {
+    representativeSetId: '42172',
+    representativeSetTitle: 'McLaren P1',
+    slug: 'technic',
+  },
+] as const;
 const CATALOG_SET_SELECT_COLUMNS =
   'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at';
 const PRIMARY_CATALOG_MERCHANT_SLUGS = commerceProductionFeedMerchantSlugs;
@@ -10500,14 +10532,67 @@ export async function listHomepageThemeDirectoryItems({
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
-  const themeDirectoryItems = await listCatalogThemeDirectoryItems({
-    limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
-    listCanonicalCatalogSetsFn,
-    sortMode: 'homepage',
-    supabaseClient,
-  });
+  const [themeDirectoryItems, representativeSetCards] = await Promise.all([
+    listCatalogThemeDirectoryItems({
+      limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
+      listCanonicalCatalogSetsFn,
+      sortMode: 'homepage',
+      supabaseClient,
+    }),
+    listCatalogSetCardsByIds({
+      canonicalIds: HOMEPAGE_CURATED_THEME_RAIL_ITEMS.map(
+        (item) => item.representativeSetId,
+      ),
+      listCanonicalCatalogSetsFn,
+      supabaseClient,
+    }),
+  ]);
+  const themeDirectoryItemBySlug = new Map(
+    themeDirectoryItems.map((themeDirectoryItem) => [
+      themeDirectoryItem.themeSnapshot.slug,
+      themeDirectoryItem,
+    ]),
+  );
+  const representativeSetCardById = new Map(
+    representativeSetCards.map((setCard) => [setCard.id, setCard]),
+  );
 
-  return themeDirectoryItems.slice(0, limit);
+  return HOMEPAGE_CURATED_THEME_RAIL_ITEMS.slice(0, limit).flatMap(
+    (curatedThemeRailItem) => {
+      const themeDirectoryItem = themeDirectoryItemBySlug.get(
+        curatedThemeRailItem.slug,
+      );
+
+      if (!themeDirectoryItem) {
+        return [];
+      }
+
+      const representativeSetCard = representativeSetCardById.get(
+        curatedThemeRailItem.representativeSetId,
+      );
+      const representativeImageUrl =
+        representativeSetCard?.imageUrl ?? representativeSetCard?.primaryImage;
+      const imageUrl =
+        representativeImageUrl ??
+        themeDirectoryItem.visual?.imageUrl ??
+        themeDirectoryItem.imageUrl;
+
+      return [
+        {
+          ...themeDirectoryItem,
+          ...(imageUrl ? { imageUrl } : {}),
+          themeSnapshot: {
+            ...themeDirectoryItem.themeSnapshot,
+            signatureSet: curatedThemeRailItem.representativeSetTitle,
+          },
+          visual: {
+            ...themeDirectoryItem.visual,
+            ...(imageUrl ? { imageUrl } : {}),
+          },
+        },
+      ];
+    },
+  );
 }
 
 export async function listHomepageThemeSpotlightItems({

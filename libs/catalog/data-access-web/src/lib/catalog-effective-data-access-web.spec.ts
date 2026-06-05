@@ -3308,130 +3308,269 @@ describe('catalog effective data access web', () => {
     );
   });
 
-  test('uses Supabase homepage theme ordering without registry overrides', async () => {
+  test('keeps homepage theme rail curated while directory remains data-driven', async () => {
+    const createCatalogRow = ({
+      imageUrl,
+      name,
+      primaryThemeId,
+      setId,
+      slug,
+    }: {
+      imageUrl: string;
+      name: string;
+      primaryThemeId: string;
+      setId: string;
+      slug: string;
+    }) => ({
+      created_at: '2026-06-01T00:00:00.000Z',
+      image_url: imageUrl,
+      name,
+      piece_count: 1000,
+      primary_theme_id: primaryThemeId,
+      release_date: null,
+      release_date_precision: 'year',
+      release_year: 2026,
+      set_id: setId,
+      slug,
+      source: 'rebrickable',
+      source_set_number: `${setId}-1`,
+      source_theme_id: null,
+      status: 'active',
+      updated_at: '2026-06-01T00:00:00.000Z',
+    });
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
       merchantRows: [],
       offerSeedRows: [],
-      catalogRows: [],
+      catalogRows: [
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/75419.jpg',
+          name: 'Death Star',
+          primaryThemeId: 'theme:star-wars',
+          setId: '75419',
+          slug: 'death-star-75419',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/76269.jpg',
+          name: 'Avengers Tower',
+          primaryThemeId: 'theme:marvel',
+          setId: '76269',
+          slug: 'avengers-tower-76269',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/76417.jpg',
+          name: 'Gringotts Wizarding Bank - Collectors Edition',
+          primaryThemeId: 'theme:harry-potter',
+          setId: '76417',
+          slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/11384.jpg',
+          name: 'Golden Retriever Puppy',
+          primaryThemeId: 'theme:icons',
+          setId: '11384',
+          slug: 'golden-retriever-puppy-11384',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/43222.jpg',
+          name: 'Disney Castle',
+          primaryThemeId: 'theme:disney',
+          setId: '43222',
+          slug: 'disney-castle-43222',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/42172.jpg',
+          name: 'McLaren P1',
+          primaryThemeId: 'theme:technic',
+          setId: '42172',
+          slug: 'mclaren-p1-42172',
+        }),
+      ],
       primaryThemeRows: [
         {
-          display_name: 'Icons',
-          id: 'theme:icons',
+          display_name: 'Architecture',
+          id: 'theme:architecture',
           is_public: true,
-          public_display_name: 'Icons',
-          public_homepage_order: 40,
+          public_homepage_order: 1,
           public_order: 1,
-          slug: 'icons',
+          slug: 'architecture',
+          status: 'active',
+        },
+        {
+          display_name: 'Botanicals',
+          id: 'theme:botanicals',
+          is_public: true,
+          public_homepage_order: 2,
+          public_order: 2,
+          slug: 'botanicals',
           status: 'active',
         },
         {
           display_name: 'Star Wars',
           id: 'theme:star-wars',
           is_public: true,
-          public_display_name: 'Database Star Wars',
-          public_homepage_order: 10,
-          public_order: 2,
+          public_display_name: 'Star Wars™',
+          public_homepage_order: 80,
+          public_order: 80,
+          public_surface_color: '#14213d',
+          public_surface_text_color: '#ffffff',
           slug: 'star-wars',
+          status: 'active',
+        },
+        {
+          display_name: 'Marvel',
+          id: 'theme:marvel',
+          is_public: true,
+          public_display_name: 'Marvel',
+          public_homepage_order: 90,
+          public_order: 90,
+          slug: 'marvel',
+          status: 'active',
+        },
+        {
+          display_name: 'Harry Potter',
+          id: 'theme:harry-potter',
+          is_public: true,
+          public_display_name: 'Harry Potter™',
+          public_homepage_order: 100,
+          public_order: 100,
+          slug: 'harry-potter',
+          status: 'active',
+        },
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_display_name: 'LEGO® Icons',
+          public_homepage_order: 110,
+          public_order: 110,
+          slug: 'icons',
+          status: 'active',
+        },
+        {
+          display_name: 'Disney',
+          id: 'theme:disney',
+          is_public: true,
+          public_display_name: 'Disney',
+          public_homepage_order: 120,
+          public_order: 120,
+          slug: 'disney',
+          status: 'active',
+        },
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+          is_public: true,
+          public_display_name: 'Technic',
+          public_homepage_order: 130,
+          public_order: 130,
+          slug: 'technic',
           status: 'active',
         },
       ],
       themeSummaryRows: [
         {
-          active_set_count: 12,
-          representative_image_url: 'https://cdn.example.com/icons.jpg',
+          active_set_count: 4,
+          representative_image_url: 'https://cdn.example.com/architecture.jpg',
+          representative_set_id: '21065',
+          theme_id: 'theme:architecture',
+        },
+        {
+          active_set_count: 8,
+          representative_image_url: 'https://cdn.example.com/botanicals.jpg',
+          representative_set_id: '10329',
+          theme_id: 'theme:botanicals',
+        },
+        {
+          active_set_count: 129,
+          representative_image_url:
+            'https://cdn.example.com/random-star-wars.jpg',
+          representative_set_id: '75313',
+          theme_id: 'theme:star-wars',
+        },
+        {
+          active_set_count: 65,
+          representative_image_url: 'https://cdn.example.com/random-marvel.jpg',
+          representative_set_id: '76313',
+          theme_id: 'theme:marvel',
+        },
+        {
+          active_set_count: 72,
+          representative_image_url:
+            'https://cdn.example.com/random-harry-potter.jpg',
+          representative_set_id: '76419',
+          theme_id: 'theme:harry-potter',
+        },
+        {
+          active_set_count: 54,
+          representative_image_url: 'https://cdn.example.com/random-icons.jpg',
           representative_set_id: '10316',
           theme_id: 'theme:icons',
         },
         {
-          active_set_count: 20,
-          representative_image_url: 'https://cdn.example.com/star-wars.jpg',
-          representative_set_id: '75313',
-          theme_id: 'theme:star-wars',
-        },
-      ],
-    });
-
-    const [homepageThemeItem, secondHomepageThemeItem] =
-      await listHomepageThemeDirectoryItems({
-        limit: 2,
-        supabaseClient,
-      });
-
-    expect(homepageThemeItem?.themeSnapshot.name).toBe('Database Star Wars');
-    expect(secondHomepageThemeItem?.themeSnapshot.name).toBe('Icons');
-    expect(secondHomepageThemeItem?.themeSnapshot.name).not.toBe(
-      'LEGO® Icons',
-    );
-  });
-
-  test('falls back from null homepage order to public order and display name', async () => {
-    const supabaseClient = createCatalogSupabaseClientMock({
-      latestOfferRows: [],
-      merchantRows: [],
-      offerSeedRows: [],
-      catalogRows: [],
-      primaryThemeRows: [
-        {
-          display_name: 'Zelda',
-          id: 'theme:zelda',
-          is_public: true,
-          public_homepage_order: null,
-          public_order: 30,
-          slug: 'zelda',
-          status: 'active',
+          active_set_count: 31,
+          representative_image_url: 'https://cdn.example.com/random-disney.jpg',
+          representative_set_id: '43295',
+          theme_id: 'theme:disney',
         },
         {
-          display_name: 'Animal Crossing',
-          id: 'theme:animal-crossing',
-          is_public: true,
-          public_homepage_order: null,
-          public_order: 20,
-          slug: 'animal-crossing',
-          status: 'active',
-        },
-        {
-          display_name: 'Architecture',
-          id: 'theme:architecture',
-          is_public: true,
-          public_homepage_order: null,
-          public_order: 20,
-          slug: 'architecture',
-          status: 'active',
-        },
-      ],
-      themeSummaryRows: [
-        {
-          active_set_count: 1,
-          representative_image_url: 'https://cdn.example.com/zelda.jpg',
-          representative_set_id: '77092',
-          theme_id: 'theme:zelda',
-        },
-        {
-          active_set_count: 1,
+          active_set_count: 44,
           representative_image_url:
-            'https://cdn.example.com/animal-crossing.jpg',
-          representative_set_id: '77050',
-          theme_id: 'theme:animal-crossing',
-        },
-        {
-          active_set_count: 1,
-          representative_image_url: 'https://cdn.example.com/architecture.jpg',
-          representative_set_id: '21062',
-          theme_id: 'theme:architecture',
+            'https://cdn.example.com/random-technic.jpg',
+          representative_set_id: '42240',
+          theme_id: 'theme:technic',
         },
       ],
     });
 
-    const homepageItems = await listHomepageThemeDirectoryItems({
-      limit: 3,
-      supabaseClient,
-    });
+    const [homepageItems, directoryItems] = await Promise.all([
+      listHomepageThemeDirectoryItems({
+        supabaseClient,
+      }),
+      listCatalogThemeDirectoryItems({
+        limit: 3,
+        supabaseClient,
+      }),
+    ]);
 
     expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Animal Crossing',
+      'Star Wars™',
+      'Marvel',
+      'Harry Potter™',
+      'LEGO® Icons',
+      'Disney',
+      'Technic',
+    ]);
+    expect(homepageItems.map((item) => item.themeSnapshot.setCount)).toEqual([
+      129, 65, 72, 54, 31, 44,
+    ]);
+    expect(
+      homepageItems.map((item) => item.themeSnapshot.signatureSet),
+    ).toEqual([
+      'Death Star',
+      'Avengers toren',
+      'Goudgrijp Tovenaarsbank - Verzameleditie',
+      'Golden retriever puppy',
+      'Disney Castle',
+      'McLaren P1',
+    ]);
+    expect(homepageItems.map((item) => item.imageUrl)).toEqual([
+      'https://cdn.example.com/75419.jpg',
+      'https://cdn.example.com/76269.jpg',
+      'https://cdn.example.com/76417.jpg',
+      'https://cdn.example.com/11384.jpg',
+      'https://cdn.example.com/43222.jpg',
+      'https://cdn.example.com/42172.jpg',
+    ]);
+    expect(homepageItems[0]?.visual).toMatchObject({
+      backgroundColor: '#14213d',
+      imageUrl: 'https://cdn.example.com/75419.jpg',
+      textColor: '#ffffff',
+    });
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
       'Architecture',
-      'Zelda',
+      'Botanicals',
+      'Disney',
     ]);
   });
 
@@ -5287,15 +5426,15 @@ describe('catalog effective data access web', () => {
       'Technic',
     ]);
     expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Botanicals',
-      'Harry Potter™',
-      'Ideas',
-      'LEGO® Icons',
-      'Marvel',
       'Star Wars™',
+      'Marvel',
+      'Harry Potter™',
+      'LEGO® Icons',
+      'Technic',
     ]);
     expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Technic',
+      'Botanicals',
+      'Ideas',
     ]);
   });
 
