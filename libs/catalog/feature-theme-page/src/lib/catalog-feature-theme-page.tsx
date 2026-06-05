@@ -327,7 +327,7 @@ export function CatalogFeatureThemeDealRail({
         </>
       }
       titleAs="h2"
-      tone="default"
+      tone="inverse"
       variant="featured"
     />
   );

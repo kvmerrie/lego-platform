@@ -969,7 +969,7 @@ export default async function HomePage() {
           id={HOMEPAGE_DISCOVERY_SECTION_ID}
           signal="6 routes"
           title="Ontdek LEGO op jouw manier"
-          tone="default"
+          tone="inverse"
         >
           <div className={styles.discoveryTileViewport}>
             <div className={styles.discoveryTileTrack}>
@@ -1058,7 +1058,7 @@ export default async function HomePage() {
         <div className={styles.themeSection}>
           <CatalogFeatureThemeList
             themeItems={homepageThemeDirectoryItems}
-            tone="default"
+            tone="inverse"
           />
         </div>
         <div className={styles.sectionGroup}>

@@ -439,7 +439,7 @@ describe('CatalogSetCard', () => {
     expect(compactActionBlock).not.toContain('transition:');
   });
 
-  it('keeps rich rail borderless styling scoped away from the light theme deal rail', () => {
+  it('keeps rich rail borderless styling scoped to inverse editorial rails', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
@@ -457,16 +457,26 @@ describe('CatalogSetCard', () => {
       css.match(
         /\.sectionShellInverse \.setCardRailTrack > \.setCard \{[^}]+\}/u,
       )?.[0] ?? '';
+    const dealRailStart = themePageSource.indexOf(
+      'export function CatalogFeatureThemeDealRail',
+    );
+    const relatedArticlesStart = themePageSource.indexOf(
+      'export function CatalogFeatureThemeRelatedArticles',
+    );
+    const dealRailSource = themePageSource.slice(
+      dealRailStart,
+      relatedArticlesStart,
+    );
 
     expect(themedRailCardRule).toContain('--rail-card-border: transparent;');
     expect(inverseRailCardRule).toContain('--rail-card-border: transparent;');
-    expect(themePageSource).toContain('className={styles.dealSection}');
-    expect(themePageSource).toContain('tone="default"');
-    expect(themePageSource).not.toContain('tone="inverse"');
-    expect(themePageSource).not.toContain('surfaceVariant="themed"');
+    expect(dealRailSource).toContain('className={styles.dealSection}');
+    expect(dealRailSource).toContain('tone="inverse"');
+    expect(dealRailSource).not.toContain('tone="default"');
+    expect(dealRailSource).not.toContain('surfaceVariant="themed"');
   });
 
-  it('keeps the theme detail deal rail skeleton on the light section tone', () => {
+  it('keeps the theme detail deal rail skeleton on the inverse editorial tone', () => {
     const themeRouteSource = readFileSync(
       resolve(process.cwd(), 'apps/web/src/app/themes/[slug]/page.tsx'),
       'utf-8',
@@ -479,8 +489,8 @@ describe('CatalogSetCard', () => {
 
     expect(fallbackSource).toContain('eyebrow="Nu interessant"');
     expect(fallbackSource).toContain('itemCount={5}');
-    expect(fallbackSource).toContain('tone="default"');
-    expect(fallbackSource).not.toContain('tone="inverse"');
+    expect(fallbackSource).toContain('tone="inverse"');
+    expect(fallbackSource).not.toContain('tone="default"');
     expect(fallbackSource).not.toContain('surfaceVariant="themed"');
   });
 

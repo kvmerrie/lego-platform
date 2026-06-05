@@ -280,9 +280,8 @@ describe('home metadata', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).not.toContain('sectionShellInverse');
     expect(markup).toContain(
-      'data-homepage-theme-list="explore-themes" data-tone="default"',
+      'data-homepage-theme-list="explore-themes" data-tone="inverse"',
     );
     expect(markup).toContain('Fantasy, Star Wars of strak design?');
     expect(markup).toContain('Botanicals, kunst of modulaire straten?');
@@ -299,8 +298,8 @@ describe('home metadata', () => {
       Math.max(0, markup.indexOf('Ontdek LEGO op jouw manier') - 500),
       markup.indexOf('data-visual-tile="new-sets"'),
     );
-    expect(discoveryMarkup).toContain('sectionShellDefault');
-    expect(discoveryMarkup).not.toContain('sectionHeaderInverse');
+    expect(discoveryMarkup).toContain('sectionShellInverse');
+    expect(discoveryMarkup).toContain('sectionHeaderInverse');
     expect(markup).toContain('data-visual-tile="new-sets"');
     expect(markup).toContain('--theme-surface:#3aaee8');
     expect(markup).toContain('--theme-surface:#08636f');
@@ -403,7 +402,7 @@ describe('home metadata', () => {
     );
     expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
       expect.objectContaining({
-        tone: 'default',
+        tone: 'inverse',
       }),
     );
     expect(pageMocks.getCachedPublicLandingPageData).toHaveBeenCalledWith(

@@ -1086,7 +1086,7 @@ describe('CatalogSetCardRail', () => {
     expect(themePageCss).toContain('.dealSection');
     expect(themePageSource).toContain('className={styles.dealSection}');
     expect(themePageSource).not.toContain('surfaceVariant="themed"');
-    expect(themePageSource).toContain('tone="default"');
+    expect(themePageSource).toContain('tone="inverse"');
     expect(themePageSource).toContain('<CatalogSetCardRailSection');
   });
 

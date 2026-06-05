@@ -649,7 +649,7 @@ export default async function ThemePage({
                 eyebrow="Nu interessant"
                 itemCount={5}
                 title={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name}`}
-                tone="default"
+                tone="inverse"
               />
             }
           >
