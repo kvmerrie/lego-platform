@@ -1,6 +1,6 @@
 import Fastify from 'fastify';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
 import { createAdminCacheRevalidationRoutes } from '../app/routes/admin-cache-revalidation';
@@ -9,6 +9,41 @@ import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-se
 type AdminCacheRevalidationRouteOptions = NonNullable<
   Parameters<typeof createAdminCacheRevalidationRoutes>[0]
 >;
+
+function findWorkspaceRoot(startDirectory: string): string {
+  let currentDirectory = resolve(startDirectory);
+
+  while (true) {
+    const packageJsonPath = join(currentDirectory, 'package.json');
+
+    if (existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(
+          readFileSync(packageJsonPath, 'utf8'),
+        ) as {
+          name?: unknown;
+        };
+
+        if (packageJson.name === 'lego-platform') {
+          return currentDirectory;
+        }
+      } catch {
+        // Keep walking; a malformed package.json here is not the workspace root
+        // this safety test is looking for.
+      }
+    }
+
+    const parentDirectory = dirname(currentDirectory);
+
+    if (parentDirectory === currentDirectory) {
+      throw new Error(
+        `Unable to find lego-platform workspace root from ${startDirectory}.`,
+      );
+    }
+
+    currentDirectory = parentDirectory;
+  }
+}
 
 async function createServer({
   auditLogger = vi.fn(async () => undefined),
@@ -348,7 +383,7 @@ describe('admin cache revalidation routes', () => {
 });
 
 describe('admin cache revalidation browser import safety', () => {
-  const workspaceRoot = process.cwd();
+  const workspaceRoot = findWorkspaceRoot(process.cwd());
   const browserFiles = [
     'libs/commerce/feature-admin/src/lib/commerce-admin-api.service.ts',
     'libs/commerce/feature-admin/src/lib/commerce-admin-cache-revalidation-page.ts',
@@ -374,7 +409,20 @@ describe('admin cache revalidation browser import safety', () => {
 
   test('keeps the admin cache revalidation browser path free of server config imports', () => {
     for (const browserFile of browserFiles) {
-      const source = readFileSync(join(workspaceRoot, browserFile), 'utf8');
+      const resolvedPath = join(workspaceRoot, browserFile);
+
+      if (!existsSync(resolvedPath)) {
+        throw new Error(
+          [
+            'Browser import safety file is missing.',
+            `workspaceRoot: ${workspaceRoot}`,
+            `browserFile: ${browserFile}`,
+            `resolvedPath: ${resolvedPath}`,
+          ].join('\n'),
+        );
+      }
+
+      const source = readFileSync(resolvedPath, 'utf8');
 
       for (const forbiddenPattern of forbiddenPatterns) {
         expect(
