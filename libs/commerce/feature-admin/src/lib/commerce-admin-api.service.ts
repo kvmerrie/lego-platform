@@ -311,12 +311,43 @@ export interface CommerceAdminPromotionTableSummary {
 }
 
 export interface CommerceAdminPromotionResult {
+  affectedThemeCount?: number;
+  affectedThemeSlugs?: readonly string[];
+  brickset_source_metadata_promoted_count?: number;
+  bricksetSourceMetadataPromotedCount?: number;
   changedThemeSlugs: readonly string[];
+  collection_page_snapshots_read_count?: number;
+  collection_page_snapshots_upserted_count?: number;
+  collectionPageSnapshotsReadCount?: number;
+  collectionPageSnapshotsUpsertedCount?: number;
   durationMs: number;
   pendingPromoteCount?: number;
+  rakuten_source_metadata_promoted_count?: number;
+  rakutenSourceMetadataPromotedCount?: number;
+  revalidation?: {
+    attempted: boolean;
+    pathCount: number;
+    paths: readonly string[];
+    promotedMetadataSetPathFallback?: boolean;
+    skipped: boolean;
+    tagCount: number;
+    tags: readonly string[];
+    themeDetailFallback?: boolean;
+    warning?: string;
+  };
   revalidationWarning?: string;
+  source_metadata_eligible_count?: number;
+  source_metadata_read_count?: number;
+  sourceMetadataEligibleCount?: number;
+  sourceMetadataReadCount?: number;
   startedAt: string;
   status: 'ok';
+  themeSummaryRefresh?: {
+    affectedThemeCount: number;
+    affectedThemeSlugs: readonly string[];
+    attempted: boolean;
+    status: 'skipped' | 'success';
+  };
   tables: Record<string, CommerceAdminPromotionTableSummary>;
 }
 

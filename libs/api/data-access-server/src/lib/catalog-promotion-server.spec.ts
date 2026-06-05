@@ -408,6 +408,96 @@ describe('catalog promotion server', () => {
     ).toBeUndefined();
   });
 
+  test('marks themes affected by promoted catalog set changes and refreshes theme summaries', async () => {
+    const pokemonThemeRow = {
+      created_at: '2026-04-21T08:00:00.000Z',
+      display_name: 'LEGO Pokemon',
+      id: 'theme:pokemon',
+      is_public: true,
+      public_accent_color: null,
+      public_description: null,
+      public_display_name: 'LEGO Pokemon',
+      public_hero_text_color: null,
+      public_homepage_order: null,
+      public_image_url: null,
+      public_logo_url: null,
+      public_order: 100,
+      public_surface_color: null,
+      public_surface_text_color: null,
+      slug: 'pokemon',
+      status: 'active',
+      updated_at: '2026-04-21T08:00:00.000Z',
+    };
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'rebrickable-theme-pokemon',
+            parent_source_theme_id: null,
+            source_system: 'rebrickable',
+            source_theme_name: 'Pokemon',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_themes: [pokemonThemeRow],
+        catalog_theme_mappings: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            primary_theme_id: 'theme:pokemon',
+            source_theme_id: 'rebrickable-theme-pokemon',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://img.example.test/72155.jpg',
+            name: 'Pokemon Set',
+            piece_count: 123,
+            primary_theme_id: 'theme:pokemon',
+            release_year: 2026,
+            set_id: '72155',
+            slug: 'pokemon-set-72155',
+            source: 'rebrickable',
+            source_set_number: '72155-1',
+            source_theme_id: 'rebrickable-theme-pokemon',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_set_minifig_summaries: [],
+        catalog_set_source_metadata: [],
+        collection_page_snapshots: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [pokemonThemeRow],
+        catalog_sets: [],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: () => new Date('2026-05-14T10:00:00.000Z'),
+    });
+
+    expect(result.changedThemeSlugs).toEqual(['pokemon']);
+    expect(result.affectedThemeSlugs).toEqual(['pokemon']);
+    expect(result.affectedThemeCount).toBe(1);
+    expect(result.themeSummaryRefresh).toEqual({
+      affectedThemeCount: 1,
+      affectedThemeSlugs: ['pokemon'],
+      attempted: true,
+      status: 'success',
+    });
+    expect(productionClient.rpc).toHaveBeenCalledWith(
+      'refresh_catalog_theme_summaries',
+    );
+  });
+
   test('upserts merchants by slug and offer seeds by set plus merchant without overwriting production ids', async () => {
     const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
       // Keep promotion diagnostics out of the test output.

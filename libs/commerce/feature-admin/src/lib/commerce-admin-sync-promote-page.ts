@@ -324,12 +324,90 @@ function formatDateTime(value?: string): string {
         }
 
         @if (promoteResult(); as result) {
-          <p class="admin-muted">
-            Promote afgerond: {{ result.status }} · {{ result.durationMs }}ms.
-            @if (result.revalidationWarning) {
-              Revalidation warning: {{ result.revalidationWarning }}
+          <div class="admin-stack">
+            <p class="admin-muted">
+              Promote afgerond: {{ result.status }} · {{ result.durationMs }}ms.
+            </p>
+            <div class="admin-metric-strip">
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Catalog sets</span>
+                <strong class="admin-metric-value">
+                  {{ tableInserted(result, 'catalog_sets') }} new ·
+                  {{ tableUpdated(result, 'catalog_sets') }} updated
+                </strong>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Source metadata</span>
+                <strong class="admin-metric-value">
+                  {{ tableUpserted(result, 'catalog_set_source_metadata') }}
+                  rows
+                </strong>
+                <span class="admin-data-table__cell-meta">
+                  Brickset {{ bricksetMetadataCount(result) }} · Rakuten
+                  {{ rakutenMetadataCount(result) }}
+                </span>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Minifigs</span>
+                <strong class="admin-metric-value">
+                  {{ tableUpserted(result, 'catalog_set_minifig_summaries') }}
+                  rows
+                </strong>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Affected themes</span>
+                <strong class="admin-metric-value">
+                  {{ affectedThemeCount(result) }}
+                </strong>
+                <span class="admin-data-table__cell-meta">
+                  {{ affectedThemeLabel(result) }}
+                </span>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Snapshots</span>
+                <strong class="admin-metric-value">
+                  {{ collectionSnapshotUpsertedCount(result) }} updated
+                </strong>
+                <span class="admin-data-table__cell-meta">
+                  {{ collectionSnapshotReadCount(result) }} read
+                </span>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Revalidation</span>
+                <strong class="admin-metric-value">
+                  {{ revalidationStatus(result) }}
+                </strong>
+                <span class="admin-data-table__cell-meta">
+                  {{ result.revalidation?.pathCount ?? 0 }} paths ·
+                  {{ result.revalidation?.tagCount ?? 0 }} tags
+                </span>
+              </div>
+            </div>
+            @if (result.themeSummaryRefresh) {
+              <p class="admin-muted">
+                Theme summaries:
+                {{ result.themeSummaryRefresh.status }} ·
+                {{ result.themeSummaryRefresh.affectedThemeCount }} affected.
+              </p>
             }
-          </p>
+            @if (result.revalidation?.paths?.length) {
+              <p class="admin-muted">
+                Revalidated paths:
+                {{ revalidatedPathLabel(result) }}
+              </p>
+            }
+            @if (result.revalidation?.tags?.length) {
+              <p class="admin-muted">
+                Revalidated tags:
+                {{ revalidatedTagLabel(result) }}
+              </p>
+            }
+            @if (result.revalidationWarning) {
+              <p class="admin-inline-alert admin-inline-alert--danger">
+                Revalidation warning: {{ result.revalidationWarning }}
+              </p>
+            }
+          </div>
         }
       </section>
     </lego-admin-page>
@@ -388,6 +466,100 @@ export class CommerceAdminSyncPromotePageComponent implements OnInit {
 
   formatDate(value?: string): string {
     return formatDateTime(value);
+  }
+
+  tableInserted(
+    result: CommerceAdminPromotionResult,
+    tableName: string,
+  ): number {
+    return result.tables[tableName]?.insertedCount ?? 0;
+  }
+
+  tableUpdated(
+    result: CommerceAdminPromotionResult,
+    tableName: string,
+  ): number {
+    return result.tables[tableName]?.updatedCount ?? 0;
+  }
+
+  tableUpserted(
+    result: CommerceAdminPromotionResult,
+    tableName: string,
+  ): number {
+    return result.tables[tableName]?.upsertedCount ?? 0;
+  }
+
+  bricksetMetadataCount(result: CommerceAdminPromotionResult): number {
+    return (
+      result.brickset_source_metadata_promoted_count ??
+      result.bricksetSourceMetadataPromotedCount ??
+      0
+    );
+  }
+
+  rakutenMetadataCount(result: CommerceAdminPromotionResult): number {
+    return (
+      result.rakuten_source_metadata_promoted_count ??
+      result.rakutenSourceMetadataPromotedCount ??
+      0
+    );
+  }
+
+  affectedThemeCount(result: CommerceAdminPromotionResult): number {
+    return (
+      result.affectedThemeCount ??
+      result.affectedThemeSlugs?.length ??
+      result.changedThemeSlugs.length
+    );
+  }
+
+  affectedThemeLabel(result: CommerceAdminPromotionResult): string {
+    const themeSlugs = result.affectedThemeSlugs ?? result.changedThemeSlugs;
+
+    if (themeSlugs.length === 0) {
+      return 'Geen theme detail paths';
+    }
+
+    return themeSlugs.slice(0, 6).join(', ');
+  }
+
+  collectionSnapshotReadCount(result: CommerceAdminPromotionResult): number {
+    return (
+      result.collection_page_snapshots_read_count ??
+      result.collectionPageSnapshotsReadCount ??
+      0
+    );
+  }
+
+  collectionSnapshotUpsertedCount(
+    result: CommerceAdminPromotionResult,
+  ): number {
+    return (
+      result.collection_page_snapshots_upserted_count ??
+      result.collectionPageSnapshotsUpsertedCount ??
+      result.tables['collection_page_snapshots']?.upsertedCount ??
+      0
+    );
+  }
+
+  revalidationStatus(result: CommerceAdminPromotionResult): string {
+    if (result.revalidationWarning) {
+      return 'warning';
+    }
+
+    if (result.revalidation?.attempted) {
+      return result.revalidation.skipped ? 'skipped' : 'success';
+    }
+
+    return 'not configured';
+  }
+
+  revalidatedPathLabel(result: CommerceAdminPromotionResult): string {
+    return result.revalidation?.paths.join(', ') ?? '';
+  }
+
+  revalidatedTagLabel(result: CommerceAdminPromotionResult): string {
+    return result.revalidation?.tags.join(', ') ?? '';
   }
 
   async loadPreview(): Promise<void> {

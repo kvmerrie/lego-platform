@@ -320,6 +320,24 @@ export function createAdminPromoteRoutes({
         request.log.info(
           {
             durationMs: result.durationMs,
+            affectedThemes: {
+              count:
+                result.affectedThemeCount ??
+                result.affectedThemeSlugs?.length ??
+                result.changedThemeSlugs.length,
+              slugs: result.affectedThemeSlugs ?? result.changedThemeSlugs,
+            },
+            collectionPageSnapshots: {
+              bySlug:
+                result.collection_page_snapshots_by_slug ??
+                result.collectionPageSnapshotsBySlug,
+              read:
+                result.collection_page_snapshots_read_count ??
+                result.collectionPageSnapshotsReadCount,
+              upserted:
+                result.collection_page_snapshots_upserted_count ??
+                result.collectionPageSnapshotsUpsertedCount,
+            },
             sourceMetadata: {
               bricksetPromoted:
                 result.brickset_source_metadata_promoted_count ??
@@ -350,6 +368,7 @@ export function createAdminPromoteRoutes({
             },
             route: apiPaths.adminCatalogPromotion,
             tables: result.tables,
+            themeSummaryRefresh: result.themeSummaryRefresh,
           },
           'Catalog promotion completed.',
         );

@@ -439,6 +439,8 @@ export interface CatalogPromotionPreviewResult {
 }
 
 export interface CatalogPromotionResult {
+  affectedThemeCount?: number;
+  affectedThemeSlugs?: string[];
   brickset_source_metadata_promoted_count?: number;
   bricksetSourceMetadataPromotedCount?: number;
   changedThemeSlugs: string[];
@@ -461,6 +463,12 @@ export interface CatalogPromotionResult {
   skippedSourceMetadataCount?: number;
   startedAt: string;
   status: 'ok';
+  themeSummaryRefresh?: {
+    affectedThemeCount: number;
+    affectedThemeSlugs: string[];
+    attempted: boolean;
+    status: 'skipped' | 'success';
+  };
   tables: {
     catalog_source_themes: CatalogPromotionTableSummary;
     catalog_themes: CatalogPromotionTableSummary;
@@ -2026,6 +2034,164 @@ async function listChangedPublicCatalogThemeSlugs({
   return [...changedSlugs].sort((left, right) => left.localeCompare(right));
 }
 
+function isActiveCatalogSetForThemeSummary(
+  row: Readonly<Record<string, unknown>> | undefined,
+): boolean {
+  return (
+    row?.['status'] === 'active' && typeof row['primary_theme_id'] === 'string'
+  );
+}
+
+function readCatalogSetPrimaryThemeId(
+  row: Readonly<Record<string, unknown>> | undefined,
+): string | undefined {
+  const value = row?.['primary_theme_id'];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function catalogSetProjectionChangesThemeSurface({
+  existingRow,
+  projectedRow,
+}: {
+  existingRow: Readonly<Record<string, unknown>> | undefined;
+  projectedRow: Readonly<Record<string, unknown>>;
+}): boolean {
+  if (!existingRow) {
+    return true;
+  }
+
+  return [
+    'image_url',
+    'name',
+    'piece_count',
+    'primary_theme_id',
+    'release_year',
+    'slug',
+    'status',
+  ].some((field) => {
+    if (!Object.prototype.hasOwnProperty.call(projectedRow, field)) {
+      return false;
+    }
+
+    return !valuesArePromotionEqual(existingRow[field], projectedRow[field]);
+  });
+}
+
+async function listChangedCatalogSetThemeSlugs({
+  catalogThemes,
+  nowIso,
+  rows,
+  supabaseClient,
+}: {
+  catalogThemes: readonly CatalogThemeRow[];
+  nowIso: string;
+  rows: readonly CatalogSetRow[];
+  supabaseClient: CatalogPromotionSupabaseClient;
+}): Promise<string[]> {
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const existingCatalogSetsByConflictKey = await listExistingConflictRows({
+    onConflict: 'set_id',
+    supabaseClient,
+    table: CATALOG_SETS_TABLE,
+  });
+  const existingCatalogThemesByConflictKey = await listExistingConflictRows({
+    onConflict: 'id',
+    supabaseClient,
+    table: CATALOG_THEMES_TABLE,
+  });
+  const themeRowsById = new Map<string, Readonly<Record<string, unknown>>>();
+
+  for (const existingTheme of existingCatalogThemesByConflictKey.values()) {
+    const themeId = existingTheme['id'];
+
+    if (typeof themeId === 'string') {
+      themeRowsById.set(themeId, existingTheme);
+    }
+  }
+
+  for (const catalogTheme of catalogThemes) {
+    themeRowsById.set(
+      catalogTheme.id,
+      catalogTheme as unknown as Record<string, unknown>,
+    );
+  }
+
+  const changedThemeIds = new Set<string>();
+
+  for (const catalogSet of rows) {
+    const rowRecord = toRowRecord(catalogSet);
+    const conflictKey = buildConflictKey({
+      columns: ['set_id'],
+      row: rowRecord,
+    });
+    const existingRow = existingCatalogSetsByConflictKey.get(conflictKey);
+    const projectedRow = finalizePromotionUpsertRow({
+      existingRow,
+      nowIso,
+      row: selectPromotionUpsertColumns({
+        conflictColumns: ['set_id'],
+        existingRow,
+        isExistingRow: Boolean(existingRow),
+        row: rowRecord,
+        table: CATALOG_SETS_TABLE,
+      }),
+      sourceRow: rowRecord,
+      table: CATALOG_SETS_TABLE,
+    });
+    const projectedCatalogSet = {
+      ...existingRow,
+      ...projectedRow,
+    };
+
+    if (
+      !catalogSetProjectionChangesThemeSurface({
+        existingRow,
+        projectedRow,
+      })
+    ) {
+      continue;
+    }
+
+    if (isActiveCatalogSetForThemeSummary(existingRow)) {
+      const previousThemeId = readCatalogSetPrimaryThemeId(existingRow);
+
+      if (previousThemeId) {
+        changedThemeIds.add(previousThemeId);
+      }
+    }
+
+    if (isActiveCatalogSetForThemeSummary(projectedCatalogSet)) {
+      const nextThemeId = readCatalogSetPrimaryThemeId(projectedCatalogSet);
+
+      if (nextThemeId) {
+        changedThemeIds.add(nextThemeId);
+      }
+    }
+  }
+
+  const changedSlugs = new Set<string>();
+
+  for (const themeId of changedThemeIds) {
+    const themeRow = themeRowsById.get(themeId);
+
+    if (!isPublicCatalogThemeForRevalidation(themeRow)) {
+      continue;
+    }
+
+    const slug = readCatalogThemeSlugForRevalidation(themeRow);
+
+    if (slug) {
+      changedSlugs.add(slug);
+    }
+  }
+
+  return [...changedSlugs].sort((left, right) => left.localeCompare(right));
+}
+
 async function refreshCatalogThemeSummaries({
   supabaseClient,
 }: {
@@ -2707,11 +2873,20 @@ export async function promoteCatalogFromStagingToProduction({
       });
     }
 
-    const changedThemeSlugs = await listChangedPublicCatalogThemeSlugs({
+    const changedThemeRowSlugs = await listChangedPublicCatalogThemeSlugs({
       nowIso: startedAtIso,
       rows: normalizedCatalogThemes,
       supabaseClient: productionSupabaseClient,
     });
+    const changedCatalogSetThemeSlugs = await listChangedCatalogSetThemeSlugs({
+      catalogThemes: normalizedCatalogThemes,
+      nowIso: startedAtIso,
+      rows: normalizedCatalogSets,
+      supabaseClient: productionSupabaseClient,
+    });
+    const changedThemeSlugs = [
+      ...new Set([...changedThemeRowSlugs, ...changedCatalogSetThemeSlugs]),
+    ].sort((left, right) => left.localeCompare(right));
     const catalogSetBySetId = new Map(
       normalizedCatalogSets.map((catalogSet) => [
         catalogSet.set_id,
@@ -2803,10 +2978,18 @@ export async function promoteCatalogFromStagingToProduction({
       table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
     });
 
-    if (
+    const shouldRefreshThemeSummaries =
       tables.catalog_themes.upsertedCount > 0 ||
-      tables.catalog_sets.upsertedCount > 0
-    ) {
+      tables.catalog_theme_mappings.upsertedCount > 0 ||
+      tables.catalog_sets.upsertedCount > 0;
+    const themeSummaryRefresh = {
+      affectedThemeCount: changedThemeSlugs.length,
+      affectedThemeSlugs: changedThemeSlugs,
+      attempted: shouldRefreshThemeSummaries,
+      status: shouldRefreshThemeSummaries ? 'success' : 'skipped',
+    } satisfies NonNullable<CatalogPromotionResult['themeSummaryRefresh']>;
+
+    if (shouldRefreshThemeSummaries) {
       await refreshCatalogThemeSummaries({
         supabaseClient: productionSupabaseClient,
       });
@@ -2837,6 +3020,8 @@ export async function promoteCatalogFromStagingToProduction({
       brickset_source_metadata_promoted_count:
         bricksetSourceMetadataPromotedCount,
       bricksetSourceMetadataPromotedCount,
+      affectedThemeCount: changedThemeSlugs.length,
+      affectedThemeSlugs: changedThemeSlugs,
       changedThemeSlugs,
       collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
       collection_page_snapshots_read_count: collectionPageSnapshots.length,
@@ -2860,6 +3045,7 @@ export async function promoteCatalogFromStagingToProduction({
       skippedSourceMetadataCount,
       startedAt: startedAtIso,
       status: 'ok',
+      themeSummaryRefresh,
       excludedTables,
       tables: tables as CatalogPromotionResult['tables'],
     };
