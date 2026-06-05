@@ -9,6 +9,96 @@ type AdminPromoteRouteOptions = NonNullable<
   Parameters<typeof createAdminPromoteRoutes>[0]
 >;
 
+function createPromotionPreview() {
+  return {
+    generatedAt: '2026-04-22T08:59:00.000Z',
+    meaningfulPendingPromoteCount: 2,
+    operatorSummary: {
+      mappings: {
+        insertedCount: 0,
+        readCount: 0,
+        skipped: false,
+        strategy: 'sample_diff',
+        updatedCount: 0,
+      },
+      sets: {
+        insertedCount: 1,
+        readCount: 10,
+        skipped: false,
+        strategy: 'sample_diff',
+        updatedCount: 1,
+      },
+      themes: {
+        insertedCount: 0,
+        readCount: 0,
+        skipped: false,
+        strategy: 'sample_diff',
+        updatedCount: 0,
+      },
+    },
+    pendingPromoteCount: 2,
+    samples: [
+      {
+        changeType: 'insert',
+        changedFields: ['set_id'],
+        key: 'set_id:10316',
+        table: 'catalog_sets',
+      },
+    ],
+    sourceEnvironment: 'staging',
+    status: 'ok',
+    tables: {
+      catalog_sets: {
+        insertedCount: 1,
+        readCount: 10,
+        skipped: false,
+        strategy: 'sample_diff',
+        updatedCount: 1,
+      },
+      collection_page_snapshots: {
+        insertedCount: 0,
+        readCount: 0,
+        skipped: true,
+        strategy: 'heavy_skipped',
+        updatedCount: 0,
+        warning: 'Skipped in lightweight preview.',
+      },
+    },
+    skippedHeavyTables: ['collection_page_snapshots'],
+    targetEnvironment: 'production',
+  } satisfies Awaited<ReturnType<AdminPromoteService['previewCatalog']>>;
+}
+
+function createPromotionTableSummary() {
+  return {
+    insertedCount: 0,
+    readCount: 0,
+    updatedCount: 0,
+    upsertedCount: 0,
+  };
+}
+
+function createPromotionResult() {
+  return {
+    changedThemeSlugs: [],
+    durationMs: 10,
+    startedAt: '2026-04-22T09:00:00.000Z',
+    status: 'ok' as const,
+    tables: {
+      catalog_set_minifig_summaries: createPromotionTableSummary(),
+      catalog_set_source_metadata: createPromotionTableSummary(),
+      catalog_sets: createPromotionTableSummary(),
+      catalog_source_themes: createPromotionTableSummary(),
+      catalog_theme_mappings: createPromotionTableSummary(),
+      catalog_themes: createPromotionTableSummary(),
+      collection_page_snapshots: createPromotionTableSummary(),
+      commerce_benchmark_sets: createPromotionTableSummary(),
+      commerce_merchants: createPromotionTableSummary(),
+      commerce_offer_seeds: createPromotionTableSummary(),
+    },
+  } satisfies Awaited<ReturnType<AdminPromoteService['promoteCatalog']>>;
+}
+
 async function createAdminPromoteServer({
   adminPromoteService,
   getExpectedAdminSecret,
@@ -19,6 +109,7 @@ async function createAdminPromoteServer({
   revalidatePublicWebFn?: AdminPromoteRouteOptions['revalidatePublicWebFn'];
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
+    previewCatalog: vi.fn(async () => createPromotionPreview()),
     promoteCatalog: vi.fn(async () => ({
       changedThemeSlugs: [],
       durationMs: 421,
@@ -80,6 +171,7 @@ async function createAdminPromoteServer({
 
   await server.register(
     createAdminPromoteRoutes({
+      adminPreHandler: async () => undefined,
       adminPromoteService: nextAdminPromoteService,
       getExpectedAdminSecret,
       revalidatePublicWebFn,
@@ -93,7 +185,69 @@ async function createAdminPromoteServer({
   };
 }
 
+async function createAuthenticatedAdminPromoteServer({
+  adminPromoteService,
+  getExpectedAdminSecret,
+}: {
+  adminPromoteService?: AdminPromoteService;
+  getExpectedAdminSecret?: () => string;
+} = {}) {
+  const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
+    previewCatalog: vi.fn(async () => createPromotionPreview()),
+    promoteCatalog: vi.fn(async () => createPromotionResult()),
+  };
+  const server = Fastify();
+
+  server.addHook('preHandler', async (request) => {
+    request.requestPrincipal = {
+      appMetadata: {
+        role: 'admin',
+      },
+      email: 'admin@example.test',
+      role: 'admin',
+      state: 'authenticated',
+      userId: 'admin-user',
+    };
+  });
+
+  await server.register(
+    createAdminPromoteRoutes({
+      adminPreHandler: async () => undefined,
+      adminPromoteService: nextAdminPromoteService,
+      getExpectedAdminSecret,
+    }),
+  );
+
+  return {
+    adminPromoteService: nextAdminPromoteService,
+    server,
+  };
+}
+
 describe('admin promote routes', () => {
+  test('returns a read-only catalog promotion preview', async () => {
+    const { adminPromoteService, server } = await createAdminPromoteServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/promote/catalog/preview',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(adminPromoteService.previewCatalog).toHaveBeenCalled();
+    expect(adminPromoteService.promoteCatalog).not.toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        pendingPromoteCount: 2,
+        skippedHeavyTables: ['collection_page_snapshots'],
+        sourceEnvironment: 'staging',
+        targetEnvironment: 'production',
+      }),
+    );
+
+    await server.close();
+  });
+
   test('requires the admin promotion secret header', async () => {
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
@@ -108,6 +262,50 @@ describe('admin promote routes', () => {
     expect(adminPromoteService.promoteCatalog).not.toHaveBeenCalled();
     expect(response.json()).toEqual({
       message: 'Admin promotion secret is missing or invalid.',
+      status: 'error',
+    });
+
+    await server.close();
+  });
+
+  test('promotes catalog changes for authenticated admins with confirmation phrase', async () => {
+    const { adminPromoteService, server } =
+      await createAuthenticatedAdminPromoteServer({
+        getExpectedAdminSecret: () => 'promote-secret',
+      });
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        confirmationPhrase: 'PROMOTE CATALOG',
+      },
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('requires confirmation phrase for authenticated admin catalog promotion', async () => {
+    const { adminPromoteService, server } =
+      await createAuthenticatedAdminPromoteServer({
+        getExpectedAdminSecret: () => 'promote-secret',
+      });
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        confirmationPhrase: 'WRONG',
+      },
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(adminPromoteService.promoteCatalog).not.toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      message: 'Catalog promotion confirmation phrase is missing.',
       status: 'error',
     });
 
@@ -242,6 +440,7 @@ describe('admin promote routes', () => {
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCatalog: vi.fn(async () => ({
         changedThemeSlugs: ['icons'],
         durationMs: 421,
@@ -364,6 +563,7 @@ describe('admin promote routes', () => {
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCatalog: vi.fn(async () => ({
         changedThemeSlugs: Array.from(
           { length: 51 },
@@ -612,6 +812,7 @@ describe('admin promote routes', () => {
   test('does not revalidate when catalog promotion fails', async () => {
     const revalidatePublicWebFn = vi.fn();
     const adminPromoteService: AdminPromoteService = {
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCatalog: vi.fn(async () => {
         throw new Error('Promotion failed.');
       }),

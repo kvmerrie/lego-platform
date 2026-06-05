@@ -9,6 +9,12 @@ import {
 import { ThemeMode } from '@lego-platform/shared/types';
 import { getThemeToggleLabel } from '@lego-platform/shared/util';
 
+interface AdminNavigationItem {
+  description: string;
+  label: string;
+  path: string;
+}
+
 @Component({
   selector: 'lego-shell-admin',
   imports: [RouterLink, RouterLinkActive],
@@ -19,65 +25,34 @@ import { getThemeToggleLabel } from '@lego-platform/shared/util';
 export class ShellAdminComponent {
   readonly productName = 'Brickhunt';
   readonly themeMode = signal<ThemeMode>(getPreferredThemeMode());
-  readonly primaryNavigationItems = [
+  readonly primaryNavigationItems: readonly AdminNavigationItem[] = [
     {
-      description: 'Wat vandaag aandacht nodig heeft',
-      label: 'Workbench',
-      path: '/workbench',
+      description: 'Status van intake, discovery, sync en promote',
+      label: 'Dashboard',
+      path: '/dashboard',
     },
     {
-      description: 'Voeg een set toe en zet de eerste offer live',
-      label: 'New set',
-      path: '/new-set',
+      description: 'Bulk onboard nieuwe sets via setnummers',
+      label: 'Catalog Intake',
+      path: '/catalog-intake',
     },
     {
-      description: 'Vind en beheer elke set in de catalogus',
-      label: 'Sets',
-      path: '/sets',
-    },
-  ] as const;
-  readonly secondaryNavigationItems = [
-    {
-      description: 'Korte uitleg van de operatorflow',
-      label: 'Zo werkt het',
-      path: '/workflow',
+      description: 'Review suggested en discovered kandidaten',
+      label: 'Discovery',
+      path: '/discovery',
     },
     {
-      description: 'Zoek meerdere missende sets en start één bulk intake-run',
-      label: 'Bulk onboarding',
-      path: '/bulk-onboarding',
+      description: 'Synchroniseer staging en promoveer catalogus',
+      label: 'Sync & Promote',
+      path: '/sync-promote',
     },
     {
-      description: 'Review sets die affiliate feeds buiten de catalogus vinden',
-      label: 'Affiliate discoveries',
-      path: '/affiliate-discovered-sets',
-    },
-    {
-      description: 'Mock een artikelflow voordat AI of scraping meekijkt',
-      label: 'Editorial agent',
-      path: '/editorial-agent',
-    },
-    {
-      description: 'Handmatige seed-URL’s beheren',
-      label: 'Offer seeds',
-      path: '/offer-seeds',
-    },
-    {
-      description: 'Merchantinstellingen en bronstatus',
-      label: 'Merchants',
-      path: '/merchants',
-    },
-    {
-      description: 'Brede dekkingchecks en uitzonderingen',
-      label: 'Coverage diagnostics',
-      path: '/coverage',
-    },
-    {
-      description: 'Rauwere operationele checks',
-      label: 'Operations',
-      path: '/operations',
+      description: 'Compacte operationele checks',
+      label: 'Health',
+      path: '/health',
     },
   ] as const;
+  readonly secondaryNavigationItems: readonly AdminNavigationItem[] = [];
 
   get themeToggleLabel(): string {
     return getThemeToggleLabel(this.themeMode());

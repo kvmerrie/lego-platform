@@ -7,6 +7,7 @@ const envFiles = ['.env', '.env.local', '.local.env'];
 const publicEnvKeys = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_STAGING_WEB_BASE_URL',
 ];
 
 function parseEnvLine(line) {

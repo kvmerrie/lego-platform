@@ -1,8 +1,5 @@
 import { runCatalogBulkOnboarding } from '@lego-platform/api/data-access-server';
-import {
-  hasRebrickableApiConfig,
-  hasServerSupabaseConfig,
-} from '@lego-platform/shared/config';
+import { hasServerSupabaseConfig } from '@lego-platform/shared/config';
 
 function getFlagValue({
   argv,
@@ -63,10 +60,6 @@ async function main() {
     throw new Error(
       'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for bulk onboarding.',
     );
-  }
-
-  if (!hasRebrickableApiConfig()) {
-    throw new Error('REBRICKABLE_API_KEY is required for bulk onboarding.');
   }
 
   console.log(

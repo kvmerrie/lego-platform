@@ -111,6 +111,7 @@ export interface BricksetEnrichmentMetadataJson
   lastUpdated?: string;
   launchDate?: string;
   modelDimensions?: Record<string, number>;
+  name?: string;
   pieces?: number;
   sourceSeen: true;
   subtheme?: string;
@@ -549,6 +550,7 @@ function buildBricksetMetadataJson({
     ...(normalizeBricksetDimensionMap(set.modelDimensions)
       ? { modelDimensions: normalizeBricksetDimensionMap(set.modelDimensions) }
       : {}),
+    ...(set.name ? { name: set.name } : {}),
     ...(set.barcode?.EAN ? { ean: set.barcode.EAN } : {}),
     ...(typeof set.pieces === 'number' && set.pieces > 0
       ? { pieces: Math.floor(set.pieces) }

@@ -4,6 +4,7 @@ import adminCatalogRoutes from './routes/admin-catalog';
 import sensiblePlugin from './plugins/sensible';
 import adminCommerceRoutes from './routes/admin-commerce';
 import adminPromoteRoutes from './routes/admin-promote';
+import adminOperationsRoutes from './routes/admin-operations';
 import apiV1Routes from './routes/api-v1';
 import healthRoutes from './routes/health';
 import rootRoutes from './routes/root';
@@ -24,6 +25,7 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   await fastify.register(adminArticlesRoutes, { ...opts });
   await fastify.register(adminEditorialAgentRoutes, { ...opts });
   await fastify.register(adminCommerceRoutes, { ...opts });
+  await fastify.register(adminOperationsRoutes, { ...opts });
   await fastify.register(adminPromoteRoutes, { ...opts });
   await fastify.register(adminCacheRevalidationRoutes, { ...opts });
 }

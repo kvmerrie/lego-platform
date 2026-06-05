@@ -21,6 +21,7 @@ import {
   buildNewsRevalidationTags,
   buildWebPath,
   getPublicWebBaseUrl,
+  hasAdminPromotionConfig,
   isArticlePreviewEnabled,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -48,6 +49,7 @@ export interface AdminArticlesService {
 
 export interface AdminRuntimeConfig {
   articlePreviewEnabled: boolean;
+  hasAdminPromotionSecret: boolean;
 }
 
 export function createAdminArticlesService(): AdminArticlesService {
@@ -158,10 +160,12 @@ async function revalidateArticleSurfaces({
 export function createAdminArticlesRoutes({
   adminPreHandler = createAdminPreHandler(),
   articlesService = createAdminArticlesService(),
+  hasAdminPromotionSecret = () => hasAdminPromotionConfig(),
   isPreviewEnabled = () => isArticlePreviewEnabled(),
 }: {
   adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   articlesService?: AdminArticlesService;
+  hasAdminPromotionSecret?: () => boolean;
   isPreviewEnabled?: () => boolean;
 } = {}) {
   return async function (fastify: FastifyInstance) {
@@ -170,6 +174,7 @@ export function createAdminArticlesRoutes({
     fastify.get(apiPaths.adminRuntimeConfig, async function () {
       return {
         articlePreviewEnabled: isPreviewEnabled(),
+        hasAdminPromotionSecret: hasAdminPromotionSecret(),
       } satisfies AdminRuntimeConfig;
     });
 

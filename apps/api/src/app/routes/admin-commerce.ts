@@ -101,6 +101,13 @@ export interface AdminCommerceService {
   }): Promise<CommerceOfferSeed>;
 }
 
+let latestCommerceProductionSyncResult: CommerceProductionCopyResult | null =
+  null;
+
+export function getLatestCommerceProductionSyncResult(): CommerceProductionCopyResult | null {
+  return latestCommerceProductionSyncResult;
+}
+
 function createAdminCommerceService(): AdminCommerceService {
   return {
     importAlternateFeed: (rows) =>
@@ -207,6 +214,14 @@ function readCommerceProductionSyncBody(value: unknown): {
       (value as { allowDestructive?: unknown }).allowDestructive === true,
     dryRun: (value as { dryRun?: unknown }).dryRun !== false,
   };
+}
+
+function isDefaultProductionEnvironment(): boolean {
+  return (
+    process.env['BRICKHUNT_ENV'] === 'production' ||
+    process.env['APP_ENV'] === 'production' ||
+    process.env['VERCEL_ENV'] === 'production'
+  );
 }
 
 function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
@@ -490,10 +505,7 @@ export function createAdminCommerceRoutes({
   adminPreHandler,
   commerceService = createAdminCommerceService(),
   getExpectedAdminSecret = () => getAdminPromotionConfig().secret,
-  isProductionEnvironment = () =>
-    process.env['BRICKHUNT_ENV'] === 'production' ||
-    process.env['APP_ENV'] === 'production' ||
-    process.env['VERCEL_ENV'] === 'production',
+  isProductionEnvironment = isDefaultProductionEnvironment,
 }: {
   adminOrMachinePreHandler?: ReturnType<typeof createAdminPreHandler>;
   adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
@@ -515,6 +527,16 @@ export function createAdminCommerceRoutes({
     const machineRouteOptions = {
       preHandler: requireAdminOrMachineSecret,
     };
+    const rejectProductionMutation = (reply: {
+      status: (statusCode: number) => {
+        send: (payload: unknown) => unknown;
+      };
+    }) =>
+      reply.status(403).send({
+        message:
+          'Production is read-only in the Operations Console. Use the explicit promote action for production changes.',
+        status: 'error',
+      });
 
     fastify.get(
       apiPaths.adminCommerceCoverageQueue,
@@ -536,6 +558,10 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceBenchmarkSets,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = normalizeBenchmarkSetInput(
             validateCommerceBenchmarkSetInput(request.body),
@@ -559,6 +585,10 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceBenchmarkSets}/:setId`,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           await commerceService.deleteBenchmarkSet(
             normalizeCatalogSetId(request.params.setId),
@@ -588,6 +618,10 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceMerchants,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = validateCommerceMerchantInput(request.body);
           const merchant = await commerceService.createMerchant(input);
@@ -611,6 +645,10 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceMerchants}/:merchantId`,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = validateCommerceMerchantInput(request.body);
 
@@ -671,6 +709,10 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           return await commerceService.importDiscoveredSets(
             readAffiliateDiscoveredSetImportBody(request.body),
@@ -690,6 +732,10 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceAffiliateDiscoveredSets}/:discoveredSetId/status`,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const { status } = readAffiliateDiscoveredSetStatusBody(request.body);
 
@@ -712,6 +758,10 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceAlternateFeedImports,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const rows = readAlternateAffiliateFeedRows(request.body);
 
@@ -765,9 +815,12 @@ export function createAdminCommerceRoutes({
         }
 
         try {
-          return await commerceService.copyProductionCommerce(
+          const result = await commerceService.copyProductionCommerce(
             readCommerceProductionSyncBody(request.body),
           );
+          latestCommerceProductionSyncResult = result;
+
+          return result;
         } catch (error) {
           return reply.status(400).send({
             message: toBadRequestMessage(
@@ -784,6 +837,10 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceSetRefreshes,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const setId = readRequiredSetId(request.body);
           await ensureCatalogSetExists(setId);
@@ -804,6 +861,10 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceOfferSeeds,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = normalizeOfferSeedInput(
             validateCommerceOfferSeedInput(request.body),
@@ -830,6 +891,10 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceOfferSeeds}/:offerSeedId`,
       adminRouteOptions,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = normalizeOfferSeedInput(
             validateCommerceOfferSeedInput(request.body),

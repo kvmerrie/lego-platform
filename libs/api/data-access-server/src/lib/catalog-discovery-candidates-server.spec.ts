@@ -1,5 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { buildCatalogDiscoveryCandidatesFromRakutenMissingSets } from './catalog-discovery-candidates-server';
+import {
+  buildCatalogDiscoveryCandidatesFromRakutenMissingSets,
+  recomputeCatalogDiscoveryCandidateConfidence,
+} from './catalog-discovery-candidates-server';
 
 function createSourceCandidate(
   setNumber: string,
@@ -18,8 +21,17 @@ function createSourceCandidate(
 
 function createExistingCandidate(
   overrides: Partial<{
+    autoCreateEligible: boolean;
+    confidence: 'high' | 'low' | 'medium';
+    confidenceScore: number;
+    evidence: Record<string, unknown>;
     normalizedSetId: string;
+    operatorConfidence: 'high' | 'low' | 'medium';
+    operatorConfidenceReasons: readonly string[];
     rebrickablePayload: Record<string, unknown>;
+    requiredFieldsPresent: boolean;
+    sourceProductTitle: string;
+    sourceSetNumber: string;
   }> = {},
 ) {
   return {
@@ -31,6 +43,8 @@ function createExistingCandidate(
     id: 'candidate-existing',
     lastSeenAt: '2026-06-03T09:00:00.000Z',
     normalizedSetId: '75401',
+    operatorConfidence: 'high',
+    operatorConfidenceReasons: ['exact_enriched_match'],
     rebrickablePayload: {
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75401-1/1000.jpg',
       name: 'Ahsoka Jedi Interceptor',
@@ -60,6 +74,8 @@ describe('catalog discovery candidate pipeline', () => {
       inputs.map((input, index) => ({
         ...input,
         id: `candidate-${index}`,
+        operatorConfidence: input.evidence['operatorConfidence'],
+        operatorConfidenceReasons: input.evidence['operatorConfidenceReasons'],
       })),
     );
 
@@ -75,6 +91,7 @@ describe('catalog discovery candidate pipeline', () => {
         ),
       ],
       dependencies: {
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
         listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn,
         searchCatalogMissingSetsFn,
@@ -93,12 +110,266 @@ describe('catalog discovery candidate pipeline', () => {
     expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
       inputs: [
         expect.objectContaining({
-          confidence: 'low',
+          evidence: expect.objectContaining({
+            localRebrickableMirrorMatch: false,
+            operatorConfidence: 'medium',
+            operatorConfidenceReasons: expect.arrayContaining([
+              'trusted_feed_valid_set_number',
+              'missing_enrichment',
+            ]),
+          }),
           normalizedSetId: '75401',
         }),
       ],
     });
   });
+
+  test('upgrades a Rakuten candidate when it matches the local Rebrickable mirror', async () => {
+    const searchCatalogMissingSetsFn = vi.fn();
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `candidate-${index}`,
+        operatorConfidence: input.evidence['operatorConfidence'],
+        operatorConfidenceReasons: input.evidence['operatorConfidenceReasons'],
+      })),
+    );
+
+    await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+      candidates: [
+        createSourceCandidate(
+          '10341',
+          'LEGO Icons NASA Artemis Space Launch System 10341',
+        ),
+      ],
+      dependencies: {
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => ({
+          catalogSetInput: {
+            imageUrl: 'https://img.example/10341.jpg',
+            name: 'NASA Artemis Space Launch System',
+            pieces: 3601,
+            releaseYear: 2024,
+            setId: '10341',
+            slug: 'nasa-artemis-space-launch-system-10341',
+            source: 'rebrickable',
+            sourceSetNumber: '10341-1',
+            theme: 'Icons',
+          },
+          imgUrl: 'https://img.example/10341.jpg',
+          name: 'NASA Artemis Space Launch System',
+          numParts: 3601,
+          setNum: '10341-1',
+          themeId: 721,
+          themeName: 'Icons',
+          year: 2024,
+        })),
+        listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+        lookupBricksetSetMetadataFn: vi.fn(),
+        searchCatalogMissingSetsFn,
+        upsertCatalogDiscoveryCandidatesFn,
+      },
+    });
+
+    expect(searchCatalogMissingSetsFn).not.toHaveBeenCalled();
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          autoCreateEligible: true,
+          confidence: 'high',
+          evidence: expect.objectContaining({
+            localRebrickableMirrorMatch: true,
+            operatorConfidence: 'high',
+            operatorConfidenceReasons: expect.arrayContaining([
+              'local_rebrickable_mirror_match',
+            ]),
+            rebrickable_name: 'NASA Artemis Space Launch System',
+            rebrickable_set_num: '10341-1',
+            theme_id: 721,
+          }),
+          normalizedSetId: '10341',
+          rebrickablePayload: expect.objectContaining({
+            name: 'NASA Artemis Space Launch System',
+            sourceSetNumber: '10341-1',
+          }),
+          requiredFieldsPresent: true,
+        }),
+      ],
+    });
+  });
+
+  test('recomputes existing candidates against the local mirror without live Rebrickable', async () => {
+    const searchCatalogMissingSetsFn = vi.fn();
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `candidate-${index}`,
+        operatorConfidence: input.evidence['operatorConfidence'],
+        operatorConfidenceReasons: input.evidence['operatorConfidenceReasons'],
+      })),
+    );
+
+    const result = await recomputeCatalogDiscoveryCandidateConfidence({
+      getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => ({
+        catalogSetInput: {
+          imageUrl: 'https://img.example/10341.jpg',
+          name: 'NASA Artemis Space Launch System',
+          pieces: 3601,
+          releaseYear: 2024,
+          setId: '10341',
+          slug: 'nasa-artemis-space-launch-system-10341',
+          source: 'rebrickable',
+          sourceSetNumber: '10341-1',
+          theme: 'Icons',
+        },
+        imgUrl: 'https://img.example/10341.jpg',
+        name: 'NASA Artemis Space Launch System',
+        numParts: 3601,
+        setNum: '10341-1',
+        themeId: 721,
+        themeName: 'Icons',
+        year: 2024,
+      })),
+      getNow: () => new Date('2026-06-04T10:00:00.000Z'),
+      listCatalogDiscoveryCandidatesFn: vi.fn(async ({ status }) =>
+        status === 'new'
+          ? [
+              createExistingCandidate({
+                autoCreateEligible: false,
+                confidence: 'low',
+                confidenceScore: 30,
+                evidence: {
+                  operatorConfidence: 'low',
+                  operatorConfidenceReasons: ['missing_enrichment'],
+                },
+                normalizedSetId: '10341',
+                operatorConfidence: 'low',
+                operatorConfidenceReasons: ['missing_enrichment'],
+                rebrickablePayload: undefined,
+                requiredFieldsPresent: false,
+                sourceProductTitle:
+                  'LEGO Icons NASA Artemis Space Launch System 10341',
+                sourceSetNumber: '10341-1',
+              }),
+            ]
+          : [],
+      ),
+      upsertCatalogDiscoveryCandidatesFn,
+    });
+
+    expect(searchCatalogMissingSetsFn).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      highCount: 1,
+      lowCount: 0,
+      mediumCount: 0,
+      modifiedCount: 1,
+      processedCount: 1,
+      skippedCount: 0,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          confidence: 'high',
+          evidence: expect.objectContaining({
+            localRebrickableMirrorMatch: true,
+            operatorConfidence: 'high',
+            operatorConfidenceReasons: expect.arrayContaining([
+              'local_rebrickable_mirror_match',
+            ]),
+            rebrickable_set_num: '10341-1',
+          }),
+          normalizedSetId: '10341',
+          rebrickablePayload: expect.objectContaining({
+            name: 'NASA Artemis Space Launch System',
+          }),
+          status: 'new',
+        }),
+      ],
+    });
+  });
+
+  test.each([
+    ['10366', 'LEGO Icons Tropisch aquarium 10366', 'medium'],
+    ['21363', 'LEGO Ideas De Goonies 21363', 'medium'],
+    ['75647', 'LEGO One Piece Gom Gom-vrucht 75647', 'medium'],
+    ['88010', 'LEGO Powered Up Afstandsbediening 88010', 'low'],
+    ['854261', 'LEGO Star Wars Imperium zwaard 854261', 'low'],
+    ['850705', 'LEGO Peper-en-zoutset 850705', 'low'],
+  ])(
+    'assigns operator confidence %s %s => %s without live enrichment',
+    async (setNumber, title, expectedOperatorConfidence) => {
+      const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+        inputs.map((input, index) => ({
+          ...input,
+          id: `candidate-${index}`,
+        })),
+      );
+
+      await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+        candidates: [createSourceCandidate(setNumber, title)],
+        dependencies: {
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+          lookupBricksetSetMetadataFn: vi.fn(),
+          searchCatalogMissingSetsFn: vi.fn(),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+      expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+        inputs: [
+          expect.objectContaining({
+            autoCreateEligible: false,
+            evidence: expect.objectContaining({
+              operatorConfidence: expectedOperatorConfidence,
+            }),
+            normalizedSetId: setNumber,
+          }),
+        ],
+      });
+    },
+  );
+
+  test.each([
+    [
+      '88010',
+      'LEGO Powered Up Afstandsbediening 88010',
+      'likely_powered_up_part',
+    ],
+    ['854261', 'LEGO Star Wars Imperium zwaard 854261', 'likely_accessory'],
+    ['850705', 'LEGO Peper-en-zoutset 850705', 'likely_accessory'],
+  ])(
+    'adds operator confidence reason %s %s => %s',
+    async (setNumber, title, expectedReason) => {
+      const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+        inputs.map((input, index) => ({
+          ...input,
+          id: `candidate-${index}`,
+        })),
+      );
+
+      await buildCatalogDiscoveryCandidatesFromRakutenMissingSets({
+        candidates: [createSourceCandidate(setNumber, title)],
+        dependencies: {
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+          lookupBricksetSetMetadataFn: vi.fn(),
+          searchCatalogMissingSetsFn: vi.fn(),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+      expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+        inputs: [
+          expect.objectContaining({
+            evidence: expect.objectContaining({
+              operatorConfidence: 'low',
+              operatorConfidenceReasons: expect.arrayContaining([
+                expectedReason,
+              ]),
+            }),
+          }),
+        ],
+      });
+    },
+  );
 
   test('auto-creates only high-confidence candidates with complete Rebrickable metadata', async () => {
     const createCatalogSetFn = vi.fn().mockResolvedValue({
@@ -185,6 +456,12 @@ describe('catalog discovery candidate pipeline', () => {
         expect.objectContaining({
           autoCreateEligible: true,
           confidence: 'high',
+          evidence: expect.objectContaining({
+            operatorConfidence: 'high',
+            operatorConfidenceReasons: expect.arrayContaining([
+              'exact_enriched_match',
+            ]),
+          }),
           requiredFieldsPresent: true,
         }),
       ],
@@ -223,6 +500,7 @@ describe('catalog discovery candidate pipeline', () => {
       ],
       dependencies: {
         createCatalogSetFn,
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
         listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(async () => ({
           fetchedSetCount: 0,
@@ -324,6 +602,7 @@ describe('catalog discovery candidate pipeline', () => {
         createSourceCandidate('72156'),
       ],
       dependencies: {
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
         listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(),
         searchCatalogMissingSetsFn: vi.fn(),
@@ -353,6 +632,7 @@ describe('catalog discovery candidate pipeline', () => {
         createSourceCandidate('72156'),
       ],
       dependencies: {
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
         listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(async () => ({
           fetchedSetCount: 0,
@@ -391,6 +671,7 @@ describe('catalog discovery candidate pipeline', () => {
       ],
       dependencies: {
         createCatalogSetFn,
+        getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
         listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
         lookupBricksetSetMetadataFn: vi.fn(async () => ({
           fetchedSetCount: 0,

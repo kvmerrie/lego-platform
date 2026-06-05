@@ -1,7 +1,7 @@
 <lego-admin-page
-  eyebrow="Catalogus"
-  title="Bulk onboarding workbench"
-  description="Zoek, selecteer en start een intake-run voor exact de sets die nu door de onboarding-engine moeten."
+  eyebrow="Operations Console"
+  title="Catalog Intake"
+  description="Plak comma-separated setnummers, controleer de batch en start één staging intake-run."
 >
   <div adminPageMeta class="bulk-onboarding__header-status">
     @if (isLoadingCatalogIndex()) {
@@ -22,8 +22,8 @@
     <div class="bulk-onboarding__main-column">
       <section class="admin-panel admin-panel--compact bulk-onboarding__panel">
         <lego-admin-section-header
-          title="Intake en selectie"
-          description="Voer setnummers direct in of zoek in de bron. Alles komt hier samen voordat het naar de batch-cart gaat."
+          title="Setnummer intake"
+          description="Plak setnummers met komma's, spaties of nieuwe regels. De bestaande onboarding-engine doet import, seeds, validatie en scoped sync."
         >
           <div adminSectionMeta>
             <lego-admin-status-badge tone="neutral">

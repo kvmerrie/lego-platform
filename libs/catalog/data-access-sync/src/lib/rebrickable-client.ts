@@ -102,6 +102,8 @@ export function createRebrickableClient({
 }: RebrickableClientOptions): RebrickableClient {
   const resolvedBaseUrl = normalizeBaseUrl(baseUrl);
   let lastRequestStartedAtMs: number | undefined;
+  let unavailableForRun = false;
+  let unavailableLogged = false;
 
   async function waitForRequestSlot() {
     if (lastRequestStartedAtMs === undefined || minimumRequestSpacingMs <= 0) {
@@ -120,6 +122,12 @@ export function createRebrickableClient({
   }
 
   async function requestJson(pathname: string): Promise<unknown> {
+    if (unavailableForRun) {
+      throw new Error(
+        `Rebrickable request skipped because Rebrickable is unavailable for this run (${pathname}).`,
+      );
+    }
+
     let attemptCount = 0;
 
     while (true) {
@@ -136,6 +144,19 @@ export function createRebrickableClient({
 
       if (response.ok) {
         return response.json();
+      }
+
+      if (response.status === 403) {
+        unavailableForRun = true;
+
+        if (!unavailableLogged) {
+          unavailableLogged = true;
+          logImpl('rebrickable_unavailable ip_banned_or_forbidden');
+        }
+
+        throw new Error(
+          `Rebrickable request failed (403) for ${pathname}; Rebrickable is unavailable for this run.`,
+        );
       }
 
       if (response.status === 429 && attemptCount <= maxRetries) {

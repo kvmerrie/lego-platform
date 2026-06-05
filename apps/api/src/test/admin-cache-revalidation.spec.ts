@@ -348,10 +348,11 @@ describe('admin cache revalidation routes', () => {
 });
 
 describe('admin cache revalidation browser import safety', () => {
-  const workspaceRoot = join(process.cwd(), '../..');
+  const workspaceRoot = process.cwd();
   const browserFiles = [
     'libs/commerce/feature-admin/src/lib/commerce-admin-api.service.ts',
     'libs/commerce/feature-admin/src/lib/commerce-admin-cache-revalidation-page.ts',
+    'libs/commerce/feature-admin/src/lib/commerce-admin-health-page.ts',
     'libs/commerce/feature-admin/src/lib/commerce-admin-store.service.ts',
     'libs/commerce/feature-admin/src/index.ts',
     'libs/commerce/util/src/lib/commerce-util.ts',

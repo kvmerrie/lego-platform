@@ -33,6 +33,103 @@ export interface CommerceAdminCatalogSetSummary {
   updatedAt: string;
 }
 
+export type CommerceAdminCatalogDiscoveryCandidateConfidence =
+  | 'high'
+  | 'low'
+  | 'medium';
+
+export type CommerceAdminCatalogDiscoveryCandidateStatus =
+  | 'failed'
+  | 'ignored'
+  | 'imported'
+  | 'new'
+  | 'non_set'
+  | 'onboarding_started'
+  | 'processing'
+  | 'rejected'
+  | 'reviewed';
+
+export interface CommerceAdminCatalogDiscoveryCandidate {
+  autoCreateEligible: boolean;
+  bricksetPayload?: Readonly<Record<string, unknown>>;
+  confidence: CommerceAdminCatalogDiscoveryCandidateConfidence;
+  confidenceScore: number;
+  evidence: Readonly<Record<string, unknown>>;
+  firstSeenAt: string;
+  id: string;
+  importError?: string | null;
+  importedSetId?: string | null;
+  lastSeenAt: string;
+  normalizedSetId: string;
+  operatorConfidence: CommerceAdminCatalogDiscoveryCandidateConfidence;
+  operatorConfidenceReasons: readonly string[];
+  rebrickablePayload?: Readonly<Record<string, unknown>>;
+  requiredFieldsPresent: boolean;
+  source: string;
+  sourceCurrencyCode?: string;
+  sourceImageUrl?: string;
+  sourcePayload: Readonly<Record<string, unknown>>;
+  sourcePriceMinor?: number;
+  sourceProductTitle?: string;
+  sourceProductUrl: string;
+  sourceSetNumber: string;
+  status: CommerceAdminCatalogDiscoveryCandidateStatus;
+}
+
+export type CommerceAdminCatalogImportStageStatus =
+  | 'failed'
+  | 'skipped'
+  | 'success';
+
+export interface CommerceAdminCatalogImportResult {
+  bricksetStatus?: CommerceAdminCatalogImportStageStatus;
+  durationMs?: number;
+  enrichmentStatus?: 'complete' | 'partial' | 'skipped';
+  importedSetId?: string;
+  importedSlug?: string;
+  minifigStatus?: CommerceAdminCatalogImportStageStatus;
+  stages?: Readonly<
+    Record<
+      'brickset' | 'minifig' | 'theme',
+      {
+        status?: CommerceAdminCatalogImportStageStatus;
+        warning?: string;
+      }
+    >
+  >;
+  themeStatus?: CommerceAdminCatalogImportStageStatus;
+  warnings?: readonly string[];
+}
+
+export type CommerceAdminCatalogDiscoveryBulkImportItemStatus =
+  | 'completed'
+  | 'failed'
+  | 'skipped'
+  | 'warning';
+
+export interface CommerceAdminCatalogDiscoveryBulkImportItemResult {
+  candidateId: string;
+  enrichmentStatus?: CommerceAdminCatalogImportResult['enrichmentStatus'];
+  error?: string;
+  importedSetId?: string;
+  importedSlug?: string;
+  setId?: string;
+  status: CommerceAdminCatalogDiscoveryBulkImportItemStatus;
+  title?: string;
+  warnings: readonly string[];
+}
+
+export interface CommerceAdminCatalogDiscoveryBulkImportResult {
+  completedCount: number;
+  concurrency: number;
+  failedCount: number;
+  processedCount: number;
+  requestedCount: number;
+  results: readonly CommerceAdminCatalogDiscoveryBulkImportItemResult[];
+  skippedCount: number;
+  warningCount: number;
+}
+
 export interface CommerceAdminBulkOnboardingSnapshotSetSummary {
   coverageStatus?: string;
   gapMerchants: readonly {
@@ -172,6 +269,101 @@ export interface CommerceAdminProductionSyncResult {
   tables: Record<string, CommerceAdminProductionSyncTableSummary>;
 }
 
+export interface CommerceAdminPromotionPreviewTableSummary {
+  insertedCount: number;
+  readCount: number;
+  skipped: boolean;
+  strategy: 'excluded' | 'heavy_skipped' | 'sample_diff';
+  updatedCount: number;
+  warning?: string;
+}
+
+export interface CommerceAdminPromotionPreviewSample {
+  changeType: 'insert' | 'update';
+  changedFields: readonly string[];
+  key: string;
+  table: string;
+}
+
+export interface CommerceAdminPromotionPreviewResult {
+  generatedAt: string;
+  meaningfulPendingPromoteCount: number;
+  operatorSummary: {
+    mappings: CommerceAdminPromotionPreviewTableSummary;
+    sets: CommerceAdminPromotionPreviewTableSummary;
+    themes: CommerceAdminPromotionPreviewTableSummary;
+  };
+  pendingPromoteCount: number;
+  excludedTables?: readonly string[];
+  samples: readonly CommerceAdminPromotionPreviewSample[];
+  skippedHeavyTables: readonly string[];
+  sourceEnvironment: 'staging';
+  status: 'ok';
+  tables: Record<string, CommerceAdminPromotionPreviewTableSummary>;
+  targetEnvironment: 'production';
+}
+
+export interface CommerceAdminPromotionTableSummary {
+  insertedCount: number;
+  readCount: number;
+  updatedCount: number;
+  upsertedCount: number;
+}
+
+export interface CommerceAdminPromotionResult {
+  changedThemeSlugs: readonly string[];
+  durationMs: number;
+  pendingPromoteCount?: number;
+  revalidationWarning?: string;
+  startedAt: string;
+  status: 'ok';
+  tables: Record<string, CommerceAdminPromotionTableSummary>;
+}
+
+export interface CommerceAdminOperationsSummary {
+  apiHealth: {
+    checkedAt: string;
+    status: 'ok';
+  };
+  discoveryCandidates: {
+    highCount: number;
+    lowCount: number;
+    mediumCount: number;
+    newCount: number;
+    catalogDiscoveryCandidateCount: number;
+    suggestedSetCount: number | null;
+    totalCount: number;
+  };
+  environments: {
+    currentRuntimeEnvironment: string;
+    productionReadOnly: boolean;
+    writableEnvironment: 'production-read-only' | 'staging';
+  };
+  errors: readonly {
+    check: string;
+    message: string;
+  }[];
+  activeBulkOnboardingRun: CommerceAdminBulkOnboardingRunReadResult | null;
+  latestBulkOnboardingRun: CommerceAdminBulkOnboardingRunReadResult | null;
+  latestBulkOnboardingRunStale: boolean;
+  latestCompletedBulkOnboardingRun: CommerceAdminBulkOnboardingRunReadResult | null;
+  latestProductionSync: CommerceAdminProductionSyncResult | null;
+  pendingPromoteCount: number | null;
+  promotePreview: {
+    generatedAt: string;
+    skippedHeavyTables: readonly string[];
+    sourceEnvironment: 'staging';
+    status: 'ok';
+    targetEnvironment: 'production';
+  } | null;
+  rebrickableLiveCallCount: 0;
+}
+
+export interface CommerceAdminRuntimeConfig {
+  articlePreviewEnabled: boolean;
+  hasAdminPromotionSecret: boolean;
+}
+
 export interface CommerceAdminCacheRevalidationBatchResult {
   batchIndex: number;
   pathCount: number;
@@ -202,9 +394,21 @@ export interface CommerceAdminAffiliateDiscoveredSetFilters {
   status?: CommerceAffiliateDiscoveredSetStatus | 'all';
 }
 
+export interface CommerceAdminDiscoveryConfidenceRecomputeResult {
+  highCount: number;
+  lowCount: number;
+  mediumCount: number;
+  modifiedCount: number;
+  processedCount: number;
+  skippedCount: number;
+}
+
 const adminApiPaths = {
   adminCacheRevalidation: '/api/admin/cache/revalidate',
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
+  adminCatalogDiscoveryCandidates: '/api/v1/admin/catalog/discovery-candidates',
+  adminCatalogPromotion: '/api/admin/promote/catalog',
+  adminCatalogPromotionPreview: '/api/v1/admin/promote/catalog/preview',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
@@ -216,6 +420,8 @@ const adminApiPaths = {
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceProductionSync: '/api/v1/admin/commerce/production-sync',
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
+  adminRuntimeConfig: '/api/v1/admin/runtime-config',
+  adminOperationsSummary: '/api/v1/admin/operations/summary',
 } as const;
 
 @Injectable({ providedIn: 'root' })
@@ -249,6 +455,82 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.get<CatalogSuggestedSet[]>(
         adminApiPaths.adminCatalogSuggestedSets,
+      ),
+    );
+  }
+
+  async listCatalogDiscoveryCandidates(
+    input: {
+      status?: CommerceAdminCatalogDiscoveryCandidateStatus | 'all';
+    } = {},
+  ): Promise<CommerceAdminCatalogDiscoveryCandidate[]> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminCatalogDiscoveryCandidate[]>(
+        adminApiPaths.adminCatalogDiscoveryCandidates,
+        {
+          params: input.status ? { status: input.status } : {},
+        },
+      ),
+    );
+  }
+
+  async importCatalogDiscoveryCandidate(
+    candidateId: string,
+  ): Promise<CommerceAdminCatalogDiscoveryCandidate> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminCatalogDiscoveryCandidate>(
+        `${adminApiPaths.adminCatalogDiscoveryCandidates}/${candidateId}/import`,
+        {},
+      ),
+    );
+  }
+
+  async bulkImportCatalogDiscoveryCandidates(input: {
+    allowLowConfidence?: boolean;
+    candidateIds: readonly string[];
+    concurrency?: number;
+  }): Promise<CommerceAdminCatalogDiscoveryBulkImportResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminCatalogDiscoveryBulkImportResult>(
+        `${adminApiPaths.adminCatalogDiscoveryCandidates}/bulk-import`,
+        input,
+      ),
+    );
+  }
+
+  async reEnrichCatalogSet(
+    setId: string,
+  ): Promise<CommerceAdminCatalogImportResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminCatalogImportResult>(
+        `${adminApiPaths.adminCatalogSets}/${setId}/re-enrich`,
+        {},
+      ),
+    );
+  }
+
+  async updateCatalogDiscoveryCandidateStatus(input: {
+    candidateId: string;
+    status: Extract<
+      CommerceAdminCatalogDiscoveryCandidateStatus,
+      'ignored' | 'non_set' | 'reviewed'
+    >;
+  }): Promise<CommerceAdminCatalogDiscoveryCandidate> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminCatalogDiscoveryCandidate>(
+        `${adminApiPaths.adminCatalogDiscoveryCandidates}/${input.candidateId}/status`,
+        {
+          status: input.status,
+        },
+      ),
+    );
+  }
+
+  async recomputeCatalogDiscoveryCandidateConfidence(): Promise<CommerceAdminDiscoveryConfidenceRecomputeResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminDiscoveryConfidenceRecomputeResult>(
+        `${adminApiPaths.adminCatalogDiscoveryCandidates}/recompute-confidence`,
+        {},
       ),
     );
   }
@@ -406,6 +688,64 @@ export class CommerceAdminApiService {
             'x-admin-secret': input.adminSecret,
           },
         },
+      ),
+    );
+  }
+
+  async getOperationsSummary(): Promise<CommerceAdminOperationsSummary> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminOperationsSummary>(
+        adminApiPaths.adminOperationsSummary,
+      ),
+    );
+  }
+
+  async getAdminRuntimeConfig(): Promise<CommerceAdminRuntimeConfig> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminRuntimeConfig>(
+        adminApiPaths.adminRuntimeConfig,
+      ),
+    );
+  }
+
+  async getCatalogPromotionPreview(
+    input: {
+      includeHeavy?: boolean;
+    } = {},
+  ): Promise<CommerceAdminPromotionPreviewResult> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminPromotionPreviewResult>(
+        adminApiPaths.adminCatalogPromotionPreview,
+        {
+          params: input.includeHeavy ? { includeHeavy: 'true' } : {},
+        },
+      ),
+    );
+  }
+
+  async promoteCatalog(input: {
+    adminSecret?: string;
+    confirmationPhrase?: string;
+  }): Promise<CommerceAdminPromotionResult> {
+    const options: {
+      headers?: Record<string, string>;
+    } = input.adminSecret
+      ? {
+          headers: {
+            'x-admin-secret': input.adminSecret,
+          },
+        }
+      : {};
+
+    return firstValueFrom(
+      this.http.post<CommerceAdminPromotionResult>(
+        adminApiPaths.adminCatalogPromotion,
+        {
+          ...(input.confirmationPhrase
+            ? { confirmationPhrase: input.confirmationPhrase }
+            : {}),
+        },
+        options,
       ),
     );
   }

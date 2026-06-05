@@ -1,8 +1,10 @@
 import { timingSafeEqual } from 'node:crypto';
 import {
   CatalogPromotionError,
+  previewCatalogPromotionFromStagingToProduction,
   promoteCatalogFromStagingToProduction,
   revalidatePublicWeb,
+  type CatalogPromotionPreviewResult,
   type CatalogPromotionResult,
   type PublicWebRevalidationResult,
 } from '@lego-platform/api/data-access-server';
@@ -15,20 +17,39 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import {
+  authorizeAdminRequest,
+  createAdminPreHandler,
+} from '../lib/admin-authorization';
 
 const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
 const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 50;
 const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
+const CATALOG_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CATALOG';
 
 export interface AdminPromoteService {
-  promoteCatalog(): Promise<CatalogPromotionResult>;
+  previewCatalog(input?: {
+    includeCommerceSeeds?: boolean;
+    includeHeavy?: boolean;
+  }): Promise<CatalogPromotionPreviewResult>;
+  promoteCatalog(input?: {
+    includeCommerceSeeds?: boolean;
+  }): Promise<CatalogPromotionResult>;
 }
 
 type RevalidatePublicWebFn = typeof revalidatePublicWeb;
 
 function createAdminPromoteService(): AdminPromoteService {
   return {
-    promoteCatalog: () => promoteCatalogFromStagingToProduction(),
+    previewCatalog: (input) =>
+      previewCatalogPromotionFromStagingToProduction({
+        includeCommerceSeeds: input?.includeCommerceSeeds === true,
+        includeHeavy: input?.includeHeavy === true,
+      }),
+    promoteCatalog: (input) =>
+      promoteCatalogFromStagingToProduction({
+        includeCommerceSeeds: input?.includeCommerceSeeds === true,
+      }),
   };
 }
 
@@ -63,6 +84,14 @@ function matchesAdminSecret({
   }
 
   return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function readCatalogPromotionConfirmationPhrase(
+  body: { confirmationPhrase?: unknown } | undefined,
+): string {
+  return typeof body?.confirmationPhrase === 'string'
+    ? body.confirmationPhrase.trim()
+    : '';
 }
 
 function buildCatalogPromoteRevalidationPaths({
@@ -132,197 +161,236 @@ function buildCatalogPromoteRevalidationPaths({
 }
 
 export function createAdminPromoteRoutes({
+  adminPreHandler = createAdminPreHandler(),
   adminPromoteService = createAdminPromoteService(),
   getExpectedAdminSecret = () => getAdminPromotionConfig().secret,
   revalidatePublicWebFn = revalidatePublicWeb,
 }: {
+  adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   adminPromoteService?: AdminPromoteService;
   getExpectedAdminSecret?: () => string;
   revalidatePublicWebFn?: RevalidatePublicWebFn;
 } = {}) {
   return async function (fastify: FastifyInstance) {
-    fastify.post(
-      apiPaths.adminCatalogPromotion,
-      async function (request, reply) {
-        let expectedAdminSecret: string;
-
-        try {
-          expectedAdminSecret = getExpectedAdminSecret();
-        } catch (error) {
-          request.log.error(
-            {
-              error,
-              route: apiPaths.adminCatalogPromotion,
-            },
-            'Catalog promotion is not configured.',
-          );
-
-          return reply.status(503).send({
-            message: 'Catalog promotion is not configured.',
-            status: 'error',
-          });
-        }
-
-        if (
-          !matchesAdminSecret({
-            expectedSecret: expectedAdminSecret,
-            providedSecret: readAdminSecretHeader(
-              request.headers['x-admin-secret'],
-            ),
-          })
-        ) {
-          return reply.status(401).send({
-            message: 'Admin promotion secret is missing or invalid.',
-            status: 'error',
-          });
-        }
-
-        try {
-          const result = await adminPromoteService.promoteCatalog();
-          let revalidation: PublicWebRevalidationResult | undefined;
-          let revalidationWarning: string | undefined;
-          const revalidationPlan = buildCatalogPromoteRevalidationPaths({
-            changedThemeSlugs: result.changedThemeSlugs,
-            log: request.log,
-          });
-          const promotedMetadataSetSlugs =
-            result.promotedMetadataSetSlugs ?? [];
-          const promotedMetadataSetIds = result.promotedMetadataSetIds ?? [];
-          const promotedMetadataSetPathFallback =
-            promotedMetadataSetSlugs.length >
-            MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
-          const promotedMetadataSetPaths = promotedMetadataSetPathFallback
-            ? []
-            : promotedMetadataSetSlugs.map((slug) => buildSetDetailPath(slug));
-          const revalidationPaths = [
-            ...revalidationPlan.paths,
-            '/nieuwe-lego-sets',
-            '/retiring-lego-sets',
-            '/lego-voor-volwassenen',
-            ...promotedMetadataSetPaths,
-          ];
-          const revalidationTags = [
-            cacheTags.homepage(),
-            cacheTags.themes(),
-            cacheTags.collections(),
-            cacheTags.collection('nieuwe-lego-sets'),
-            cacheTags.collection('retiring-lego-sets'),
-            cacheTags.collection('lego-voor-volwassenen'),
-            cacheTags.catalog(),
-            cacheTags.sets(),
-            ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
-          ];
-
-          if (promotedMetadataSetPathFallback) {
-            request.log.warn(
-              {
-                maxSetDetailRevalidationPaths:
-                  MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS,
-                promotedMetadataSetCount: promotedMetadataSetSlugs.length,
-                route: apiPaths.adminCatalogPromotion,
-              },
-              'Skipping targeted set detail revalidation after metadata promotion because too many set paths changed.',
-            );
-          }
-
-          try {
-            revalidation = await revalidatePublicWebFn({
-              paths: revalidationPaths,
-              reason: 'catalog_promote',
-              tags: revalidationTags,
-            });
-          } catch (error) {
-            revalidationWarning =
-              error instanceof Error
-                ? error.message
-                : 'Public web revalidation failed after catalog promotion.';
-            request.log.warn(
-              {
-                error,
-                paths: revalidationPaths,
-                reason: 'catalog_promote',
-                route: apiPaths.adminCatalogPromotion,
-                tags: revalidationTags,
-              },
-              'Public web revalidation failed after catalog promotion.',
-            );
-          }
-
-          request.log.info(
-            {
-              durationMs: result.durationMs,
-              sourceMetadata: {
-                bricksetPromoted:
-                  result.brickset_source_metadata_promoted_count ??
-                  result.bricksetSourceMetadataPromotedCount,
-                eligible:
-                  result.source_metadata_eligible_count ??
-                  result.sourceMetadataEligibleCount,
-                rakutenPromoted:
-                  result.rakuten_source_metadata_promoted_count ??
-                  result.rakutenSourceMetadataPromotedCount,
-                read:
-                  result.source_metadata_read_count ??
-                  result.sourceMetadataReadCount,
-                skipped:
-                  result.skipped_source_metadata_count ??
-                  result.skippedSourceMetadataCount,
-              },
-              revalidation: {
-                attempted: revalidation?.attempted ?? false,
-                pathCount: revalidation?.pathCount ?? revalidationPaths.length,
-                paths: revalidation?.paths ?? revalidationPaths,
-                promotedMetadataSetPathFallback,
-                themeDetailFallback: revalidationPlan.fallbackMode,
-                skipped: revalidation?.skipped ?? false,
-                tagCount: revalidation?.tagCount ?? revalidationTags.length,
-                tags: revalidation?.tags ?? revalidationTags,
-                warning: revalidationWarning,
-              },
-              route: apiPaths.adminCatalogPromotion,
-              tables: result.tables,
-            },
-            'Catalog promotion completed.',
-          );
-
-          return {
-            ...result,
-            ...(revalidation
-              ? {
-                  revalidation,
-                }
-              : {}),
-            ...(revalidationWarning
-              ? {
-                  revalidationWarning,
-                }
-              : {}),
-          };
-        } catch (error) {
-          if (error instanceof CatalogPromotionError) {
-            request.log.error(
-              {
-                durationMs: error.context.durationMs,
-                failedTable: error.context.failedTable,
-                route: apiPaths.adminCatalogPromotion,
-                tables: error.context.tables,
-              },
-              error.message,
-            );
-
-            return reply.status(500).send({
-              durationMs: error.context.durationMs,
-              failedTable: error.context.failedTable,
-              message: error.message,
-              status: 'error',
-              tables: error.context.tables,
-            });
-          }
-
-          throw error;
-        }
+    fastify.get<{
+      Querystring: { includeCommerceSeeds?: string; includeHeavy?: string };
+    }>(
+      apiPaths.adminCatalogPromotionPreview,
+      {
+        preHandler: adminPreHandler,
+      },
+      async function (request) {
+        return adminPromoteService.previewCatalog({
+          includeCommerceSeeds: request.query.includeCommerceSeeds === 'true',
+          includeHeavy: request.query.includeHeavy === 'true',
+        });
       },
     );
+
+    fastify.post<{
+      Body:
+        | { confirmationPhrase?: unknown; includeCommerceSeeds?: boolean }
+        | undefined;
+    }>(apiPaths.adminCatalogPromotion, async function (request, reply) {
+      let expectedAdminSecret: string;
+
+      try {
+        expectedAdminSecret = getExpectedAdminSecret();
+      } catch (error) {
+        request.log.error(
+          {
+            error,
+            route: apiPaths.adminCatalogPromotion,
+          },
+          'Catalog promotion is not configured.',
+        );
+
+        return reply.status(503).send({
+          message: 'Catalog promotion is not configured.',
+          status: 'error',
+        });
+      }
+
+      const providedAdminSecret = readAdminSecretHeader(
+        request.headers['x-admin-secret'],
+      );
+      const machineSecretMatches = matchesAdminSecret({
+        expectedSecret: expectedAdminSecret,
+        providedSecret: providedAdminSecret,
+      });
+      const authorization = authorizeAdminRequest({
+        allowMachineSecret: true,
+        getExpectedMachineSecret: () => expectedAdminSecret,
+        providedMachineSecret: providedAdminSecret,
+        requestPrincipal: request.requestPrincipal,
+      });
+
+      if (authorization.authorized === false) {
+        return reply.status(authorization.statusCode).send({
+          message: machineSecretMatches
+            ? authorization.message
+            : 'Admin promotion secret is missing or invalid.',
+          status: 'error',
+        });
+      }
+
+      if (
+        authorization.actor.kind !== 'admin_secret' &&
+        readCatalogPromotionConfirmationPhrase(request.body) !==
+          CATALOG_PROMOTION_CONFIRMATION_PHRASE
+      ) {
+        return reply.status(400).send({
+          message: 'Catalog promotion confirmation phrase is missing.',
+          status: 'error',
+        });
+      }
+
+      try {
+        const result = await adminPromoteService.promoteCatalog({
+          includeCommerceSeeds: request.body?.includeCommerceSeeds === true,
+        });
+        let revalidation: PublicWebRevalidationResult | undefined;
+        let revalidationWarning: string | undefined;
+        const revalidationPlan = buildCatalogPromoteRevalidationPaths({
+          changedThemeSlugs: result.changedThemeSlugs,
+          log: request.log,
+        });
+        const promotedMetadataSetSlugs = result.promotedMetadataSetSlugs ?? [];
+        const promotedMetadataSetIds = result.promotedMetadataSetIds ?? [];
+        const promotedMetadataSetPathFallback =
+          promotedMetadataSetSlugs.length >
+          MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
+        const promotedMetadataSetPaths = promotedMetadataSetPathFallback
+          ? []
+          : promotedMetadataSetSlugs.map((slug) => buildSetDetailPath(slug));
+        const revalidationPaths = [
+          ...revalidationPlan.paths,
+          '/nieuwe-lego-sets',
+          '/retiring-lego-sets',
+          '/lego-voor-volwassenen',
+          ...promotedMetadataSetPaths,
+        ];
+        const revalidationTags = [
+          cacheTags.homepage(),
+          cacheTags.themes(),
+          cacheTags.collections(),
+          cacheTags.collection('nieuwe-lego-sets'),
+          cacheTags.collection('retiring-lego-sets'),
+          cacheTags.collection('lego-voor-volwassenen'),
+          cacheTags.catalog(),
+          cacheTags.sets(),
+          ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
+        ];
+
+        if (promotedMetadataSetPathFallback) {
+          request.log.warn(
+            {
+              maxSetDetailRevalidationPaths:
+                MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS,
+              promotedMetadataSetCount: promotedMetadataSetSlugs.length,
+              route: apiPaths.adminCatalogPromotion,
+            },
+            'Skipping targeted set detail revalidation after metadata promotion because too many set paths changed.',
+          );
+        }
+
+        try {
+          revalidation = await revalidatePublicWebFn({
+            paths: revalidationPaths,
+            reason: 'catalog_promote',
+            tags: revalidationTags,
+          });
+        } catch (error) {
+          revalidationWarning =
+            error instanceof Error
+              ? error.message
+              : 'Public web revalidation failed after catalog promotion.';
+          request.log.warn(
+            {
+              error,
+              paths: revalidationPaths,
+              reason: 'catalog_promote',
+              route: apiPaths.adminCatalogPromotion,
+              tags: revalidationTags,
+            },
+            'Public web revalidation failed after catalog promotion.',
+          );
+        }
+
+        request.log.info(
+          {
+            durationMs: result.durationMs,
+            sourceMetadata: {
+              bricksetPromoted:
+                result.brickset_source_metadata_promoted_count ??
+                result.bricksetSourceMetadataPromotedCount,
+              eligible:
+                result.source_metadata_eligible_count ??
+                result.sourceMetadataEligibleCount,
+              rakutenPromoted:
+                result.rakuten_source_metadata_promoted_count ??
+                result.rakutenSourceMetadataPromotedCount,
+              read:
+                result.source_metadata_read_count ??
+                result.sourceMetadataReadCount,
+              skipped:
+                result.skipped_source_metadata_count ??
+                result.skippedSourceMetadataCount,
+            },
+            revalidation: {
+              attempted: revalidation?.attempted ?? false,
+              pathCount: revalidation?.pathCount ?? revalidationPaths.length,
+              paths: revalidation?.paths ?? revalidationPaths,
+              promotedMetadataSetPathFallback,
+              themeDetailFallback: revalidationPlan.fallbackMode,
+              skipped: revalidation?.skipped ?? false,
+              tagCount: revalidation?.tagCount ?? revalidationTags.length,
+              tags: revalidation?.tags ?? revalidationTags,
+              warning: revalidationWarning,
+            },
+            route: apiPaths.adminCatalogPromotion,
+            tables: result.tables,
+          },
+          'Catalog promotion completed.',
+        );
+
+        return {
+          ...result,
+          ...(revalidation
+            ? {
+                revalidation,
+              }
+            : {}),
+          ...(revalidationWarning
+            ? {
+                revalidationWarning,
+              }
+            : {}),
+        };
+      } catch (error) {
+        if (error instanceof CatalogPromotionError) {
+          request.log.error(
+            {
+              durationMs: error.context.durationMs,
+              failedTable: error.context.failedTable,
+              route: apiPaths.adminCatalogPromotion,
+              tables: error.context.tables,
+            },
+            error.message,
+          );
+
+          return reply.status(500).send({
+            durationMs: error.context.durationMs,
+            failedTable: error.context.failedTable,
+            message: error.message,
+            status: 'error',
+            tables: error.context.tables,
+          });
+        }
+
+        throw error;
+      }
+    });
   };
 }
 

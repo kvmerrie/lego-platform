@@ -1,0 +1,38 @@
+{
+  "name": "catalog-discovery-confidence-recompute",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-discovery-confidence-recompute/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-discovery-confidence-recompute",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-discovery-confidence-recompute/src/main.ts",
+        "tsConfig": "apps/catalog-discovery-confidence-recompute/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-discovery-confidence-recompute/main.cjs"
+      }
+    }
+  }
+}

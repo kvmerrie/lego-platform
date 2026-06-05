@@ -1,15 +1,25 @@
 import {
   createCatalogSet,
+  createCatalogSetFromDiscoveryCandidate,
+  getCatalogDiscoveryCandidate,
+  listCatalogDiscoveryCandidates,
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   searchCatalogMissingSets,
+  updateCatalogDiscoveryCandidateReviewStatus,
+  type CatalogDiscoveryCandidate,
+  type CatalogDiscoveryCandidateStatus,
 } from '@lego-platform/catalog/data-access-server';
 import {
   type CatalogBulkOnboardingRunReadResult,
   type CatalogBulkOnboardingStartResult,
   enrichCatalogSetMinifigSummariesBestEffort,
+  enrichImportedCatalogSet,
+  reEnrichImportedCatalogSets,
+  type CatalogImportPipelineResult,
   getCatalogBulkOnboardingRun,
   getLatestCatalogBulkOnboardingRun,
+  recomputeCatalogDiscoveryCandidateConfidence,
   revalidatePublicWeb,
   startCatalogBulkOnboardingRun,
 } from '@lego-platform/api/data-access-server';
@@ -42,6 +52,28 @@ export interface AdminCatalogSetSummary {
 }
 
 export interface AdminCatalogService {
+  importDiscoveryCandidate(input: {
+    candidateId: string;
+  }): Promise<CatalogDiscoveryCandidate>;
+  bulkImportDiscoveryCandidates(input: {
+    allowLowConfidence?: boolean;
+    candidateIds: readonly string[];
+    concurrency?: number;
+  }): Promise<AdminCatalogDiscoveryCandidateBulkImportResult>;
+  reEnrichCatalogSet(input: {
+    setId: string;
+  }): Promise<CatalogImportPipelineResult>;
+  listDiscoveryCandidates(input?: {
+    status?: CatalogDiscoveryCandidateStatus | 'all';
+  }): Promise<CatalogDiscoveryCandidate[]>;
+  recomputeDiscoveryCandidateConfidence(): Promise<{
+    highCount: number;
+    lowCount: number;
+    mediumCount: number;
+    modifiedCount: number;
+    processedCount: number;
+    skippedCount: number;
+  }>;
   getBulkOnboardingRun(
     runId: string,
   ): Promise<CatalogBulkOnboardingRunReadResult>;
@@ -50,13 +82,148 @@ export interface AdminCatalogService {
     setIds: readonly string[];
   }): Promise<CatalogBulkOnboardingStartResult>;
   createSet(input: CatalogExternalSetSearchResult): Promise<CatalogSet>;
+  updateDiscoveryCandidateStatus(input: {
+    candidateId: string;
+    status: Extract<
+      CatalogDiscoveryCandidateStatus,
+      'ignored' | 'non_set' | 'reviewed'
+    >;
+  }): Promise<CatalogDiscoveryCandidate>;
   listCatalogSets(): Promise<AdminCatalogSetSummary[]>;
   listSuggestedSets(): Promise<CatalogSuggestedSet[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
 }
 
+export type AdminCatalogDiscoveryCandidateBulkImportItemStatus =
+  | 'completed'
+  | 'failed'
+  | 'skipped'
+  | 'warning';
+
+export interface AdminCatalogDiscoveryCandidateBulkImportItemResult {
+  candidateId: string;
+  enrichmentStatus?: CatalogImportPipelineResult['enrichmentStatus'];
+  error?: string;
+  importedSetId?: string;
+  importedSlug?: string;
+  setId?: string;
+  status: AdminCatalogDiscoveryCandidateBulkImportItemStatus;
+  title?: string;
+  warnings: readonly string[];
+}
+
+export interface AdminCatalogDiscoveryCandidateBulkImportResult {
+  completedCount: number;
+  concurrency: number;
+  failedCount: number;
+  processedCount: number;
+  requestedCount: number;
+  results: readonly AdminCatalogDiscoveryCandidateBulkImportItemResult[];
+  skippedCount: number;
+  warningCount: number;
+}
+
 function createAdminCatalogService(): AdminCatalogService {
+  const importDiscoveryCandidate = async ({
+    candidateId,
+  }: {
+    candidateId: string;
+  }) => {
+    const startedAt = Date.now();
+    const candidate = await getCatalogDiscoveryCandidate({
+      id: candidateId,
+    });
+
+    if (!candidate) {
+      throw new Error('Discovery candidate niet gevonden.');
+    }
+
+    try {
+      const candidateCreateResult =
+        await createCatalogSetFromDiscoveryCandidate({
+          candidate,
+        });
+      const catalogSet = candidateCreateResult.catalogSet;
+      const metadataIncomplete = candidateCreateResult.metadataIncomplete;
+
+      const importResult = await enrichImportedCatalogSet({
+        catalogSet,
+      });
+
+      return updateCatalogDiscoveryCandidateReviewStatus({
+        evidence: {
+          ...candidate.evidence,
+          enrichmentStatus: importResult.enrichmentStatus,
+          importMode: metadataIncomplete
+            ? 'discovery_candidate_evidence'
+            : 'local_rebrickable_mirror',
+          importResult: {
+            ...importResult,
+            durationMs: Date.now() - startedAt,
+            importedSetId: catalogSet.setId,
+            importedSlug: catalogSet.slug,
+          },
+          ...(metadataIncomplete
+            ? {
+                importWarning: 'needs_enrichment',
+                metadataQuality: 'needs_enrichment',
+              }
+            : {}),
+          importedSlug: catalogSet.slug,
+        },
+        id: candidate.id,
+        importError: null,
+        importedSetId: catalogSet.setId,
+        status: 'imported',
+      });
+    } catch (error) {
+      await updateCatalogDiscoveryCandidateReviewStatus({
+        evidence: {
+          ...candidate.evidence,
+          importMode: 'discovery_candidate_evidence',
+        },
+        id: candidate.id,
+        importError:
+          error instanceof Error
+            ? error.message
+            : 'Discovery candidate import failed.',
+        status: 'failed',
+      });
+
+      throw error;
+    }
+  };
+
   return {
+    importDiscoveryCandidate,
+    bulkImportDiscoveryCandidates: async (input) =>
+      runDiscoveryCandidateBulkImport({
+        allowLowConfidence: input.allowLowConfidence ?? false,
+        candidateIds: input.candidateIds,
+        concurrency: input.concurrency ?? 1,
+        importDiscoveryCandidate,
+      }),
+    reEnrichCatalogSet: async ({ setId }) => {
+      const result = await reEnrichImportedCatalogSets({
+        setIds: [setId],
+      });
+      const setResult = result.results[0];
+
+      if (!setResult || setResult.importedSlug === '') {
+        throw new Error('Catalog set niet gevonden.');
+      }
+
+      return setResult;
+    },
+    listDiscoveryCandidates: async (input) =>
+      reconcileDiscoveryCandidates(
+        await listCatalogDiscoveryCandidates({
+          limit: 250,
+          status: input?.status ?? 'all',
+        }),
+      ),
+    recomputeDiscoveryCandidateConfidence: () =>
+      recomputeCatalogDiscoveryCandidateConfidence(),
     getBulkOnboardingRun: async (runId) =>
       getCatalogBulkOnboardingRun({
         options: {
@@ -87,6 +254,24 @@ function createAdminCatalogService(): AdminCatalogService {
 
       return catalogSet;
     },
+    updateDiscoveryCandidateStatus: async ({ candidateId, status }) => {
+      const candidate = await getCatalogDiscoveryCandidate({
+        id: candidateId,
+      });
+
+      if (!candidate) {
+        throw new Error('Discovery candidate niet gevonden.');
+      }
+
+      return updateCatalogDiscoveryCandidateReviewStatus({
+        evidence: {
+          ...candidate.evidence,
+          ...(status === 'non_set' ? { reviewReason: 'non_set' } : {}),
+        },
+        id: candidateId,
+        status,
+      });
+    },
     listCatalogSets: async () =>
       (await listCanonicalCatalogSets()).map((catalogSet) => ({
         createdAt: catalogSet.createdAt,
@@ -106,6 +291,320 @@ function createAdminCatalogService(): AdminCatalogService {
 
 function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof Error ? error.message : fallbackMessage;
+}
+
+function readCatalogExternalSetFromCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): CatalogExternalSetSearchResult {
+  const payload = candidate.rebrickablePayload;
+
+  if (!payload) {
+    throw new Error(
+      'Deze discovery candidate heeft nog geen cached Rebrickable-verrijking en kan niet zonder live lookup worden geimporteerd.',
+    );
+  }
+
+  const readString = (key: string) => {
+    const value = payload[key];
+
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(`Discovery candidate mist cached ${key}.`);
+    }
+
+    return value.trim();
+  };
+  const readInteger = (key: string, minValue: number) => {
+    const value = payload[key];
+
+    if (
+      typeof value !== 'number' ||
+      !Number.isInteger(value) ||
+      value < minValue
+    ) {
+      throw new Error(`Discovery candidate mist cached ${key}.`);
+    }
+
+    return value;
+  };
+  const imageUrl = payload['imageUrl'];
+
+  return {
+    ...(typeof imageUrl === 'string' && imageUrl.trim()
+      ? { imageUrl: imageUrl.trim() }
+      : {}),
+    name: readString('name'),
+    pieces: readInteger('pieces', 0),
+    releaseYear: readInteger('releaseYear', 1),
+    setId: readString('setId'),
+    slug: readString('slug'),
+    source: 'rebrickable',
+    sourceSetNumber: readString('sourceSetNumber'),
+    theme: readString('theme'),
+  };
+}
+
+function readBulkOnboardingRunIdFromCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): string | null {
+  const value = candidate.evidence['bulkOnboardingRunId'];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function isDiscoveryCandidateProcessing(
+  candidate: CatalogDiscoveryCandidate,
+): boolean {
+  return (
+    candidate.status === 'processing' ||
+    candidate.status === 'onboarding_started'
+  );
+}
+
+async function reconcileDiscoveryCandidates(
+  candidates: readonly CatalogDiscoveryCandidate[],
+): Promise<CatalogDiscoveryCandidate[]> {
+  const processingCandidates = candidates.filter(
+    isDiscoveryCandidateProcessing,
+  );
+
+  if (processingCandidates.length === 0) {
+    return [...candidates];
+  }
+
+  const catalogSetIds = new Set(
+    (await listCanonicalCatalogSets()).map((catalogSet) => catalogSet.setId),
+  );
+  const reconciledById = new Map<string, CatalogDiscoveryCandidate>();
+
+  for (const candidate of processingCandidates) {
+    const runId = readBulkOnboardingRunIdFromCandidate(candidate);
+
+    if (!runId) {
+      continue;
+    }
+
+    const runResult = await getCatalogBulkOnboardingRun({
+      options: {
+        workspaceRoot: process.cwd(),
+      },
+      runId,
+    });
+    const run = runResult.run;
+
+    if (!run) {
+      reconciledById.set(
+        candidate.id,
+        await updateCatalogDiscoveryCandidateReviewStatus({
+          evidence: candidate.evidence,
+          id: candidate.id,
+          importError: `Bulk onboarding run ${runId} niet gevonden.`,
+          status: 'failed',
+        }),
+      );
+      continue;
+    }
+
+    if (run.status === 'failed') {
+      reconciledById.set(
+        candidate.id,
+        await updateCatalogDiscoveryCandidateReviewStatus({
+          evidence: candidate.evidence,
+          id: candidate.id,
+          importError: `Bulk onboarding run ${runId} is gefaald.`,
+          status: 'failed',
+        }),
+      );
+      continue;
+    }
+
+    if (
+      (run.status === 'completed' || run.status === 'completed_with_errors') &&
+      catalogSetIds.has(candidate.normalizedSetId)
+    ) {
+      reconciledById.set(
+        candidate.id,
+        await updateCatalogDiscoveryCandidateReviewStatus({
+          evidence: candidate.evidence,
+          id: candidate.id,
+          importError: null,
+          importedSetId: candidate.normalizedSetId,
+          status: 'imported',
+        }),
+      );
+      continue;
+    }
+
+    if (run.status === 'completed' || run.status === 'completed_with_errors') {
+      reconciledById.set(
+        candidate.id,
+        await updateCatalogDiscoveryCandidateReviewStatus({
+          evidence: candidate.evidence,
+          id: candidate.id,
+          importError: `Bulk onboarding run ${runId} is klaar, maar set ${candidate.normalizedSetId} staat niet in de staging catalogus.`,
+          status: 'failed',
+        }),
+      );
+    }
+  }
+
+  return candidates.map(
+    (candidate) => reconciledById.get(candidate.id) ?? candidate,
+  );
+}
+
+function readImportResultFromCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): CatalogImportPipelineResult | null {
+  const importResult = candidate.evidence['importResult'];
+
+  return typeof importResult === 'object' && importResult
+    ? (importResult as CatalogImportPipelineResult)
+    : null;
+}
+
+function readDiscoveryCandidateTitle(
+  candidate: CatalogDiscoveryCandidate,
+): string {
+  if (candidate.sourceProductTitle?.trim()) {
+    return candidate.sourceProductTitle.trim();
+  }
+
+  const payloadName = candidate.rebrickablePayload?.['name'];
+
+  return typeof payloadName === 'string' && payloadName.trim()
+    ? payloadName.trim()
+    : candidate.normalizedSetId;
+}
+
+function getDiscoveryCandidateBulkImportSkipReason(
+  candidate: CatalogDiscoveryCandidate,
+  input: {
+    allowLowConfidence: boolean;
+  },
+): string | null {
+  if (candidate.status !== 'new' && candidate.status !== 'failed') {
+    return `status is ${candidate.status}`;
+  }
+
+  if (!/^\d{5,6}$/.test(candidate.normalizedSetId)) {
+    return 'set number is invalid or missing';
+  }
+
+  if (
+    candidate.operatorConfidence === 'low' &&
+    input.allowLowConfidence !== true
+  ) {
+    return 'low confidence requires explicit confirmation';
+  }
+
+  return null;
+}
+
+async function runDiscoveryCandidateBulkImport(input: {
+  allowLowConfidence: boolean;
+  candidateIds: readonly string[];
+  concurrency: number;
+  importDiscoveryCandidate: (input: {
+    candidateId: string;
+  }) => Promise<CatalogDiscoveryCandidate>;
+}): Promise<AdminCatalogDiscoveryCandidateBulkImportResult> {
+  const concurrency = Math.min(2, Math.max(1, Math.floor(input.concurrency)));
+  const candidateIds = [...new Set(input.candidateIds)];
+  const results: AdminCatalogDiscoveryCandidateBulkImportItemResult[] = [];
+  let nextIndex = 0;
+
+  const processCandidate = async (candidateId: string) => {
+    try {
+      const candidate = await getCatalogDiscoveryCandidate({
+        id: candidateId,
+      });
+
+      if (!candidate) {
+        results.push({
+          candidateId,
+          error: 'Discovery candidate niet gevonden.',
+          status: 'failed',
+          warnings: [],
+        });
+        return;
+      }
+
+      const title = readDiscoveryCandidateTitle(candidate);
+      const skipReason = getDiscoveryCandidateBulkImportSkipReason(candidate, {
+        allowLowConfidence: input.allowLowConfidence,
+      });
+
+      if (skipReason) {
+        results.push({
+          candidateId,
+          error: skipReason,
+          setId: candidate.normalizedSetId,
+          status: 'skipped',
+          title,
+          warnings: [skipReason],
+        });
+        return;
+      }
+
+      const importedCandidate = await input.importDiscoveryCandidate({
+        candidateId,
+      });
+      const importResult = readImportResultFromCandidate(importedCandidate);
+      const warnings = importResult?.warnings ?? [];
+      const status =
+        warnings.length > 0 || importResult?.enrichmentStatus === 'partial'
+          ? 'warning'
+          : 'completed';
+
+      results.push({
+        candidateId,
+        enrichmentStatus: importResult?.enrichmentStatus,
+        importedSetId:
+          importResult?.importedSetId ??
+          importedCandidate.importedSetId ??
+          undefined,
+        importedSlug: importResult?.importedSlug,
+        setId: importedCandidate.normalizedSetId,
+        status,
+        title: readDiscoveryCandidateTitle(importedCandidate),
+        warnings,
+      });
+    } catch (error) {
+      results.push({
+        candidateId,
+        error: toBadRequestMessage(error, 'Discovery candidate import failed.'),
+        status: 'failed',
+        warnings: [],
+      });
+    }
+  };
+
+  const workers = Array.from(
+    { length: Math.min(concurrency, candidateIds.length) },
+    async () => {
+      while (nextIndex < candidateIds.length) {
+        const candidateId = candidateIds[nextIndex];
+        nextIndex += 1;
+        await processCandidate(candidateId);
+      }
+    },
+  );
+
+  await Promise.all(workers);
+
+  return {
+    completedCount: results.filter((result) => result.status === 'completed')
+      .length,
+    concurrency,
+    failedCount: results.filter((result) => result.status === 'failed').length,
+    processedCount: results.length,
+    requestedCount: candidateIds.length,
+    results,
+    skippedCount: results.filter((result) => result.status === 'skipped')
+      .length,
+    warningCount: results.filter((result) => result.status === 'warning')
+      .length,
+  };
 }
 
 async function revalidateCatalogSetSurfaces(
@@ -169,6 +668,54 @@ function readBulkOnboardingInput(value: unknown): { setIds: string[] } {
 
   return {
     setIds: normalizedSetIds,
+  };
+}
+
+function readDiscoveryCandidateBulkImportInput(value: unknown): {
+  allowLowConfidence?: boolean;
+  candidateIds: string[];
+  concurrency?: number;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Bulk discovery import input ontbreekt.');
+  }
+
+  const record = value as {
+    allowLowConfidence?: unknown;
+    candidateIds?: unknown;
+    concurrency?: unknown;
+  };
+
+  if (!Array.isArray(record.candidateIds)) {
+    throw new Error('Bulk discovery import mist een candidateIds-lijst.');
+  }
+
+  const candidateIds = [
+    ...new Set(
+      record.candidateIds
+        .map((candidateId) =>
+          typeof candidateId === 'string' ? candidateId.trim() : '',
+        )
+        .filter(Boolean),
+    ),
+  ];
+
+  if (candidateIds.length === 0) {
+    throw new Error('Bulk discovery import mist geldige candidateIds.');
+  }
+
+  const concurrency =
+    typeof record.concurrency === 'number' &&
+    Number.isFinite(record.concurrency)
+      ? Math.min(2, Math.max(1, Math.floor(record.concurrency)))
+      : undefined;
+
+  return {
+    ...(typeof record.allowLowConfidence === 'boolean'
+      ? { allowLowConfidence: record.allowLowConfidence }
+      : {}),
+    candidateIds,
+    ...(concurrency ? { concurrency } : {}),
   };
 }
 
@@ -247,15 +794,54 @@ function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
   };
 }
 
+function readDiscoveryCandidateStatusInput(value: unknown): {
+  status: Extract<
+    CatalogDiscoveryCandidateStatus,
+    'ignored' | 'non_set' | 'reviewed'
+  >;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Discovery status ontbreekt.');
+  }
+
+  const status = (value as { status?: unknown }).status;
+
+  if (status !== 'ignored' && status !== 'non_set' && status !== 'reviewed') {
+    throw new Error('Discovery status is ongeldig.');
+  }
+
+  return { status };
+}
+
+function isDefaultProductionEnvironment(): boolean {
+  return (
+    process.env['BRICKHUNT_ENV'] === 'production' ||
+    process.env['APP_ENV'] === 'production' ||
+    process.env['VERCEL_ENV'] === 'production'
+  );
+}
+
 export function createAdminCatalogRoutes({
   adminPreHandler = createAdminPreHandler(),
   catalogService = createAdminCatalogService(),
+  isProductionEnvironment = isDefaultProductionEnvironment,
 }: {
   adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   catalogService?: AdminCatalogService;
+  isProductionEnvironment?: () => boolean;
 } = {}) {
   return async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', adminPreHandler);
+    const rejectProductionMutation = (reply: {
+      status: (statusCode: number) => {
+        send: (payload: unknown) => unknown;
+      };
+    }) =>
+      reply.status(403).send({
+        message:
+          'Production is read-only in the Operations Console. Use the explicit promote action for production changes.',
+        status: 'error',
+      });
 
     fastify.get(apiPaths.adminCatalogSets, async function () {
       return catalogService.listCatalogSets();
@@ -264,6 +850,37 @@ export function createAdminCatalogRoutes({
     fastify.get(apiPaths.adminCatalogSuggestedSets, async function () {
       return catalogService.listSuggestedSets();
     });
+
+    fastify.get<{ Querystring: { status?: string } }>(
+      apiPaths.adminCatalogDiscoveryCandidates,
+      async function (request, reply) {
+        const status = request.query.status;
+
+        if (
+          status &&
+          ![
+            'all',
+            'failed',
+            'ignored',
+            'imported',
+            'new',
+            'non_set',
+            'onboarding_started',
+            'processing',
+            'rejected',
+            'reviewed',
+          ].includes(status)
+        ) {
+          return reply.status(400).send({
+            message: 'Discovery status filter is ongeldig.',
+          });
+        }
+
+        return catalogService.listDiscoveryCandidates({
+          status: (status as CatalogDiscoveryCandidateStatus | 'all') ?? 'all',
+        });
+      },
+    );
 
     fastify.get<{ Querystring: { query?: string } }>(
       apiPaths.adminCatalogSetSearch,
@@ -327,6 +944,10 @@ export function createAdminCatalogRoutes({
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCatalogSets,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = readCatalogSetInput(request.body);
           const catalogSet = await catalogService.createSet(input);
@@ -345,8 +966,123 @@ export function createAdminCatalogRoutes({
     );
 
     fastify.post<{ Body: unknown }>(
+      `${apiPaths.adminCatalogDiscoveryCandidates}/bulk-import`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          const input = readDiscoveryCandidateBulkImportInput(request.body);
+
+          return catalogService.bulkImportDiscoveryCandidates(input);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Bulk discovery import input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Params: { candidateId: string } }>(
+      `${apiPaths.adminCatalogDiscoveryCandidates}/:candidateId/import`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          return await catalogService.importDiscoveryCandidate({
+            candidateId: request.params.candidateId,
+          });
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Discovery candidate kon niet worden geimporteerd.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Params: { setId: string } }>(
+      `${apiPaths.adminCatalogSets}/:setId/re-enrich`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          return await catalogService.reEnrichCatalogSet({
+            setId: request.params.setId,
+          });
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Catalog set kon niet opnieuw worden verrijkt.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post(
+      `${apiPaths.adminCatalogDiscoveryCandidates}/recompute-confidence`,
+      async function (_request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          return await catalogService.recomputeDiscoveryCandidateConfidence();
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Discovery confidence kon niet worden herberekend.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown; Params: { candidateId: string } }>(
+      `${apiPaths.adminCatalogDiscoveryCandidates}/:candidateId/status`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          const { status } = readDiscoveryCandidateStatusInput(request.body);
+
+          return await catalogService.updateDiscoveryCandidateStatus({
+            candidateId: request.params.candidateId,
+            status,
+          });
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Discovery candidate status is ongeldig.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
       apiPaths.adminCatalogBulkOnboardingRuns,
       async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
         try {
           const input = readBulkOnboardingInput(request.body);
           const result = await catalogService.startBulkOnboarding(input);

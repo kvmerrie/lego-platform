@@ -631,6 +631,34 @@ describe('admin commerce routes', () => {
     await server.close();
   });
 
+  test('blocks normal commerce writes in production runtime', async () => {
+    const { commerceService, server } = await createAdminCommerceServer({
+      isProductionEnvironment: () => true,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/offer-seeds',
+      payload: {
+        isActive: true,
+        merchantId: 'merchant-1',
+        productUrl: 'https://www.lego.com/rivendell',
+        setId: '10316',
+        validationStatus: 'valid',
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(commerceService.createOfferSeed).not.toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      message:
+        'Production is read-only in the Operations Console. Use the explicit promote action for production changes.',
+      status: 'error',
+    });
+
+    await server.close();
+  });
+
   test('creates an offer seed through the admin route', async () => {
     const { commerceService, server } = await createAdminCommerceServer();
 

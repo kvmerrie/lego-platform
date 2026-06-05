@@ -3,6 +3,7 @@ import {
   backfillRakutenLegoSourceMetadataForCatalogSet,
   backfillCatalogOverlayThemeIdentity,
   createCatalogSet,
+  createCatalogSetFromDiscoveryCandidate,
   listCatalogCurrentOfferSummariesBySetIds,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
@@ -271,6 +272,8 @@ function createCatalogOverlaySupabaseClient({
   offerSeedRows = [],
   priceHistoryRows = [],
   primaryThemeRows = [],
+  rebrickableSetRows = [],
+  rebrickableThemeRows = [],
   snapshotRows = [],
   sourceMetadataRows = [],
   sourceThemeRows = [],
@@ -292,6 +295,8 @@ function createCatalogOverlaySupabaseClient({
   offerSeedRows?: Record<string, unknown>[];
   priceHistoryRows?: Record<string, unknown>[];
   primaryThemeRows?: Record<string, unknown>[];
+  rebrickableSetRows?: Record<string, unknown>[];
+  rebrickableThemeRows?: Record<string, unknown>[];
   snapshotRows?: Record<string, unknown>[];
   sourceMetadataRows?: Record<string, unknown>[];
   sourceThemeRows?: Record<string, unknown>[];
@@ -395,6 +400,14 @@ function createCatalogOverlaySupabaseClient({
         select: builder.select,
         upsert: sourceMetadataUpsert,
       };
+    }
+
+    if (table === 'rebrickable_sets') {
+      return createSupabaseTableBuilder(rebrickableSetRows);
+    }
+
+    if (table === 'rebrickable_themes') {
+      return createSupabaseTableBuilder(rebrickableThemeRows);
     }
 
     if (table === 'commerce_offer_seeds') {
@@ -3607,6 +3620,202 @@ describe('catalog data access server', () => {
         onConflict: 'catalog_set_id,source,locale',
       },
     );
+  });
+
+  test('creates a discovery-imported set with canonical English fields and Dutch source metadata', async () => {
+    const { canonicalInsert, sourceMetadataUpsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient({
+        canonicalInsertResult: {
+          data: createCatalogOverlayRow({
+            image_url: 'https://cdn.rebrickable.com/media/sets/40519-1.jpg',
+            name: 'New York Postcard',
+            piece_count: 253,
+            release_year: 2022,
+            set_id: '40519',
+            slug: 'new-york-postcard-40519',
+            source_set_number: '40519-1',
+            theme: undefined,
+          }),
+          error: null,
+        },
+        rebrickableSetRows: [
+          {
+            img_url: 'https://cdn.rebrickable.com/media/sets/40519-1.jpg',
+            name: 'New York Postcard',
+            num_parts: 253,
+            set_img_url: null,
+            set_num: '40519-1',
+            theme_id: 696,
+            year: 2022,
+          },
+        ],
+        rebrickableThemeRows: [
+          {
+            id: 696,
+            name: 'Postcards',
+            parent_id: null,
+          },
+        ],
+      });
+
+    await createCatalogSetFromDiscoveryCandidate({
+      candidate: {
+        autoCreateEligible: false,
+        bricksetPayload: {
+          name: 'New York Postcard',
+        },
+        confidence: 'medium',
+        confidenceScore: 72,
+        evidence: {},
+        firstSeenAt: '2026-06-04T10:00:00.000Z',
+        id: 'candidate-40519',
+        lastSeenAt: '2026-06-04T10:00:00.000Z',
+        normalizedSetId: '40519',
+        operatorConfidence: 'medium',
+        operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        requiredFieldsPresent: true,
+        source: 'rakuten-lego-eu',
+        sourceCurrencyCode: 'EUR',
+        sourcePayload: {
+          price: '14.99',
+          title: 'Ansichtkaart van New York',
+        },
+        sourcePriceMinor: 1499,
+        sourceProductTitle: 'Ansichtkaart van New York',
+        sourceProductUrl: 'https://lego.example/40519',
+        sourceSetNumber: '40519-1',
+        status: 'new',
+      },
+      supabaseClient,
+    });
+
+    expect(canonicalInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'New York Postcard',
+        slug: 'new-york-postcard-40519',
+        source_set_number: '40519-1',
+      }),
+    );
+    expect(sourceMetadataUpsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          metadata_json: expect.objectContaining({
+            aliases: expect.arrayContaining([
+              'Ansichtkaart van New York',
+              'New York Postcard',
+            ]),
+            bricksetName: 'New York Postcard',
+            discovered_at: '2026-06-04T10:00:00.000Z',
+            discoveryOperatorConfidence: 'medium',
+            discoveryOperatorConfidenceReasons: [
+              'local_rebrickable_mirror_match',
+            ],
+            feed_title_nl: 'Ansichtkaart van New York',
+            imported_at: expect.any(String),
+            localized_title_nl: 'Ansichtkaart van New York',
+            normalized_set_number: '40519',
+            product_url: 'https://lego.example/40519',
+            rakuten_product_title: 'Ansichtkaart van New York',
+            rebrickableName: 'New York Postcard',
+            referencePriceEvidence: {
+              currencyCode: 'EUR',
+              priceMinor: 1499,
+              source: 'rakuten-lego-eu',
+              sourceProductUrl: 'https://lego.example/40519',
+              usage: 'reference_price_only',
+            },
+            source_set_number: '40519-1',
+            source_url: 'https://lego.example/40519',
+            sourcePriceEvidence: {
+              currencyCode: 'EUR',
+              priceMinor: 1499,
+              source: 'rakuten-lego-eu',
+              sourceProductUrl: 'https://lego.example/40519',
+              usage: 'reference_price_only',
+            },
+            title: 'Ansichtkaart van New York',
+          }),
+          match_confidence: 'exact_set_number',
+          policy: 'metadata_only_pending_audit',
+          set_number: '40519-1',
+          source: 'rakuten-lego-eu',
+        }),
+      ]),
+      expect.anything(),
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_latest',
+    );
+    expect(supabaseClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+  });
+
+  test('corrects an existing discovery-imported set back to canonical English fields', async () => {
+    const { sourceMetadataUpsert, supabaseClient, updateCanonical } =
+      createCatalogOverlaySupabaseClient({
+        overlayRows: [
+          createCatalogOverlayRow({
+            image_url: 'https://cdn.rebrickable.com/media/sets/40519-1.jpg',
+            name: 'Ansichtkaart van New York',
+            piece_count: 253,
+            release_year: 2022,
+            set_id: '40519',
+            slug: 'ansichtkaart-van-new-york-40519',
+            source_set_number: '40519-1',
+            theme: 'Postcards',
+          }),
+        ],
+        rebrickableSetRows: [
+          {
+            img_url: 'https://cdn.rebrickable.com/media/sets/40519-1.jpg',
+            name: 'New York Postcard',
+            num_parts: 253,
+            set_img_url: null,
+            set_num: '40519-1',
+            theme_id: 696,
+            year: 2022,
+          },
+        ],
+        rebrickableThemeRows: [
+          {
+            id: 696,
+            name: 'Postcards',
+            parent_id: null,
+          },
+        ],
+      });
+
+    await createCatalogSetFromDiscoveryCandidate({
+      candidate: {
+        autoCreateEligible: false,
+        confidence: 'medium',
+        confidenceScore: 72,
+        evidence: {},
+        firstSeenAt: '2026-06-04T10:00:00.000Z',
+        id: 'candidate-40519',
+        lastSeenAt: '2026-06-04T10:00:00.000Z',
+        normalizedSetId: '40519',
+        operatorConfidence: 'medium',
+        operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        requiredFieldsPresent: true,
+        source: 'rakuten-lego-eu',
+        sourcePayload: {},
+        sourceProductTitle: 'Ansichtkaart van New York',
+        sourceProductUrl: 'https://lego.example/40519',
+        sourceSetNumber: '40519-1',
+        status: 'new',
+      },
+      supabaseClient,
+    });
+
+    expect(updateCanonical).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'New York Postcard',
+        slug: 'new-york-postcard-40519',
+      }),
+    );
+    expect(sourceMetadataUpsert).toHaveBeenCalled();
   });
 
   test('lists source metadata set ids across all pages for exact source locale and match confidence', async () => {

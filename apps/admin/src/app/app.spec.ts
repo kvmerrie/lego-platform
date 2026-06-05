@@ -53,6 +53,13 @@ describe('App', () => {
             }),
             getLatestCatalogBulkOnboardingRun: async () => null,
             getCatalogBulkOnboardingRun: async () => null,
+            listCatalogDiscoveryCandidates: async () => [],
+            importCatalogDiscoveryCandidate: async () => {
+              throw new Error('not used');
+            },
+            updateCatalogDiscoveryCandidateStatus: async () => {
+              throw new Error('not used');
+            },
             listBenchmarkSets: async () => [],
             createBenchmarkSet: async () => undefined,
             deleteBenchmarkSet: async () => undefined,
@@ -62,6 +69,110 @@ describe('App', () => {
             listOfferSeeds: async () => [],
             createOfferSeed: async () => undefined,
             updateOfferSeed: async () => undefined,
+            listAffiliateDiscoveredSets: async () => [],
+            importAffiliateDiscoveredSets: async () => ({
+              alreadyCatalogedCount: 0,
+              attachedOfferCount: 0,
+              createdCatalogSetCount: 0,
+              failedLookupCount: 0,
+              importedCount: 0,
+              requestedCount: 0,
+              skippedCount: 0,
+              uniqueSetCount: 0,
+            }),
+            updateAffiliateDiscoveredSetStatus: async () => undefined,
+            syncCommerceFromProduction: async () => ({
+              dryRun: true,
+              durationMs: 0,
+              startedAt: '2026-04-19T08:00:00.000Z',
+              status: 'ok',
+              tables: {},
+            }),
+            getOperationsSummary: async () => ({
+              apiHealth: {
+                checkedAt: '2026-04-19T08:00:00.000Z',
+                status: 'ok',
+              },
+              discoveryCandidates: {
+                catalogDiscoveryCandidateCount: 0,
+                highCount: 0,
+                lowCount: 0,
+                mediumCount: 0,
+                newCount: 0,
+                suggestedSetCount: null,
+                totalCount: 0,
+              },
+              environments: {
+                currentRuntimeEnvironment: 'staging',
+                productionReadOnly: false,
+                writableEnvironment: 'staging',
+              },
+              errors: [],
+              activeBulkOnboardingRun: null,
+              latestBulkOnboardingRun: null,
+              latestBulkOnboardingRunStale: false,
+              latestCompletedBulkOnboardingRun: null,
+              latestProductionSync: null,
+              pendingPromoteCount: 0,
+              promotePreview: {
+                generatedAt: '2026-04-19T08:00:00.000Z',
+                skippedHeavyTables: ['collection_page_snapshots'],
+                sourceEnvironment: 'staging',
+                status: 'ok',
+                targetEnvironment: 'production',
+              },
+              rebrickableLiveCallCount: 0,
+            }),
+            getCatalogPromotionPreview: async () => ({
+              generatedAt: '2026-04-19T08:00:00.000Z',
+              meaningfulPendingPromoteCount: 0,
+              operatorSummary: {
+                mappings: {
+                  insertedCount: 0,
+                  readCount: 0,
+                  skipped: false,
+                  strategy: 'sample_diff',
+                  updatedCount: 0,
+                },
+                sets: {
+                  insertedCount: 0,
+                  readCount: 0,
+                  skipped: false,
+                  strategy: 'sample_diff',
+                  updatedCount: 0,
+                },
+                themes: {
+                  insertedCount: 0,
+                  readCount: 0,
+                  skipped: false,
+                  strategy: 'sample_diff',
+                  updatedCount: 0,
+                },
+              },
+              pendingPromoteCount: 0,
+              samples: [],
+              skippedHeavyTables: ['collection_page_snapshots'],
+              sourceEnvironment: 'staging',
+              status: 'ok',
+              tables: {
+                collection_page_snapshots: {
+                  insertedCount: 0,
+                  readCount: 0,
+                  skipped: true,
+                  strategy: 'heavy_skipped',
+                  updatedCount: 0,
+                  warning: 'Skipped in lightweight preview.',
+                },
+              },
+              targetEnvironment: 'production',
+            }),
+            promoteCatalog: async () => ({
+              changedThemeSlugs: [],
+              durationMs: 0,
+              startedAt: '2026-04-19T08:00:00.000Z',
+              status: 'ok',
+              tables: {},
+            }),
           },
         },
       ],
@@ -76,7 +187,7 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('shows Workbench, New set and Sets as the primary IA', async () => {
+  it('shows only the Operations Console V2 IA in the shell navigation', async () => {
     const fixture = TestBed.createComponent(App);
 
     fixture.detectChanges();
@@ -85,19 +196,34 @@ describe('App', () => {
 
     const text = fixture.nativeElement.textContent as string;
 
-    expect(text).toContain('Workbench');
-    expect(text).toContain('New set');
-    expect(text).toContain('Sets');
-    expect(text).toContain('Editorial agent');
-    expect(text).not.toContain('Dashboard');
+    expect(text).toContain('Dashboard');
+    expect(text).toContain('Catalog Intake');
+    expect(text).toContain('Discovery');
+    expect(text).toContain('Sync & Promote');
+    expect(text).toContain('Health');
+    expect(text).not.toContain('Workbench');
+    expect(text).not.toContain('New set');
+    expect(text).not.toContain('Editorial agent');
   });
 
-  it('redirects the root and dashboard aliases to workbench', () => {
+  it('routes V2 pages while keeping legacy routes reachable but hidden', () => {
     const rootRoute = appRoutes[0]?.children?.find(
       (route) => route.path === '',
     );
     const dashboardRoute = appRoutes[0]?.children?.find(
       (route) => route.path === 'dashboard',
+    );
+    const catalogIntakeRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'catalog-intake',
+    );
+    const discoveryRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'discovery',
+    );
+    const syncPromoteRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'sync-promote',
+    );
+    const healthRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'health',
     );
     const workbenchRoute = appRoutes[0]?.children?.find(
       (route) => route.path === 'workbench',
@@ -112,8 +238,12 @@ describe('App', () => {
       (route) => route.path === 'editorial-agent',
     );
 
-    expect(rootRoute?.redirectTo).toBe('workbench');
-    expect(dashboardRoute?.redirectTo).toBe('workbench');
+    expect(rootRoute?.redirectTo).toBe('dashboard');
+    expect(dashboardRoute?.component).toBeTruthy();
+    expect(catalogIntakeRoute?.component).toBeTruthy();
+    expect(discoveryRoute?.component).toBeTruthy();
+    expect(syncPromoteRoute?.component).toBeTruthy();
+    expect(healthRoute?.component).toBeTruthy();
     expect(workbenchRoute?.component).toBeTruthy();
     expect(addSetAliasRoute?.redirectTo).toBe('new-set');
     expect(bulkOnboardingRoute?.component).toBeTruthy();

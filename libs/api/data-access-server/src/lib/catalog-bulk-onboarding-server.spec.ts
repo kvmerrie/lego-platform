@@ -596,6 +596,49 @@ describe('catalog bulk onboarding server', () => {
       [];
     const supabaseClient = {
       from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    primary_theme_id: 'theme:icons',
+                    set_id: '11377',
+                    source_theme_id: 'rebrickable:721',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+            update: vi.fn((values: Record<string, unknown>) => ({
+              eq: vi.fn((column: string, setId: string) => {
+                updates.push({
+                  setId,
+                  values,
+                });
+
+                return Promise.resolve({ error: null });
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_theme_mappings') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    primary_theme_id: 'theme:icons',
+                    source_theme_id: 'rebrickable:721',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
         if (table === 'catalog_themes') {
           return {
             select: vi.fn(() => ({
@@ -614,14 +657,10 @@ describe('catalog bulk onboarding server', () => {
         }
 
         return {
-          update: vi.fn((values: Record<string, unknown>) => ({
-            eq: vi.fn((column: string, setId: string) => {
-              updates.push({
-                setId,
-                values,
-              });
-
-              return Promise.resolve({ error: null });
+          select: vi.fn(() => ({
+            in: vi.fn().mockResolvedValue({
+              data: [],
+              error: null,
             }),
           })),
         };
@@ -658,6 +697,118 @@ describe('catalog bulk onboarding server', () => {
       },
     ]);
     expect(updates[0]?.values).not.toHaveProperty('source_theme_id');
+  });
+
+  test('keeps Technic F1 sets mapped to Technic instead of Speed Champions', async () => {
+    const updates: Array<{ setId: string; values: Record<string, unknown> }> =
+      [];
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    primary_theme_id: 'theme:speed-champions',
+                    set_id: '42240',
+                    source_theme_id: 'rebrickable:1',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+            update: vi.fn((values: Record<string, unknown>) => ({
+              eq: vi.fn((_column: string, setId: string) => {
+                updates.push({
+                  setId,
+                  values,
+                });
+
+                return Promise.resolve({ error: null });
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_theme_mappings') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    primary_theme_id: 'theme:technic',
+                    source_theme_id: 'rebrickable:1',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        if (table === 'catalog_themes') {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn().mockResolvedValue({
+                data: [
+                  {
+                    id: 'theme:speed-champions',
+                    is_public: true,
+                    status: 'active',
+                  },
+                  {
+                    id: 'theme:technic',
+                    is_public: true,
+                    status: 'active',
+                  },
+                ],
+                error: null,
+              }),
+            })),
+          };
+        }
+
+        return {
+          select: vi.fn(() => ({
+            in: vi.fn().mockResolvedValue({
+              data: [],
+              error: null,
+            }),
+          })),
+        };
+      }),
+    };
+
+    const result = await applyBricksetPublicThemeMappings({
+      metadataRecords: [
+        {
+          catalogSetId: '42240',
+          catalogSetName: 'Aston Martin Aramco AMR25 F1 Car',
+          metadataJson: {
+            bricksetSetId: 42240,
+            images: [],
+            sourceSeen: true,
+            tags: ['Formula 1'],
+            theme: 'Technic',
+          },
+          setNumber: '42240-1',
+        },
+      ],
+      supabaseClient: supabaseClient as unknown as Parameters<
+        typeof applyBricksetPublicThemeMappings
+      >[0]['supabaseClient'],
+    });
+
+    expect(result.updatedCount).toBe(1);
+    expect(updates).toEqual([
+      {
+        setId: '42240',
+        values: expect.objectContaining({
+          primary_theme_id: 'theme:technic',
+        }),
+      },
+    ]);
   });
 
   test('backfills existing Brickset-enriched Icons sets to the stronger public theme', async () => {

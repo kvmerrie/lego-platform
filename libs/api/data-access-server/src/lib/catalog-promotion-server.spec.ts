@@ -1,5 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { promoteCatalogFromStagingToProduction } from './catalog-promotion-server';
+import {
+  previewCatalogPromotionFromStagingToProduction,
+  promoteCatalogFromStagingToProduction,
+} from './catalog-promotion-server';
 
 function createSelectBuilder(rows: readonly Record<string, unknown>[]) {
   let rangeStart = 0;
@@ -135,6 +138,276 @@ function createPromotionSupabaseClient({
 }
 
 describe('catalog promotion server', () => {
+  test('uses the explicit production Supabase config instead of the generic server config', async () => {
+    const originalEnvironment = {
+      SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY'],
+      SUPABASE_SERVICE_ROLE_KEY_PRODUCTION:
+        process.env['SUPABASE_SERVICE_ROLE_KEY_PRODUCTION'],
+      SUPABASE_SERVICE_ROLE_KEY_STAGING:
+        process.env['SUPABASE_SERVICE_ROLE_KEY_STAGING'],
+      SUPABASE_URL: process.env['SUPABASE_URL'],
+      SUPABASE_URL_PRODUCTION: process.env['SUPABASE_URL_PRODUCTION'],
+      SUPABASE_URL_STAGING: process.env['SUPABASE_URL_STAGING'],
+    };
+
+    try {
+      process.env['SUPABASE_URL'] = 'https://server-runtime.supabase.co';
+      process.env['SUPABASE_SERVICE_ROLE_KEY'] = 'server-secret';
+      process.env['SUPABASE_URL_STAGING'] = 'https://staging.supabase.co';
+      process.env['SUPABASE_SERVICE_ROLE_KEY_STAGING'] = 'staging-secret';
+      process.env['SUPABASE_URL_PRODUCTION'] = 'https://staging.supabase.co';
+      process.env['SUPABASE_SERVICE_ROLE_KEY_PRODUCTION'] = 'production-secret';
+
+      await expect(
+        previewCatalogPromotionFromStagingToProduction(),
+      ).rejects.toThrow(
+        'refusing to compare/promote identical Supabase targets',
+      );
+    } finally {
+      for (const [key, value] of Object.entries(originalEnvironment)) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  test('fails loudly when production Supabase config is missing', async () => {
+    const originalEnvironment = {
+      SUPABASE_SERVICE_ROLE_KEY_PRODUCTION:
+        process.env['SUPABASE_SERVICE_ROLE_KEY_PRODUCTION'],
+      SUPABASE_SERVICE_ROLE_KEY_STAGING:
+        process.env['SUPABASE_SERVICE_ROLE_KEY_STAGING'],
+      SUPABASE_URL_PRODUCTION: process.env['SUPABASE_URL_PRODUCTION'],
+      SUPABASE_URL_STAGING: process.env['SUPABASE_URL_STAGING'],
+    };
+
+    try {
+      process.env['SUPABASE_URL_STAGING'] = 'https://staging.supabase.co';
+      process.env['SUPABASE_SERVICE_ROLE_KEY_STAGING'] = 'staging-secret';
+      delete process.env['SUPABASE_URL_PRODUCTION'];
+      delete process.env['SUPABASE_SERVICE_ROLE_KEY_PRODUCTION'];
+
+      await expect(
+        previewCatalogPromotionFromStagingToProduction(),
+      ).rejects.toThrow('production Supabase config missing');
+    } finally {
+      for (const [key, value] of Object.entries(originalEnvironment)) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  test('skips heavy collection snapshots in the default promotion preview', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        catalog_set_minifig_summaries: [],
+        catalog_set_source_metadata: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        catalog_set_minifig_summaries: [],
+        catalog_set_source_metadata: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+
+    const result = await previewCatalogPromotionFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient,
+      createStagingSupabaseClient: () => stagingClient,
+      now: () => new Date('2026-04-22T08:00:00.000Z'),
+    });
+
+    expect(result.skippedHeavyTables).toEqual(['collection_page_snapshots']);
+    expect(result.tables.collection_page_snapshots).toEqual({
+      insertedCount: 0,
+      readCount: 0,
+      skipped: true,
+      strategy: 'heavy_skipped',
+      updatedCount: 0,
+      warning: 'Skipped in lightweight preview.',
+    });
+    expect(result.excludedTables).toEqual([
+      'commerce_merchants',
+      'commerce_benchmark_sets',
+      'commerce_offer_seeds',
+    ]);
+    expect(result.tables.commerce_merchants).toEqual({
+      insertedCount: 0,
+      readCount: 0,
+      skipped: true,
+      strategy: 'excluded',
+      updatedCount: 0,
+      warning: 'Excluded from catalog promotion by default.',
+    });
+    expect(stagingClient.from).not.toHaveBeenCalledWith(
+      'collection_page_snapshots',
+    );
+    expect(stagingClient.from).not.toHaveBeenCalledWith('commerce_merchants');
+    expect(stagingClient.from).not.toHaveBeenCalledWith(
+      'commerce_benchmark_sets',
+    );
+    expect(stagingClient.from).not.toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'collection_page_snapshots',
+    );
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'commerce_merchants',
+    );
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'commerce_benchmark_sets',
+    );
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+  });
+
+  test('reports meaningful pending changes when production lacks staging catalog rows', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/40519.jpg',
+            name: 'New York Postcard',
+            piece_count: 253,
+            primary_theme_id: 'other',
+            release_year: 2022,
+            set_id: '40519',
+            slug: 'new-york-postcard-40519',
+            source: 'rebrickable',
+            source_set_number: '40519-1',
+            source_theme_id: 'rebrickable-theme-other',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_set_minifig_summaries: [],
+        catalog_set_source_metadata: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_sets: [],
+      },
+    });
+
+    const result = await previewCatalogPromotionFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient,
+      createStagingSupabaseClient: () => stagingClient,
+      now: () => new Date('2026-04-22T08:00:00.000Z'),
+    });
+
+    expect(result.tables.catalog_sets).toEqual({
+      insertedCount: 1,
+      readCount: 1,
+      skipped: false,
+      strategy: 'sample_diff',
+      updatedCount: 0,
+    });
+    expect(result.meaningfulPendingPromoteCount).toBe(1);
+    expect(result.operatorSummary.sets.insertedCount).toBe(1);
+  });
+
+  test('excludes commerce seed tables from default catalog promotion', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        catalog_set_minifig_summaries: [],
+        catalog_set_source_metadata: [],
+        collection_page_snapshots: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            notes: '',
+            set_id: '10316',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_offer_seeds: createOfferSeedRows(1),
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds:
+          createProductionOfferSeedRowsWithTargetAtRow1001(),
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+    });
+
+    expect(result.excludedTables).toEqual([
+      'commerce_merchants',
+      'commerce_benchmark_sets',
+      'commerce_offer_seeds',
+    ]);
+    expect(result.tables.commerce_merchants).toBeUndefined();
+    expect(result.tables.commerce_benchmark_sets).toBeUndefined();
+    expect(result.tables.commerce_offer_seeds).toBeUndefined();
+    expect(stagingClient.from).not.toHaveBeenCalledWith('commerce_merchants');
+    expect(stagingClient.from).not.toHaveBeenCalledWith(
+      'commerce_benchmark_sets',
+    );
+    expect(stagingClient.from).not.toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'commerce_merchants',
+    );
+    expect(productionClient.from).not.toHaveBeenCalledWith(
+      'commerce_offer_seeds',
+    );
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toBeUndefined();
+  });
+
   test('upserts merchants by slug and offer seeds by set plus merchant without overwriting production ids', async () => {
     const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
       // Keep promotion diagnostics out of the test output.
@@ -381,6 +654,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -724,6 +998,7 @@ describe('catalog promotion server', () => {
     });
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
+        catalog_sets: createCatalogSetRows(1001),
         catalog_set_source_metadata: bricksetMetadataRows,
       },
     });
@@ -762,6 +1037,134 @@ describe('catalog promotion server', () => {
       }),
     );
     consoleInfoSpy.mockRestore();
+  });
+
+  test('promotes high and medium Rakuten source metadata without commerce rows', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/40519.jpg',
+            name: 'New York Postcard',
+            piece_count: 253,
+            primary_theme_id: 'other',
+            release_year: 2022,
+            set_id: '40519',
+            slug: 'new-york-postcard-40519',
+            source: 'rebrickable',
+            source_set_number: '40519-1',
+            source_theme_id: 'rebrickable-theme-other',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/10341.jpg',
+            name: 'NASA Artemis Space Launch System',
+            piece_count: 3601,
+            primary_theme_id: 'icons',
+            release_year: 2024,
+            set_id: '10341',
+            slug: 'nasa-artemis-space-launch-system-10341',
+            source: 'rebrickable',
+            source_set_number: '10341-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_set_source_metadata: [
+          {
+            catalog_set_id: '40519',
+            last_seen_at: '2026-05-26T08:00:00.000Z',
+            locale: 'nl-NL',
+            match_confidence: 'high',
+            metadata_json: {
+              localized_title_nl: 'Ansichtkaart van New York',
+              referencePriceEvidence: {
+                amount: 1499,
+                currency: 'EUR',
+                usage: 'reference_price_only',
+              },
+              usage: 'reference_price_only',
+            },
+            policy: 'metadata_only_pending_audit',
+            set_number: '40519',
+            source: 'rakuten-lego-eu',
+          },
+          {
+            catalog_set_id: '10341',
+            last_seen_at: '2026-05-26T08:00:00.000Z',
+            locale: 'nl-NL',
+            match_confidence: 'medium',
+            metadata_json: {
+              localized_title_nl: 'NASA Artemis ruimtelanceersysteem',
+              usage: 'reference_price_only',
+            },
+            policy: 'metadata_only_pending_audit',
+            set_number: '10341',
+            source: 'rakuten-lego-eu',
+          },
+        ],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-lego',
+            is_active: true,
+            name: 'LEGO',
+            notes: '',
+            slug: 'rakuten-lego-eu',
+            source_type: 'affiliate_feed',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_offer_seeds: createOfferSeedRows(1),
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+    });
+
+    expect(result.tables.catalog_set_source_metadata).toEqual({
+      insertedCount: 2,
+      readCount: 2,
+      updatedCount: 0,
+      upsertedCount: 2,
+    });
+    expect(result.rakuten_source_metadata_promoted_count).toBe(2);
+    expect(result.rakutenSourceMetadataPromotedCount).toBe(2);
+    expect(
+      productionClient.upsertByTable.get('catalog_set_source_metadata'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          catalog_set_id: '40519',
+          match_confidence: 'high',
+          source: 'rakuten-lego-eu',
+        }),
+        expect.objectContaining({
+          catalog_set_id: '10341',
+          match_confidence: 'medium',
+          source: 'rakuten-lego-eu',
+        }),
+      ],
+      {
+        onConflict: 'catalog_set_id,source,locale',
+      },
+    );
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toBeUndefined();
   });
 
   test('defaults null catalog source theme timestamps before production upsert', async () => {
@@ -803,6 +1206,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -910,6 +1314,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -986,6 +1391,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1080,6 +1486,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1163,6 +1570,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1251,6 +1659,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1331,6 +1740,7 @@ describe('catalog promotion server', () => {
     await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1430,6 +1840,7 @@ describe('catalog promotion server', () => {
       promoteCatalogFromStagingToProduction({
         createProductionSupabaseClient: () => productionClient as never,
         createStagingSupabaseClient: () => stagingClient as never,
+        includeCommerceSeeds: true,
         now: vi
           .fn()
           .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -1540,6 +1951,7 @@ describe('catalog promotion server', () => {
       promoteCatalogFromStagingToProduction({
         createProductionSupabaseClient: () => productionClient as never,
         createStagingSupabaseClient: () => stagingClient as never,
+        includeCommerceSeeds: true,
         now: vi
           .fn()
           .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -2454,6 +2866,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -2499,6 +2912,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -2558,6 +2972,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
@@ -2915,6 +3330,7 @@ describe('catalog promotion server', () => {
     const result = await promoteCatalogFromStagingToProduction({
       createProductionSupabaseClient: () => productionClient as never,
       createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
       now: vi
         .fn()
         .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))

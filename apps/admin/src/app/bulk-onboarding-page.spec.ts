@@ -5,6 +5,7 @@ import {
   CommerceAdminApiService,
   type CommerceAdminBulkOnboardingRun,
   type CommerceAdminBulkOnboardingStartResult,
+  type CommerceAdminCatalogDiscoveryCandidate,
   type CommerceAdminCatalogSetSummary,
   CommerceAdminBulkOnboardingPageComponent,
 } from '@lego-platform/commerce/feature-admin';
@@ -21,7 +22,7 @@ type BulkOnboardingApiStub = Pick<
   | 'getCatalogBulkOnboardingRun'
   | 'getLatestCatalogBulkOnboardingRun'
   | 'listCatalogSets'
-  | 'listCatalogSuggestedSets'
+  | 'listCatalogDiscoveryCandidates'
   | 'searchCatalogMissingSets'
   | 'startCatalogBulkOnboarding'
 >;
@@ -68,6 +69,34 @@ function createSuggestedSet(
     confidence: 'high',
     isRetailFriendlyTheme: true,
     score: 118,
+    ...overrides,
+  };
+}
+
+function createDiscoveryCandidate(
+  overrides: Partial<CommerceAdminCatalogDiscoveryCandidate> = {},
+): CommerceAdminCatalogDiscoveryCandidate {
+  const searchResult = createSearchResult();
+
+  return {
+    autoCreateEligible: true,
+    confidence: 'high',
+    confidenceScore: 118,
+    evidence: {},
+    firstSeenAt: '2026-04-19T08:00:00.000Z',
+    id: `candidate-${searchResult.setId}`,
+    lastSeenAt: '2026-04-19T08:00:00.000Z',
+    normalizedSetId: searchResult.setId,
+    operatorConfidence: 'high',
+    operatorConfidenceReasons: ['exact_enriched_match'],
+    rebrickablePayload: searchResult,
+    requiredFieldsPresent: true,
+    source: 'catalog_discovery',
+    sourcePayload: {},
+    sourceProductTitle: searchResult.name,
+    sourceProductUrl: 'https://shop.example.test/10316',
+    sourceSetNumber: searchResult.sourceSetNumber,
+    status: 'new',
     ...overrides,
   };
 }
@@ -149,7 +178,7 @@ function createApiServiceStub(
     getCatalogBulkOnboardingRun: async () => null,
     getLatestCatalogBulkOnboardingRun: async () => null,
     listCatalogSets: async () => [],
-    listCatalogSuggestedSets: async () => [],
+    listCatalogDiscoveryCandidates: async () => [],
     searchCatalogMissingSets: async () => [],
     startCatalogBulkOnboarding: async () => {
       throw new Error('not used');
@@ -385,17 +414,24 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
         {
           provide: CommerceAdminApiService,
           useValue: createApiServiceStub({
-            listCatalogSuggestedSets: async () => [
-              createSuggestedSet({
-                imageUrl: 'https://images.example.test/10312.jpg',
-                name: 'Jazz Club',
-                pieces: 2899,
-                releaseYear: 2023,
-                score: 112,
-                setId: '10312',
-                slug: 'jazz-club-10312',
+            listCatalogDiscoveryCandidates: async () => [
+              createDiscoveryCandidate({
+                confidenceScore: 112,
+                id: 'candidate-10312',
+                normalizedSetId: '10312',
+                rebrickablePayload: {
+                  imageUrl: 'https://images.example.test/10312.jpg',
+                  name: 'Jazz Club',
+                  pieces: 2899,
+                  releaseYear: 2023,
+                  setId: '10312',
+                  slug: 'jazz-club-10312',
+                  source: 'rebrickable',
+                  sourceSetNumber: '10312-1',
+                  theme: 'Icons',
+                },
+                sourceProductTitle: 'Jazz Club',
                 sourceSetNumber: '10312-1',
-                theme: 'Icons',
               }),
             ],
           }),
@@ -411,6 +447,7 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
     await fixture.whenStable();
 
     const component = fixture.componentInstance;
+    await component.loadSuggestedSets();
 
     expect(
       component.sortedSuggestedSets().map((setItem) => setItem.setId),
@@ -432,40 +469,7 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
         provideRouter([]),
         {
           provide: CommerceAdminApiService,
-          useValue: createApiServiceStub({
-            listCatalogSuggestedSets: async () => [
-              createSuggestedSet({
-                confidence: 'high',
-                isRetailFriendlyTheme: true,
-                name: 'Technic Crane',
-                score: 320,
-                setId: '42146',
-                slug: 'technic-crane-42146',
-                sourceSetNumber: '42146-1',
-                theme: 'Technic',
-              }),
-              createSuggestedSet({
-                confidence: 'medium',
-                isRetailFriendlyTheme: false,
-                name: 'Mario Kart Set',
-                score: 155,
-                setId: '72037',
-                slug: 'mario-kart-set-72037',
-                sourceSetNumber: '72037-1',
-                theme: 'Super Mario',
-              }),
-              createSuggestedSet({
-                confidence: 'experimental',
-                isRetailFriendlyTheme: false,
-                name: 'Dreamzzz Portal',
-                score: 98,
-                setId: '71490',
-                slug: 'dreamzzz-portal-71490',
-                sourceSetNumber: '71490-1',
-                theme: 'Dreamzzz',
-              }),
-            ],
-          }),
+          useValue: createApiServiceStub(),
         },
       ],
     }).compileComponents();
@@ -478,6 +482,38 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
     await fixture.whenStable();
 
     const component = fixture.componentInstance;
+    component.suggestedSets.set([
+      createSuggestedSet({
+        confidence: 'high',
+        isRetailFriendlyTheme: true,
+        name: 'Technic Crane',
+        score: 320,
+        setId: '42146',
+        slug: 'technic-crane-42146',
+        sourceSetNumber: '42146-1',
+        theme: 'Technic',
+      }),
+      createSuggestedSet({
+        confidence: 'medium',
+        isRetailFriendlyTheme: false,
+        name: 'Mario Kart Set',
+        score: 155,
+        setId: '72037',
+        slug: 'mario-kart-set-72037',
+        sourceSetNumber: '72037-1',
+        theme: 'Super Mario',
+      }),
+      createSuggestedSet({
+        confidence: 'experimental',
+        isRetailFriendlyTheme: false,
+        name: 'Dreamzzz Portal',
+        score: 98,
+        setId: '71490',
+        slug: 'dreamzzz-portal-71490',
+        sourceSetNumber: '71490-1',
+        theme: 'Dreamzzz',
+      }),
+    ]);
 
     expect(
       component.sortedSuggestedSets().map((setItem) => setItem.setId),

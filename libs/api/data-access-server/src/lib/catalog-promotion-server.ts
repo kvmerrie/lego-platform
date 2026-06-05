@@ -1,6 +1,6 @@
 import { createSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import {
-  getServerSupabaseConfig,
+  getProductionSupabaseConfig,
   getStagingSupabaseConfig,
 } from '@lego-platform/shared/config';
 import { CATALOG_SETS_TABLE } from '@lego-platform/catalog/data-access-server';
@@ -25,6 +25,11 @@ const BRICKSET_SOURCE_METADATA_SOURCE = 'brickset';
 const RAKUTEN_LEGO_SOURCE_METADATA_SOURCE = 'rakuten-lego-eu';
 const RAKUTEN_LEGO_SOURCE_METADATA_LOCALE = 'nl-NL';
 const EXACT_SET_NUMBER_MATCH_CONFIDENCE = 'exact_set_number';
+const RAKUTEN_SOURCE_METADATA_PROMOTABLE_CONFIDENCES = new Set([
+  EXACT_SET_NUMBER_MATCH_CONFIDENCE,
+  'high',
+  'medium',
+]);
 const CATALOG_PROMOTION_PAGE_SIZE = 1000;
 const CATALOG_PROMOTION_NON_PRICE_COLLECTION_SNAPSHOT_SLUGS = new Set([
   'nieuwe-lego-sets',
@@ -38,6 +43,11 @@ const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   COLLECTION_PAGE_SNAPSHOTS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
+const CATALOG_PROMOTION_COMMERCE_SEED_TABLES = [
+  COMMERCE_MERCHANTS_TABLE,
+  COMMERCE_BENCHMARK_SETS_TABLE,
+  COMMERCE_OFFER_SEEDS_TABLE,
+] as const;
 const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
   CATALOG_SOURCE_THEMES_TABLE,
   CATALOG_THEMES_TABLE,
@@ -394,6 +404,40 @@ export interface CatalogPromotionTableSummary {
   upsertedCount: number;
 }
 
+export interface CatalogPromotionPreviewTableSummary {
+  insertedCount: number;
+  readCount: number;
+  skipped: boolean;
+  strategy: 'excluded' | 'heavy_skipped' | 'sample_diff';
+  updatedCount: number;
+  warning?: string;
+}
+
+export interface CatalogPromotionPreviewSample {
+  changeType: 'insert' | 'update';
+  changedFields: string[];
+  key: string;
+  table: string;
+}
+
+export interface CatalogPromotionPreviewResult {
+  generatedAt: string;
+  meaningfulPendingPromoteCount: number;
+  operatorSummary: {
+    mappings: CatalogPromotionPreviewTableSummary;
+    sets: CatalogPromotionPreviewTableSummary;
+    themes: CatalogPromotionPreviewTableSummary;
+  };
+  pendingPromoteCount: number;
+  excludedTables?: string[];
+  samples: CatalogPromotionPreviewSample[];
+  skippedHeavyTables: string[];
+  sourceEnvironment: 'staging';
+  status: 'ok';
+  tables: Record<string, CatalogPromotionPreviewTableSummary>;
+  targetEnvironment: 'production';
+}
+
 export interface CatalogPromotionResult {
   brickset_source_metadata_promoted_count?: number;
   bricksetSourceMetadataPromotedCount?: number;
@@ -425,17 +469,24 @@ export interface CatalogPromotionResult {
     catalog_set_minifig_summaries: CatalogPromotionTableSummary;
     catalog_set_source_metadata?: CatalogPromotionTableSummary;
     collection_page_snapshots?: CatalogPromotionTableSummary;
-    commerce_merchants: CatalogPromotionTableSummary;
-    commerce_benchmark_sets: CatalogPromotionTableSummary;
-    commerce_offer_seeds: CatalogPromotionTableSummary;
+    commerce_merchants?: CatalogPromotionTableSummary;
+    commerce_benchmark_sets?: CatalogPromotionTableSummary;
+    commerce_offer_seeds?: CatalogPromotionTableSummary;
   };
+  excludedTables?: string[];
 }
 
 export interface PromoteCatalogFromStagingToProductionDependencies {
   createProductionSupabaseClient?: () => CatalogPromotionSupabaseClient;
   createStagingSupabaseClient?: () => CatalogPromotionSupabaseClient;
+  includeCommerceSeeds?: boolean;
   now?: () => Date;
 }
+
+export type PreviewCatalogPromotionDependencies =
+  PromoteCatalogFromStagingToProductionDependencies & {
+    includeHeavy?: boolean;
+  };
 
 interface CommerceMerchantPromotionPlan {
   merchantIdByStagingId: Map<string, string>;
@@ -465,6 +516,126 @@ export class CatalogPromotionError extends Error {
     super(message);
     this.name = 'CatalogPromotionError';
   }
+}
+
+const CATALOG_PROMOTION_PREVIEW_TABLES = [
+  {
+    columns:
+      'id, source_system, source_theme_name, parent_source_theme_id, created_at, updated_at',
+    onConflict: 'id',
+    orderBy: 'id',
+    table: CATALOG_SOURCE_THEMES_TABLE,
+  },
+  {
+    columns:
+      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
+    onConflict: 'id',
+    orderBy: 'slug',
+    table: CATALOG_THEMES_TABLE,
+  },
+  {
+    columns: 'source_theme_id, primary_theme_id, created_at, updated_at',
+    onConflict: 'source_theme_id',
+    orderBy: 'source_theme_id',
+    table: CATALOG_THEME_MAPPINGS_TABLE,
+  },
+  {
+    columns:
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+    onConflict: 'set_id',
+    orderBy: 'created_at',
+    table: CATALOG_SETS_TABLE,
+  },
+  {
+    columns:
+      'set_id, source_system, minifig_count, source_minifig_count, synced_at, created_at, updated_at',
+    onConflict: 'set_id',
+    orderBy: 'set_id',
+    table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+  },
+  {
+    columns:
+      'catalog_set_id, set_number, source, locale, metadata_json, match_confidence, policy, last_seen_at',
+    onConflict: 'catalog_set_id,source,locale',
+    orderBy: 'catalog_set_id',
+    table: CATALOG_SET_SOURCE_METADATA_TABLE,
+  },
+  {
+    columns:
+      'collection_slug, sort_key, page, page_size, total_count, items_json, source_version, snapshot_source, generated_at, created_at, updated_at',
+    heavy: true,
+    onConflict: 'collection_slug,sort_key,page,page_size',
+    orderBy: 'collection_slug',
+    table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+  },
+  {
+    columns:
+      'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
+    commerceSeed: true,
+    onConflict: 'slug',
+    orderBy: 'slug',
+    table: COMMERCE_MERCHANTS_TABLE,
+  },
+  {
+    columns: 'set_id, notes, created_at, updated_at',
+    commerceSeed: true,
+    onConflict: 'set_id',
+    orderBy: 'set_id',
+    table: COMMERCE_BENCHMARK_SETS_TABLE,
+  },
+  {
+    columns:
+      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+    commerceSeed: true,
+    onConflict: 'set_id,merchant_id',
+    orderBy: 'created_at',
+    table: COMMERCE_OFFER_SEEDS_TABLE,
+  },
+] as const;
+
+type CatalogPromotionPreviewTableConfig =
+  (typeof CATALOG_PROMOTION_PREVIEW_TABLES)[number];
+
+function isHeavyPromotionPreviewTable(
+  tableConfig: CatalogPromotionPreviewTableConfig,
+): boolean {
+  return 'heavy' in tableConfig && tableConfig.heavy === true;
+}
+
+function isCommerceSeedPromotionTable(
+  table: string,
+): table is (typeof CATALOG_PROMOTION_COMMERCE_SEED_TABLES)[number] {
+  return CATALOG_PROMOTION_COMMERCE_SEED_TABLES.includes(
+    table as (typeof CATALOG_PROMOTION_COMMERCE_SEED_TABLES)[number],
+  );
+}
+
+function isCommerceSeedPromotionTableConfig(
+  tableConfig: CatalogPromotionPreviewTableConfig,
+): boolean {
+  return 'commerceSeed' in tableConfig && tableConfig.commerceSeed === true;
+}
+
+function listPromotionPreviewTableConfigs({
+  includeCommerceSeeds,
+}: {
+  includeCommerceSeeds: boolean;
+}): readonly CatalogPromotionPreviewTableConfig[] {
+  return CATALOG_PROMOTION_PREVIEW_TABLES.filter(
+    (tableConfig) =>
+      includeCommerceSeeds || !isCommerceSeedPromotionTableConfig(tableConfig),
+  );
+}
+
+function buildExcludedPreviewTableSummary(): CatalogPromotionPreviewTableSummary {
+  return {
+    insertedCount: 0,
+    readCount: 0,
+    skipped: true,
+    strategy: 'excluded',
+    updatedCount: 0,
+    warning: 'Excluded from catalog promotion by default.',
+  };
 }
 
 function chunkValues<TValue>(
@@ -588,6 +759,14 @@ function readOptionalPromotionString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
+function readOptionalPromotionRecord(
+  value: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Readonly<Record<string, unknown>>)
+    : undefined;
+}
+
 function hasInvalidPromotionTimestamp(value: unknown): boolean {
   return (
     value === null ||
@@ -613,6 +792,83 @@ function normalizePromotionTimestamps<
     created_at: readOptionalPromotionString(row.created_at) ?? nowIso,
     updated_at: readOptionalPromotionString(row.updated_at) ?? nowIso,
   };
+}
+
+function hasReferencePriceOnlyUsage(metadataJson: unknown): boolean {
+  const metadata = readOptionalPromotionRecord(metadataJson);
+
+  if (!metadata) {
+    return false;
+  }
+
+  if (metadata['usage'] === 'reference_price_only') {
+    return true;
+  }
+
+  const referencePriceEvidence = readOptionalPromotionRecord(
+    metadata['referencePriceEvidence'],
+  );
+
+  return referencePriceEvidence?.['usage'] === 'reference_price_only';
+}
+
+function isCatalogSetSourceMetadataRowPromotable({
+  promotedCatalogSetIds,
+  row,
+}: {
+  promotedCatalogSetIds: ReadonlySet<string>;
+  row: Pick<
+    CatalogSetSourceMetadataRow,
+    | 'catalog_set_id'
+    | 'locale'
+    | 'match_confidence'
+    | 'metadata_json'
+    | 'source'
+  >;
+}): boolean {
+  if (!promotedCatalogSetIds.has(row.catalog_set_id)) {
+    return false;
+  }
+
+  if (row.source === BRICKSET_SOURCE_METADATA_SOURCE) {
+    return true;
+  }
+
+  if (
+    row.source !== RAKUTEN_LEGO_SOURCE_METADATA_SOURCE ||
+    row.locale !== RAKUTEN_LEGO_SOURCE_METADATA_LOCALE
+  ) {
+    return false;
+  }
+
+  return (
+    RAKUTEN_SOURCE_METADATA_PROMOTABLE_CONFIDENCES.has(row.match_confidence) ||
+    hasReferencePriceOnlyUsage(row.metadata_json)
+  );
+}
+
+function filterCatalogSetSourceMetadataRowsForPromotion<
+  TRow extends Pick<
+    CatalogSetSourceMetadataRow,
+    | 'catalog_set_id'
+    | 'locale'
+    | 'match_confidence'
+    | 'metadata_json'
+    | 'source'
+  >,
+>({
+  promotedCatalogSetIds,
+  rows,
+}: {
+  promotedCatalogSetIds: ReadonlySet<string>;
+  rows: readonly TRow[];
+}): TRow[] {
+  return rows.filter((row) =>
+    isCatalogSetSourceMetadataRowPromotable({
+      promotedCatalogSetIds,
+      row,
+    }),
+  );
 }
 
 function countRowsWithInvalidPromotionTimestamp({
@@ -1220,13 +1476,25 @@ function createPromotionClients(): {
   productionSupabaseClient: CatalogPromotionSupabaseClient;
   stagingSupabaseClient: CatalogPromotionSupabaseClient;
 } {
+  let productionSupabaseConfig: ReturnType<typeof getProductionSupabaseConfig>;
+
+  try {
+    productionSupabaseConfig = getProductionSupabaseConfig();
+  } catch (error) {
+    throw new Error('production Supabase config missing');
+  }
+
+  const stagingSupabaseConfig = getStagingSupabaseConfig();
+
+  if (stagingSupabaseConfig.url === productionSupabaseConfig.url) {
+    throw new Error('refusing to compare/promote identical Supabase targets');
+  }
+
   return {
     productionSupabaseClient: createSupabaseAdminClient(
-      getServerSupabaseConfig(),
+      productionSupabaseConfig,
     ),
-    stagingSupabaseClient: createSupabaseAdminClient(
-      getStagingSupabaseConfig(),
-    ),
+    stagingSupabaseClient: createSupabaseAdminClient(stagingSupabaseConfig),
   };
 }
 
@@ -1311,6 +1579,131 @@ function listExistingPromotionInspectionColumns({
       ...(ownership?.protected ?? []),
     ]),
   ].join(', ');
+}
+
+function listPromotionPreviewColumns({
+  columns,
+  onConflict,
+  table,
+}: {
+  columns: string;
+  onConflict: string;
+  table: string;
+}): string {
+  return [
+    ...new Set([
+      ...columns
+        .split(',')
+        .map((column) => column.trim())
+        .filter(Boolean),
+      ...listExistingPromotionInspectionColumns({
+        conflictColumns: splitConflictColumns(onConflict),
+        table,
+      })
+        .split(',')
+        .map((column) => column.trim())
+        .filter(Boolean),
+    ]),
+  ].join(', ');
+}
+
+async function previewPromotionTable({
+  columns,
+  onConflict,
+  orderBy,
+  promotedCatalogSetIds,
+  productionSupabaseClient,
+  samples,
+  stagingSupabaseClient,
+  table,
+}: {
+  columns: string;
+  onConflict: string;
+  orderBy: string;
+  promotedCatalogSetIds?: ReadonlySet<string>;
+  productionSupabaseClient: CatalogPromotionSupabaseClient;
+  samples: CatalogPromotionPreviewSample[];
+  stagingSupabaseClient: CatalogPromotionSupabaseClient;
+  table: string;
+}): Promise<CatalogPromotionPreviewTableSummary> {
+  const conflictColumns = splitConflictColumns(onConflict);
+  const previewColumns = listPromotionPreviewColumns({
+    columns,
+    onConflict,
+    table,
+  });
+  const stagingRows = await readOrderedRows<Record<string, unknown>>({
+    columns: previewColumns,
+    orderBy,
+    supabaseClient: stagingSupabaseClient,
+    table,
+  });
+  const promotableStagingRows: Record<string, unknown>[] =
+    table === CATALOG_SET_SOURCE_METADATA_TABLE && promotedCatalogSetIds
+      ? (filterCatalogSetSourceMetadataRowsForPromotion({
+          promotedCatalogSetIds,
+          rows: stagingRows as unknown as CatalogSetSourceMetadataRow[],
+        }) as unknown as Record<string, unknown>[])
+      : stagingRows;
+  const productionRowsByConflictKey = await listExistingConflictRows({
+    onConflict,
+    supabaseClient: productionSupabaseClient,
+    table,
+  });
+  const mutableColumns =
+    CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE[table] ?? [];
+  let insertedCount = 0;
+  let updatedCount = 0;
+
+  for (const row of promotableStagingRows) {
+    const conflictKey = buildConflictKey({
+      columns: conflictColumns,
+      row,
+    });
+    const productionRow = productionRowsByConflictKey.get(conflictKey);
+
+    if (!productionRow) {
+      insertedCount += 1;
+
+      if (samples.length < 25) {
+        samples.push({
+          changeType: 'insert',
+          changedFields: conflictColumns,
+          key: conflictKey,
+          table,
+        });
+      }
+
+      continue;
+    }
+
+    const changedFields = mutableColumns.filter((column) =>
+      Object.prototype.hasOwnProperty.call(row, column)
+        ? !valuesArePromotionEqual(row[column], productionRow[column])
+        : false,
+    );
+
+    if (changedFields.length > 0) {
+      updatedCount += 1;
+
+      if (samples.length < 25) {
+        samples.push({
+          changeType: 'update',
+          changedFields,
+          key: conflictKey,
+          table,
+        });
+      }
+    }
+  }
+
+  return {
+    insertedCount,
+    readCount: promotableStagingRows.length,
+    skipped: false,
+    strategy: 'sample_diff',
+    updatedCount,
+  };
 }
 
 async function listExistingConflictRows({
@@ -1874,6 +2267,7 @@ async function upsertOfferSeedsByCompositeKey({
 export async function promoteCatalogFromStagingToProduction({
   createProductionSupabaseClient,
   createStagingSupabaseClient,
+  includeCommerceSeeds = false,
   now = () => new Date(),
 }: PromoteCatalogFromStagingToProductionDependencies = {}): Promise<CatalogPromotionResult> {
   const startedAt = now();
@@ -1891,6 +2285,9 @@ export async function promoteCatalogFromStagingToProduction({
     createProductionSupabaseClient?.() ??
     getPromotionClients().productionSupabaseClient;
   const tables: Partial<CatalogPromotionResult['tables']> = {};
+  const excludedTables = includeCommerceSeeds
+    ? []
+    : [...CATALOG_PROMOTION_COMMERCE_SEED_TABLES];
 
   try {
     const [
@@ -1901,9 +2298,6 @@ export async function promoteCatalogFromStagingToProduction({
       catalogSetMinifigSummaries,
       catalogSetSourceMetadata,
       collectionPageSnapshots,
-      commerceMerchants,
-      commerceBenchmarkSets,
-      commerceOfferSeeds,
     ] = await Promise.all([
       readOrderedRows<CatalogSourceThemeRow>({
         columns:
@@ -1953,36 +2347,47 @@ export async function promoteCatalogFromStagingToProduction({
         supabaseClient: stagingSupabaseClient,
         table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
       }),
-      readOrderedRows<CommerceMerchantRow>({
-        columns:
-          'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
-        orderBy: 'slug',
-        supabaseClient: stagingSupabaseClient,
-        table: COMMERCE_MERCHANTS_TABLE,
-      }),
-      readOrderedRows<CommerceBenchmarkSetRow>({
-        columns: 'set_id, notes, created_at, updated_at',
-        orderBy: 'set_id',
-        supabaseClient: stagingSupabaseClient,
-        table: COMMERCE_BENCHMARK_SETS_TABLE,
-      }),
-      readOrderedRows<CommerceOfferSeedRow>({
-        columns:
-          'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
-        orderBy: 'created_at',
-        supabaseClient: stagingSupabaseClient,
-        table: COMMERCE_OFFER_SEEDS_TABLE,
-      }),
     ]);
+    const [commerceMerchants, commerceBenchmarkSets, commerceOfferSeeds] =
+      includeCommerceSeeds
+        ? await Promise.all([
+            readOrderedRows<CommerceMerchantRow>({
+              columns:
+                'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
+              orderBy: 'slug',
+              supabaseClient: stagingSupabaseClient,
+              table: COMMERCE_MERCHANTS_TABLE,
+            }),
+            readOrderedRows<CommerceBenchmarkSetRow>({
+              columns: 'set_id, notes, created_at, updated_at',
+              orderBy: 'set_id',
+              supabaseClient: stagingSupabaseClient,
+              table: COMMERCE_BENCHMARK_SETS_TABLE,
+            }),
+            readOrderedRows<CommerceOfferSeedRow>({
+              columns:
+                'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+              orderBy: 'created_at',
+              supabaseClient: stagingSupabaseClient,
+              table: COMMERCE_OFFER_SEEDS_TABLE,
+            }),
+          ])
+        : [
+            [] as CommerceMerchantRow[],
+            [] as CommerceBenchmarkSetRow[],
+            [] as CommerceOfferSeedRow[],
+          ];
 
     assertPromotionReadWasNotDefaultCapped({
       readCount: catalogSets.length,
       table: CATALOG_SETS_TABLE,
     });
-    assertPromotionReadWasNotDefaultCapped({
-      readCount: commerceOfferSeeds.length,
-      table: COMMERCE_OFFER_SEEDS_TABLE,
-    });
+    if (includeCommerceSeeds) {
+      assertPromotionReadWasNotDefaultCapped({
+        readCount: commerceOfferSeeds.length,
+        table: COMMERCE_OFFER_SEEDS_TABLE,
+      });
+    }
     assertPromotionReadWasNotDefaultCapped({
       readCount: catalogSetMinifigSummaries.length,
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
@@ -2043,13 +2448,14 @@ export async function promoteCatalogFromStagingToProduction({
           summary,
         }),
     );
-    const normalizedCatalogSetSourceMetadata = catalogSetSourceMetadata.filter(
-      (row) =>
-        (row.source === RAKUTEN_LEGO_SOURCE_METADATA_SOURCE &&
-          row.locale === RAKUTEN_LEGO_SOURCE_METADATA_LOCALE &&
-          row.match_confidence === EXACT_SET_NUMBER_MATCH_CONFIDENCE) ||
-        row.source === BRICKSET_SOURCE_METADATA_SOURCE,
+    const promotedCatalogSetIds = new Set(
+      normalizedCatalogSets.map((catalogSet) => catalogSet.set_id),
     );
+    const normalizedCatalogSetSourceMetadata =
+      filterCatalogSetSourceMetadataRowsForPromotion({
+        promotedCatalogSetIds,
+        rows: catalogSetSourceMetadata,
+      });
     const bricksetSourceMetadataPromotedCount =
       normalizedCatalogSetSourceMetadata.filter(
         (row) => row.source === BRICKSET_SOURCE_METADATA_SOURCE,
@@ -2224,70 +2630,82 @@ export async function promoteCatalogFromStagingToProduction({
       >[],
       table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
     });
-    validatePromotionRowsRequiredColumns({
-      columns: [
-        'id',
-        'slug',
-        'name',
-        'source_type',
-        'created_at',
-        'updated_at',
-      ],
-      rows: normalizedCommerceMerchants as unknown as Readonly<
-        Record<string, unknown>
-      >[],
-      table: COMMERCE_MERCHANTS_TABLE,
-    });
-    validatePromotionRowsRequiredBooleanColumns({
-      columns: ['is_active'],
-      rows: normalizedCommerceMerchants as unknown as Readonly<
-        Record<string, unknown>
-      >[],
-      table: COMMERCE_MERCHANTS_TABLE,
-    });
-    validatePromotionRowsRequiredColumns({
-      columns: ['set_id', 'created_at', 'updated_at'],
-      rows: normalizedCommerceBenchmarkSets as unknown as Readonly<
-        Record<string, unknown>
-      >[],
-      table: COMMERCE_BENCHMARK_SETS_TABLE,
-    });
+    if (includeCommerceSeeds) {
+      validatePromotionRowsRequiredColumns({
+        columns: [
+          'id',
+          'slug',
+          'name',
+          'source_type',
+          'created_at',
+          'updated_at',
+        ],
+        rows: normalizedCommerceMerchants as unknown as Readonly<
+          Record<string, unknown>
+        >[],
+        table: COMMERCE_MERCHANTS_TABLE,
+      });
+      validatePromotionRowsRequiredBooleanColumns({
+        columns: ['is_active'],
+        rows: normalizedCommerceMerchants as unknown as Readonly<
+          Record<string, unknown>
+        >[],
+        table: COMMERCE_MERCHANTS_TABLE,
+      });
+      validatePromotionRowsRequiredColumns({
+        columns: ['set_id', 'created_at', 'updated_at'],
+        rows: normalizedCommerceBenchmarkSets as unknown as Readonly<
+          Record<string, unknown>
+        >[],
+        table: COMMERCE_BENCHMARK_SETS_TABLE,
+      });
+    }
 
-    const merchantPromotionPlan = await planMerchantsBySlug({
-      rows: normalizedCommerceMerchants,
-      supabaseClient: productionSupabaseClient,
-    });
-    const existingOfferSeeds = await listProductionOfferSeeds({
-      supabaseClient: productionSupabaseClient,
-    });
-    const resolvedCommerceOfferSeeds = resolveOfferSeedsByCompositeKey({
-      existingOfferSeeds,
-      merchantIdByStagingId: merchantPromotionPlan.merchantIdByStagingId,
-      nowIso: startedAt.toISOString(),
-      rows: normalizedCommerceOfferSeeds,
-    });
-    validatePromotionRowsRequiredColumns({
-      columns: [
-        'id',
-        'set_id',
-        'merchant_id',
-        'product_url',
-        'validation_status',
-        'created_at',
-        'updated_at',
-      ],
-      rows: resolvedCommerceOfferSeeds as unknown as Readonly<
-        Record<string, unknown>
-      >[],
-      table: COMMERCE_OFFER_SEEDS_TABLE,
-    });
-    validatePromotionRowsRequiredBooleanColumns({
-      columns: ['is_active'],
-      rows: resolvedCommerceOfferSeeds as unknown as Readonly<
-        Record<string, unknown>
-      >[],
-      table: COMMERCE_OFFER_SEEDS_TABLE,
-    });
+    const merchantPromotionPlan = includeCommerceSeeds
+      ? await planMerchantsBySlug({
+          rows: normalizedCommerceMerchants,
+          supabaseClient: productionSupabaseClient,
+        })
+      : undefined;
+    const existingOfferSeeds = includeCommerceSeeds
+      ? await listProductionOfferSeeds({
+          supabaseClient: productionSupabaseClient,
+        })
+      : [];
+    const resolvedCommerceOfferSeeds =
+      includeCommerceSeeds && merchantPromotionPlan
+        ? resolveOfferSeedsByCompositeKey({
+            existingOfferSeeds,
+            merchantIdByStagingId: merchantPromotionPlan.merchantIdByStagingId,
+            nowIso: startedAt.toISOString(),
+            rows: normalizedCommerceOfferSeeds,
+          })
+        : [];
+
+    if (includeCommerceSeeds) {
+      validatePromotionRowsRequiredColumns({
+        columns: [
+          'id',
+          'set_id',
+          'merchant_id',
+          'product_url',
+          'validation_status',
+          'created_at',
+          'updated_at',
+        ],
+        rows: resolvedCommerceOfferSeeds as unknown as Readonly<
+          Record<string, unknown>
+        >[],
+        table: COMMERCE_OFFER_SEEDS_TABLE,
+      });
+      validatePromotionRowsRequiredBooleanColumns({
+        columns: ['is_active'],
+        rows: resolvedCommerceOfferSeeds as unknown as Readonly<
+          Record<string, unknown>
+        >[],
+        table: COMMERCE_OFFER_SEEDS_TABLE,
+      });
+    }
 
     const changedThemeSlugs = await listChangedPublicCatalogThemeSlugs({
       nowIso: startedAtIso,
@@ -2394,24 +2812,26 @@ export async function promoteCatalogFromStagingToProduction({
       });
     }
 
-    tables.commerce_merchants = await upsertMerchantsBySlug({
-      nowIso: startedAtIso,
-      plan: merchantPromotionPlan,
-      supabaseClient: productionSupabaseClient,
-    });
+    if (includeCommerceSeeds && merchantPromotionPlan) {
+      tables.commerce_merchants = await upsertMerchantsBySlug({
+        nowIso: startedAtIso,
+        plan: merchantPromotionPlan,
+        supabaseClient: productionSupabaseClient,
+      });
 
-    tables.commerce_benchmark_sets = await upsertRows({
-      nowIso: startedAtIso,
-      onConflict: 'set_id',
-      rows: normalizedCommerceBenchmarkSets,
-      supabaseClient: productionSupabaseClient,
-      table: COMMERCE_BENCHMARK_SETS_TABLE,
-    });
-    tables.commerce_offer_seeds = await upsertOfferSeedsByCompositeKey({
-      nowIso: startedAtIso,
-      rows: resolvedCommerceOfferSeeds,
-      supabaseClient: productionSupabaseClient,
-    });
+      tables.commerce_benchmark_sets = await upsertRows({
+        nowIso: startedAtIso,
+        onConflict: 'set_id',
+        rows: normalizedCommerceBenchmarkSets,
+        supabaseClient: productionSupabaseClient,
+        table: COMMERCE_BENCHMARK_SETS_TABLE,
+      });
+      tables.commerce_offer_seeds = await upsertOfferSeedsByCompositeKey({
+        nowIso: startedAtIso,
+        rows: resolvedCommerceOfferSeeds,
+        supabaseClient: productionSupabaseClient,
+      });
+    }
 
     return {
       brickset_source_metadata_promoted_count:
@@ -2440,6 +2860,7 @@ export async function promoteCatalogFromStagingToProduction({
       skippedSourceMetadataCount,
       startedAt: startedAtIso,
       status: 'ok',
+      excludedTables,
       tables: tables as CatalogPromotionResult['tables'],
     };
   } catch (error) {
@@ -2457,4 +2878,134 @@ export async function promoteCatalogFromStagingToProduction({
       tables,
     });
   }
+}
+
+export async function previewCatalogPromotionFromStagingToProduction({
+  createProductionSupabaseClient,
+  createStagingSupabaseClient,
+  includeCommerceSeeds = false,
+  includeHeavy = false,
+  now = () => new Date(),
+}: PreviewCatalogPromotionDependencies = {}): Promise<CatalogPromotionPreviewResult> {
+  let promotionClients: ReturnType<typeof createPromotionClients> | undefined;
+  const getPromotionClients = () => {
+    promotionClients ??= createPromotionClients();
+
+    return promotionClients;
+  };
+  const stagingSupabaseClient =
+    createStagingSupabaseClient?.() ??
+    getPromotionClients().stagingSupabaseClient;
+  const productionSupabaseClient =
+    createProductionSupabaseClient?.() ??
+    getPromotionClients().productionSupabaseClient;
+  const samples: CatalogPromotionPreviewSample[] = [];
+  const tableConfigs = listPromotionPreviewTableConfigs({
+    includeCommerceSeeds,
+  });
+  const excludedTables = includeCommerceSeeds
+    ? []
+    : [...CATALOG_PROMOTION_COMMERCE_SEED_TABLES];
+  const catalogSetIdRows = await readOrderedRows<Pick<CatalogSetRow, 'set_id'>>(
+    {
+      columns: 'set_id',
+      orderBy: 'created_at',
+      supabaseClient: stagingSupabaseClient,
+      table: CATALOG_SETS_TABLE,
+    },
+  );
+  const promotedCatalogSetIds = new Set(
+    catalogSetIdRows.map((catalogSet) => catalogSet.set_id),
+  );
+  const skippedHeavyTables = tableConfigs
+    .filter(
+      (tableConfig) =>
+        isHeavyPromotionPreviewTable(tableConfig) && !includeHeavy,
+    )
+    .map((tableConfig) => tableConfig.table);
+  const tableEntries = await Promise.all(
+    tableConfigs.map(async (tableConfig) => {
+      if (isHeavyPromotionPreviewTable(tableConfig) && !includeHeavy) {
+        return [
+          tableConfig.table,
+          {
+            insertedCount: 0,
+            readCount: 0,
+            skipped: true,
+            strategy: 'heavy_skipped',
+            updatedCount: 0,
+            warning: 'Skipped in lightweight preview.',
+          } satisfies CatalogPromotionPreviewTableSummary,
+        ] as const;
+      }
+
+      return [
+        tableConfig.table,
+        await previewPromotionTable({
+          ...tableConfig,
+          promotedCatalogSetIds,
+          productionSupabaseClient,
+          samples,
+          stagingSupabaseClient,
+        }),
+      ] as const;
+    }),
+  );
+  const excludedTableEntries = excludedTables.map(
+    (table) => [table, buildExcludedPreviewTableSummary()] as const,
+  );
+  const tables = Object.fromEntries(tableEntries) as Record<
+    string,
+    CatalogPromotionPreviewTableSummary
+  >;
+  for (const [table, summary] of excludedTableEntries) {
+    tables[table] = summary;
+  }
+  const pendingPromoteCount = Object.values(tables).reduce(
+    (total, tableSummary) =>
+      total + tableSummary.insertedCount + tableSummary.updatedCount,
+    0,
+  );
+  const operatorSummary = {
+    mappings: tables[CATALOG_THEME_MAPPINGS_TABLE] ?? {
+      insertedCount: 0,
+      readCount: 0,
+      skipped: false,
+      strategy: 'sample_diff',
+      updatedCount: 0,
+    },
+    sets: tables[CATALOG_SETS_TABLE] ?? {
+      insertedCount: 0,
+      readCount: 0,
+      skipped: false,
+      strategy: 'sample_diff',
+      updatedCount: 0,
+    },
+    themes: tables[CATALOG_THEMES_TABLE] ?? {
+      insertedCount: 0,
+      readCount: 0,
+      skipped: false,
+      strategy: 'sample_diff',
+      updatedCount: 0,
+    },
+  } satisfies CatalogPromotionPreviewResult['operatorSummary'];
+  const meaningfulPendingPromoteCount = Object.values(operatorSummary).reduce(
+    (total, tableSummary) =>
+      total + tableSummary.insertedCount + tableSummary.updatedCount,
+    0,
+  );
+
+  return {
+    generatedAt: now().toISOString(),
+    excludedTables,
+    meaningfulPendingPromoteCount,
+    operatorSummary,
+    pendingPromoteCount,
+    samples,
+    skippedHeavyTables,
+    sourceEnvironment: 'staging',
+    status: 'ok',
+    tables,
+    targetEnvironment: 'production',
+  };
 }

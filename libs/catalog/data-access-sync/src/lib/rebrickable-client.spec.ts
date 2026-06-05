@@ -31,4 +31,33 @@ describe('createRebrickableClient', () => {
       }),
     );
   });
+
+  test('trips a per-run unavailable guard on 403 and logs once', async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: false,
+      status: 403,
+      json: async () => ({}),
+      headers: new Headers(),
+    })) as unknown as typeof fetch;
+    const logImpl = vi.fn();
+    const client = createRebrickableClient({
+      apiKey: 'test-key',
+      fetchImpl,
+      logImpl,
+      minimumRequestSpacingMs: 0,
+    });
+
+    await expect(client.getSet('10341-1')).rejects.toThrow(
+      'Rebrickable request failed (403)',
+    );
+    await expect(client.getSet('10342-1')).rejects.toThrow(
+      'Rebrickable request skipped',
+    );
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(logImpl).toHaveBeenCalledTimes(1);
+    expect(logImpl).toHaveBeenCalledWith(
+      'rebrickable_unavailable ip_banned_or_forbidden',
+    );
+  });
 });

@@ -4,13 +4,16 @@ import type {
   CatalogBulkOnboardingRunReadResult,
   CatalogBulkOnboardingRunState,
   CatalogBulkOnboardingStartResult,
+  CatalogImportPipelineResult,
 } from '@lego-platform/api/data-access-server';
+import type { CatalogDiscoveryCandidate } from '@lego-platform/catalog/data-access-server';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
 import {
+  type AdminCatalogDiscoveryCandidateBulkImportResult,
   type AdminCatalogSetSummary,
   createAdminCatalogRoutes,
   type AdminCatalogService,
@@ -99,12 +102,126 @@ function createSuggestedSet(
   };
 }
 
+function createDiscoveryCandidate(
+  overrides: Partial<CatalogDiscoveryCandidate> = {},
+): CatalogDiscoveryCandidate {
+  return {
+    autoCreateEligible: true,
+    confidence: 'high',
+    confidenceScore: 96,
+    evidence: {},
+    firstSeenAt: '2026-05-06T10:00:00.000Z',
+    id: 'candidate-75313',
+    lastSeenAt: '2026-05-06T10:00:00.000Z',
+    normalizedSetId: '75313',
+    operatorConfidence: 'high',
+    operatorConfidenceReasons: ['exact_enriched_match'],
+    rebrickablePayload: {
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/1000.jpg',
+      name: 'AT-AT',
+      pieces: 6785,
+      releaseYear: 2021,
+      setId: '75313',
+      slug: 'at-at-75313',
+      source: 'rebrickable',
+      sourceSetNumber: '75313-1',
+      theme: 'Star Wars',
+    },
+    requiredFieldsPresent: true,
+    source: 'alternate_feed',
+    sourcePayload: {},
+    sourceProductTitle: 'LEGO Star Wars AT-AT 75313',
+    sourceProductUrl: 'https://shop.example.test/75313',
+    sourceSetNumber: '75313-1',
+    status: 'new',
+    ...overrides,
+  };
+}
+
+function createCatalogImportPipelineResult(
+  overrides: Partial<CatalogImportPipelineResult> = {},
+): CatalogImportPipelineResult {
+  return {
+    bricksetStatus: 'success',
+    durationMs: 100,
+    enrichmentStatus: 'complete',
+    importedSetId: '75313',
+    importedSlug: 'at-at-75313',
+    minifigStatus: 'success',
+    stages: {
+      brickset: { status: 'success' },
+      minifig: { status: 'success' },
+      theme: { status: 'success' },
+    },
+    themeStatus: 'success',
+    warnings: [],
+    ...overrides,
+  };
+}
+
 async function createAdminCatalogServer({
   catalogService,
 }: {
   catalogService?: AdminCatalogService;
 } = {}) {
   const nextCatalogService: AdminCatalogService = catalogService ?? {
+    importDiscoveryCandidate: vi.fn(async () =>
+      createDiscoveryCandidate({
+        evidence: {
+          importResult: {
+            bricksetStatus: 'success',
+            durationMs: 123,
+            enrichmentStatus: 'complete',
+            importedSetId: '75313',
+            importedSlug: 'at-at-75313',
+            minifigStatus: 'success',
+            themeStatus: 'success',
+            warnings: [],
+          },
+        },
+        importedSetId: '75313',
+        status: 'imported',
+      }),
+    ),
+    bulkImportDiscoveryCandidates: vi.fn(
+      async () =>
+        ({
+          completedCount: 1,
+          concurrency: 1,
+          failedCount: 0,
+          processedCount: 1,
+          requestedCount: 1,
+          results: [
+            {
+              candidateId: 'candidate-75313',
+              enrichmentStatus: 'complete',
+              importedSetId: '75313',
+              importedSlug: 'at-at-75313',
+              setId: '75313',
+              status: 'completed',
+              title: 'LEGO Star Wars AT-AT 75313',
+              warnings: [],
+            },
+          ],
+          skippedCount: 0,
+          warningCount: 0,
+        }) satisfies AdminCatalogDiscoveryCandidateBulkImportResult,
+    ),
+    reEnrichCatalogSet: vi.fn(async () => createCatalogImportPipelineResult()),
+    listDiscoveryCandidates: vi.fn(async () => [createDiscoveryCandidate()]),
+    recomputeDiscoveryCandidateConfidence: vi.fn(async () => ({
+      highCount: 1,
+      lowCount: 0,
+      mediumCount: 2,
+      modifiedCount: 3,
+      processedCount: 4,
+      skippedCount: 1,
+    })),
+    updateDiscoveryCandidateStatus: vi.fn(async ({ status }) =>
+      createDiscoveryCandidate({
+        status,
+      }),
+    ),
     getBulkOnboardingRun: vi.fn(async () =>
       createBulkOnboardingRunReadResult(),
     ),
@@ -339,6 +456,254 @@ describe('admin catalog routes', () => {
         runId: 'bulk-10316-21061',
       }),
     );
+
+    await server.close();
+  });
+
+  test('blocks bulk onboarding writes in production runtime', async () => {
+    const catalogService: AdminCatalogService = {
+      getBulkOnboardingRun: vi.fn(async () =>
+        createBulkOnboardingRunReadResult(),
+      ),
+      getLatestBulkOnboardingRun: vi.fn(async () =>
+        createBulkOnboardingRunReadResult(),
+      ),
+      startBulkOnboarding: vi.fn(async () => createBulkOnboardingStartResult()),
+      importDiscoveryCandidate: vi.fn(async () => createDiscoveryCandidate()),
+      bulkImportDiscoveryCandidates: vi.fn(async () => ({
+        completedCount: 0,
+        concurrency: 1,
+        failedCount: 0,
+        processedCount: 0,
+        requestedCount: 0,
+        results: [],
+        skippedCount: 0,
+        warningCount: 0,
+      })),
+      reEnrichCatalogSet: vi.fn(async () =>
+        createCatalogImportPipelineResult({
+          bricksetStatus: 'skipped',
+          enrichmentStatus: 'skipped',
+          minifigStatus: 'skipped',
+          stages: {
+            brickset: { status: 'skipped' },
+            minifig: { status: 'skipped' },
+            theme: { status: 'skipped' },
+          },
+          themeStatus: 'skipped',
+        }),
+      ),
+      listDiscoveryCandidates: vi.fn(async () => []),
+      recomputeDiscoveryCandidateConfidence: vi.fn(async () => ({
+        highCount: 0,
+        lowCount: 0,
+        mediumCount: 0,
+        modifiedCount: 0,
+        processedCount: 0,
+        skippedCount: 0,
+      })),
+      updateDiscoveryCandidateStatus: vi.fn(async () =>
+        createDiscoveryCandidate({
+          status: 'ignored',
+        }),
+      ),
+      createSet: vi.fn(async () => {
+        throw new Error('not used');
+      }),
+      listCatalogSets: vi.fn(async () => []),
+      listSuggestedSets: vi.fn(async () => []),
+      searchMissingSets: vi.fn(async () => []),
+    };
+    const server = Fastify();
+
+    await server.register(
+      createAdminCatalogRoutes({
+        adminPreHandler: async () => undefined,
+        catalogService,
+        isProductionEnvironment: () => true,
+      }),
+    );
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/bulk-onboarding/runs',
+      payload: {
+        setIds: ['10316'],
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(catalogService.startBulkOnboarding).not.toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      message:
+        'Production is read-only in the Operations Console. Use the explicit promote action for production changes.',
+      status: 'error',
+    });
+
+    const reEnrichResponse = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/sets/75313/re-enrich',
+    });
+
+    expect(reEnrichResponse.statusCode).toBe(403);
+    expect(catalogService.reEnrichCatalogSet).not.toHaveBeenCalled();
+
+    const bulkImportResponse = await server.inject({
+      method: 'POST',
+      payload: {
+        candidateIds: ['candidate-75313'],
+      },
+      url: '/api/v1/admin/catalog/discovery-candidates/bulk-import',
+    });
+
+    expect(bulkImportResponse.statusCode).toBe(403);
+    expect(catalogService.bulkImportDiscoveryCandidates).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('lists persisted discovery candidates for review', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/catalog/discovery-candidates?status=new',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.listDiscoveryCandidates).toHaveBeenCalledWith({
+      status: 'new',
+    });
+    expect(response.json()).toEqual([
+      expect.objectContaining({
+        id: 'candidate-75313',
+        normalizedSetId: '75313',
+        status: 'new',
+      }),
+    ]);
+
+    await server.close();
+  });
+
+  test('updates discovery candidate review status', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        status: 'ignored',
+      },
+      url: '/api/v1/admin/catalog/discovery-candidates/candidate-75313/status',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.updateDiscoveryCandidateStatus).toHaveBeenCalledWith({
+      candidateId: 'candidate-75313',
+      status: 'ignored',
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        status: 'ignored',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('imports a persisted discovery candidate when cached enrichment exists', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/discovery-candidates/candidate-75313/import',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.importDiscoveryCandidate).toHaveBeenCalledWith({
+      candidateId: 'candidate-75313',
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        importedSetId: '75313',
+        status: 'imported',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('bulk imports persisted discovery candidates', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        allowLowConfidence: true,
+        candidateIds: ['candidate-75313', 'candidate-10341'],
+        concurrency: 2,
+      },
+      url: '/api/v1/admin/catalog/discovery-candidates/bulk-import',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.bulkImportDiscoveryCandidates).toHaveBeenCalledWith({
+      allowLowConfidence: true,
+      candidateIds: ['candidate-75313', 'candidate-10341'],
+      concurrency: 2,
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        completedCount: 1,
+        concurrency: 1,
+        requestedCount: 1,
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('re-enriches an existing catalog set', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/sets/75313/re-enrich',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.reEnrichCatalogSet).toHaveBeenCalledWith({
+      setId: '75313',
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        enrichmentStatus: 'complete',
+        importedSetId: '75313',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('recomputes discovery candidate confidence', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/discovery-candidates/recompute-confidence',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(
+      catalogService.recomputeDiscoveryCandidateConfidence,
+    ).toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      highCount: 1,
+      lowCount: 0,
+      mediumCount: 2,
+      modifiedCount: 3,
+      processedCount: 4,
+      skippedCount: 1,
+    });
 
     await server.close();
   });

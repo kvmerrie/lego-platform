@@ -3,8 +3,12 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import {
   createCatalogSet,
+  createCatalogSetFromDiscoveryCandidate,
+  createCatalogSetFromLocalRebrickableMirror,
+  listCatalogDiscoveryCandidates,
   listCanonicalCatalogSets,
   searchCatalogMissingSets,
+  type CatalogDiscoveryCandidate,
 } from '@lego-platform/catalog/data-access-server';
 import type {
   CatalogCanonicalSet,
@@ -94,6 +98,7 @@ export interface CatalogBulkOnboardingImportSetResult {
     CatalogBulkOnboardingImportStatus,
     'already_present' | 'created' | 'failed'
   >;
+  warning?: string;
 }
 
 export interface CatalogBulkOnboardingImportSummary {
@@ -216,10 +221,13 @@ export interface CatalogBulkOnboardingRunReadResult {
 
 export interface CatalogBulkOnboardingDependencies {
   applyBricksetPublicThemeMappingsFn?: typeof applyBricksetPublicThemeMappings;
+  createCatalogSetFromDiscoveryCandidateFn?: typeof createCatalogSetFromDiscoveryCandidate;
+  createCatalogSetFromLocalRebrickableMirrorFn?: typeof createCatalogSetFromLocalRebrickableMirror;
   createCatalogSetFn?: typeof createCatalogSet;
   enrichCatalogSetMinifigSummariesFn?: EnrichCatalogSetMinifigSummariesFn;
   generateCommerceOfferSeedCandidatesFn?: typeof generateCommerceOfferSeedCandidates;
   getNow?: () => Date;
+  listCatalogDiscoveryCandidatesFn?: typeof listCatalogDiscoveryCandidates;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listCommercePrimaryCoverageGapAuditFn?: typeof listCommercePrimaryCoverageGapAudit;
   listCommercePrimaryCoverageReportFn?: typeof listCommercePrimaryCoverageReport;
@@ -277,8 +285,24 @@ function readBricksetMetadataText(metadataJson: unknown): string {
   return textParts.join(' ').toLowerCase();
 }
 
+function readBricksetMetadataString(
+  metadataJson: unknown,
+  key: string,
+): string | undefined {
+  if (!metadataJson || typeof metadataJson !== 'object') {
+    return undefined;
+  }
+
+  const value = (metadataJson as Record<string, unknown>)[key];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
 function resolveBricksetPublicThemeNames(metadataJson: unknown): string[] {
   const metadataText = readBricksetMetadataText(metadataJson);
+  const explicitTheme = readBricksetMetadataString(metadataJson, 'theme')
+    ?.toLowerCase()
+    .trim();
 
   if (!metadataText) {
     return [];
@@ -312,6 +336,10 @@ function resolveBricksetPublicThemeNames(metadataJson: unknown): string[] {
     metadataText.includes('f1 the movie') ||
     /\bf1\b/u.test(metadataText)
   ) {
+    if (explicitTheme === 'technic') {
+      return [];
+    }
+
     return ['Formula 1', 'Speed Champions'];
   }
 
@@ -338,21 +366,67 @@ export async function applyBricksetPublicThemeMappings({
   metadataRecords: readonly BricksetEnrichmentRecord[];
   supabaseClient?: ReturnType<typeof getServerSupabaseAdminClient>;
 }): Promise<{ updatedCount: number }> {
+  const setIds = [
+    ...new Set(metadataRecords.map((record) => record.catalogSetId)),
+  ];
+  const { data: catalogSetRows, error: catalogSetError } = setIds.length
+    ? await supabaseClient
+        .from('catalog_sets')
+        .select('set_id, source_theme_id, primary_theme_id')
+        .in('set_id', setIds)
+    : { data: [], error: null };
+
+  if (catalogSetError) {
+    throw new Error('Unable to load catalog sets for Brickset mapping.');
+  }
+
+  const catalogSetById = new Map(
+    (
+      (catalogSetRows as Array<{
+        primary_theme_id?: string | null;
+        set_id: string;
+        source_theme_id?: string | null;
+      }> | null) ?? []
+    ).map((row) => [row.set_id, row]),
+  );
+  const sourceThemeIds = [
+    ...new Set(
+      [...catalogSetById.values()]
+        .map((row) => row.source_theme_id)
+        .filter((themeId): themeId is string => Boolean(themeId)),
+    ),
+  ];
+  const { data: sourceThemeMappingRows, error: sourceThemeMappingError } =
+    sourceThemeIds.length
+      ? await supabaseClient
+          .from('catalog_theme_mappings')
+          .select('source_theme_id, primary_theme_id')
+          .in('source_theme_id', sourceThemeIds)
+      : { data: [], error: null };
+
+  if (sourceThemeMappingError) {
+    throw new Error(
+      'Unable to load source theme mappings for Brickset mapping.',
+    );
+  }
+
+  const primaryThemeIdBySourceThemeId = new Map(
+    (
+      (sourceThemeMappingRows as Array<{
+        primary_theme_id: string;
+        source_theme_id: string;
+      }> | null) ?? []
+    ).map((row) => [row.source_theme_id, row.primary_theme_id]),
+  );
   const mappings = metadataRecords.flatMap((record) => {
     const publicThemeNames = resolveBricksetPublicThemeNames(
       record.metadataJson,
     );
 
-    if (!publicThemeNames.length) {
-      return [];
-    }
-
-    return [
-      {
-        setId: record.catalogSetId,
-        themeLookupIds: publicThemeNames.flatMap(buildPublicThemeLookupIds),
-      },
-    ];
+    return {
+      setId: record.catalogSetId,
+      themeLookupIds: publicThemeNames.flatMap(buildPublicThemeLookupIds),
+    };
   });
 
   if (!mappings.length) {
@@ -389,6 +463,16 @@ export async function applyBricksetPublicThemeMappings({
     const themeId = mapping.themeLookupIds.find((lookupId) =>
       eligibleThemeIds.has(lookupId),
     );
+    const catalogSetRow = catalogSetById.get(mapping.setId);
+    const sourceMappedThemeId = catalogSetRow?.source_theme_id
+      ? primaryThemeIdBySourceThemeId.get(catalogSetRow.source_theme_id)
+      : undefined;
+
+    if (!themeId && sourceMappedThemeId) {
+      return sourceMappedThemeId === catalogSetRow?.primary_theme_id
+        ? []
+        : [{ setId: mapping.setId, themeId: sourceMappedThemeId }];
+    }
 
     return themeId ? [{ setId: mapping.setId, themeId }] : [];
   });
@@ -1146,19 +1230,19 @@ function buildBulkOnboardingRevalidationTargets(
 }
 
 async function ensureCatalogSetPresent({
-  createCatalogSetFn,
+  createCatalogSetFromDiscoveryCandidateFn,
+  createCatalogSetFromLocalRebrickableMirrorFn,
+  discoveryCandidate,
   existingCatalogSetsBySourceSetNumber,
-  listCanonicalCatalogSetsFn,
-  searchCatalogMissingSetsFn,
   setId,
 }: {
-  createCatalogSetFn: typeof createCatalogSet;
+  createCatalogSetFromDiscoveryCandidateFn: typeof createCatalogSetFromDiscoveryCandidate;
+  createCatalogSetFromLocalRebrickableMirrorFn: typeof createCatalogSetFromLocalRebrickableMirror;
+  discoveryCandidate?: CatalogDiscoveryCandidate;
   existingCatalogSetsBySourceSetNumber: Map<
     string,
     CatalogBulkOnboardingCatalogSetIdentity
   >;
-  listCanonicalCatalogSetsFn: typeof listCanonicalCatalogSets;
-  searchCatalogMissingSetsFn: typeof searchCatalogMissingSets;
   setId: string;
 }): Promise<CatalogBulkOnboardingImportSetResult> {
   const sourceSetNumber = toSourceSetNumber(setId);
@@ -1177,79 +1261,83 @@ async function ensureCatalogSetPresent({
     };
   }
 
-  const searchResults = await searchCatalogMissingSetsFn({
-    query: sourceSetNumber,
-  });
-  const matchingSearchResult = searchResults.find(
-    (searchResult) => searchResult.sourceSetNumber === sourceSetNumber,
-  );
-
-  if (!matchingSearchResult) {
-    return {
-      error: `Catalog set ${sourceSetNumber} was not found in the current Rebrickable-backed add-set source.`,
-      setId,
-      sourceSetNumber,
-      status: 'failed',
-    };
-  }
-
   try {
-    const createdCatalogSet = await createCatalogSetFn({
-      input: matchingSearchResult,
-    });
-
-    existingCatalogSetsBySourceSetNumber.set(
-      sourceSetNumber,
-      createdCatalogSet,
-    );
-
-    return {
-      catalogSetId: createdCatalogSet.setId,
-      catalogSetName: createdCatalogSet.name,
-      catalogSetSlug: createdCatalogSet.slug,
-      catalogSetTheme: createdCatalogSet.theme,
-      setId,
-      sourceSetNumber,
-      status: 'created',
-    };
-  } catch (error) {
-    const refreshedCatalogSets = await listCanonicalCatalogSetsFn({
-      includeInactive: true,
-    });
-    const refreshedCatalogSet = refreshedCatalogSets.find(
-      (catalogSet) => catalogSet.sourceSetNumber === sourceSetNumber,
-    );
-
-    if (refreshedCatalogSet) {
-      existingCatalogSetsBySourceSetNumber.set(sourceSetNumber, {
-        name: refreshedCatalogSet.name,
-        setId: refreshedCatalogSet.setId,
-        slug: refreshedCatalogSet.slug,
-        sourceSetNumber,
-        theme: refreshedCatalogSet.primaryTheme,
+    const localMirrorCatalogSet =
+      await createCatalogSetFromLocalRebrickableMirrorFn({
+        setNumberOrId: sourceSetNumber,
       });
 
+    if (localMirrorCatalogSet) {
+      existingCatalogSetsBySourceSetNumber.set(
+        sourceSetNumber,
+        localMirrorCatalogSet,
+      );
+
       return {
-        catalogSetId: refreshedCatalogSet.setId,
-        catalogSetName: refreshedCatalogSet.name,
-        catalogSetSlug: refreshedCatalogSet.slug,
-        catalogSetTheme: refreshedCatalogSet.primaryTheme,
+        catalogSetId: localMirrorCatalogSet.setId,
+        catalogSetName: localMirrorCatalogSet.name,
+        catalogSetSlug: localMirrorCatalogSet.slug,
+        catalogSetTheme: localMirrorCatalogSet.theme,
         setId,
         sourceSetNumber,
-        status: 'already_present',
+        status: 'created',
       };
     }
-
+  } catch (error) {
     return {
       error:
         error instanceof Error
           ? error.message
-          : 'Unable to import the catalog set.',
+          : 'Unable to import the catalog set from the local Rebrickable mirror.',
       setId,
       sourceSetNumber,
       status: 'failed',
     };
   }
+
+  if (discoveryCandidate) {
+    try {
+      const { catalogSet, metadataIncomplete } =
+        await createCatalogSetFromDiscoveryCandidateFn({
+          candidate: discoveryCandidate,
+        });
+
+      existingCatalogSetsBySourceSetNumber.set(sourceSetNumber, catalogSet);
+
+      return {
+        catalogSetId: catalogSet.setId,
+        catalogSetName: catalogSet.name,
+        catalogSetSlug: catalogSet.slug,
+        catalogSetTheme: catalogSet.theme,
+        setId,
+        sourceSetNumber,
+        status: 'created',
+        ...(metadataIncomplete
+          ? {
+              warning:
+                'Catalog set created from source evidence; metadata needs enrichment.',
+            }
+          : {}),
+      };
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unable to import the catalog set from discovery evidence.',
+        setId,
+        sourceSetNumber,
+        status: 'failed',
+      };
+    }
+  }
+
+  return {
+    error: `Catalog set ${sourceSetNumber} was not found in the existing catalog, local Rebrickable mirror, or persisted discovery candidates.`,
+    setId,
+    sourceSetNumber,
+    status: 'failed',
+  };
 }
 
 export async function runCatalogBulkOnboarding({
@@ -1261,16 +1349,17 @@ export async function runCatalogBulkOnboarding({
 }): Promise<CatalogBulkOnboardingRunResult> {
   const {
     applyBricksetPublicThemeMappingsFn = applyBricksetPublicThemeMappings,
-    createCatalogSetFn = createCatalogSet,
+    createCatalogSetFromDiscoveryCandidateFn = createCatalogSetFromDiscoveryCandidate,
+    createCatalogSetFromLocalRebrickableMirrorFn = createCatalogSetFromLocalRebrickableMirror,
     enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummariesBestEffort,
     generateCommerceOfferSeedCandidatesFn = generateCommerceOfferSeedCandidates,
     getNow = () => new Date(),
+    listCatalogDiscoveryCandidatesFn = listCatalogDiscoveryCandidates,
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listCommercePrimaryCoverageGapAuditFn = listCommercePrimaryCoverageGapAudit,
     listCommercePrimaryCoverageReportFn = listCommercePrimaryCoverageReport,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     runCommerceSyncFn = runCommerceSync,
-    searchCatalogMissingSetsFn = searchCatalogMissingSets,
     syncBricksetEnrichmentMetadataFn = syncBricksetEnrichmentMetadata,
     validateGeneratedCommerceOfferSeedCandidatesFn = validateGeneratedCommerceOfferSeedCandidates,
   } = dependencies;
@@ -1345,6 +1434,21 @@ export async function runCatalogBulkOnboarding({
         setProgress.importStatus !== 'created'
       );
     });
+    const discoveryCandidatesBySetId =
+      setIdsNeedingImport.length > 0
+        ? new Map(
+            (
+              await listCatalogDiscoveryCandidatesFn({
+                limit: 500,
+                status: 'all',
+              })
+            )
+              .filter((candidate) =>
+                setIdsNeedingImport.includes(candidate.normalizedSetId),
+              )
+              .map((candidate) => [candidate.normalizedSetId, candidate]),
+          )
+        : new Map<string, CatalogDiscoveryCandidate>();
 
     if (setIdsNeedingImport.length > 0) {
       const startedAtIso = getNow().toISOString();
@@ -1360,10 +1464,10 @@ export async function runCatalogBulkOnboarding({
 
       for (const setId of setIdsNeedingImport) {
         const importResult = await ensureCatalogSetPresent({
-          createCatalogSetFn,
+          createCatalogSetFromDiscoveryCandidateFn,
+          createCatalogSetFromLocalRebrickableMirrorFn,
+          discoveryCandidate: discoveryCandidatesBySetId.get(setId),
           existingCatalogSetsBySourceSetNumber,
-          listCanonicalCatalogSetsFn,
-          searchCatalogMissingSetsFn,
           setId,
         });
         const setProgress = run.setProgressById[setId];

@@ -90,6 +90,7 @@ describe('admin articles routes', () => {
       createAdminArticlesRoutes({
         adminPreHandler: async () => undefined,
         articlesService,
+        hasAdminPromotionSecret: () => false,
         isPreviewEnabled: () => true,
       }),
     );
@@ -102,7 +103,9 @@ describe('admin articles routes', () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
       articlePreviewEnabled: true,
+      hasAdminPromotionSecret: false,
     });
+    expect(articlesService.listArticles).not.toHaveBeenCalled();
 
     await enabledServer.close();
   });

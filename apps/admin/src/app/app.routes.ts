@@ -7,10 +7,14 @@ import {
   CommerceAdminCoveragePageComponent,
   CommerceAdminCoverageQueuePageComponent,
   CommerceAdminDashboardPageComponent,
+  CommerceAdminDiscoveryCandidatesPageComponent,
+  CommerceAdminHealthPageComponent,
   CommerceAdminMerchantsPageComponent,
   CommerceAdminOperationsPageComponent,
+  CommerceAdminOperationsDashboardPageComponent,
   CommerceAdminOfferSeedsPageComponent,
   CommerceAdminSetsPageComponent,
+  CommerceAdminSyncPromotePageComponent,
   CommerceFeatureAdminComponent,
 } from '@lego-platform/commerce/feature-admin';
 import { ContentAdminEditorialAgentPageComponent } from '@lego-platform/content/feature-admin';
@@ -23,7 +27,27 @@ export const appRoutes: Route[] = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'workbench',
+        redirectTo: 'dashboard',
+      },
+      {
+        path: 'dashboard',
+        component: CommerceAdminOperationsDashboardPageComponent,
+      },
+      {
+        path: 'catalog-intake',
+        component: CommerceAdminBulkOnboardingPageComponent,
+      },
+      {
+        path: 'discovery',
+        component: CommerceAdminDiscoveryCandidatesPageComponent,
+      },
+      {
+        path: 'sync-promote',
+        component: CommerceAdminSyncPromotePageComponent,
+      },
+      {
+        path: 'health',
+        component: CommerceAdminHealthPageComponent,
       },
       {
         path: 'workbench',
@@ -32,11 +56,6 @@ export const appRoutes: Route[] = [
       {
         path: 'workflow',
         component: CommerceAdminDashboardPageComponent,
-      },
-      {
-        path: 'dashboard',
-        pathMatch: 'full',
-        redirectTo: 'workbench',
       },
       {
         path: 'new-set',

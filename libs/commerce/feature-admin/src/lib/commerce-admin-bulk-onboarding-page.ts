@@ -123,6 +123,12 @@ function formatSuggestedSetConfidenceTone(
   return 'neutral';
 }
 
+function toSuggestedSetConfidence(
+  confidence: 'high' | 'low' | 'medium',
+): CatalogSuggestedSetConfidence {
+  return confidence === 'low' ? 'experimental' : confidence;
+}
+
 const BULK_ONBOARDING_SELECTION_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.selection';
 const BULK_ONBOARDING_RUN_ID_STORAGE_KEY =
@@ -141,7 +147,6 @@ const BULK_ONBOARDING_SUGGESTED_EXPERIMENTAL_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.suggested-show-experimental';
 const BULK_ONBOARDING_SUGGESTED_RETAIL_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.suggested-retail-only';
-const BULK_ONBOARDING_DIRECT_LOOKUP_CONCURRENCY = 12;
 
 const processingStateOrder = {
   pending_import: 0,
@@ -540,33 +545,19 @@ function parseDirectSetTokens(value: string): string[] {
     .filter(Boolean);
 }
 
-async function mapWithConcurrency<TValue, TResult>({
-  items,
-  limit,
-  mapFn,
-}: {
-  items: readonly TValue[];
-  limit: number;
-  mapFn: (item: TValue) => Promise<TResult>;
-}): Promise<TResult[]> {
-  const safeLimit = Math.max(1, limit);
-  const results = new Array<TResult>(items.length);
-  let nextIndex = 0;
-
-  const worker = async () => {
-    while (nextIndex < items.length) {
-      const currentIndex = nextIndex;
-
-      nextIndex += 1;
-      results[currentIndex] = await mapFn(items[currentIndex]);
-    }
+function buildDirectSetPlaceholderResult(
+  normalizedSetId: string,
+): CatalogExternalSetSearchResult {
+  return {
+    name: `LEGO set ${normalizedSetId}`,
+    pieces: 0,
+    releaseYear: new Date().getUTCFullYear(),
+    setId: normalizedSetId,
+    slug: `lego-set-${normalizedSetId}`,
+    source: 'rebrickable',
+    sourceSetNumber: `${normalizedSetId}-1`,
+    theme: 'LEGO',
   };
-
-  await Promise.all(
-    Array.from({ length: Math.min(safeLimit, items.length) }, () => worker()),
-  );
-
-  return results;
 }
 
 @Component({
@@ -1179,11 +1170,7 @@ export class CommerceAdminBulkOnboardingPageComponent
   }
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([
-      this.loadCatalogIndex(),
-      this.loadInitialRun(),
-      this.loadSuggestedSets(),
-    ]);
+    await Promise.all([this.loadCatalogIndex(), this.loadInitialRun()]);
   }
 
   ngOnDestroy(): void {
@@ -1447,7 +1434,65 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.suggestedMessageTone.set(null);
 
     try {
-      const results = await this.commerceAdminApi.listCatalogSuggestedSets();
+      const candidates =
+        await this.commerceAdminApi.listCatalogDiscoveryCandidates({
+          status: 'new',
+        });
+      const results = candidates.flatMap((candidate) => {
+        const payload = candidate.rebrickablePayload;
+
+        if (!payload) {
+          return [];
+        }
+
+        const setId =
+          typeof payload['setId'] === 'string'
+            ? payload['setId']
+            : candidate.normalizedSetId;
+        const sourceSetNumber =
+          typeof payload['sourceSetNumber'] === 'string'
+            ? payload['sourceSetNumber']
+            : candidate.sourceSetNumber;
+        const name =
+          typeof payload['name'] === 'string'
+            ? payload['name']
+            : candidate.sourceProductTitle;
+        const slug = typeof payload['slug'] === 'string' ? payload['slug'] : '';
+        const theme =
+          typeof payload['theme'] === 'string' ? payload['theme'] : 'Unknown';
+        const pieces =
+          typeof payload['pieces'] === 'number'
+            ? Math.max(0, Math.floor(payload['pieces']))
+            : 0;
+        const releaseYear =
+          typeof payload['releaseYear'] === 'number'
+            ? Math.max(1, Math.floor(payload['releaseYear']))
+            : new Date().getFullYear();
+
+        if (!setId || !sourceSetNumber || !name || !slug) {
+          return [];
+        }
+
+        return [
+          {
+            confidence: toSuggestedSetConfidence(candidate.operatorConfidence),
+            imageUrl:
+              typeof payload['imageUrl'] === 'string'
+                ? payload['imageUrl']
+                : candidate.sourceImageUrl,
+            isRetailFriendlyTheme: candidate.autoCreateEligible,
+            name,
+            pieces,
+            releaseYear,
+            score: candidate.confidenceScore,
+            setId,
+            slug,
+            source: 'rebrickable' as const,
+            sourceSetNumber,
+            theme,
+          } satisfies CatalogSuggestedSet,
+        ];
+      });
 
       this.suggestedSets.set(results);
       this.suggestedSelectionIds.set(
@@ -1457,8 +1502,8 @@ export class CommerceAdminBulkOnboardingPageComponent
       );
       this.suggestedMessage.set(
         results.length === 0
-          ? 'Geen nieuwe suggested sets gevonden buiten de huidige catalogus.'
-          : `${results.length} suggested sets klaar voor intake.`,
+          ? 'Geen persisted discovery candidates met cached verrijking gevonden.'
+          : `${results.length} persisted discovery candidates klaar voor intake.`,
       );
       this.suggestedMessageTone.set(
         results.length === 0 ? 'neutral' : 'positive',
@@ -1469,7 +1514,7 @@ export class CommerceAdminBulkOnboardingPageComponent
       this.suggestedMessage.set(
         error instanceof Error
           ? error.message
-          : 'Suggested sets ophalen mislukte.',
+          : 'Persisted discovery candidates ophalen mislukte.',
       );
       this.suggestedMessageTone.set('danger');
     } finally {
@@ -1514,22 +1559,7 @@ export class CommerceAdminBulkOnboardingPageComponent
             }),
         ),
       ];
-      const lookupResults = await mapWithConcurrency({
-        items: lookupSetIds,
-        limit: BULK_ONBOARDING_DIRECT_LOOKUP_CONCURRENCY,
-        mapFn: async (setId) => {
-          const searchResults =
-            await this.commerceAdminApi.searchCatalogMissingSets(setId);
-          const exactMatch = searchResults.find(
-            (searchResult) =>
-              searchResult.setId === setId ||
-              searchResult.sourceSetNumber === `${setId}-1`,
-          );
-
-          return [setId, exactMatch] as const;
-        },
-      });
-      const exactResultBySetId = new Map(lookupResults);
+      const queuedSetIds = new Set(lookupSetIds);
       const addedInThisPass = new Set<string>();
       const setsToAdd = new Map<string, CatalogExternalSetSearchResult>();
       const intakeRows: DirectSetIntakeRow[] = rawTokens.map((token) => {
@@ -1567,17 +1597,17 @@ export class CommerceAdminBulkOnboardingPageComponent
           };
         }
 
-        const exactResult = exactResultBySetId.get(normalizedSetId);
-
-        if (!exactResult) {
+        if (!queuedSetIds.has(normalizedSetId)) {
           return {
             input: token,
             normalizedSetId,
             status: 'not_found',
-            statusLabel: 'Niet gevonden',
+            statusLabel: 'Metadata ontbreekt',
             statusTone: 'warning',
           };
         }
+
+        const exactResult = buildDirectSetPlaceholderResult(normalizedSetId);
 
         setsToAdd.set(normalizedSetId, exactResult);
         addedInThisPass.add(normalizedSetId);
@@ -1587,7 +1617,7 @@ export class CommerceAdminBulkOnboardingPageComponent
           normalizedSetId,
           result: exactResult,
           status: 'added',
-          statusLabel: 'Toegevoegd',
+          statusLabel: 'Klaar voor import',
           statusTone: 'positive',
         };
       });

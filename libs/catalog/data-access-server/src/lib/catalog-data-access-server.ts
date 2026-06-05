@@ -34,12 +34,40 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const CATALOG_SETS_TABLE = 'catalog_sets';
 export const CATALOG_DISCOVERY_CANDIDATES_TABLE =
   'catalog_discovery_candidates';
+const CATALOG_DISCOVERY_CANDIDATE_SELECT_COLUMNS = [
+  'id',
+  'normalized_set_id',
+  'source_set_number',
+  'source',
+  'source_product_url',
+  'source_product_title',
+  'source_image_url',
+  'source_price_minor',
+  'source_currency_code',
+  'source_payload',
+  'rebrickable_payload',
+  'brickset_payload',
+  'evidence',
+  'confidence',
+  'confidence_score',
+  'required_fields_present',
+  'auto_create_eligible',
+  'status',
+  'imported_set_id',
+  'import_error',
+  'first_seen_at',
+  'last_seen_at',
+] as const;
+const CATALOG_DISCOVERY_CANDIDATE_SELECT =
+  'id, normalized_set_id, source_set_number, source, source_product_url, source_product_title, source_image_url, source_price_minor, source_currency_code, source_payload, rebrickable_payload, brickset_payload, evidence, confidence, confidence_score, required_fields_present, auto_create_eligible, status, imported_set_id, import_error, first_seen_at, last_seen_at';
 export const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_SET_SOURCE_METADATA_PAGE_SIZE = 1000;
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+const REBRICKABLE_SETS_TABLE = 'rebrickable_sets';
+const REBRICKABLE_THEMES_TABLE = 'rebrickable_themes';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE =
   'commerce_current_offer_snapshots';
@@ -52,7 +80,61 @@ const NEW_OFFER_CONDITION = 'new';
 const CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET = 8;
 const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
-type CatalogSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
+type CatalogSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'> &
+  Partial<Pick<SupabaseClient, 'schema'>>;
+
+interface SupabaseDiagnosticError {
+  code?: string;
+  details?: string;
+  hint?: string;
+  message?: string;
+}
+
+function formatSupabaseDiagnosticError(error: unknown): string {
+  const diagnosticError = error as SupabaseDiagnosticError;
+  const message =
+    typeof diagnosticError.message === 'string'
+      ? diagnosticError.message
+      : error instanceof Error
+        ? error.message
+        : String(error);
+  const details =
+    typeof diagnosticError.details === 'string' ? diagnosticError.details : '';
+  const hint =
+    typeof diagnosticError.hint === 'string' ? diagnosticError.hint : '';
+  const code =
+    typeof diagnosticError.code === 'string' ? diagnosticError.code : '';
+
+  return [
+    `message=${JSON.stringify(message)}`,
+    `code=${JSON.stringify(code || 'unknown')}`,
+    `details=${JSON.stringify(details || 'none')}`,
+    `hint=${JSON.stringify(hint || 'none')}`,
+  ].join(' ');
+}
+
+function createCatalogDiscoveryCandidateLoadError({
+  error,
+  limit,
+  status,
+}: {
+  error: unknown;
+  limit: number;
+  status?: CatalogDiscoveryCandidateStatus | 'all';
+}): Error {
+  return new Error(
+    [
+      'Unable to load catalog discovery candidates.',
+      formatSupabaseDiagnosticError(error),
+      `table=${JSON.stringify(CATALOG_DISCOVERY_CANDIDATES_TABLE)}`,
+      `status=${JSON.stringify(status ?? 'all')}`,
+      `limit=${limit}`,
+      `selected_columns=${JSON.stringify(
+        CATALOG_DISCOVERY_CANDIDATE_SELECT_COLUMNS,
+      )}`,
+    ].join(' '),
+  );
+}
 
 export interface CatalogSetSourceMetadataInput {
   catalogSetId: string;
@@ -68,10 +150,39 @@ export interface CatalogSetSourceMetadataInput {
 export type CatalogDiscoveryCandidateConfidence = 'high' | 'low' | 'medium';
 
 export type CatalogDiscoveryCandidateStatus =
+  | 'failed'
   | 'ignored'
   | 'imported'
+  | 'non_set'
   | 'new'
-  | 'rejected';
+  | 'onboarding_started'
+  | 'processing'
+  | 'rejected'
+  | 'reviewed';
+
+export interface CatalogDiscoveryCandidatesPreflightResult {
+  expectedColumns: readonly string[];
+  informationSchemaError?: string;
+  missingColumns?: readonly string[];
+  optionalStoredOperatorConfidenceColumn: {
+    error?: string;
+    exists: boolean;
+  };
+  selectedColumns: readonly string[];
+  selectedColumnProbe: {
+    error?: string;
+    ok: boolean;
+  };
+  statusCounts: Partial<Record<CatalogDiscoveryCandidateStatus, number>>;
+  statusCountErrors: Partial<Record<CatalogDiscoveryCandidateStatus, string>>;
+  table: string;
+  tableAccess: {
+    count?: number;
+    error?: string;
+    ok: boolean;
+  };
+  usedSetNumberColumns: readonly string[];
+}
 
 export interface CatalogDiscoveryCandidateInput {
   autoCreateEligible: boolean;
@@ -109,6 +220,8 @@ export interface CatalogDiscoveryCandidate {
   importedSetId?: string | null;
   lastSeenAt: string;
   normalizedSetId: string;
+  operatorConfidence: CatalogDiscoveryCandidateConfidence;
+  operatorConfidenceReasons: readonly string[];
   rebrickablePayload?: Readonly<Record<string, unknown>>;
   requiredFieldsPresent: boolean;
   source: string;
@@ -236,6 +349,34 @@ interface CatalogThemeRow {
 interface CatalogThemeMappingRow {
   primary_theme_id: string;
   source_theme_id: string;
+}
+
+interface LocalRebrickableSetRow {
+  img_url?: string | null;
+  name: string;
+  num_parts?: number | null;
+  set_img_url?: string | null;
+  set_num: string;
+  theme_id: number;
+  year: number;
+}
+
+interface LocalRebrickableThemeRow {
+  id: number;
+  name: string;
+  parent_id?: number | null;
+}
+
+export interface LocalRebrickableSetMirrorMetadata {
+  catalogSetInput: CatalogExternalSetSearchResult;
+  imgUrl?: string;
+  name: string;
+  numParts: number;
+  setNum: string;
+  setImgUrl?: string;
+  themeId: number;
+  themeName: string;
+  year: number;
 }
 
 interface CatalogCommerceMerchantRow {
@@ -1864,6 +2005,171 @@ function buildCatalogThemeRecordId(primaryThemeName: string): string {
   return `theme:${buildCatalogThemeSlug(primaryThemeName)}`;
 }
 
+function buildCatalogCandidateSourceThemeRecordId(primaryThemeName: string) {
+  return `rebrickable:operator:${buildCatalogThemeSlug(primaryThemeName)}`;
+}
+
+function resolveCandidateThemeName({
+  fallbackTitle,
+  payload,
+  sourcePayload,
+}: {
+  fallbackTitle?: string;
+  payload?: Readonly<Record<string, unknown>>;
+  sourcePayload?: Readonly<Record<string, unknown>>;
+}): string {
+  const payloadTheme = payload?.['theme'];
+
+  if (typeof payloadTheme === 'string' && payloadTheme.trim()) {
+    return payloadTheme.trim();
+  }
+
+  for (const key of [
+    'theme',
+    'sourceTheme',
+    'category',
+    'productCategory',
+    'merchantCategory',
+  ]) {
+    const value = sourcePayload?.[key];
+
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  const title = fallbackTitle?.toLowerCase() ?? '';
+  const themePatterns: Array<[RegExp, string]> = [
+    [/\bstar wars\b/, 'Star Wars'],
+    [/\btechnic\b/, 'Technic'],
+    [/\bicons?\b/, 'Icons'],
+    [/\bideas?\b/, 'Ideas'],
+    [/\bharry potter\b|\bhogwarts\b/, 'Harry Potter'],
+    [/\bmarvel\b|\bspider-man\b|\bavengers\b/, 'Marvel'],
+    [/\bdisney\b/, 'Disney'],
+    [/\bminecraft\b/, 'Minecraft'],
+    [/\bninjago\b/, 'NINJAGO'],
+    [/\bfriends\b/, 'Friends'],
+    [/\bspeed champions\b/, 'Speed Champions'],
+    [/\barchitecture\b/, 'Architecture'],
+    [/\bbotanical\b|\bbotanicals\b/, 'Botanicals'],
+  ];
+  const matchedTheme = themePatterns.find(([pattern]) => pattern.test(title));
+
+  return matchedTheme?.[1] ?? 'LEGO';
+}
+
+function buildCatalogThemePersistenceFromCandidateTheme(
+  rawTheme: string,
+): CatalogResolvedThemePersistence {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme,
+  });
+  const primaryTheme = themeIdentity.primaryTheme || 'LEGO';
+  const primaryThemeId = buildCatalogThemeRecordId(primaryTheme);
+  const sourceThemeId = buildCatalogCandidateSourceThemeRecordId(primaryTheme);
+
+  return {
+    primaryTheme: {
+      display_name: primaryTheme,
+      id: primaryThemeId,
+      slug: buildCatalogThemeSlug(primaryTheme),
+      status: 'active',
+    },
+    sourceTheme: {
+      id: sourceThemeId,
+      parent_source_theme_id: null,
+      source_system: 'rebrickable',
+      source_theme_name: rawTheme || primaryTheme,
+    },
+    sourceThemeMapping: {
+      primary_theme_id: primaryThemeId,
+      source_theme_id: sourceThemeId,
+    },
+  };
+}
+
+async function getLocalRebrickableThemeRow({
+  supabaseClient,
+  themeId,
+}: {
+  supabaseClient: CatalogSupabaseClient;
+  themeId: number;
+}): Promise<LocalRebrickableThemeRow | undefined> {
+  const { data, error } = await supabaseClient
+    .from(REBRICKABLE_THEMES_TABLE)
+    .select('id, name, parent_id')
+    .eq('id', themeId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to read the local Rebrickable theme mirror.');
+  }
+
+  return (data as LocalRebrickableThemeRow | null) ?? undefined;
+}
+
+async function resolveLocalRebrickableThemePersistence({
+  sourceTheme,
+  supabaseClient,
+}: {
+  sourceTheme: LocalRebrickableThemeRow;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogResolvedThemePersistence> {
+  const parentSourceTheme = sourceTheme.parent_id
+    ? await getLocalRebrickableThemeRow({
+        supabaseClient,
+        themeId: sourceTheme.parent_id,
+      })
+    : undefined;
+  const primaryTheme = resolveCatalogThemeIdentity({
+    rawTheme: sourceTheme.name,
+    ...(parentSourceTheme ? { parentTheme: parentSourceTheme.name } : {}),
+  }).primaryTheme;
+  const primaryThemeId = buildCatalogThemeRecordId(primaryTheme);
+  const sourceThemeId = buildCatalogSourceThemeRecordId({
+    sourceSystem: 'rebrickable',
+    sourceThemeId: sourceTheme.id,
+  });
+
+  return {
+    primaryTheme: {
+      display_name: primaryTheme,
+      id: primaryThemeId,
+      slug: buildCatalogThemeSlug(primaryTheme),
+      status: 'active',
+    },
+    sourceTheme: {
+      id: sourceThemeId,
+      parent_source_theme_id: parentSourceTheme
+        ? buildCatalogSourceThemeRecordId({
+            sourceSystem: 'rebrickable',
+            sourceThemeId: parentSourceTheme.id,
+          })
+        : null,
+      source_system: 'rebrickable',
+      source_theme_name: sourceTheme.name,
+    },
+    sourceThemeMapping: {
+      primary_theme_id: primaryThemeId,
+      source_theme_id: sourceThemeId,
+    },
+    ...(parentSourceTheme
+      ? {
+          sourceThemeParent: {
+            id: buildCatalogSourceThemeRecordId({
+              sourceSystem: 'rebrickable',
+              sourceThemeId: parentSourceTheme.id,
+            }),
+            parent_source_theme_id: null,
+            source_system: 'rebrickable' as const,
+            source_theme_name: parentSourceTheme.name,
+          },
+        }
+      : {}),
+  };
+}
+
 async function resolveCatalogThemePersistenceForSourceSetNumber({
   fetchImpl,
   rebrickableClient,
@@ -2747,25 +3053,46 @@ function toCatalogDiscoveryCandidate(
       ? row.confidence
       : 'low';
   const status =
+    row.status === 'failed' ||
     row.status === 'imported' ||
     row.status === 'ignored' ||
+    row.status === 'non_set' ||
+    row.status === 'onboarding_started' ||
+    row.status === 'processing' ||
     row.status === 'rejected' ||
+    row.status === 'reviewed' ||
     row.status === 'new'
       ? row.status
       : 'new';
+  const evidence = row.evidence ?? {};
+  const operatorConfidence =
+    evidence['operatorConfidence'] === 'high' ||
+    evidence['operatorConfidence'] === 'medium' ||
+    evidence['operatorConfidence'] === 'low'
+      ? evidence['operatorConfidence']
+      : confidence;
+  const operatorConfidenceReasons = Array.isArray(
+    evidence['operatorConfidenceReasons'],
+  )
+    ? evidence['operatorConfidenceReasons'].filter(
+        (reason): reason is string => typeof reason === 'string',
+      )
+    : [];
 
   return {
     autoCreateEligible: row.auto_create_eligible,
     ...(row.brickset_payload ? { bricksetPayload: row.brickset_payload } : {}),
     confidence,
     confidenceScore: row.confidence_score,
-    evidence: row.evidence ?? {},
+    evidence,
     firstSeenAt: row.first_seen_at,
     id: row.id,
     importError: row.import_error,
     importedSetId: row.imported_set_id,
     lastSeenAt: row.last_seen_at,
     normalizedSetId: row.normalized_set_id,
+    operatorConfidence,
+    operatorConfidenceReasons,
     ...(row.rebrickable_payload
       ? { rebrickablePayload: row.rebrickable_payload }
       : {}),
@@ -2835,9 +3162,7 @@ export async function upsertCatalogDiscoveryCandidates({
           onConflict: 'normalized_set_id',
         },
       )
-      .select(
-        'id, normalized_set_id, source_set_number, source, source_product_url, source_product_title, source_image_url, source_price_minor, source_currency_code, source_payload, rebrickable_payload, brickset_payload, evidence, confidence, confidence_score, required_fields_present, auto_create_eligible, status, imported_set_id, import_error, first_seen_at, last_seen_at',
-      );
+      .select(CATALOG_DISCOVERY_CANDIDATE_SELECT);
 
     if (error) {
       throw new Error('Unable to upsert catalog discovery candidates.');
@@ -2872,18 +3197,243 @@ export async function listCatalogDiscoveryCandidatesBySetIds({
     supabaseClient ?? getServerSupabaseAdminClient()
   )
     .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
-    .select(
-      'id, normalized_set_id, source_set_number, source, source_product_url, source_product_title, source_image_url, source_price_minor, source_currency_code, source_payload, rebrickable_payload, brickset_payload, evidence, confidence, confidence_score, required_fields_present, auto_create_eligible, status, imported_set_id, import_error, first_seen_at, last_seen_at',
-    )
+    .select(CATALOG_DISCOVERY_CANDIDATE_SELECT)
     .in('normalized_set_id', uniqueSetIds);
 
   if (error) {
-    throw new Error('Unable to load catalog discovery candidates.');
+    throw createCatalogDiscoveryCandidateLoadError({
+      error,
+      limit: uniqueSetIds.length,
+      status: 'all',
+    });
   }
 
   return ((data as CatalogDiscoveryCandidateRow[] | null) ?? []).map(
     toCatalogDiscoveryCandidate,
   );
+}
+
+export async function listCatalogDiscoveryCandidates({
+  limit = 250,
+  status,
+  supabaseClient,
+}: {
+  limit?: number;
+  status?: CatalogDiscoveryCandidateStatus | 'all';
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogDiscoveryCandidate[]> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return [];
+  }
+
+  const safeLimit = Math.min(500, Math.max(1, Math.floor(limit)));
+  const selectedQuery = (supabaseClient ?? getServerSupabaseAdminClient())
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select(CATALOG_DISCOVERY_CANDIDATE_SELECT);
+  const filteredQuery =
+    status && status !== 'all'
+      ? selectedQuery.eq('status', status)
+      : selectedQuery;
+  const query =
+    typeof filteredQuery.order === 'function'
+      ? filteredQuery
+          .order('last_seen_at', { ascending: false })
+          .limit(safeLimit)
+      : filteredQuery;
+  const { data, error } = await query;
+
+  if (error) {
+    throw createCatalogDiscoveryCandidateLoadError({
+      error,
+      limit: safeLimit,
+      status,
+    });
+  }
+
+  return ((data as CatalogDiscoveryCandidateRow[] | null) ?? []).map(
+    toCatalogDiscoveryCandidate,
+  );
+}
+
+export async function preflightCatalogDiscoveryCandidates({
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogDiscoveryCandidatesPreflightResult> {
+  const statusCounts: Partial<Record<CatalogDiscoveryCandidateStatus, number>> =
+    {};
+  const statusCountErrors: Partial<
+    Record<CatalogDiscoveryCandidateStatus, string>
+  > = {};
+  const statuses: readonly CatalogDiscoveryCandidateStatus[] = [
+    'new',
+    'failed',
+    'processing',
+    'onboarding_started',
+    'imported',
+    'ignored',
+    'non_set',
+    'rejected',
+    'reviewed',
+  ];
+  const { count: tableCount, error: tableAccessError } = await supabaseClient
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select('id', { count: 'exact', head: true })
+    .limit(1);
+
+  for (const status of statuses) {
+    const { count, error } = await supabaseClient
+      .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', status);
+
+    if (error) {
+      statusCountErrors[status] = formatSupabaseDiagnosticError(error);
+      continue;
+    }
+
+    statusCounts[status] = count ?? 0;
+  }
+
+  const { error: selectedColumnProbeError } = await supabaseClient
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select(CATALOG_DISCOVERY_CANDIDATE_SELECT)
+    .limit(1);
+  const informationSchemaClient =
+    typeof supabaseClient.schema === 'function'
+      ? supabaseClient.schema('information_schema')
+      : supabaseClient;
+  const { data: informationSchemaRows, error: informationSchemaError } =
+    await informationSchemaClient
+      .from('columns')
+      .select('column_name')
+      .eq('table_schema', 'public')
+      .eq('table_name', CATALOG_DISCOVERY_CANDIDATES_TABLE);
+  const knownColumns = Array.isArray(informationSchemaRows)
+    ? new Set(
+        (informationSchemaRows as { column_name?: unknown }[])
+          .map((row) => row.column_name)
+          .filter(
+            (columnName): columnName is string =>
+              typeof columnName === 'string',
+          ),
+      )
+    : undefined;
+  const { error: operatorConfidenceColumnError } = await supabaseClient
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select('operator_confidence')
+    .limit(1);
+
+  return {
+    expectedColumns: CATALOG_DISCOVERY_CANDIDATE_SELECT_COLUMNS,
+    ...(informationSchemaError
+      ? {
+          informationSchemaError: formatSupabaseDiagnosticError(
+            informationSchemaError,
+          ),
+        }
+      : {}),
+    ...(knownColumns
+      ? {
+          missingColumns: CATALOG_DISCOVERY_CANDIDATE_SELECT_COLUMNS.filter(
+            (columnName) => !knownColumns.has(columnName),
+          ),
+        }
+      : {}),
+    optionalStoredOperatorConfidenceColumn: {
+      ...(operatorConfidenceColumnError
+        ? {
+            error: formatSupabaseDiagnosticError(operatorConfidenceColumnError),
+          }
+        : {}),
+      exists: !operatorConfidenceColumnError,
+    },
+    selectedColumns: CATALOG_DISCOVERY_CANDIDATE_SELECT_COLUMNS,
+    selectedColumnProbe: {
+      ...(selectedColumnProbeError
+        ? { error: formatSupabaseDiagnosticError(selectedColumnProbeError) }
+        : {}),
+      ok: !selectedColumnProbeError,
+    },
+    statusCounts,
+    statusCountErrors,
+    table: CATALOG_DISCOVERY_CANDIDATES_TABLE,
+    tableAccess: {
+      ...(typeof tableCount === 'number' ? { count: tableCount } : {}),
+      ...(tableAccessError
+        ? { error: formatSupabaseDiagnosticError(tableAccessError) }
+        : {}),
+      ok: !tableAccessError,
+    },
+    usedSetNumberColumns: ['source_set_number', 'normalized_set_id'],
+  };
+}
+
+export async function updateCatalogDiscoveryCandidateReviewStatus({
+  evidence,
+  id,
+  importError,
+  importedSetId,
+  status,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  evidence?: Readonly<Record<string, unknown>>;
+  id: string;
+  importError?: string | null;
+  importedSetId?: string | null;
+  status: CatalogDiscoveryCandidateStatus;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogDiscoveryCandidate> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .update({
+      ...(typeof importError !== 'undefined'
+        ? { import_error: importError }
+        : {}),
+      ...(typeof importedSetId !== 'undefined'
+        ? { imported_set_id: importedSetId }
+        : {}),
+      ...(typeof evidence !== 'undefined' ? { evidence } : {}),
+      last_seen_at: new Date().toISOString(),
+      status,
+    })
+    .eq('id', id)
+    .select(CATALOG_DISCOVERY_CANDIDATE_SELECT)
+    .single();
+
+  if (error || !data) {
+    throw new Error('Unable to update catalog discovery candidate.');
+  }
+
+  return toCatalogDiscoveryCandidate(data as CatalogDiscoveryCandidateRow);
+}
+
+export async function getCatalogDiscoveryCandidate({
+  id,
+  supabaseClient,
+}: {
+  id: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogDiscoveryCandidate | null> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return null;
+  }
+
+  const { data, error } = await (
+    supabaseClient ?? getServerSupabaseAdminClient()
+  )
+    .from(CATALOG_DISCOVERY_CANDIDATES_TABLE)
+    .select(CATALOG_DISCOVERY_CANDIDATE_SELECT)
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    throw new Error('Unable to load catalog discovery candidate.');
+  }
+
+  return data
+    ? toCatalogDiscoveryCandidate(data as CatalogDiscoveryCandidateRow)
+    : null;
 }
 
 export async function listCatalogSetSourceMetadataSetIds({
@@ -4074,5 +4624,673 @@ export async function createCatalogSet({
     }
 
     throw new Error('Unable to create the catalog set.');
+  }
+}
+
+function getLocalRebrickableSetNumberCandidates(setNumberOrId: string) {
+  const trimmed = setNumberOrId.trim();
+  const canonicalSetId = getCanonicalCatalogSetId(trimmed);
+
+  return [
+    ...new Set(
+      [
+        trimmed,
+        canonicalSetId,
+        canonicalSetId ? `${canonicalSetId}-1` : undefined,
+      ].filter((value): value is string => Boolean(value)),
+    ),
+  ];
+}
+
+function toLocalRebrickableSetMirrorMetadata({
+  row,
+  themeName,
+}: {
+  row: LocalRebrickableSetRow;
+  themeName: string;
+}): LocalRebrickableSetMirrorMetadata {
+  const imageUrl = row.img_url ?? row.set_img_url ?? undefined;
+  const numParts =
+    typeof row.num_parts === 'number' && Number.isFinite(row.num_parts)
+      ? row.num_parts
+      : 0;
+  const year =
+    typeof row.year === 'number' && Number.isFinite(row.year)
+      ? row.year
+      : new Date().getUTCFullYear();
+  const catalogSetInput = toSearchResult({
+    ...(imageUrl ? { imageUrl } : {}),
+    name: row.name,
+    numParts,
+    setNumber: row.set_num,
+    themeName,
+    year,
+  });
+
+  return {
+    catalogSetInput,
+    ...(row.img_url ? { imgUrl: row.img_url } : {}),
+    name: row.name,
+    numParts,
+    setNum: row.set_num,
+    ...(row.set_img_url ? { setImgUrl: row.set_img_url } : {}),
+    themeId: row.theme_id,
+    themeName,
+    year,
+  };
+}
+
+export async function getLocalRebrickableSetMirrorMetadata({
+  setNumberOrId,
+  supabaseClient,
+}: {
+  setNumberOrId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<LocalRebrickableSetMirrorMetadata | undefined> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return undefined;
+  }
+
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const setNumberCandidates =
+    getLocalRebrickableSetNumberCandidates(setNumberOrId);
+
+  if (setNumberCandidates.length === 0) {
+    return undefined;
+  }
+
+  const { data, error } = await activeSupabaseClient
+    .from(REBRICKABLE_SETS_TABLE)
+    .select('set_num, name, year, theme_id, num_parts, img_url, set_img_url')
+    .in('set_num', setNumberCandidates)
+    .limit(1);
+
+  if (error) {
+    throw new Error('Unable to read the local Rebrickable sets mirror.');
+  }
+
+  const row = ((data as LocalRebrickableSetRow[] | null) ?? [])[0];
+
+  if (!row) {
+    return undefined;
+  }
+
+  const sourceTheme = await getLocalRebrickableThemeRow({
+    supabaseClient: activeSupabaseClient,
+    themeId: row.theme_id,
+  });
+  const themeName = sourceTheme?.name ?? 'LEGO';
+
+  return toLocalRebrickableSetMirrorMetadata({
+    row,
+    themeName,
+  });
+}
+
+export async function getLocalRebrickableSetMetadata({
+  setNumberOrId,
+  supabaseClient,
+}: {
+  setNumberOrId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogExternalSetSearchResult | undefined> {
+  return (
+    await getLocalRebrickableSetMirrorMetadata({
+      setNumberOrId,
+      supabaseClient,
+    })
+  )?.catalogSetInput;
+}
+
+export async function createCatalogSetFromLocalRebrickableMirror({
+  setNumberOrId,
+  supabaseClient,
+}: {
+  setNumberOrId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogSet | undefined> {
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const setNumberCandidates =
+    getLocalRebrickableSetNumberCandidates(setNumberOrId);
+
+  if (setNumberCandidates.length === 0) {
+    return undefined;
+  }
+
+  const { data, error } = await activeSupabaseClient
+    .from(REBRICKABLE_SETS_TABLE)
+    .select('set_num, name, year, theme_id, num_parts, img_url, set_img_url')
+    .in('set_num', setNumberCandidates)
+    .limit(1);
+
+  if (error) {
+    throw new Error('Unable to read the local Rebrickable sets mirror.');
+  }
+
+  const row = ((data as LocalRebrickableSetRow[] | null) ?? [])[0];
+
+  if (!row) {
+    return undefined;
+  }
+
+  const sourceTheme = await getLocalRebrickableThemeRow({
+    supabaseClient: activeSupabaseClient,
+    themeId: row.theme_id,
+  });
+
+  if (!sourceTheme) {
+    throw new Error(
+      `Local Rebrickable theme ${row.theme_id} is missing for ${row.set_num}.`,
+    );
+  }
+
+  const normalizedSet = toSearchResult({
+    ...(row.img_url || row.set_img_url
+      ? { imageUrl: row.img_url ?? row.set_img_url ?? undefined }
+      : {}),
+    name: row.name,
+    numParts:
+      typeof row.num_parts === 'number' && Number.isFinite(row.num_parts)
+        ? row.num_parts
+        : 0,
+    setNumber: row.set_num,
+    themeName: sourceTheme.name,
+    year:
+      typeof row.year === 'number' && Number.isFinite(row.year)
+        ? row.year
+        : new Date().getUTCFullYear(),
+  });
+  const setConflict = await getCatalogOverlaySetByColumn({
+    column: 'set_id',
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.setId,
+  });
+
+  if (setConflict) {
+    return setConflict;
+  }
+
+  const slugConflict = await getCatalogOverlaySetByColumn({
+    column: 'slug',
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.slug,
+  });
+
+  if (slugConflict) {
+    throw new Error(
+      buildCatalogSetSlugConflictMessage({
+        conflictTarget: toCatalogConflictTarget(slugConflict),
+        slug: normalizedSet.slug,
+      }),
+    );
+  }
+
+  const themePersistence = await resolveLocalRebrickableThemePersistence({
+    sourceTheme,
+    supabaseClient: activeSupabaseClient,
+  });
+
+  await ensureCatalogThemePersistence({
+    supabaseClient: activeSupabaseClient,
+    themePersistence,
+  });
+
+  try {
+    const data = await insertCatalogSetRow({
+      normalizedSet,
+      supabaseClient: activeSupabaseClient,
+      themePersistence,
+    });
+    await refreshCatalogThemeSummaries({
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return toCatalogSet({
+      row: data,
+      themeIdentity: resolveCatalogThemeIdentityFromPersistence({
+        legacyTheme: data.theme,
+        primaryThemeName: themePersistence.primaryTheme.display_name,
+        sourceThemeName: themePersistence.sourceTheme.source_theme_name,
+      }),
+    });
+  } catch (error) {
+    const conflictMessage =
+      error &&
+      getCatalogSetInsertConflictMessage({
+        existingCatalogSets: [],
+        error: error as DatabaseConflictLike,
+        normalizedSet,
+      });
+
+    if (conflictMessage) {
+      throw new Error(conflictMessage);
+    }
+
+    throw new Error('Unable to create the catalog set from local mirror.');
+  }
+}
+
+function readCandidatePayloadString(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | undefined {
+  const value = payload?.[key];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function readCandidatePayloadInteger(
+  payload: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+  minValue: number,
+): number | undefined {
+  const value = payload?.[key];
+
+  return typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= minValue
+    ? value
+    : undefined;
+}
+
+function getTrustedDiscoveryCandidateDisplayTitle(
+  candidate: CatalogDiscoveryCandidate,
+): string | undefined {
+  return candidate.sourceProductTitle?.trim() || undefined;
+}
+
+function getDiscoveryCandidateBricksetName(
+  candidate: CatalogDiscoveryCandidate,
+): string | undefined {
+  const value = candidate.bricksetPayload?.['name'];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function getDiscoveryCandidateRebrickableName({
+  candidate,
+  localMirrorMetadata,
+}: {
+  candidate: CatalogDiscoveryCandidate;
+  localMirrorMetadata?: LocalRebrickableSetMirrorMetadata;
+}): string | undefined {
+  return (
+    localMirrorMetadata?.name ||
+    readCandidatePayloadString(candidate.rebrickablePayload, 'name')
+  );
+}
+
+function buildReferencePriceEvidence(
+  candidate: CatalogDiscoveryCandidate,
+): Readonly<Record<string, unknown>> | undefined {
+  if (
+    typeof candidate.sourcePriceMinor !== 'number' ||
+    candidate.sourcePriceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  return {
+    currencyCode: candidate.sourceCurrencyCode ?? 'EUR',
+    priceMinor: candidate.sourcePriceMinor,
+    source: candidate.source,
+    sourceProductUrl: candidate.sourceProductUrl,
+    usage: 'reference_price_only',
+  };
+}
+
+function buildCatalogSetInputFromDiscoveryCandidate(
+  candidate: CatalogDiscoveryCandidate,
+  localMirrorMetadata?: LocalRebrickableSetMirrorMetadata,
+): {
+  input: CatalogExternalSetSearchResult;
+  metadataIncomplete: boolean;
+  missingFields: readonly string[];
+} {
+  const payload = candidate.rebrickablePayload;
+  const localMirrorInput = localMirrorMetadata?.catalogSetInput;
+  const missingFields: string[] = [];
+  const setId =
+    localMirrorInput?.setId ||
+    readCandidatePayloadString(payload, 'setId') ||
+    getCanonicalCatalogSetId(candidate.sourceSetNumber) ||
+    candidate.normalizedSetId;
+  const sourceSetNumber =
+    localMirrorInput?.sourceSetNumber ||
+    readCandidatePayloadString(payload, 'sourceSetNumber') ||
+    candidate.sourceSetNumber ||
+    `${setId}-1`;
+  const name =
+    localMirrorInput?.name ||
+    readCandidatePayloadString(payload, 'name') ||
+    getTrustedDiscoveryCandidateDisplayTitle(candidate) ||
+    `LEGO set ${setId}`;
+  const imageUrl =
+    localMirrorInput?.imageUrl ||
+    readCandidatePayloadString(payload, 'imageUrl') ||
+    candidate.sourceImageUrl?.trim();
+  const pieces =
+    (typeof localMirrorInput?.pieces === 'number'
+      ? localMirrorInput.pieces
+      : undefined) ??
+    readCandidatePayloadInteger(payload, 'pieces', 0) ??
+    0;
+  const releaseYear =
+    (typeof localMirrorInput?.releaseYear === 'number'
+      ? localMirrorInput.releaseYear
+      : undefined) ??
+    readCandidatePayloadInteger(payload, 'releaseYear', 1) ??
+    new Date().getUTCFullYear();
+  const theme =
+    localMirrorInput?.theme ||
+    resolveCandidateThemeName({
+      fallbackTitle: name,
+      payload,
+      sourcePayload: candidate.sourcePayload,
+    });
+  const input = toSearchResult({
+    ...(imageUrl ? { imageUrl } : {}),
+    name,
+    numParts: pieces,
+    setNumber: sourceSetNumber,
+    themeName: theme,
+    year: releaseYear,
+  });
+
+  if (!localMirrorInput?.name && !readCandidatePayloadString(payload, 'name')) {
+    missingFields.push('name');
+  }
+
+  if (
+    typeof localMirrorInput?.pieces !== 'number' &&
+    readCandidatePayloadInteger(payload, 'pieces', 0) === undefined
+  ) {
+    missingFields.push('pieces');
+  }
+
+  if (
+    typeof localMirrorInput?.releaseYear !== 'number' &&
+    readCandidatePayloadInteger(payload, 'releaseYear', 1) === undefined
+  ) {
+    missingFields.push('releaseYear');
+  }
+
+  if (
+    !localMirrorInput?.theme &&
+    !readCandidatePayloadString(payload, 'theme')
+  ) {
+    missingFields.push('theme');
+  }
+
+  if (!imageUrl) {
+    missingFields.push('imageUrl');
+  }
+
+  return {
+    input,
+    metadataIncomplete: missingFields.length > 0,
+    missingFields,
+  };
+}
+
+async function upsertDiscoveryCandidateImportMetadata({
+  catalogSet,
+  candidate,
+  localMirrorMetadata,
+  missingFields,
+  supabaseClient,
+}: {
+  catalogSet: CatalogSet;
+  candidate: CatalogDiscoveryCandidate;
+  localMirrorMetadata?: LocalRebrickableSetMirrorMetadata;
+  missingFields: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}) {
+  const referencePriceEvidence = buildReferencePriceEvidence(candidate);
+  const trustedDisplayTitle =
+    getTrustedDiscoveryCandidateDisplayTitle(candidate);
+  const importedAt = new Date().toISOString();
+  const rebrickableName = getDiscoveryCandidateRebrickableName({
+    candidate,
+    localMirrorMetadata,
+  });
+  const bricksetName = getDiscoveryCandidateBricksetName(candidate);
+
+  await upsertCatalogSetSourceMetadata({
+    inputs: [
+      {
+        catalogSetId: catalogSet.setId,
+        lastSeenAt: candidate.lastSeenAt,
+        locale: RAKUTEN_LEGO_NL_LOCALE,
+        matchConfidence: RAKUTEN_LEGO_EXACT_MATCH_CONFIDENCE,
+        metadataJson: {
+          aliases: [trustedDisplayTitle, rebrickableName, bricksetName].filter(
+            (alias): alias is string => Boolean(alias),
+          ),
+          candidateId: candidate.id,
+          discovered_at: candidate.firstSeenAt,
+          evidence: candidate.evidence,
+          discoveryOperatorConfidence: candidate.operatorConfidence,
+          discoveryOperatorConfidenceReasons:
+            candidate.operatorConfidenceReasons,
+          importMode: 'discovery_candidate_evidence',
+          imported_at: importedAt,
+          indexingPolicy: missingFields.length
+            ? 'metadata_incomplete_needs_enrichment'
+            : 'source_evidence_complete',
+          metadataQuality: missingFields.length
+            ? 'needs_enrichment'
+            : 'source_evidence',
+          missingFields,
+          feed_title_nl: trustedDisplayTitle,
+          localized_title_nl: trustedDisplayTitle,
+          ...(referencePriceEvidence ? { referencePriceEvidence } : {}),
+          title: trustedDisplayTitle,
+          ...(bricksetName ? { bricksetName } : {}),
+          rebrickableEnrichmentUsed: Boolean(candidate.rebrickablePayload),
+          ...(rebrickableName ? { rebrickableName } : {}),
+          normalized_set_number: candidate.normalizedSetId,
+          rakuten_product_title: candidate.sourceProductTitle,
+          source_set_number: candidate.sourceSetNumber,
+          sourcePayload: candidate.sourcePayload,
+          source_url: candidate.sourceProductUrl,
+          sourcePriceEvidence: referencePriceEvidence,
+          product_url: candidate.sourceProductUrl,
+          sourceProductUrl: candidate.sourceProductUrl,
+        },
+        policy: RAKUTEN_LEGO_DEFAULT_METADATA_POLICY,
+        setNumber: catalogSet.sourceSetNumber,
+        source: candidate.source,
+      },
+    ],
+    supabaseClient,
+  });
+}
+
+async function updateCatalogSetPresentationFromDiscoveryCandidate({
+  candidate,
+  desiredSet,
+  existingSet,
+  supabaseClient,
+}: {
+  candidate: CatalogDiscoveryCandidate;
+  desiredSet: CatalogExternalSetSearchResult;
+  existingSet: CatalogSet;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogSet> {
+  const hasCanonicalSourceName =
+    desiredSet.name !== getTrustedDiscoveryCandidateDisplayTitle(candidate) &&
+    !/^LEGO set \d/u.test(desiredSet.name);
+
+  if (!hasCanonicalSourceName) {
+    return existingSet;
+  }
+
+  const slugConflict =
+    desiredSet.slug === existingSet.slug
+      ? undefined
+      : await getCatalogOverlaySetByColumn({
+          column: 'slug',
+          includeInactive: true,
+          supabaseClient,
+          value: desiredSet.slug,
+        });
+  const nextSlug =
+    !slugConflict || slugConflict.setId === existingSet.setId
+      ? desiredSet.slug
+      : existingSet.slug;
+
+  if (existingSet.name === desiredSet.name && existingSet.slug === nextSlug) {
+    return existingSet;
+  }
+
+  const { error } = await supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .update({
+      name: desiredSet.name,
+      slug: nextSlug,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('set_id', existingSet.setId);
+
+  if (error) {
+    throw new Error('Unable to update catalog set presentation metadata.');
+  }
+
+  return (
+    (await getCatalogOverlaySetByColumn({
+      column: 'set_id',
+      includeInactive: true,
+      supabaseClient,
+      value: existingSet.setId,
+    })) ?? existingSet
+  );
+}
+
+export async function createCatalogSetFromDiscoveryCandidate({
+  candidate,
+  supabaseClient,
+}: {
+  candidate: CatalogDiscoveryCandidate;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<{ catalogSet: CatalogSet; metadataIncomplete: boolean }> {
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const localMirrorMetadata = await getLocalRebrickableSetMirrorMetadata({
+    setNumberOrId: candidate.sourceSetNumber || candidate.normalizedSetId,
+    supabaseClient: activeSupabaseClient,
+  });
+  const { input, metadataIncomplete, missingFields } =
+    buildCatalogSetInputFromDiscoveryCandidate(candidate, localMirrorMetadata);
+  const normalizedSet = toSearchResult({
+    imageUrl: input.imageUrl,
+    name: input.name,
+    numParts: input.pieces,
+    setNumber: input.sourceSetNumber,
+    themeName: input.theme,
+    year: input.releaseYear,
+  });
+  const setConflict = await getCatalogOverlaySetByColumn({
+    column: 'set_id',
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.setId,
+  });
+
+  if (setConflict) {
+    const presentationSet =
+      await updateCatalogSetPresentationFromDiscoveryCandidate({
+        candidate,
+        desiredSet: normalizedSet,
+        existingSet: setConflict,
+        supabaseClient: activeSupabaseClient,
+      });
+
+    await upsertDiscoveryCandidateImportMetadata({
+      catalogSet: presentationSet,
+      candidate,
+      localMirrorMetadata,
+      missingFields,
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return {
+      catalogSet: presentationSet,
+      metadataIncomplete,
+    };
+  }
+
+  const slugConflict = await getCatalogOverlaySetByColumn({
+    column: 'slug',
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.slug,
+  });
+
+  if (slugConflict) {
+    throw new Error(
+      buildCatalogSetSlugConflictMessage({
+        conflictTarget: toCatalogConflictTarget(slugConflict),
+        slug: normalizedSet.slug,
+      }),
+    );
+  }
+
+  const themePersistence = buildCatalogThemePersistenceFromCandidateTheme(
+    normalizedSet.theme,
+  );
+
+  await ensureCatalogThemePersistence({
+    supabaseClient: activeSupabaseClient,
+    themePersistence,
+  });
+
+  try {
+    const data = await insertCatalogSetRow({
+      normalizedSet,
+      supabaseClient: activeSupabaseClient,
+      themePersistence,
+    });
+    const catalogSet = toCatalogSet({
+      row: data,
+      themeIdentity: resolveCatalogThemeIdentityFromPersistence({
+        legacyTheme: data.theme,
+        primaryThemeName: themePersistence.primaryTheme.display_name,
+        sourceThemeName: themePersistence.sourceTheme.source_theme_name,
+      }),
+    });
+
+    await upsertDiscoveryCandidateImportMetadata({
+      catalogSet,
+      candidate,
+      localMirrorMetadata,
+      missingFields,
+      supabaseClient: activeSupabaseClient,
+    });
+    await refreshCatalogThemeSummaries({
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return {
+      catalogSet,
+      metadataIncomplete,
+    };
+  } catch (error) {
+    const conflictMessage =
+      error &&
+      getCatalogSetInsertConflictMessage({
+        existingCatalogSets: [],
+        error: error as DatabaseConflictLike,
+        normalizedSet,
+      });
+
+    if (conflictMessage) {
+      throw new Error(conflictMessage);
+    }
+
+    throw new Error(
+      'Unable to create the catalog set from candidate evidence.',
+    );
   }
 }
