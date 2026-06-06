@@ -7690,6 +7690,7 @@ function createThemeSnapshot({
   const themeSlug = buildCatalogThemeSlug(displayThemeName);
 
   return {
+    introSupport: `Begin met ${setCards[0]?.name ?? displayThemeName} als je meteen wilt zien waar ${displayThemeName} goed in is.`,
     name: displayThemeName,
     slug: themeSlug,
     setCount: setCards.length,
@@ -7710,15 +7711,17 @@ function createPublicCatalogThemeSnapshot({
   theme: string;
 }): CatalogThemeSnapshot {
   const displayThemeName = normalizeCatalogThemePublicText(theme) ?? theme;
+  const signatureSet =
+    setCards[0]?.name && setCards[0].name !== displayThemeName
+      ? setCards[0].name
+      : displayThemeName;
 
   return {
+    introSupport: `Begin met ${signatureSet} als je meteen wilt zien waar ${displayThemeName} goed in is.`,
     name: displayThemeName,
     momentum: genericCatalogThemeMomentum,
     setCount,
-    signatureSet:
-      setCards[0]?.name && setCards[0].name !== displayThemeName
-        ? setCards[0].name
-        : displayThemeName,
+    signatureSet,
     slug,
   };
 }
@@ -8237,6 +8240,7 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
             }),
             ...(publicDescription
               ? {
+                  introSupport: undefined,
                   momentum: publicDescription,
                 }
               : {}),
@@ -12309,6 +12313,7 @@ export async function getCatalogThemePageBySlug({
         }),
         ...(publicDescription
           ? {
+              introSupport: undefined,
               momentum: publicDescription,
             }
           : {}),
@@ -12424,6 +12429,7 @@ export async function getCatalogThemeMetadataBySlug({
       momentum: genericCatalogThemeMomentum,
       ...(publicDescription
         ? {
+            introSupport: undefined,
             momentum: publicDescription,
           }
         : {}),

@@ -1688,21 +1688,26 @@
   }
 
   .productDescriptionDisclosure {
-    background: var(--lego-surface-muted);
-    border-radius: var(--lego-radius-md);
-    overflow: hidden;
+    --product-description-padding-inline: var(
+      --lego-section-inline-padding,
+      var(--lego-space-3)
+    );
+
+    background: transparent;
+    border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
   }
 
   .productDescriptionSummary {
     align-items: center;
-    border-radius: inherit;
+    border-radius: var(--lego-radius-sm);
     cursor: pointer;
     display: flex;
     gap: var(--lego-space-3);
     justify-content: space-between;
     list-style: none;
-    min-height: 5.25rem;
-    padding: var(--lego-space-5);
+    min-height: 4.5rem;
+    padding-block: var(--lego-space-4);
+    padding-inline: var(--product-description-padding-inline);
   }
 
   .productDescriptionSummary::-webkit-details-marker {
@@ -1710,9 +1715,8 @@
   }
 
   .productDescriptionSummary:focus-visible {
-    border-radius: inherit;
     outline: 3px solid var(--lego-focus-ring);
-    outline-offset: -3px;
+    outline-offset: 3px;
   }
 
   .productDescriptionHeading {
@@ -1731,10 +1735,10 @@
 
   .productDescriptionTitle {
     color: var(--lego-text);
-    font-size: var(--lego-text-role-section-size);
+    font-size: 20px;
     font-weight: var(--lego-text-role-section-weight);
     letter-spacing: 0;
-    line-height: var(--lego-text-role-section-line-height);
+    line-height: 1.25;
     margin: 0;
   }
 
@@ -1762,31 +1766,32 @@
 
   .productDescriptionLayout {
     display: grid;
-    gap: var(--lego-space-4);
-    padding: 0 var(--lego-space-5) var(--lego-space-5);
+    gap: var(--lego-space-5);
+    padding-inline: var(--product-description-padding-inline);
+    padding-block: 0 var(--lego-space-5);
   }
 
   .productDescriptionBody {
-    color: var(--lego-text-muted);
+    color: var(--lego-text);
     display: grid;
     gap: var(--lego-space-3);
-    line-height: 1.6;
+    line-height: 1.68;
+    max-inline-size: 72ch;
+    order: 1;
   }
 
   .productDescriptionVisual {
     align-items: center;
     align-self: start;
-    background: var(--lego-surface-default);
-    border-radius: var(--lego-radius-sm);
     display: flex;
     justify-content: center;
-    min-height: 11rem;
-    padding: var(--lego-space-4);
+    min-height: 12rem;
+    order: 2;
   }
 
   .productDescriptionImage {
     display: block;
-    max-height: min(18rem, 48vw);
+    max-height: min(26rem, 62vw);
     max-width: 100%;
     object-fit: contain;
   }
@@ -4770,20 +4775,13 @@
 
     .detailHeroMain {
       gap: var(--lego-space-14);
-      grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 23.5rem);
+      grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 25rem);
     }
 
     .productDescriptionLayout {
       align-items: start;
-      grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
-    }
-
-    .productDescriptionVisual {
-      order: 2;
-    }
-
-    .productDescriptionBody {
-      order: 1;
+      grid-template-columns: minmax(0, 72ch) minmax(18rem, 28rem);
+      justify-content: space-between;
     }
 
     .detailHeroRailInner {
@@ -4797,7 +4795,7 @@
 
     .detailHeroContent {
       justify-self: end;
-      max-width: 23.5rem;
+      max-width: 25rem;
       position: static;
       top: auto;
     }

@@ -1791,9 +1791,6 @@ export function CatalogSetProductDescription({
       <details className={styles.productDescriptionDisclosure}>
         <summary className={styles.productDescriptionSummary}>
           <span className={styles.productDescriptionHeading}>
-            <span className={styles.productDescriptionEyebrow}>
-              Beschrijving van LEGO
-            </span>
             <h2 className={styles.productDescriptionTitle}>Productgegevens</h2>
           </span>
           <span className={styles.productDescriptionIconFrame}>

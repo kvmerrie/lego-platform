@@ -52,8 +52,9 @@ export function CatalogFeatureThemeSpotlight({
   return (
     <CatalogSectionShell
       as="section"
-      bodyClassName={styles.grid}
+      bodyClassName={styles.body}
       className={styles.section}
+      data-theme-spotlight-layout="rail"
       description={description}
       eyebrow={eyebrow}
       headingClassName={styles.header}
@@ -64,35 +65,39 @@ export function CatalogFeatureThemeSpotlight({
         `${renderedThemeItems.length} thema's als je iets anders zoekt`
       }
       title={title}
-      tone="plain"
+      tone="inverse"
     >
-      {renderedThemeItems.map((themeItem, index) => (
-        <div
-          className={styles.spotlightItem}
-          key={getSpotlightItemKey(themeItem, index)}
-        >
-          <CatalogVisualTile
-            className={styles.spotlightTile}
-            dataTile={themeItem.id}
-            href={themeItem.href}
-            imageAlt={themeItem.alt ?? `${themeItem.title} LEGO`}
-            imageUrl={themeItem.imageUrl}
-            meta={themeItem.description}
-            title={themeItem.title}
-            trackingEvent={{
-              event: 'theme_tile_click',
-              properties: {
-                pageSurface: 'homepage',
-                rankPosition: index + 1,
-                sectionId: 'theme-spotlight',
-                tileType: themeItem.referenceType,
-                theme: themeItem.referenceId ?? themeItem.title,
-              },
-            }}
-            visual={themeItem.visual}
-          />
+      <div className={styles.railViewport}>
+        <div className={styles.railTrack}>
+          {renderedThemeItems.map((themeItem, index) => (
+            <div
+              className={styles.spotlightItem}
+              key={getSpotlightItemKey(themeItem, index)}
+            >
+              <CatalogVisualTile
+                className={styles.spotlightTile}
+                dataTile={themeItem.id}
+                href={themeItem.href}
+                imageAlt={themeItem.alt ?? `${themeItem.title} LEGO`}
+                imageUrl={themeItem.imageUrl}
+                meta={themeItem.description}
+                title={themeItem.title}
+                trackingEvent={{
+                  event: 'theme_tile_click',
+                  properties: {
+                    pageSurface: 'homepage',
+                    rankPosition: index + 1,
+                    sectionId: 'theme-spotlight',
+                    tileType: themeItem.referenceType,
+                    theme: themeItem.referenceId ?? themeItem.title,
+                  },
+                }}
+                visual={themeItem.visual}
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </CatalogSectionShell>
   );
 }

@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { CatalogFeatureThemeList } from './catalog-feature-theme-list';
 import { CatalogFeatureThemeSpotlight } from './catalog-feature-theme-spotlight';
+
+const featureThemeListDir = dirname(fileURLToPath(import.meta.url));
 
 function createThemeItem({
   imageUrl,
@@ -23,6 +26,16 @@ function createThemeItem({
       signatureSet: name,
       slug,
     },
+  };
+}
+
+function createSpotlightItem({ name, slug }: { name: string; slug: string }) {
+  return {
+    href: `/themes/${slug}`,
+    id: `theme:${slug}`,
+    referenceId: slug,
+    referenceType: 'theme' as const,
+    title: name,
   };
 }
 
@@ -72,7 +85,7 @@ describe('CatalogFeatureThemeList', () => {
 
   it('styles the all themes tile as a compact portrait discovery card', () => {
     const css = readFileSync(
-      resolve(process.cwd(), 'src/lib/catalog-feature-theme-list.module.css'),
+      resolve(featureThemeListDir, 'catalog-feature-theme-list.module.css'),
       'utf-8',
     );
     const trackSpacerRule =
@@ -106,17 +119,17 @@ describe('CatalogFeatureThemeList', () => {
     expect(css).toContain('.railTrack::after {\n    content: none;');
   });
 
-  it('renders a non-rail theme spotlight block for deeper homepage browsing', () => {
+  it('renders theme spotlight as a horizontal rail for deeper homepage browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemeSpotlight
         themeItems={[
-          createThemeItem({
+          createSpotlightItem({
             name: 'Modular Buildings',
             slug: 'modular-buildings',
           }),
-          createThemeItem({ name: 'Botanicals', slug: 'botanicals' }),
-          createThemeItem({ name: 'Technic', slug: 'technic' }),
-          createThemeItem({ name: 'Architecture', slug: 'architecture' }),
+          createSpotlightItem({ name: 'Botanicals', slug: 'botanicals' }),
+          createSpotlightItem({ name: 'Technic', slug: 'technic' }),
+          createSpotlightItem({ name: 'Architecture', slug: 'architecture' }),
         ]}
       />,
     );
@@ -124,27 +137,43 @@ describe('CatalogFeatureThemeList', () => {
     expect(markup).toContain('Meer om te ontdekken');
     expect(markup).toContain('Botanicals, kunst of modulaire straten?');
     expect(markup).toContain('4 thema&#x27;s als je iets anders zoekt');
+    expect(markup).toContain('data-theme-spotlight-layout="rail"');
+    expect(markup).toContain('sectionShellInverse');
     expect(markup).toContain('href="/themes/modular-buildings"');
     expect(markup).toContain('href="/themes/botanicals"');
     expect(markup).not.toContain('href="/themes/icons"');
     expect(markup).not.toContain('Pak eerst');
   });
 
-  it('keeps homepage spotlight theme tiles on equal safe rows', () => {
+  it('keeps homepage spotlight tiles in a scroll-snap rail on mobile and tablet', () => {
     const css = readFileSync(
       resolve(
-        process.cwd(),
-        'src/lib/catalog-feature-theme-spotlight.module.css',
+        featureThemeListDir,
+        'catalog-feature-theme-spotlight.module.css',
       ),
       'utf-8',
     );
-    const gridRule = css.match(/\.grid \{[^}]+\}/u)?.[0] ?? '';
+    const railViewportRule = css.match(/\.railViewport \{[^}]+\}/u)?.[0] ?? '';
+    const railTrackRule = css.match(/\.railTrack \{[^}]+\}/u)?.[0] ?? '';
+    const spotlightItemRule =
+      css.match(/\.spotlightItem \{[^}]+\}/u)?.[0] ?? '';
     const spotlightTileRule =
       css.match(/\.spotlightTile \{[^}]+\}/u)?.[0] ?? '';
+    const tabletRule =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]*?\.spotlightItem \{[^}]+\}[\s\S]*?\}/u,
+      )?.[0] ?? '';
 
-    expect(gridRule).toContain('grid-auto-rows: 1fr;');
+    expect(railViewportRule).toContain('overflow-x: auto;');
+    expect(railViewportRule).toContain('scroll-padding-inline:');
+    expect(railTrackRule).toContain('display: flex;');
+    expect(railTrackRule).toContain('scroll-snap-type: x proximity;');
+    expect(spotlightItemRule).toContain('flex: 0 0');
+    expect(spotlightItemRule).toContain('scroll-snap-align: start;');
+    expect(tabletRule).toContain('flex-basis: clamp(15.5rem');
     expect(spotlightTileRule).toContain('min-height: 22.5rem;');
     expect(spotlightTileRule).not.toContain('min-height: 0;');
+    expect(css).not.toContain('grid-template-columns: repeat(auto-fit');
   });
 
   it('uses stable keys when theme names repeat with different slugs', () => {
@@ -152,28 +181,16 @@ describe('CatalogFeatureThemeList', () => {
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);
     const themeItems = [
-      {
-        themeSnapshot: {
-          momentum: 'Avengers Tower blijft meteen hangen.',
-          name: 'Marvel',
-          setCount: 4,
-          signatureSet: 'Avengers Tower',
-          slug: 'marvel',
-        },
-      },
-      {
-        themeSnapshot: {
-          momentum: 'X-Men op de plank geeft meteen kleur.',
-          name: 'Marvel',
-          setCount: 2,
-          signatureSet: 'X-Mansion',
-          slug: 'x-men',
-        },
-      },
+      createThemeItem({ name: 'Marvel', slug: 'marvel' }),
+      createThemeItem({ name: 'Marvel', slug: 'x-men' }),
+    ];
+    const spotlightItems = [
+      createSpotlightItem({ name: 'Marvel', slug: 'marvel' }),
+      createSpotlightItem({ name: 'Marvel', slug: 'x-men' }),
     ];
 
     const spotlightMarkup = renderToStaticMarkup(
-      <CatalogFeatureThemeSpotlight themeItems={themeItems} />,
+      <CatalogFeatureThemeSpotlight themeItems={spotlightItems} />,
     );
     const listMarkup = renderToStaticMarkup(
       <CatalogFeatureThemeList themeItems={themeItems} />,

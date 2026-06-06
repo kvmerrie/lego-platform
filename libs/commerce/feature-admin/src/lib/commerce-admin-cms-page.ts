@@ -834,12 +834,13 @@ function createSectionItem(index: number): PublicPageSectionItem {
                 />
               </label>
               <label class="admin-field">
-                <span>Description</span>
+                <span>Public description / hero copy</span>
                 <textarea
                   class="admin-textarea"
                   name="publicDescription"
                   [(ngModel)]="editingTheme().publicDescription"
                 ></textarea>
+                <small>Used as the theme detail hero description.</small>
               </label>
               <label class="admin-field">
                 <span>Hero image URL</span>

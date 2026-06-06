@@ -55,12 +55,22 @@ describe('CatalogSetCard', () => {
     expect(sharedCss).toContain('@layer shared {');
     expect(catalogCss).toContain('@layer reset, shared, catalog;');
     expect(catalogCss).toContain('@layer catalog {');
+    expect(catalogCss).toContain('background: transparent;');
     expect(catalogCss).toContain(
-      'font-size: var(--lego-text-role-section-size);',
+      'border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);',
     );
+    expect(catalogCss).toContain('--product-description-padding-inline: var(');
+    expect(catalogCss).toContain('--lego-section-inline-padding,');
+    expect(
+      catalogCss.match(
+        /padding-inline: var\(--product-description-padding-inline\);/gu,
+      )?.length,
+    ).toBeGreaterThanOrEqual(2);
     expect(catalogCss).toContain('.productDescriptionIconFrame');
     expect(catalogCss).toContain('flex: 0 0 2.75rem;');
-    expect(catalogCss).toContain('border-radius: inherit;');
+    expect(catalogCss).toContain('font-size: 20px;');
+    expect(catalogCss).toContain('max-inline-size: 72ch;');
+    expect(catalogCss).toContain('max-height: min(26rem, 62vw);');
     expect(catalogCss).toContain('transform: rotate(-90deg);');
     expect(catalogCss).toContain(
       '.productDescriptionDisclosure[open] .productDescriptionIcon',
@@ -2025,7 +2035,7 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('<details');
     expect(markup).not.toContain('<details open');
-    expect(markup).toContain('Beschrijving van LEGO');
+    expect(markup).not.toContain('Beschrijving van LEGO');
     expect(markup).toContain('<h2');
     expect(markup).toContain('Productgegevens</h2>');
     expect(markup).toContain('Bouw de vallei van <strong>Rivendell</strong>');
@@ -2358,9 +2368,9 @@ describe('CatalogSetCard', () => {
       'grid-template-columns: minmax(0, 1fr) clamp(19rem, 28vw, 23rem);',
     );
     expect(css).toContain(
-      'grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 23.5rem);',
+      'grid-template-columns: minmax(0, 1fr) clamp(20.5rem, 24vw, 25rem);',
     );
-    expect(css).toContain('max-width: 23.5rem;');
+    expect(css).toContain('max-width: 25rem;');
     expect(css).toContain('font-size: clamp(2.05rem, 2.8vw, 2.85rem);');
     expect(css).toContain('font-size: clamp(2.2rem, 2.45vw, 2.9rem);');
     expect(css).toContain('.detailHero .bestDealPrice {');

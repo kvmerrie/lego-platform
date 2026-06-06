@@ -3594,6 +3594,7 @@ describe('catalog effective data access web', () => {
     });
 
     expect(iconsItem?.themeSnapshot).toMatchObject({
+      introSupport: undefined,
       momentum: 'Grote blikvangers voor op de plank.',
       name: 'Custom Icons',
       slug: 'icons',
@@ -3607,6 +3608,9 @@ describe('catalog effective data access web', () => {
       textColor: '#ffffff',
     });
     expect(cityItem?.themeSnapshot.name).toBe('City');
+    expect(cityItem?.themeSnapshot.introSupport).toContain(
+      'Begin met Snackbartruck',
+    );
     expect(cityItem?.imageUrl).toBe(
       'https://cdn.example.com/city-representative.jpg',
     );
@@ -4621,6 +4625,8 @@ describe('catalog effective data access web', () => {
           id: 'theme:editions',
           is_public: true,
           public_accent_color: '#e0b84f',
+          public_description:
+            'Bijzondere releases die niet netjes in een grotere themalijn vallen.',
           public_hero_text_color: '#171a22',
           public_image_url: 'https://cdn.example.com/editions-public.jpg',
           public_order: 325,
@@ -4647,6 +4653,9 @@ describe('catalog effective data access web', () => {
     });
 
     expect(themePage?.themeSnapshot).toMatchObject({
+      introSupport: undefined,
+      momentum:
+        'Bijzondere releases die niet netjes in een grotere themalijn vallen.',
       name: 'Editions',
       setCount: 14,
       slug: 'editions',

@@ -76,7 +76,7 @@ export function CatalogFeatureThemePage({
 }) {
   const { setCards, themeSnapshot } = themePage;
   const themeName = themeSnapshot.name;
-  const themeSignatureSet = themeSnapshot.signatureSet;
+  const themeSignatureSet = themeSnapshot.signatureSet || themeName;
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
   const themeVisual = themePage.visual;
@@ -157,17 +157,9 @@ export function CatalogFeatureThemePage({
           </h1>
           <p className={styles.introLead}>{themeSnapshot.momentum}</p>
         </div>
-        <p className={styles.introSupport}>
-          Begin met{' '}
-          <span className="notranslate" translate="no">
-            {themeSignatureSet}
-          </span>{' '}
-          als je meteen wilt zien waar{' '}
-          <span className="notranslate" translate="no">
-            {themeName}
-          </span>{' '}
-          goed in is.
-        </p>
+        {themeSnapshot.introSupport ? (
+          <p className={styles.introSupport}>{themeSnapshot.introSupport}</p>
+        ) : null}
         <div className={styles.introActions}>
           <ActionLink
             className={styles.introPrimaryAction}

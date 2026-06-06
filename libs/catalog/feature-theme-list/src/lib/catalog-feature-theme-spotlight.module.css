@@ -1,19 +1,44 @@
 .section {
+  padding-block: var(--lego-space-5);
 }
 
 .header {
   max-width: min(30rem, 100%);
 }
 
-.grid {
-  display: grid;
-  gap: var(--lego-space-4);
-  grid-auto-rows: 1fr;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15.5rem), 1fr));
+.body {
+  gap: 0;
+}
+
+.railViewport {
+  margin-inline: calc(
+    -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
+  );
+  overflow-x: auto;
+  padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
+    var(--lego-space-1);
+  scroll-padding-inline: var(
+    --catalog-section-inline-padding,
+    var(--lego-space-4)
+  );
+}
+
+.railTrack {
+  display: flex;
+  gap: var(--lego-space-2);
+  margin: 0;
+  scroll-snap-type: x proximity;
+}
+
+.railTrack::after {
+  content: '';
+  flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
 }
 
 .spotlightItem {
+  flex: 0 0 min(13.5rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
+  scroll-snap-align: start;
 }
 
 .spotlightTile {
@@ -23,4 +48,16 @@
 
 .spotlightItem > * {
   height: 100%;
+}
+
+@media (min-width: 48rem) {
+  .spotlightItem {
+    flex-basis: clamp(15.5rem, 34vw, 18rem);
+  }
+}
+
+@media (min-width: 75rem) {
+  .spotlightItem {
+    flex-basis: clamp(16rem, 24vw, 19rem);
+  }
 }
