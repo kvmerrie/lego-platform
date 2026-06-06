@@ -35,9 +35,8 @@ import {
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
   getCanonicalCatalogSetId,
-  getCatalogReleaseYear,
-  getCatalogCollectionLandingPageConfig,
   getCatalogThemeDisplayName,
+  getCatalogReleaseYear,
   isCatalogBrowsablePrimaryTheme,
   isCatalogCollectionPageSnapshotSlug,
   matchesCatalogMinifigureCollectionSignals,
@@ -3320,43 +3319,39 @@ export async function listCanonicalCatalogSets({
     return [];
   }
 
-  try {
-    const { data, error } = await activeSupabaseClient
-      .from(CATALOG_SETS_TABLE)
-      .select(
-        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
-      )
-      .eq('status', 'active')
-      .order('created_at', {
-        ascending: false,
-      });
-
-    if (error) {
-      throw new Error('Unable to load canonical catalog sets.');
-    }
-
-    const catalogRows = (data as CatalogSetRow[] | null) ?? [];
-    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
-      catalogRows,
-      supabaseClient: activeSupabaseClient,
+  const { data, error } = await activeSupabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .select(
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
+    )
+    .eq('status', 'active')
+    .order('created_at', {
+      ascending: false,
     });
 
-    const canonicalCatalogSets = sortCanonicalCatalogSets(
-      catalogRows.map((row) =>
-        toCanonicalCatalogSetFromRow({
-          row,
-          themeIdentity: themeIdentityBySetId.get(row.set_id),
-        }),
-      ),
-    );
-
-    return enrichCanonicalCatalogSetsWithPublicMetadata({
-      canonicalCatalogSets,
-      supabaseClient: activeSupabaseClient,
-    });
-  } catch (error) {
-    throw error;
+  if (error) {
+    throw new Error('Unable to load canonical catalog sets.');
   }
+
+  const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+  const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+    catalogRows,
+    supabaseClient: activeSupabaseClient,
+  });
+
+  const canonicalCatalogSets = sortCanonicalCatalogSets(
+    catalogRows.map((row) =>
+      toCanonicalCatalogSetFromRow({
+        row,
+        themeIdentity: themeIdentityBySetId.get(row.set_id),
+      }),
+    ),
+  );
+
+  return enrichCanonicalCatalogSetsWithPublicMetadata({
+    canonicalCatalogSets,
+    supabaseClient: activeSupabaseClient,
+  });
 }
 
 export function resetWebCatalogSupabaseClientsForTests() {
@@ -4851,44 +4846,6 @@ function getCatalogComparisonDiscoveryScore(
       : 0;
 
   return coverageScore + spreadScore + freshnessScore + bestOfferClarityScore;
-}
-
-function getCatalogBestDealDiscoveryScore(
-  catalogDiscoverySignal: CatalogDiscoverySignal,
-): number {
-  const referenceDiscountScore =
-    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
-    catalogDiscoverySignal.referenceDeltaMinor < 0
-      ? Math.min(Math.abs(catalogDiscoverySignal.referenceDeltaMinor) / 125, 90)
-      : 0;
-  const spreadScore = Math.min(
-    catalogDiscoverySignal.priceSpreadMinor / 180,
-    45,
-  );
-  const recentDropScore =
-    typeof catalogDiscoverySignal.recentReferencePriceChangeMinor ===
-      'number' &&
-    catalogDiscoverySignal.recentReferencePriceChangeMinor < 0 &&
-    getCatalogSignalAgeHours(
-      catalogDiscoverySignal.recentReferencePriceChangedAt,
-    ) <= 48
-      ? Math.min(
-          Math.abs(catalogDiscoverySignal.recentReferencePriceChangeMinor) /
-            120,
-          55,
-        )
-      : 0;
-  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 10;
-  const freshnessScore =
-    getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) * 0.7;
-
-  return (
-    referenceDiscountScore +
-    recentDropScore +
-    spreadScore +
-    coverageScore +
-    freshnessScore
-  );
 }
 
 function getCatalogFollowDiscoveryThemeScore(theme: string): number {
@@ -11468,20 +11425,6 @@ function readHomepageMetadataString(
   const value = metadata?.[key];
 
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
-}
-
-function readHomepageMetadataStringArray(
-  metadata: Readonly<Record<string, unknown>> | undefined,
-  key: string,
-): readonly string[] {
-  const value = metadata?.[key];
-
-  return Array.isArray(value)
-    ? value.filter(
-        (item): item is string =>
-          typeof item === 'string' && item.trim().length > 0,
-      )
-    : [];
 }
 
 function getHomepageDiscoveryVisual(

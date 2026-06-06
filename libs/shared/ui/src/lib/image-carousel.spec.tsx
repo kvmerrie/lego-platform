@@ -589,11 +589,10 @@ describe('ImageGallery', () => {
     expect(document.activeElement).toBe(lastOverviewImage);
 
     act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', {
+      closeButton?.dispatchEvent(
+        new MouseEvent('click', {
           bubbles: true,
           cancelable: true,
-          key: 'Escape',
         }),
       );
     });
@@ -1446,7 +1445,7 @@ describe('ImageGallery', () => {
       document.body.querySelector(
         'button[aria-label="Terug naar alle afbeeldingen"]',
       ),
-    ).not.toBeNull();
+    ).toBeNull();
 
     act(() => {
       document.body
@@ -1487,7 +1486,7 @@ describe('ImageGallery', () => {
     act(() => {
       document.body
         .querySelector<HTMLButtonElement>(
-          'button[aria-label="Terug naar alle afbeeldingen"]',
+          '[data-lightbox-mode="viewer"] [data-lightbox-close="true"]',
         )
         ?.dispatchEvent(
           new MouseEvent('click', {
@@ -1596,7 +1595,6 @@ describe('ImageGallery', () => {
     expect(css).toContain('width: 90vw;');
     expect(css).toContain('max-width: min(90vw, 92rem);');
     expect(css).toContain(".lightboxDialog[data-lightbox-variant='detail']");
-    expect(css).toContain('.lightboxViewerHeaderStart {');
     expect(css).toContain('.lightboxOverviewBody {');
     expect(css).toContain('overflow-y: auto;');
     expect(css).toContain('.lightboxOverview {');
@@ -1630,7 +1628,6 @@ describe('ImageGallery', () => {
     expect(css).toContain('.lightboxFooter {');
     expect(css).toContain('.lightboxAttribution');
     expect(css).toContain('font-size: var(--lego-caption-font-size);');
-    expect(css).toContain('.lightboxBackButton');
     expect(css).toContain('@media (max-width: 47.99rem)');
     expect(css).toContain('align-items: flex-end;');
     expect(css).toContain('height: min(92vh, 100dvh);');

@@ -41,7 +41,6 @@
 .detailGalleryNavButton,
 .detailGalleryShowAllButton,
 .detailThumbButton,
-.lightboxBackButton,
 .lightboxCloseButton,
 .lightboxOverviewButton,
 .lightboxNavButton,
@@ -79,7 +78,6 @@
 .detailGalleryNavButton:focus-visible,
 .detailGalleryShowAllButton:focus-visible,
 .detailThumbButton:focus-visible,
-.lightboxBackButton:focus-visible,
 .lightboxCloseButton:focus-visible,
 .lightboxOverviewButton:focus-visible,
 .lightboxNavButton:focus-visible,
@@ -480,14 +478,6 @@
   color: var(--lego-text-muted);
 }
 
-.lightboxViewerHeaderStart {
-  align-items: center;
-  display: inline-flex;
-  gap: var(--lego-space-2);
-  min-width: 0;
-}
-
-.lightboxBackButton,
 .lightboxCloseButton,
 .lightboxNavButton {
   align-items: center;
@@ -506,14 +496,12 @@
   width: 2.5rem;
 }
 
-.lightboxDialog[data-lightbox-variant='detail'] .lightboxBackButton,
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxCloseButton {
   background: #ffffff;
   border-color: var(--lego-border-subtle);
   color: var(--lego-text);
 }
 
-.lightboxDialog[data-lightbox-variant='detail'] .lightboxBackButton:hover,
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxCloseButton:hover {
   background: var(--lego-surface-subtle);
 }

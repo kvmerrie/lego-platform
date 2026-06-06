@@ -313,7 +313,9 @@ describe('home metadata', () => {
 
   it('logs and renders curated fallback when homepage CMS fetch fails', async () => {
     setupHomepageRenderMocks();
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     const cmsError = new Error('public_page_sections does not exist');
     pageMocks.getHomepageEditorialConfig.mockRejectedValue(cmsError);
 

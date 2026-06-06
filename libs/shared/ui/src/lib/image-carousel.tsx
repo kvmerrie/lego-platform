@@ -537,6 +537,19 @@ export function ImageGallery({
     setLightboxMode('overview');
   }
 
+  function handleLightboxCloseButtonClick() {
+    if (
+      lightboxMode === 'viewer' &&
+      variant === 'detail' &&
+      hasMultipleImages
+    ) {
+      returnToLightboxOverview();
+      return;
+    }
+
+    closeLightbox();
+  }
+
   function getSwipeDeltaForBounds({
     delta,
     imageIndex,
@@ -952,20 +965,9 @@ export function ImageGallery({
             {lightboxMode === 'viewer' &&
             variant === 'detail' &&
             hasMultipleImages ? (
-              <div className={styles.lightboxViewerHeaderStart}>
-                <button
-                  aria-label="Terug naar alle afbeeldingen"
-                  className={styles.lightboxBackButton}
-                  onClick={returnToLightboxOverview}
-                  ref={lightboxPrimaryButtonRef}
-                  type="button"
-                >
-                  <ChevronLeft aria-hidden="true" size={20} strokeWidth={2.3} />
-                </button>
-                <p aria-live="polite" className={styles.lightboxIndicator}>
-                  {safeLightboxImageIndex + 1}/{resolvedImages.length}
-                </p>
-              </div>
+              <p aria-live="polite" className={styles.lightboxIndicator}>
+                {safeLightboxImageIndex + 1}/{resolvedImages.length}
+              </p>
             ) : lightboxMode === 'overview' ? (
               <p aria-live="polite" className={styles.lightboxIndicator}>
                 Alle afbeeldingen
@@ -978,16 +980,17 @@ export function ImageGallery({
               <span />
             )}
             <button
-              aria-label="Sluit galerij"
-              className={styles.lightboxCloseButton}
-              onClick={closeLightbox}
-              ref={
+              aria-label={
                 lightboxMode === 'viewer' &&
                 variant === 'detail' &&
                 hasMultipleImages
-                  ? undefined
-                  : lightboxPrimaryButtonRef
+                  ? 'Toon alle afbeeldingen'
+                  : 'Sluit galerij'
               }
+              className={styles.lightboxCloseButton}
+              data-lightbox-close="true"
+              onClick={handleLightboxCloseButtonClick}
+              ref={lightboxPrimaryButtonRef}
               type="button"
             >
               <X aria-hidden="true" size={18} strokeWidth={2.2} />
