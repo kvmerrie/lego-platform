@@ -39,7 +39,35 @@
 .introContent {
   display: grid;
   gap: var(--lego-space-4);
+  max-width: 100%;
+}
+
+.introLayout {
+  align-items: center;
+  display: grid;
+  gap: var(--lego-space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.introCopy {
+  display: grid;
+  gap: var(--lego-space-4);
   max-width: min(46rem, 100%);
+}
+
+.introVisual {
+  align-self: stretch;
+  border-radius: var(--lego-radius-md);
+  display: none;
+  min-height: 18rem;
+  overflow: hidden;
+}
+
+.introImage {
+  display: block;
+  height: 100%;
+  inline-size: 100%;
+  object-fit: cover;
 }
 
 .eyebrow,
@@ -217,6 +245,14 @@
 }
 
 @media (min-width: 64rem) {
+  .introLayout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.72fr);
+  }
+
+  .introVisual {
+    display: block;
+  }
+
   .grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }

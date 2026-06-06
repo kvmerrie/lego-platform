@@ -1,9 +1,13 @@
 import { timingSafeEqual } from 'node:crypto';
 import {
   CatalogPromotionError,
+  previewCmsPromotionFromStagingToProduction,
   previewCatalogPromotionFromStagingToProduction,
+  promoteCmsFromStagingToProduction,
   promoteCatalogFromStagingToProduction,
   revalidatePublicWeb,
+  type CmsPromotionPreviewResult,
+  type CmsPromotionResult,
   type CatalogPromotionPreviewResult,
   type CatalogPromotionResult,
   type PublicWebRevalidationResult,
@@ -26,12 +30,15 @@ const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
 const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 50;
 const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
 const CATALOG_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CATALOG';
+const CMS_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CMS';
 
 export interface AdminPromoteService {
+  previewCms(): Promise<CmsPromotionPreviewResult>;
   previewCatalog(input?: {
     includeCommerceSeeds?: boolean;
     includeHeavy?: boolean;
   }): Promise<CatalogPromotionPreviewResult>;
+  promoteCms(): Promise<CmsPromotionResult>;
   promoteCatalog(input?: {
     includeCommerceSeeds?: boolean;
   }): Promise<CatalogPromotionResult>;
@@ -41,11 +48,13 @@ type RevalidatePublicWebFn = typeof revalidatePublicWeb;
 
 function createAdminPromoteService(): AdminPromoteService {
   return {
+    previewCms: () => previewCmsPromotionFromStagingToProduction(),
     previewCatalog: (input) =>
       previewCatalogPromotionFromStagingToProduction({
         includeCommerceSeeds: input?.includeCommerceSeeds === true,
         includeHeavy: input?.includeHeavy === true,
       }),
+    promoteCms: () => promoteCmsFromStagingToProduction(),
     promoteCatalog: (input) =>
       promoteCatalogFromStagingToProduction({
         includeCommerceSeeds: input?.includeCommerceSeeds === true,
@@ -84,6 +93,14 @@ function matchesAdminSecret({
   }
 
   return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function readCmsPromotionConfirmationPhrase(
+  body: { confirmationPhrase?: unknown } | undefined,
+): string {
+  return typeof body?.confirmationPhrase === 'string'
+    ? body.confirmationPhrase.trim()
+    : '';
 }
 
 function readCatalogPromotionConfirmationPhrase(
@@ -160,6 +177,40 @@ function buildCatalogPromoteRevalidationPaths({
   };
 }
 
+function buildCmsPromoteRevalidationTargets({
+  affectedCollectionSlugs,
+  affectedThemeSlugs,
+}: {
+  affectedCollectionSlugs: readonly string[];
+  affectedThemeSlugs: readonly string[];
+}): {
+  paths: string[];
+  tags: string[];
+} {
+  const uniqueThemeSlugs = [...new Set(affectedThemeSlugs)].sort(
+    (left, right) => left.localeCompare(right),
+  );
+  const uniqueCollectionSlugs = [...new Set(affectedCollectionSlugs)].sort(
+    (left, right) => left.localeCompare(right),
+  );
+
+  return {
+    paths: [
+      webPathnames.home,
+      webPathnames.themes,
+      ...uniqueThemeSlugs.map((slug) => buildThemePath(slug)),
+      ...uniqueCollectionSlugs.map((slug) => `/${slug}`),
+    ],
+    tags: [
+      cacheTags.homepage(),
+      cacheTags.themes(),
+      cacheTags.collections(),
+      ...uniqueThemeSlugs.map((slug) => cacheTags.theme(slug)),
+      ...uniqueCollectionSlugs.map((slug) => cacheTags.collection(slug)),
+    ],
+  };
+}
+
 export function createAdminPromoteRoutes({
   adminPreHandler = createAdminPreHandler(),
   adminPromoteService = createAdminPromoteService(),
@@ -186,6 +237,128 @@ export function createAdminPromoteRoutes({
         });
       },
     );
+
+    fastify.get(
+      apiPaths.adminCmsPromotionPreview,
+      {
+        preHandler: adminPreHandler,
+      },
+      async function () {
+        return adminPromoteService.previewCms();
+      },
+    );
+
+    fastify.post<{
+      Body: { confirmationPhrase?: unknown } | undefined;
+    }>(apiPaths.adminCmsPromotion, async function (request, reply) {
+      let expectedAdminSecret: string;
+
+      try {
+        expectedAdminSecret = getExpectedAdminSecret();
+      } catch (error) {
+        request.log.error(
+          {
+            error,
+            route: apiPaths.adminCmsPromotion,
+          },
+          'CMS promotion is not configured.',
+        );
+
+        return reply.status(503).send({
+          message: 'CMS promotion is not configured.',
+          status: 'error',
+        });
+      }
+
+      const providedAdminSecret = readAdminSecretHeader(
+        request.headers['x-admin-secret'],
+      );
+      const machineSecretMatches = matchesAdminSecret({
+        expectedSecret: expectedAdminSecret,
+        providedSecret: providedAdminSecret,
+      });
+      const authorization = authorizeAdminRequest({
+        allowMachineSecret: true,
+        getExpectedMachineSecret: () => expectedAdminSecret,
+        providedMachineSecret: providedAdminSecret,
+        requestPrincipal: request.requestPrincipal,
+      });
+
+      if (authorization.authorized === false) {
+        return reply.status(authorization.statusCode).send({
+          message: machineSecretMatches
+            ? authorization.message
+            : 'Admin promotion secret is missing or invalid.',
+          status: 'error',
+        });
+      }
+
+      if (
+        readCmsPromotionConfirmationPhrase(request.body) !==
+        CMS_PROMOTION_CONFIRMATION_PHRASE
+      ) {
+        return reply.status(400).send({
+          message: 'CMS promotion confirmation phrase is missing.',
+          status: 'error',
+        });
+      }
+
+      const result = await adminPromoteService.promoteCms();
+      const targets = buildCmsPromoteRevalidationTargets({
+        affectedCollectionSlugs: result.affectedCollectionSlugs,
+        affectedThemeSlugs: result.affectedThemeSlugs,
+      });
+      let revalidation: PublicWebRevalidationResult | undefined;
+      let revalidationWarning: string | undefined;
+
+      try {
+        revalidation = await revalidatePublicWebFn({
+          paths: targets.paths,
+          reason: 'cms_promote',
+          tags: targets.tags,
+        });
+      } catch (error) {
+        revalidationWarning =
+          error instanceof Error
+            ? error.message
+            : 'Public web revalidation failed after CMS promotion.';
+        request.log.warn(
+          {
+            error,
+            paths: targets.paths,
+            reason: 'cms_promote',
+            route: apiPaths.adminCmsPromotion,
+            tags: targets.tags,
+          },
+          'Public web revalidation failed after CMS promotion.',
+        );
+      }
+
+      request.log.info(
+        {
+          durationMs: result.durationMs,
+          pendingPromoteCount: result.pendingPromoteCount,
+          revalidation: {
+            attempted: revalidation?.attempted ?? false,
+            pathCount: revalidation?.pathCount ?? targets.paths.length,
+            paths: revalidation?.paths ?? targets.paths,
+            skipped: revalidation?.skipped ?? false,
+            tagCount: revalidation?.tagCount ?? targets.tags.length,
+            tags: revalidation?.tags ?? targets.tags,
+            warning: revalidationWarning,
+          },
+          route: apiPaths.adminCmsPromotion,
+          tables: result.tables,
+        },
+        'CMS promotion completed.',
+      );
+
+      return {
+        ...result,
+        ...(revalidation ? { revalidation } : {}),
+        ...(revalidationWarning ? { revalidationWarning } : {}),
+      };
+    });
 
     fastify.post<{
       Body:

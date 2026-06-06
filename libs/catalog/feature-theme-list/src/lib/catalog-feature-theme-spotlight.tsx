@@ -1,53 +1,49 @@
-import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
+import type { CatalogHomepageSpotlightItem } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
-  CatalogThemeHighlight,
+  CatalogVisualTile,
 } from '@lego-platform/catalog/ui';
-import { buildThemePath } from '@lego-platform/shared/config';
 import styles from './catalog-feature-theme-spotlight.module.css';
 
-function getThemeItemKey(
-  themeItem: CatalogThemeDirectoryItem,
+function getSpotlightItemKey(
+  item: CatalogHomepageSpotlightItem,
   index: number,
 ): string {
-  const themeSnapshot =
-    themeItem.themeSnapshot as typeof themeItem.themeSnapshot & {
-      id?: string;
-      sourceThemeId?: string;
-    };
-
-  return (
-    themeSnapshot.slug ||
-    themeSnapshot.id ||
-    themeSnapshot.sourceThemeId ||
-    `${themeSnapshot.name}-${index}`
-  );
+  return item.id || `${item.referenceType}:${item.referenceId ?? index}`;
 }
 
-function dedupeThemeItems(
-  themeItems: readonly CatalogThemeDirectoryItem[],
-): CatalogThemeDirectoryItem[] {
-  const seenThemeKeys = new Set<string>();
+function dedupeSpotlightItems(
+  items: readonly CatalogHomepageSpotlightItem[],
+): CatalogHomepageSpotlightItem[] {
+  const seenKeys = new Set<string>();
 
-  return themeItems.filter((themeItem, index) => {
-    const themeKey = getThemeItemKey(themeItem, index);
+  return items.filter((item, index) => {
+    const key = getSpotlightItemKey(item, index);
 
-    if (seenThemeKeys.has(themeKey)) {
+    if (seenKeys.has(key)) {
       return false;
     }
 
-    seenThemeKeys.add(themeKey);
+    seenKeys.add(key);
 
     return true;
   });
 }
 
 export function CatalogFeatureThemeSpotlight({
+  description,
+  eyebrow = 'Meer om te ontdekken',
+  signal,
   themeItems = [],
+  title = 'Botanicals, kunst of modulaire straten?',
 }: {
-  themeItems?: readonly CatalogThemeDirectoryItem[];
+  description?: string;
+  eyebrow?: string;
+  signal?: string;
+  themeItems?: readonly CatalogHomepageSpotlightItem[];
+  title?: string;
 }) {
-  const renderedThemeItems = dedupeThemeItems(themeItems);
+  const renderedThemeItems = dedupeSpotlightItems(themeItems);
 
   if (!renderedThemeItems.length) {
     return null;
@@ -58,37 +54,42 @@ export function CatalogFeatureThemeSpotlight({
       as="section"
       bodyClassName={styles.grid}
       className={styles.section}
-      eyebrow="Meer om te ontdekken"
+      description={description}
+      eyebrow={eyebrow}
       headingClassName={styles.header}
       id="theme-spotlight"
       padding="default"
-      signal={`${renderedThemeItems.length} thema's als je iets anders zoekt`}
-      title="Botanicals, kunst of modulaire straten?"
+      signal={
+        signal ??
+        `${renderedThemeItems.length} thema's als je iets anders zoekt`
+      }
+      title={title}
       tone="plain"
     >
       {renderedThemeItems.map((themeItem, index) => (
         <div
           className={styles.spotlightItem}
-          key={getThemeItemKey(themeItem, index)}
+          key={getSpotlightItemKey(themeItem, index)}
         >
-          <CatalogThemeHighlight
+          <CatalogVisualTile
             className={styles.spotlightTile}
-            href={buildThemePath(themeItem.themeSnapshot.slug)}
-            visual={themeItem.visual}
+            dataTile={themeItem.id}
+            href={themeItem.href}
+            imageAlt={themeItem.alt ?? `${themeItem.title} LEGO`}
             imageUrl={themeItem.imageUrl}
-            showFeatureSignature={false}
-            themeSnapshot={themeItem.themeSnapshot}
+            meta={themeItem.description}
+            title={themeItem.title}
             trackingEvent={{
               event: 'theme_tile_click',
               properties: {
                 pageSurface: 'homepage',
                 rankPosition: index + 1,
                 sectionId: 'theme-spotlight',
-                tileType: 'theme',
-                theme: themeItem.themeSnapshot.name,
+                tileType: themeItem.referenceType,
+                theme: themeItem.referenceId ?? themeItem.title,
               },
             }}
-            variant="feature"
+            visual={themeItem.visual}
           />
         </div>
       ))}

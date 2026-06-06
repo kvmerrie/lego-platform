@@ -102,6 +102,90 @@ export interface CatalogThemeSearchMatch {
   theme: CatalogThemeDirectoryItem;
 }
 
+export type PublicPageSectionItemReferenceType =
+  | 'collection'
+  | 'custom'
+  | 'set'
+  | 'theme';
+
+export interface PublicPageSectionItem {
+  altOverride?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  enabled: boolean;
+  id?: string;
+  imageSetId?: string;
+  imageUrl?: string;
+  metadata?: Readonly<Record<string, unknown>>;
+  referenceId?: string;
+  referenceType: PublicPageSectionItemReferenceType;
+  sortOrder: number;
+  titleOverride?: string;
+  useCustomImage?: boolean;
+}
+
+export interface PublicPageSection {
+  enabled: boolean;
+  id?: string;
+  items: readonly PublicPageSectionItem[];
+  layout?: string;
+  metadata?: Readonly<Record<string, unknown>>;
+  pageKey: string;
+  sectionKey: string;
+  sortOrder: number;
+  subtitle?: string;
+  title: string;
+}
+
+export interface PublicHomepageEditorialConfig {
+  sections: readonly PublicPageSection[];
+}
+
+export interface CatalogCollectionPresentation {
+  collectionSlug: string;
+  isPublic: boolean;
+  metadata?: Readonly<Record<string, unknown>>;
+  publicAccentColor?: string | null;
+  publicDescription?: string | null;
+  publicDisplayName?: string | null;
+  publicHeroTextColor?: string | null;
+  publicHomepageOrder?: number | null;
+  publicImageUrl?: string | null;
+  publicLogoUrl?: string | null;
+  publicOrder?: number | null;
+  publicSurfaceColor?: string | null;
+  publicSurfaceTextColor?: string | null;
+  publicTileImageUrl?: string | null;
+  status: string;
+  updatedAt?: string | null;
+}
+
+export interface CatalogHomepageDiscoveryTile {
+  alt?: string;
+  ctaLabel?: string;
+  href: string;
+  id: string;
+  imageUrl?: string;
+  meta?: string;
+  referenceId?: string;
+  referenceType: PublicPageSectionItemReferenceType;
+  title: string;
+  visual?: CatalogThemeVisual;
+}
+
+export interface CatalogHomepageSpotlightItem {
+  alt?: string;
+  ctaLabel?: string;
+  description?: string;
+  href: string;
+  id: string;
+  imageUrl?: string;
+  referenceId?: string;
+  referenceType: PublicPageSectionItemReferenceType;
+  title: string;
+  visual?: CatalogThemeVisual;
+}
+
 export interface CatalogSetDisplaySize {
   label?: string;
   value: string;
@@ -220,6 +304,84 @@ function hasCatalogMinifigureSignal({
 }: Pick<CatalogHomepageSetCard, 'minifigureCount' | 'minifigureHighlights'>) {
   return (
     typeof minifigureCount === 'number' || Boolean(minifigureHighlights?.length)
+  );
+}
+
+export const CATALOG_MINIFIGURE_COLLECTION_SLUG = 'collectible-minifigures';
+
+function normalizeCatalogCollectionSignalText(value?: string | null): string {
+  return normalizeCatalogAsciiText(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+export function matchesCatalogMinifigureCollectionSignals({
+  catalogName,
+  displayTitle,
+  name,
+  publicTheme,
+  secondaryLabels = [],
+  slug,
+  theme,
+}: Pick<
+  CatalogHomepageSetCard,
+  | 'catalogName'
+  | 'displayTitle'
+  | 'name'
+  | 'publicTheme'
+  | 'secondaryLabels'
+  | 'slug'
+  | 'theme'
+>): boolean {
+  const titleText = normalizeCatalogCollectionSignalText(
+    [name, catalogName, displayTitle, slug, ...secondaryLabels].join(' '),
+  );
+  const themeText = normalizeCatalogCollectionSignalText(
+    [theme, publicTheme?.name, publicTheme?.slug].join(' '),
+  );
+
+  if (
+    /\bcollectible minifigures?\b/u.test(titleText) ||
+    /\bminifigures?\s+series\b/u.test(titleText) ||
+    /\bminifiguren?\s+serie\b/u.test(titleText) ||
+    /\bcmf\b/u.test(titleText)
+  ) {
+    return true;
+  }
+
+  if (
+    /\b(up scaled|large|buildable|grote)\s+(lego\s+)?minifig(ure|ures)?\b/u.test(
+      titleText,
+    ) ||
+    /\b(grote|bouwbare)\s+minifiguur\b/u.test(titleText) ||
+    (/\b(up scaled|large|buildable|grote|bouwbare)\b/u.test(titleText) &&
+      /\b(minifigure|minifig|minifiguur)\b/u.test(titleText))
+  ) {
+    return true;
+  }
+
+  if (
+    /\b(create a minifigure|minifigure factory|bouw een minifiguur)\b/u.test(
+      titleText,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    /\b(minifig(ure|ures)?|minifiguur|minifiguren)\b/u.test(titleText) &&
+    /\b(keychain|sleutelhanger|lamp|light|licht|verlichting|puzzle|puzzel|display case|display cases|vitrine|display)\b/u.test(
+      titleText,
+    )
+  ) {
+    return true;
+  }
+
+  return (
+    /\b(minifigures?|minifiguren)\b/u.test(themeText) &&
+    /\b(collectible|series|serie)\b/u.test(titleText)
   );
 }
 
@@ -424,6 +586,7 @@ export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
   textColor?: string;
+  tileImageUrl?: string;
 }
 
 export interface CatalogThemeDefinition {

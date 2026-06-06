@@ -5,9 +5,15 @@ import type {
   CatalogCanonicalSet,
   CatalogBrowseThemeGroup,
   CatalogCollectionLandingPageConfig,
+  CatalogCollectionPresentation,
   CatalogCollectionLandingPageSortKey,
+  CatalogHomepageDiscoveryTile,
+  CatalogHomepageSpotlightItem,
   CatalogHomepageSetCard,
   CatalogProductFeature,
+  PublicHomepageEditorialConfig,
+  PublicPageSection,
+  PublicPageSectionItem,
   CatalogSearchMatch,
   CatalogSetDetail,
   CatalogSetImage,
@@ -20,16 +26,21 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  applyCatalogCollectionPresentation,
   CATALOG_BROWSE_PAGE_SIZE,
+  CATALOG_MINIFIGURE_COLLECTION_SLUG,
+  catalogDiscoveryVisualVariants,
   catalogDiscoverDealCandidateIds,
   catalogDiscoverSetOrder,
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
   getCanonicalCatalogSetId,
   getCatalogReleaseYear,
+  getCatalogCollectionLandingPageConfig,
   getCatalogThemeDisplayName,
   isCatalogBrowsablePrimaryTheme,
   isCatalogCollectionPageSnapshotSlug,
+  matchesCatalogMinifigureCollectionSignals,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
   resolveCatalogReleaseDatePrecision,
@@ -43,6 +54,8 @@ import {
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
+  buildSetDetailPath,
+  buildThemePath,
   cacheTags,
   classifyCommerceCommercialUnitType,
   canStrategicManualOfferBeatProductionFeed,
@@ -68,10 +81,15 @@ import {
 const CATALOG_SETS_TABLE = 'catalog_sets';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
+const CATALOG_SET_COLLECTIONS_TABLE = 'catalog_set_collections';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
+const CATALOG_COLLECTION_PRESENTATIONS_TABLE =
+  'catalog_collection_presentations';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const CATALOG_THEME_SUMMARIES_TABLE = 'catalog_theme_summaries';
+const PUBLIC_PAGE_SECTIONS_TABLE = 'public_page_sections';
+const PUBLIC_PAGE_SECTION_ITEMS_TABLE = 'public_page_section_items';
 const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE =
@@ -106,6 +124,10 @@ const BRICKSET_SOURCE_METADATA_POLICIES = [
   'metadata_only_pending_rights_review',
   'render_publicly_with_attribution',
 ] as const;
+const CATALOG_THEME_SELECT_COLUMNS =
+  'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order';
+const CATALOG_THEME_LEGACY_SELECT_COLUMNS =
+  'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order';
 
 function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
@@ -155,6 +177,154 @@ const HOMEPAGE_CURATED_THEME_RAIL_ITEMS = [
     slug: 'technic',
   },
 ] as const;
+const HOMEPAGE_DEFAULT_DISCOVERY_ROUTE_ITEMS = [
+  {
+    ctaUrl: '/nieuwe-lego-sets',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg',
+    metadata: {
+      imageSetIds: ['60445', '60443', '60462', '75405'],
+      imageThemeSlugs: ['city', 'speed-champions', 'star-wars'],
+      visualKey: 'newReleases',
+    },
+    referenceId: 'nieuwe-lego-sets',
+    referenceType: 'collection',
+    sortOrder: 10,
+    titleOverride: 'Nieuwe sets',
+    useCustomImage: true,
+  },
+  {
+    ctaUrl: '/lego-voor-volwassenen',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg',
+    metadata: {
+      imageSetIds: ['10368', '10344', '10343', '10316', '10333', '42172'],
+      imageThemeSlugs: ['icons', 'the-lord-of-the-rings', 'technic'],
+      visualKey: 'adultCollectors',
+    },
+    referenceId: 'lego-voor-volwassenen',
+    referenceType: 'collection',
+    sortOrder: 20,
+    titleOverride: 'LEGO voor volwassenen',
+    useCustomImage: true,
+  },
+  {
+    ctaUrl: '/lego-sets-onder-50-euro',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg',
+    metadata: {
+      imageSetIds: ['77244', '75405', '72035', '10344'],
+      imageThemeSlugs: ['speed-champions', 'botanicals', 'star-wars'],
+      visualKey: 'under50',
+    },
+    referenceId: 'lego-sets-onder-50-euro',
+    referenceType: 'collection',
+    sortOrder: 30,
+    titleOverride: 'LEGO sets onder EUR 50',
+    useCustomImage: true,
+  },
+  {
+    ctaUrl: '/retiring-lego-sets',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
+    metadata: {
+      imageSetIds: ['75329', '10255', '76441', '75313'],
+      imageThemeSlugs: ['icons', 'star-wars', 'harry-potter'],
+      visualKey: 'retiringSoon',
+    },
+    referenceId: 'retiring-lego-sets',
+    referenceType: 'collection',
+    sortOrder: 40,
+    titleOverride: 'Binnenkort uit handel',
+    useCustomImage: true,
+  },
+  {
+    ctaUrl: '/deals',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg',
+    metadata: {
+      imageSetIds: ['77245', '72036', '60443', '72035'],
+      imageThemeSlugs: ['speed-champions', 'city', 'super-mario', 'star-wars'],
+      surfaceColor: '#00a99d',
+      surfaceTextColor: '#062927',
+      visualKey: 'deals',
+    },
+    referenceId: 'deals',
+    referenceType: 'custom',
+    sortOrder: 50,
+    titleOverride: 'Interessante deals',
+    useCustomImage: true,
+  },
+  {
+    ctaUrl: '/themes',
+    enabled: true,
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg',
+    metadata: {
+      imageSetIds: [],
+      imageThemeSlugs: ['star-wars', 'icons', 'technic'],
+      surfaceColor: '#8758d8',
+      surfaceTextColor: '#ffffff',
+      visualKey: 'popularThemes',
+    },
+    referenceId: 'themes',
+    referenceType: 'custom',
+    sortOrder: 60,
+    titleOverride: 'Populaire thema’s',
+    useCustomImage: true,
+  },
+] as const satisfies readonly PublicPageSectionItem[];
+const HOMEPAGE_DEFAULT_DISCOVERY_SECTION = {
+  items: HOMEPAGE_DEFAULT_DISCOVERY_ROUTE_ITEMS,
+  layout: 'visual_tile_rail',
+  pageKey: 'homepage',
+  sectionKey: 'discovery_routes',
+  sortOrder: 10,
+  subtitle:
+    'Kies meteen de route die bij je kast past: nieuw, volwassen, budget, bijna weg of gewoon een scherpe prijs.',
+  title: 'Ontdek LEGO op jouw manier',
+  enabled: true,
+} as const satisfies PublicPageSection;
+const HOMEPAGE_DEFAULT_THEME_RAIL_SECTION = {
+  items: HOMEPAGE_CURATED_THEME_RAIL_ITEMS.map((item, index) => ({
+    enabled: true,
+    imageSetId: item.representativeSetId,
+    referenceId: item.slug,
+    referenceType: 'theme',
+    sortOrder: (index + 1) * 10,
+    titleOverride: item.representativeSetTitle,
+  })),
+  layout: 'theme_rail',
+  pageKey: 'homepage',
+  sectionKey: 'theme_rail',
+  sortOrder: 20,
+  title: 'Fantasy, Star Wars of strak design?',
+  enabled: true,
+} as const satisfies PublicPageSection;
+const HOMEPAGE_DEFAULT_THEME_SPOTLIGHT_SECTION = {
+  items: [],
+  layout: 'theme_spotlight',
+  pageKey: 'homepage',
+  sectionKey: 'theme_spotlight',
+  sortOrder: 60,
+  title: 'Botanicals, kunst of modulaire straten?',
+  enabled: true,
+} as const satisfies PublicPageSection;
+const HOMEPAGE_DEFAULT_EDITORIAL_CONFIG = {
+  sections: [
+    HOMEPAGE_DEFAULT_DISCOVERY_SECTION,
+    HOMEPAGE_DEFAULT_THEME_RAIL_SECTION,
+    HOMEPAGE_DEFAULT_THEME_SPOTLIGHT_SECTION,
+  ],
+} as const satisfies PublicHomepageEditorialConfig;
+
+function getHomepageDefaultEditorialConfig(): PublicHomepageEditorialConfig {
+  return {
+    sections: HOMEPAGE_DEFAULT_EDITORIAL_CONFIG.sections.map((section) => ({
+      ...section,
+      items: section.items.map((item) => ({ ...item })),
+    })),
+  };
+}
 const CATALOG_SET_SELECT_COLUMNS =
   'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at';
 const PRIMARY_CATALOG_MERCHANT_SLUGS = commerceProductionFeedMerchantSlugs;
@@ -345,6 +515,12 @@ interface CatalogSetMinifigSummaryRow {
   set_id: string;
 }
 
+interface CatalogSetCollectionRow {
+  collection_slug: string;
+  enabled: boolean;
+  set_id: string;
+}
+
 interface CatalogSourceThemeRow {
   id: string;
   parent_source_theme_id?: string | null;
@@ -365,6 +541,7 @@ interface CatalogThemeRow {
   public_order?: number | null;
   public_surface_color?: string | null;
   public_surface_text_color?: string | null;
+  public_tile_image_url?: string | null;
   slug?: string;
   status?: string;
 }
@@ -419,6 +596,54 @@ interface CatalogThemeSummaryRow {
   representative_set_id?: string | null;
   theme_id: string;
   updated_at?: string;
+}
+
+interface PublicPageSectionRow {
+  enabled: boolean;
+  id: string;
+  layout: string | null;
+  metadata_json?: unknown;
+  page_key: string;
+  section_key: string;
+  sort_order: number;
+  subtitle: string | null;
+  title: string;
+}
+
+interface PublicPageSectionItemRow {
+  alt_override: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
+  enabled: boolean;
+  id: string;
+  image_set_id: string | null;
+  image_url: string | null;
+  metadata_json?: unknown;
+  reference_id: string | null;
+  reference_type: string;
+  section_id: string;
+  sort_order: number;
+  title_override: string | null;
+  use_custom_image?: boolean | null;
+}
+
+interface CatalogCollectionPresentationRow {
+  collection_slug: string;
+  is_public: boolean;
+  metadata_json?: unknown;
+  public_accent_color: string | null;
+  public_description: string | null;
+  public_display_name: string | null;
+  public_hero_text_color: string | null;
+  public_homepage_order: number | null;
+  public_image_url: string | null;
+  public_logo_url: string | null;
+  public_order: number | null;
+  public_surface_color: string | null;
+  public_surface_text_color: string | null;
+  public_tile_image_url?: string | null;
+  status: string;
+  updated_at: string | null;
 }
 
 interface CatalogCommerceMerchantRow {
@@ -639,6 +864,101 @@ function getWebCatalogSupabaseReadClient(): CatalogSupabaseClient | undefined {
   }
 
   return undefined;
+}
+
+function getCatalogSupabaseProjectRef(url: string): string | undefined {
+  try {
+    return new URL(url).hostname.split('.')[0];
+  } catch {
+    return undefined;
+  }
+}
+
+function getCatalogSupabaseReadSourceDiagnostic(): Readonly<
+  Record<string, unknown>
+> {
+  if (hasServerSupabaseConfig()) {
+    const config = getServerSupabaseConfig();
+
+    return {
+      projectRef: getCatalogSupabaseProjectRef(config.url),
+      urlSource: getServerSupabaseUrlSource(),
+    };
+  }
+
+  if (hasBrowserSupabaseConfig()) {
+    const config = getBrowserSupabaseConfig();
+
+    return {
+      projectRef: getCatalogSupabaseProjectRef(config.url),
+      urlSource: 'NEXT_PUBLIC_SUPABASE_URL',
+    };
+  }
+
+  return {
+    projectRef: undefined,
+    urlSource: 'missing',
+  };
+}
+
+function getCatalogSupabaseErrorDiagnostic(
+  error: unknown,
+): Readonly<Record<string, unknown>> {
+  if (!error || typeof error !== 'object') {
+    return {
+      message: String(error),
+    };
+  }
+
+  const maybeError = error as {
+    code?: unknown;
+    details?: unknown;
+    hint?: unknown;
+    message?: unknown;
+  };
+
+  return {
+    ...(typeof maybeError.code === 'string' ? { code: maybeError.code } : {}),
+    ...(typeof maybeError.details === 'string'
+      ? { details: maybeError.details }
+      : {}),
+    ...(typeof maybeError.hint === 'string' ? { hint: maybeError.hint } : {}),
+    ...(typeof maybeError.message === 'string'
+      ? { message: maybeError.message }
+      : {}),
+  };
+}
+
+function isCatalogMissingColumnError(
+  error: unknown,
+  columnName: string,
+): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const maybeError = error as { code?: unknown; message?: unknown };
+  const message =
+    typeof maybeError.message === 'string'
+      ? maybeError.message.toLowerCase()
+      : '';
+
+  return (
+    maybeError.code === 'PGRST204' ||
+    (message.includes(columnName.toLowerCase()) &&
+      (message.includes('column') || message.includes('schema cache')))
+  );
+}
+
+function logCatalogThemeReadDiagnostic(
+  label: string,
+  diagnostic: Readonly<Record<string, unknown>>,
+): void {
+  console.warn('[catalog-theme-read]', {
+    label,
+    ...getCatalogSupabaseReadSourceDiagnostic(),
+    ...diagnostic,
+  });
 }
 
 function isCurrentOfferSummaryReadDebugEnabled(): boolean {
@@ -3035,10 +3355,6 @@ export async function listCanonicalCatalogSets({
       supabaseClient: activeSupabaseClient,
     });
   } catch (error) {
-    if (!supabaseClient) {
-      return [];
-    }
-
     throw error;
   }
 }
@@ -4054,18 +4370,167 @@ function matchesCatalogCollectionAdultCollector(
   );
 }
 
+async function listCatalogSetIdsByCollectionSlug({
+  collectionSlug,
+  supabaseClient,
+}: {
+  collectionSlug: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<Set<string>> {
+  if (!supabaseClient) {
+    return new Set();
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from(CATALOG_SET_COLLECTIONS_TABLE)
+      .select('set_id, collection_slug, enabled')
+      .eq('collection_slug', collectionSlug)
+      .eq('enabled', true);
+
+    if (error) {
+      console.warn('[catalog-collection-membership] load failed', {
+        collectionSlug,
+        message: error.message,
+      });
+
+      return new Set();
+    }
+
+    const rows = (data as CatalogSetCollectionRow[] | null) ?? [];
+
+    return new Set(
+      rows.flatMap((row) =>
+        typeof row.set_id === 'string' && row.set_id.trim()
+          ? [getCanonicalCatalogSetId(row.set_id)]
+          : [],
+      ),
+    );
+  } catch (error) {
+    console.warn('[catalog-collection-membership] load failed', {
+      collectionSlug,
+      error,
+    });
+
+    return new Set();
+  }
+}
+
+function matchesCatalogCollectionMembership({
+  collectionSetIds,
+  collectionSlug,
+  setCard,
+}: {
+  collectionSetIds: ReadonlySet<string>;
+  collectionSlug?: string;
+  setCard: CatalogHomepageSetCard;
+}): boolean {
+  if (!collectionSlug) {
+    return true;
+  }
+
+  if (collectionSetIds.has(setCard.id)) {
+    return true;
+  }
+
+  return (
+    collectionSlug === CATALOG_MINIFIGURE_COLLECTION_SLUG &&
+    matchesCatalogMinifigureCollectionSignals(setCard)
+  );
+}
+
+function isCatalogMinifigureThemeSlug(slug?: string | null): boolean {
+  return slug === CATALOG_MINIFIGURE_COLLECTION_SLUG;
+}
+
+function sortCatalogThemePageRows(
+  catalogRows: readonly CatalogSetRow[],
+): CatalogSetRow[] {
+  return [...catalogRows].sort(
+    (left, right) =>
+      right.release_year - left.release_year ||
+      left.name.localeCompare(right.name, 'nl') ||
+      left.set_id.localeCompare(right.set_id),
+  );
+}
+
+async function listCatalogSetRowsBySetIds({
+  setIds,
+  signal,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  signal?: AbortSignal;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogSetRow[]> {
+  const uniqueSetIds = [...new Set(setIds)].filter(Boolean);
+  const rows: CatalogSetRow[] = [];
+
+  for (const setIdChunk of chunkCatalogValues(uniqueSetIds, 100)) {
+    throwIfCatalogReadAborted(signal);
+
+    const { data, error } = await applyCatalogAbortSignal(
+      supabaseClient
+        .from(CATALOG_SETS_TABLE)
+        .select(CATALOG_SET_SELECT_COLUMNS)
+        .eq('status', 'active')
+        .in('set_id', setIdChunk),
+      signal,
+    );
+
+    if (error) {
+      throw new Error('Unable to load catalog set collection rows.');
+    }
+
+    rows.push(...((data as CatalogSetRow[] | null) ?? []));
+  }
+
+  return rows;
+}
+
+async function listCatalogMinifigureMembershipRows({
+  signal,
+  supabaseClient,
+}: {
+  signal?: AbortSignal;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogSetRow[]> {
+  const collectionSetIds = await listCatalogSetIdsByCollectionSlug({
+    collectionSlug: CATALOG_MINIFIGURE_COLLECTION_SLUG,
+    supabaseClient,
+  });
+
+  return listCatalogSetRowsBySetIds({
+    setIds: [...collectionSetIds],
+    signal,
+    supabaseClient,
+  });
+}
+
 function matchesCatalogCollectionLandingPageConfig({
   bestPriceMinorBySetId,
+  collectionSetIds,
   config,
   now,
   setCard,
 }: {
   bestPriceMinorBySetId: ReadonlyMap<string, number>;
+  collectionSetIds: ReadonlySet<string>;
   config: CatalogCollectionLandingPageConfig;
   now: Date;
   setCard: CatalogHomepageSetCard;
 }): boolean {
   const { filters } = config;
+
+  if (
+    !matchesCatalogCollectionMembership({
+      collectionSetIds,
+      collectionSlug: filters.collectionSlug,
+      setCard,
+    })
+  ) {
+    return false;
+  }
 
   if (
     typeof filters.maxBestPriceMinor === 'number' &&
@@ -4303,10 +4768,17 @@ export async function getCatalogCollectionLandingPage({
   const bestPriceMinorBySetId = toCatalogCollectionBestPriceMinorBySetId(
     currentOfferSummaryBySetId,
   );
+  const collectionSetIds = config.filters.collectionSlug
+    ? await listCatalogSetIdsByCollectionSlug({
+        collectionSlug: config.filters.collectionSlug,
+        supabaseClient: activeSupabaseClient,
+      })
+    : new Set<string>();
   const matchingSetCards = candidateSetCards
     .filter((setCard) =>
       matchesCatalogCollectionLandingPageConfig({
         bestPriceMinorBySetId,
+        collectionSetIds,
         config,
         now,
         setCard,
@@ -7325,6 +7797,144 @@ function normalizeCatalogThemePublicText(
   return normalizedValue ? normalizedValue : undefined;
 }
 
+function normalizePublicPageSectionMetadata(
+  value: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Readonly<Record<string, unknown>>)
+    : undefined;
+}
+
+function normalizePublicPageSectionReferenceType(
+  value: string,
+): PublicPageSectionItem['referenceType'] {
+  return value === 'collection' ||
+    value === 'custom' ||
+    value === 'set' ||
+    value === 'theme'
+    ? value
+    : 'custom';
+}
+
+function toPublicPageSectionItem(
+  row: PublicPageSectionItemRow,
+): PublicPageSectionItem {
+  const metadata = normalizePublicPageSectionMetadata(row.metadata_json);
+
+  return {
+    ...(normalizeCatalogThemePublicText(row.alt_override)
+      ? { altOverride: normalizeCatalogThemePublicText(row.alt_override) }
+      : {}),
+    ...(normalizeCatalogThemePublicText(row.cta_label)
+      ? { ctaLabel: normalizeCatalogThemePublicText(row.cta_label) }
+      : {}),
+    ...(normalizeCatalogThemePublicText(row.cta_url)
+      ? { ctaUrl: normalizeCatalogThemePublicText(row.cta_url) }
+      : {}),
+    enabled: row.enabled,
+    id: row.id,
+    ...(normalizeCatalogThemePublicText(row.image_set_id)
+      ? { imageSetId: normalizeCatalogThemePublicText(row.image_set_id) }
+      : {}),
+    ...(normalizeCatalogThemePublicImageUrl(row.image_url)
+      ? { imageUrl: normalizeCatalogThemePublicImageUrl(row.image_url) }
+      : {}),
+    ...(metadata ? { metadata } : {}),
+    ...(normalizeCatalogThemePublicText(row.reference_id)
+      ? { referenceId: normalizeCatalogThemePublicText(row.reference_id) }
+      : {}),
+    referenceType: normalizePublicPageSectionReferenceType(row.reference_type),
+    sortOrder: row.sort_order,
+    ...(normalizeCatalogThemePublicText(row.title_override)
+      ? { titleOverride: normalizeCatalogThemePublicText(row.title_override) }
+      : {}),
+    ...(typeof row.use_custom_image === 'boolean'
+      ? { useCustomImage: row.use_custom_image }
+      : {}),
+  };
+}
+
+function toPublicPageSection({
+  items,
+  row,
+}: {
+  items: readonly PublicPageSectionItem[];
+  row: PublicPageSectionRow;
+}): PublicPageSection {
+  const metadata = normalizePublicPageSectionMetadata(row.metadata_json);
+
+  return {
+    enabled: row.enabled,
+    id: row.id,
+    items,
+    ...(normalizeCatalogThemePublicText(row.layout)
+      ? { layout: normalizeCatalogThemePublicText(row.layout) }
+      : {}),
+    ...(metadata ? { metadata } : {}),
+    pageKey: row.page_key,
+    sectionKey: row.section_key,
+    sortOrder: row.sort_order,
+    ...(normalizeCatalogThemePublicText(row.subtitle)
+      ? { subtitle: normalizeCatalogThemePublicText(row.subtitle) }
+      : {}),
+    title: row.title,
+  };
+}
+
+function toCatalogCollectionPresentation(
+  row: CatalogCollectionPresentationRow,
+): CatalogCollectionPresentation {
+  const metadata = normalizePublicPageSectionMetadata(row.metadata_json);
+
+  return {
+    collectionSlug: row.collection_slug,
+    isPublic: row.is_public,
+    ...(metadata ? { metadata } : {}),
+    publicAccentColor:
+      normalizeCatalogThemePublicAccentColor(row.public_accent_color) ?? null,
+    publicDescription:
+      normalizeCatalogThemePublicText(row.public_description) ?? null,
+    publicDisplayName:
+      normalizeCatalogThemePublicText(row.public_display_name) ?? null,
+    publicHeroTextColor:
+      normalizeCatalogThemePublicTextColor(row.public_hero_text_color) ?? null,
+    publicHomepageOrder: row.public_homepage_order,
+    publicImageUrl:
+      normalizeCatalogThemePublicImageUrl(row.public_image_url) ?? null,
+    publicLogoUrl:
+      normalizeCatalogThemePublicLogoUrl(row.public_logo_url) ?? null,
+    publicOrder: row.public_order,
+    publicSurfaceColor:
+      normalizeCatalogThemePublicAccentColor(row.public_surface_color) ?? null,
+    publicSurfaceTextColor:
+      normalizeCatalogThemePublicTextColor(row.public_surface_text_color) ??
+      null,
+    publicTileImageUrl:
+      normalizeCatalogThemePublicImageUrl(row.public_tile_image_url) ?? null,
+    status: row.status === 'inactive' ? 'inactive' : 'active',
+    updatedAt: row.updated_at,
+  };
+}
+
+function getDefaultHomepageEditorialSection(
+  sectionKey: string,
+): PublicPageSection | undefined {
+  return HOMEPAGE_DEFAULT_EDITORIAL_CONFIG.sections.find(
+    (section) => section.sectionKey === sectionKey,
+  );
+}
+
+function getHomepageEditorialSection(
+  config: PublicHomepageEditorialConfig,
+  sectionKey: string,
+): PublicPageSection | undefined {
+  return (
+    config.sections.find(
+      (section) => section.sectionKey === sectionKey && section.enabled,
+    ) ?? getDefaultHomepageEditorialSection(sectionKey)
+  );
+}
+
 function normalizeCatalogThemePublicImageUrl(
   value?: string | null,
 ): string | undefined {
@@ -7384,12 +7994,14 @@ function createPublicCatalogThemeVisual({
   publicHeroTextColor,
   publicSurfaceColor,
   publicSurfaceTextColor,
+  tileImageUrl,
 }: {
   imageUrl?: string;
   publicAccentColor?: string;
   publicHeroTextColor?: string;
   publicSurfaceColor?: string;
   publicSurfaceTextColor?: string;
+  tileImageUrl?: string;
 }): CatalogThemeVisual | undefined {
   const backgroundColor = publicSurfaceColor ?? publicAccentColor;
   const textColor = publicSurfaceTextColor ?? publicHeroTextColor;
@@ -7409,15 +8021,24 @@ function createPublicCatalogThemeVisual({
           imageUrl,
         }
       : {}),
+    ...(tileImageUrl
+      ? {
+          tileImageUrl,
+        }
+      : {}),
   };
 
   return Object.keys(visual).length > 0 ? visual : undefined;
 }
 
 async function listCatalogThemeSummariesByThemeId({
+  context = 'catalog-theme',
+  suppressErrors = false,
   supabaseClient,
   themeIds,
 }: {
+  context?: string;
+  suppressErrors?: boolean;
   supabaseClient: CatalogSupabaseClient;
   themeIds: readonly string[];
 }): Promise<Map<string, CatalogThemeSummaryRow>> {
@@ -7435,14 +8056,23 @@ async function listCatalogThemeSummariesByThemeId({
     .in('theme_id', uniqueThemeIds);
 
   if (error) {
+    if (suppressErrors) {
+      logCatalogThemeReadDiagnostic('summary-fallback', {
+        context,
+        error: getCatalogSupabaseErrorDiagnostic(error),
+        requestedThemeCount: uniqueThemeIds.length,
+      });
+
+      return new Map();
+    }
+
     throw new Error('Unable to load catalog theme summaries.');
   }
 
+  const summaryRows = (data as CatalogThemeSummaryRow[] | null) ?? [];
+
   return new Map(
-    ((data as CatalogThemeSummaryRow[] | null) ?? []).map((summaryRow) => [
-      summaryRow.theme_id,
-      summaryRow,
-    ]),
+    summaryRows.map((summaryRow) => [summaryRow.theme_id, summaryRow]),
   );
 }
 
@@ -7519,32 +8149,60 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
   const safeOffset = normalizeCatalogReadOffset(offset);
 
   try {
-    let themeQuery = activeSupabaseClient
-      .from(CATALOG_THEMES_TABLE)
-      .select(
-        'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order',
-      )
-      .eq('status', 'active')
-      .eq('is_public', true);
+    const loadThemeRows = async (selectColumns: string) => {
+      let themeQuery = activeSupabaseClient
+        .from(CATALOG_THEMES_TABLE)
+        .select(selectColumns)
+        .eq('status', 'active')
+        .eq('is_public', true);
 
-    if (sortMode === 'homepage') {
-      themeQuery = themeQuery.order('public_homepage_order', {
-        ascending: true,
-        nullsFirst: false,
+      if (sortMode === 'homepage') {
+        themeQuery = themeQuery.order('public_homepage_order', {
+          ascending: true,
+          nullsFirst: false,
+        });
+      }
+
+      return await themeQuery
+        .order('public_order', { ascending: true, nullsFirst: false })
+        .order('display_name', { ascending: true })
+        .range(safeOffset, safeOffset + safeLimit - 1);
+    };
+
+    let { data: themeData, error: themeError } = await loadThemeRows(
+      CATALOG_THEME_SELECT_COLUMNS,
+    );
+
+    if (
+      themeError &&
+      isCatalogMissingColumnError(themeError, 'public_tile_image_url')
+    ) {
+      logCatalogThemeReadDiagnostic('directory-legacy-select', {
+        error: getCatalogSupabaseErrorDiagnostic(themeError),
+        sortMode,
       });
+      ({ data: themeData, error: themeError } = await loadThemeRows(
+        CATALOG_THEME_LEGACY_SELECT_COLUMNS,
+      ));
     }
 
-    const { data: themeData, error: themeError } = await themeQuery
-      .order('public_order', { ascending: true, nullsFirst: false })
-      .order('display_name', { ascending: true })
-      .range(safeOffset, safeOffset + safeLimit - 1);
-
     if (themeError) {
+      logCatalogThemeReadDiagnostic('directory-query-failed', {
+        error: getCatalogSupabaseErrorDiagnostic(themeError),
+        sortMode,
+      });
       throw new Error('Unable to load catalog theme directory.');
     }
 
     const themeRows = (themeData as CatalogThemeRow[] | null) ?? [];
+    if (themeRows.length === 0) {
+      logCatalogThemeReadDiagnostic('directory-empty', {
+        sortMode,
+      });
+    }
     const themeSummariesByThemeId = await listCatalogThemeSummariesByThemeId({
+      context: `directory:${sortMode}`,
+      suppressErrors: true,
       supabaseClient: activeSupabaseClient,
       themeIds: themeRows.map((themeRow) => themeRow.id),
     });
@@ -7558,6 +8216,13 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           const themeSummary = themeSummariesByThemeId.get(themeRow.id);
           let catalogRows: CatalogSetRow[] = [];
           let setCount = themeSummary?.active_set_count;
+          const minifigureMembershipRows = isCatalogMinifigureThemeSlug(
+            themeRow.slug,
+          )
+            ? await listCatalogMinifigureMembershipRows({
+                supabaseClient: activeSupabaseClient,
+              })
+            : [];
 
           if (!themeSummary) {
             const { count, data, error } = await activeSupabaseClient
@@ -7576,6 +8241,14 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
 
             catalogRows = (data as CatalogSetRow[] | null) ?? [];
             setCount = count ?? catalogRows.length;
+          }
+
+          if (minifigureMembershipRows.length) {
+            const extraSecondaryCount = minifigureMembershipRows.filter(
+              (row) => row.primary_theme_id !== themeRow.id,
+            ).length;
+
+            setCount = (setCount ?? catalogRows.length) + extraSecondaryCount;
           }
 
           const canonicalCatalogSets = catalogRows.map((row) =>
@@ -7619,6 +8292,9 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           const publicImageUrl = normalizeCatalogThemePublicImageUrl(
             themeRow.public_image_url,
           );
+          const publicTileImageUrl = normalizeCatalogThemePublicImageUrl(
+            themeRow.public_tile_image_url,
+          );
           const publicAccentColor = normalizeCatalogThemePublicAccentColor(
             themeRow.public_accent_color,
           );
@@ -7631,8 +8307,7 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
             themeRow.public_hero_text_color,
           );
-          const imageUrl =
-            publicImageUrl ??
+          const representativeImageUrl =
             normalizeCatalogThemePublicImageUrl(
               themeSummary?.representative_image_url,
             ) ??
@@ -7640,12 +8315,24 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
               setCards,
               themeSnapshot,
             });
+          const imageUrl =
+            publicTileImageUrl ?? publicImageUrl ?? representativeImageUrl;
+          const presentationImageUrl = publicTileImageUrl ?? publicImageUrl;
           const visual = createPublicCatalogThemeVisual({
-            imageUrl,
+            ...(presentationImageUrl
+              ? {
+                  imageUrl: presentationImageUrl,
+                }
+              : {}),
             publicAccentColor,
             publicHeroTextColor,
             publicSurfaceColor,
             publicSurfaceTextColor,
+            ...(publicTileImageUrl
+              ? {
+                  tileImageUrl: publicTileImageUrl,
+                }
+              : {}),
           });
 
           return {
@@ -7656,56 +8343,65 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
         },
       ),
     );
+    const visibleDirectoryItems = directoryItems.flatMap((directoryItem) =>
+      directoryItem ? [directoryItem] : [],
+    );
+
+    if (themeRows.length > 0 && visibleDirectoryItems.length === 0) {
+      logCatalogThemeReadDiagnostic('directory-filtered-empty', {
+        publicThemeRowCount: themeRows.length,
+        summaryRowCount: themeSummariesByThemeId.size,
+        sortMode,
+      });
+    }
 
     return dedupeCatalogThemeDirectoryItemsBySlug(
-      directoryItems
-        .flatMap((directoryItem) => (directoryItem ? [directoryItem] : []))
-        .sort((left, right) => {
-          const leftThemeRow = themeRows.find(
-            (themeRow) =>
-              themeRow.slug === left.themeSnapshot.slug ||
-              buildCatalogThemeSlug(
-                normalizeCatalogThemePublicText(themeRow.public_display_name) ??
-                  themeRow.display_name,
-              ) === left.themeSnapshot.slug,
-          );
-          const rightThemeRow = themeRows.find(
-            (themeRow) =>
-              themeRow.slug === right.themeSnapshot.slug ||
-              buildCatalogThemeSlug(
-                normalizeCatalogThemePublicText(themeRow.public_display_name) ??
-                  themeRow.display_name,
-              ) === right.themeSnapshot.slug,
-          );
-          const leftHomepageOrder =
-            typeof leftThemeRow?.public_homepage_order === 'number'
-              ? leftThemeRow.public_homepage_order
-              : Number.MAX_SAFE_INTEGER;
-          const rightHomepageOrder =
-            typeof rightThemeRow?.public_homepage_order === 'number'
-              ? rightThemeRow.public_homepage_order
-              : Number.MAX_SAFE_INTEGER;
-          const leftPublicOrder =
-            typeof leftThemeRow?.public_order === 'number'
-              ? leftThemeRow.public_order
-              : Number.MAX_SAFE_INTEGER;
-          const rightPublicOrder =
-            typeof rightThemeRow?.public_order === 'number'
-              ? rightThemeRow.public_order
-              : Number.MAX_SAFE_INTEGER;
+      visibleDirectoryItems.sort((left, right) => {
+        const leftThemeRow = themeRows.find(
+          (themeRow) =>
+            themeRow.slug === left.themeSnapshot.slug ||
+            buildCatalogThemeSlug(
+              normalizeCatalogThemePublicText(themeRow.public_display_name) ??
+                themeRow.display_name,
+            ) === left.themeSnapshot.slug,
+        );
+        const rightThemeRow = themeRows.find(
+          (themeRow) =>
+            themeRow.slug === right.themeSnapshot.slug ||
+            buildCatalogThemeSlug(
+              normalizeCatalogThemePublicText(themeRow.public_display_name) ??
+                themeRow.display_name,
+            ) === right.themeSnapshot.slug,
+        );
+        const leftHomepageOrder =
+          typeof leftThemeRow?.public_homepage_order === 'number'
+            ? leftThemeRow.public_homepage_order
+            : Number.MAX_SAFE_INTEGER;
+        const rightHomepageOrder =
+          typeof rightThemeRow?.public_homepage_order === 'number'
+            ? rightThemeRow.public_homepage_order
+            : Number.MAX_SAFE_INTEGER;
+        const leftPublicOrder =
+          typeof leftThemeRow?.public_order === 'number'
+            ? leftThemeRow.public_order
+            : Number.MAX_SAFE_INTEGER;
+        const rightPublicOrder =
+          typeof rightThemeRow?.public_order === 'number'
+            ? rightThemeRow.public_order
+            : Number.MAX_SAFE_INTEGER;
 
-          return (
-            (sortMode === 'homepage'
-              ? leftHomepageOrder - rightHomepageOrder
-              : 0) ||
-            leftPublicOrder - rightPublicOrder ||
-            left.themeSnapshot.name.localeCompare(
-              right.themeSnapshot.name,
-              'nl',
-            ) ||
-            left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug)
-          );
-        }),
+        return (
+          (sortMode === 'homepage'
+            ? leftHomepageOrder - rightHomepageOrder
+            : 0) ||
+          leftPublicOrder - rightPublicOrder ||
+          left.themeSnapshot.name.localeCompare(
+            right.themeSnapshot.name,
+            'nl',
+          ) ||
+          left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug)
+        );
+      }),
     );
   } catch (error) {
     if (!supabaseClient) {
@@ -10523,15 +11219,645 @@ export async function listCatalogThemeDirectoryItems({
   );
 }
 
-export async function listHomepageThemeDirectoryItems({
+async function loadPublicPageSectionsFromSupabase({
+  pageKey,
+  supabaseClient,
+}: {
+  pageKey: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<PublicPageSection[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  try {
+    const { data: sectionData, error: sectionError } =
+      await activeSupabaseClient
+        .from(PUBLIC_PAGE_SECTIONS_TABLE)
+        .select(
+          'id, page_key, section_key, title, subtitle, layout, sort_order, enabled, metadata_json',
+        )
+        .eq('page_key', pageKey)
+        .eq('enabled', true)
+        .order('sort_order', { ascending: true })
+        .order('section_key', { ascending: true });
+
+    if (sectionError) {
+      throw new Error('Unable to load public page sections.');
+    }
+
+    const sectionRows = (sectionData as PublicPageSectionRow[] | null) ?? [];
+
+    if (sectionRows.length === 0) {
+      return [];
+    }
+
+    const { data: itemData, error: itemError } = await activeSupabaseClient
+      .from(PUBLIC_PAGE_SECTION_ITEMS_TABLE)
+      .select(
+        'id, section_id, reference_type, reference_id, image_set_id, image_url, title_override, alt_override, cta_label, cta_url, sort_order, enabled, use_custom_image, metadata_json',
+      )
+      .in(
+        'section_id',
+        sectionRows.map((sectionRow) => sectionRow.id),
+      )
+      .eq('enabled', true)
+      .order('sort_order', { ascending: true })
+      .order('id', { ascending: true });
+
+    if (itemError) {
+      throw new Error('Unable to load public page section items.');
+    }
+
+    const itemRows = (itemData as PublicPageSectionItemRow[] | null) ?? [];
+    const itemsBySectionId = new Map<string, PublicPageSectionItem[]>();
+
+    for (const row of itemRows) {
+      const existingItems = itemsBySectionId.get(row.section_id) ?? [];
+      existingItems.push(toPublicPageSectionItem(row));
+      itemsBySectionId.set(row.section_id, existingItems);
+    }
+
+    return sectionRows.map((row) =>
+      toPublicPageSection({
+        items: itemsBySectionId.get(row.id) ?? [],
+        row,
+      }),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function getHomepageEditorialConfig({
+  supabaseClient,
+}: {
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<PublicHomepageEditorialConfig> {
+  let sections: PublicPageSection[] = [];
+
+  try {
+    sections = await loadPublicPageSectionsFromSupabase({
+      pageKey: 'homepage',
+      supabaseClient,
+    });
+  } catch (error) {
+    console.warn(
+      '[homepage-cms] Unable to load homepage CMS config; using curated fallback.',
+      error,
+    );
+
+    return getHomepageDefaultEditorialConfig();
+  }
+
+  if (sections.length === 0) {
+    return getHomepageDefaultEditorialConfig();
+  }
+
+  const validSections = sections.filter(
+    (section) =>
+      section &&
+      typeof section.sectionKey === 'string' &&
+      section.sectionKey.trim() &&
+      typeof section.title === 'string' &&
+      section.title.trim(),
+  );
+
+  if (validSections.length === 0) {
+    return getHomepageDefaultEditorialConfig();
+  }
+
+  const sectionKeys = new Set(
+    validSections.map((section) => section.sectionKey),
+  );
+
+  return {
+    sections: [
+      ...validSections,
+      ...getHomepageDefaultEditorialConfig().sections.filter(
+        (section) => !sectionKeys.has(section.sectionKey),
+      ),
+    ].sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder ||
+        left.sectionKey.localeCompare(right.sectionKey),
+    ),
+  };
+}
+
+export async function listCatalogCollectionPresentations({
+  supabaseClient,
+}: {
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogCollectionPresentation[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_COLLECTION_PRESENTATIONS_TABLE)
+      .select(
+        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
+      )
+      .eq('is_public', true)
+      .eq('status', 'active')
+      .order('public_homepage_order', { ascending: true, nullsFirst: false })
+      .order('public_order', { ascending: true, nullsFirst: false })
+      .order('collection_slug', { ascending: true });
+
+    if (error) {
+      throw new Error('Unable to load collection presentations.');
+    }
+
+    return ((data as CatalogCollectionPresentationRow[] | null) ?? []).map(
+      toCatalogCollectionPresentation,
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      console.warn(
+        '[collection-presentation] Falling back to collection config defaults.',
+        error,
+      );
+
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function getCatalogCollectionPresentation({
+  slug,
+  supabaseClient,
+}: {
+  slug: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCollectionPresentation | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return undefined;
+  }
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_COLLECTION_PRESENTATIONS_TABLE)
+      .select(
+        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
+      )
+      .eq('collection_slug', slug)
+      .eq('is_public', true)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) {
+      throw new Error('Unable to load collection presentation.');
+    }
+
+    return data
+      ? toCatalogCollectionPresentation(
+          data as CatalogCollectionPresentationRow,
+        )
+      : undefined;
+  } catch (error) {
+    if (!supabaseClient) {
+      console.warn(
+        '[collection-presentation] Falling back to collection config defaults.',
+        error,
+      );
+
+      return undefined;
+    }
+
+    throw error;
+  }
+}
+
+export async function getCatalogCollectionLandingPageConfigWithPresentation({
+  config,
+  supabaseClient,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCollectionLandingPageConfig> {
+  return applyCatalogCollectionPresentation({
+    config,
+    presentation: await getCatalogCollectionPresentation({
+      slug: config.slug,
+      supabaseClient,
+    }),
+  });
+}
+
+function readHomepageMetadataString(
+  metadata: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): string | undefined {
+  const value = metadata?.[key];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function readHomepageMetadataStringArray(
+  metadata: Readonly<Record<string, unknown>> | undefined,
+  key: string,
+): readonly string[] {
+  const value = metadata?.[key];
+
+  return Array.isArray(value)
+    ? value.filter(
+        (item): item is string =>
+          typeof item === 'string' && item.trim().length > 0,
+      )
+    : [];
+}
+
+function getHomepageDiscoveryVisual(
+  item: PublicPageSectionItem,
+  fallback?: CatalogThemeVisual,
+): CatalogThemeVisual | undefined {
+  const metadata = item.metadata;
+  const visualKey = readHomepageMetadataString(metadata, 'visualKey');
+  const keyedVisual =
+    visualKey && visualKey in catalogDiscoveryVisualVariants
+      ? catalogDiscoveryVisualVariants[
+          visualKey as keyof typeof catalogDiscoveryVisualVariants
+        ]
+      : undefined;
+  const supportsItemSurfaceColors = item.referenceType === 'custom';
+  const backgroundColor = supportsItemSurfaceColors
+    ? (normalizeCatalogThemePublicAccentColor(
+        readHomepageMetadataString(metadata, 'surfaceColor'),
+      ) ??
+      normalizeCatalogThemePublicAccentColor(
+        readHomepageMetadataString(metadata, 'accentColor'),
+      ) ??
+      normalizeCatalogThemePublicAccentColor(
+        readHomepageMetadataString(metadata, 'backgroundColor'),
+      ))
+    : undefined;
+  const textColor = supportsItemSurfaceColors
+    ? (normalizeCatalogThemePublicTextColor(
+        readHomepageMetadataString(metadata, 'surfaceTextColor'),
+      ) ??
+      normalizeCatalogThemePublicTextColor(
+        readHomepageMetadataString(metadata, 'textColor'),
+      ) ??
+      normalizeCatalogThemePublicTextColor(
+        readHomepageMetadataString(metadata, 'heroTextColor'),
+      ))
+    : undefined;
+
+  return {
+    ...fallback,
+    ...keyedVisual,
+    ...(backgroundColor ? { backgroundColor } : {}),
+    ...(textColor ? { textColor } : {}),
+  };
+}
+
+function getHomepageSetCardImageUrl(
+  setCard?: CatalogHomepageSetCard,
+): string | undefined {
+  return setCard?.imageUrl ?? setCard?.primaryImage;
+}
+
+function getHomepageThemePresentationImageUrl(
+  themeItem?: CatalogThemeDirectoryItem,
+): string | undefined {
+  return themeItem?.visual?.tileImageUrl ?? themeItem?.visual?.imageUrl;
+}
+
+function getHomepageThemeFallbackImageUrl(
+  themeItem?: CatalogThemeDirectoryItem,
+): string | undefined {
+  return themeItem?.imageUrl;
+}
+
+function toCollectionVisual(
+  presentation?: CatalogCollectionPresentation,
+  fallback?: CatalogThemeVisual,
+): CatalogThemeVisual | undefined {
+  const imageUrl =
+    presentation?.publicTileImageUrl ?? presentation?.publicImageUrl;
+  const visual = {
+    ...fallback,
+    ...(presentation?.publicSurfaceColor
+      ? { backgroundColor: presentation.publicSurfaceColor }
+      : {}),
+    ...((presentation?.publicHeroTextColor ??
+    presentation?.publicSurfaceTextColor)
+      ? {
+          textColor:
+            presentation.publicHeroTextColor ??
+            presentation.publicSurfaceTextColor ??
+            undefined,
+        }
+      : {}),
+    ...(imageUrl ? { imageUrl } : {}),
+    ...(presentation?.publicTileImageUrl
+      ? { tileImageUrl: presentation.publicTileImageUrl }
+      : {}),
+  };
+
+  return Object.keys(visual).length > 0 ? visual : undefined;
+}
+
+function getCollectionPresentationMap(
+  presentations: readonly CatalogCollectionPresentation[],
+): ReadonlyMap<string, CatalogCollectionPresentation> {
+  return new Map(
+    presentations.map((presentation) => [
+      presentation.collectionSlug,
+      presentation,
+    ]),
+  );
+}
+
+function shouldUseHomepageItemCustomImage(
+  item: PublicPageSectionItem,
+): boolean {
+  return item.referenceType === 'custom' || item.useCustomImage === true;
+}
+
+function resolveHomepageItemHref({
+  item,
+  setCardById,
+}: {
+  item: PublicPageSectionItem;
+  setCardById: ReadonlyMap<string, CatalogHomepageSetCard>;
+}): string | undefined {
+  const metadataHref = readHomepageMetadataString(item.metadata, 'href');
+  const customHref = item.ctaUrl ?? metadataHref;
+
+  if (customHref) {
+    return customHref;
+  }
+
+  if (!item.referenceId) {
+    return undefined;
+  }
+
+  if (item.referenceType === 'collection') {
+    return `/${item.referenceId}`;
+  }
+
+  if (item.referenceType === 'theme') {
+    return buildThemePath(item.referenceId);
+  }
+
+  if (item.referenceType === 'set') {
+    const setCard = setCardById.get(item.referenceId);
+
+    return setCard ? buildSetDetailPath(setCard.slug) : undefined;
+  }
+
+  return undefined;
+}
+
+function resolveHomepageItemImageUrl({
+  collectionPresentation,
+  item,
+  representativeSetCard,
+  setCard,
+  themeItem,
+}: {
+  collectionPresentation?: CatalogCollectionPresentation;
+  item: PublicPageSectionItem;
+  representativeSetCard?: CatalogHomepageSetCard;
+  setCard?: CatalogHomepageSetCard;
+  themeItem?: CatalogThemeDirectoryItem;
+}): string | undefined {
+  const customImageUrl = shouldUseHomepageItemCustomImage(item)
+    ? item.imageUrl
+    : undefined;
+
+  if (item.referenceType === 'custom') {
+    return customImageUrl;
+  }
+
+  if (item.referenceType === 'set') {
+    return getHomepageSetCardImageUrl(setCard);
+  }
+
+  return (
+    customImageUrl ??
+    collectionPresentation?.publicTileImageUrl ??
+    collectionPresentation?.publicImageUrl ??
+    getHomepageThemePresentationImageUrl(themeItem) ??
+    getHomepageSetCardImageUrl(representativeSetCard) ??
+    getHomepageThemeFallbackImageUrl(themeItem)
+  );
+}
+
+async function resolveHomepageEditorialItems({
+  homepageEditorialConfig,
+  limit,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  sectionKey,
+  supabaseClient,
+}: {
+  homepageEditorialConfig?: PublicHomepageEditorialConfig;
+  limit: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  sectionKey: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<{
+  collectionPresentationBySlug: ReadonlyMap<
+    string,
+    CatalogCollectionPresentation
+  >;
+  section?: PublicPageSection;
+  setCardById: ReadonlyMap<string, CatalogHomepageSetCard>;
+  themeItemBySlug: ReadonlyMap<string, CatalogThemeDirectoryItem>;
+  items: readonly PublicPageSectionItem[];
+}> {
+  const editorialConfig =
+    homepageEditorialConfig ??
+    (listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await getHomepageEditorialConfig({ supabaseClient })
+      : HOMEPAGE_DEFAULT_EDITORIAL_CONFIG);
+  const section = getHomepageEditorialSection(editorialConfig, sectionKey);
+  const configuredItems =
+    section?.items
+      .filter((item) => item.enabled)
+      .sort(
+        (left, right) =>
+          left.sortOrder - right.sortOrder ||
+          (left.referenceId ?? '').localeCompare(right.referenceId ?? ''),
+      ) ?? [];
+  const fallbackItems =
+    getDefaultHomepageEditorialSection(sectionKey)?.items ?? [];
+  const items = (configuredItems.length > 0 ? configuredItems : fallbackItems)
+    .filter((item) => item.enabled)
+    .slice(0, limit);
+  const setIds = [
+    ...new Set(
+      items.flatMap((item) => [
+        ...(item.referenceType === 'set' && item.referenceId
+          ? [item.referenceId]
+          : []),
+        ...(item.imageSetId ? [item.imageSetId] : []),
+      ]),
+    ),
+  ];
+  const [themeItems, setCards, collectionPresentations] = await Promise.all([
+    listCatalogThemeDirectoryItems({
+      limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
+      listCanonicalCatalogSetsFn,
+      sortMode: 'homepage',
+      supabaseClient,
+    }),
+    listCatalogSetCardsByIds({
+      canonicalIds: setIds,
+      listCanonicalCatalogSetsFn,
+      supabaseClient,
+    }),
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? listCatalogCollectionPresentations({ supabaseClient })
+      : Promise.resolve([]),
+  ]);
+
+  return {
+    collectionPresentationBySlug: getCollectionPresentationMap(
+      collectionPresentations,
+    ),
+    items,
+    section,
+    setCardById: new Map(setCards.map((setCard) => [setCard.id, setCard])),
+    themeItemBySlug: new Map(
+      themeItems.map((themeItem) => [themeItem.themeSnapshot.slug, themeItem]),
+    ),
+  };
+}
+
+export async function listHomepageDiscoveryTiles({
+  homepageEditorialConfig,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   supabaseClient,
 }: {
+  homepageEditorialConfig?: PublicHomepageEditorialConfig;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogHomepageDiscoveryTile[]> {
+  const { collectionPresentationBySlug, items, setCardById, themeItemBySlug } =
+    await resolveHomepageEditorialItems({
+      homepageEditorialConfig,
+      limit,
+      listCanonicalCatalogSetsFn,
+      sectionKey: 'discovery_routes',
+      supabaseClient,
+    });
+
+  return items.flatMap((item, index): CatalogHomepageDiscoveryTile[] => {
+    const themeItem =
+      item.referenceType === 'theme' && item.referenceId
+        ? themeItemBySlug.get(item.referenceId)
+        : undefined;
+    const setCard =
+      item.referenceType === 'set' && item.referenceId
+        ? setCardById.get(item.referenceId)
+        : undefined;
+    const collectionPresentation =
+      item.referenceType === 'collection' && item.referenceId
+        ? collectionPresentationBySlug.get(item.referenceId)
+        : undefined;
+    const representativeSetCard = item.imageSetId
+      ? setCardById.get(item.imageSetId)
+      : undefined;
+    const href = resolveHomepageItemHref({ item, setCardById });
+    const title =
+      item.titleOverride ??
+      collectionPresentation?.publicDisplayName ??
+      themeItem?.themeSnapshot.name ??
+      setCard?.displayTitle ??
+      setCard?.name ??
+      item.referenceId;
+
+    if (!href || !title) {
+      return [];
+    }
+
+    const imageUrl = resolveHomepageItemImageUrl({
+      collectionPresentation,
+      item,
+      representativeSetCard,
+      setCard,
+      themeItem,
+    });
+    const visual = getHomepageDiscoveryVisual(
+      item,
+      item.referenceType === 'collection'
+        ? toCollectionVisual(collectionPresentation)
+        : themeItem?.visual,
+    );
+
+    return [
+      {
+        ...(item.altOverride ? { alt: item.altOverride } : {}),
+        ...(item.ctaLabel ? { ctaLabel: item.ctaLabel } : {}),
+        href,
+        id: item.id ?? `${item.referenceType}:${item.referenceId ?? index}`,
+        ...(imageUrl ? { imageUrl } : {}),
+        ...(item.referenceId ? { referenceId: item.referenceId } : {}),
+        referenceType: item.referenceType,
+        title,
+        ...(visual
+          ? { visual: { ...visual, ...(imageUrl ? { imageUrl } : {}) } }
+          : {}),
+      },
+    ];
+  });
+}
+
+export async function listHomepageThemeDirectoryItems({
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  supabaseClient,
+  homepageEditorialConfig,
+}: {
+  homepageEditorialConfig?: PublicHomepageEditorialConfig;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
+  const editorialConfig =
+    homepageEditorialConfig ??
+    (listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await getHomepageEditorialConfig({ supabaseClient })
+      : HOMEPAGE_DEFAULT_EDITORIAL_CONFIG);
+  const themeRailSection = getHomepageEditorialSection(
+    editorialConfig,
+    'theme_rail',
+  );
+  const configuredThemeRailItems =
+    themeRailSection?.items.filter(
+      (item) =>
+        item.enabled &&
+        item.referenceType === 'theme' &&
+        Boolean(item.referenceId),
+    ) ?? [];
+  const themeRailItems: readonly PublicPageSectionItem[] =
+    configuredThemeRailItems.length > 0
+      ? configuredThemeRailItems
+      : HOMEPAGE_DEFAULT_THEME_RAIL_SECTION.items;
+  const representativeSetIds = themeRailItems.flatMap((item) =>
+    item.imageSetId ? [item.imageSetId] : [],
+  );
   const [themeDirectoryItems, representativeSetCards] = await Promise.all([
     listCatalogThemeDirectoryItems({
       limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
@@ -10540,9 +11866,7 @@ export async function listHomepageThemeDirectoryItems({
       supabaseClient,
     }),
     listCatalogSetCardsByIds({
-      canonicalIds: HOMEPAGE_CURATED_THEME_RAIL_ITEMS.map(
-        (item) => item.representativeSetId,
-      ),
+      canonicalIds: representativeSetIds,
       listCanonicalCatalogSetsFn,
       supabaseClient,
     }),
@@ -10557,56 +11881,73 @@ export async function listHomepageThemeDirectoryItems({
     representativeSetCards.map((setCard) => [setCard.id, setCard]),
   );
 
-  return HOMEPAGE_CURATED_THEME_RAIL_ITEMS.slice(0, limit).flatMap(
-    (curatedThemeRailItem) => {
-      const themeDirectoryItem = themeDirectoryItemBySlug.get(
-        curatedThemeRailItem.slug,
-      );
+  return themeRailItems.slice(0, limit).flatMap((curatedThemeRailItem) => {
+    const themeDirectoryItem = themeDirectoryItemBySlug.get(
+      curatedThemeRailItem.referenceId ?? '',
+    );
 
-      if (!themeDirectoryItem) {
-        return [];
-      }
+    if (!themeDirectoryItem) {
+      return [];
+    }
 
-      const representativeSetCard = representativeSetCardById.get(
-        curatedThemeRailItem.representativeSetId,
-      );
-      const representativeImageUrl =
-        representativeSetCard?.imageUrl ?? representativeSetCard?.primaryImage;
-      const imageUrl =
-        representativeImageUrl ??
-        themeDirectoryItem.visual?.imageUrl ??
-        themeDirectoryItem.imageUrl;
+    const representativeSetCard = curatedThemeRailItem.imageSetId
+      ? representativeSetCardById.get(curatedThemeRailItem.imageSetId)
+      : undefined;
+    const customImageUrl = shouldUseHomepageItemCustomImage(
+      curatedThemeRailItem,
+    )
+      ? curatedThemeRailItem.imageUrl
+      : undefined;
+    const representativeImageUrl =
+      representativeSetCard?.imageUrl ?? representativeSetCard?.primaryImage;
+    const imageUrl =
+      customImageUrl ??
+      themeDirectoryItem.visual?.tileImageUrl ??
+      themeDirectoryItem.visual?.imageUrl ??
+      representativeImageUrl ??
+      themeDirectoryItem.imageUrl;
 
-      return [
-        {
-          ...themeDirectoryItem,
-          ...(imageUrl ? { imageUrl } : {}),
-          themeSnapshot: {
-            ...themeDirectoryItem.themeSnapshot,
-            signatureSet: curatedThemeRailItem.representativeSetTitle,
-          },
-          visual: {
-            ...themeDirectoryItem.visual,
-            ...(imageUrl ? { imageUrl } : {}),
-          },
+    return [
+      {
+        ...themeDirectoryItem,
+        ...(imageUrl ? { imageUrl } : {}),
+        themeSnapshot: {
+          ...themeDirectoryItem.themeSnapshot,
+          ...(curatedThemeRailItem.titleOverride
+            ? {
+                signatureSet: curatedThemeRailItem.titleOverride,
+              }
+            : {}),
         },
-      ];
-    },
-  );
+        visual: {
+          ...themeDirectoryItem.visual,
+          ...(imageUrl ? { imageUrl } : {}),
+        },
+      },
+    ];
+  });
 }
 
 export async function listHomepageThemeSpotlightItems({
   limit = 4,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   supabaseClient,
+  homepageEditorialConfig,
 }: {
+  homepageEditorialConfig?: PublicHomepageEditorialConfig;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   supabaseClient?: CatalogSupabaseClient;
-} = {}): Promise<CatalogThemeDirectoryItem[]> {
+} = {}): Promise<CatalogHomepageSpotlightItem[]> {
+  const editorialConfig =
+    homepageEditorialConfig ??
+    (listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await getHomepageEditorialConfig({ supabaseClient })
+      : HOMEPAGE_DEFAULT_EDITORIAL_CONFIG);
   const primaryHomepageThemeNames = new Set(
     (
       await listHomepageThemeDirectoryItems({
+        homepageEditorialConfig: editorialConfig,
         listCanonicalCatalogSetsFn,
         supabaseClient,
       })
@@ -10622,6 +11963,102 @@ export async function listHomepageThemeSpotlightItems({
     sortMode: 'homepage',
     supabaseClient,
   });
+  const spotlightSection = getHomepageEditorialSection(
+    editorialConfig,
+    'theme_spotlight',
+  );
+  const configuredSpotlightItems =
+    spotlightSection?.items.filter(
+      (item) =>
+        item.enabled &&
+        (item.referenceType === 'collection' ||
+          item.referenceType === 'custom' ||
+          item.referenceType === 'set' ||
+          item.referenceType === 'theme') &&
+        Boolean(item.referenceId),
+    ) ?? [];
+
+  if (configuredSpotlightItems.length > 0) {
+    const {
+      collectionPresentationBySlug,
+      items,
+      setCardById,
+      themeItemBySlug,
+    } = await resolveHomepageEditorialItems({
+      homepageEditorialConfig: editorialConfig,
+      limit,
+      listCanonicalCatalogSetsFn,
+      sectionKey: 'theme_spotlight',
+      supabaseClient,
+    });
+
+    return items.flatMap((item, index): CatalogHomepageSpotlightItem[] => {
+      const themeItem =
+        item.referenceType === 'theme' && item.referenceId
+          ? themeItemBySlug.get(item.referenceId)
+          : undefined;
+      const setCard =
+        item.referenceType === 'set' && item.referenceId
+          ? setCardById.get(item.referenceId)
+          : undefined;
+      const collectionPresentation =
+        item.referenceType === 'collection' && item.referenceId
+          ? collectionPresentationBySlug.get(item.referenceId)
+          : undefined;
+      const representativeSetCard = item.imageSetId
+        ? setCardById.get(item.imageSetId)
+        : undefined;
+      const href = resolveHomepageItemHref({ item, setCardById });
+      const title =
+        item.titleOverride ??
+        collectionPresentation?.publicDisplayName ??
+        themeItem?.themeSnapshot.name ??
+        setCard?.displayTitle ??
+        setCard?.name ??
+        item.referenceId;
+      const description =
+        readHomepageMetadataString(item.metadata, 'description') ??
+        readHomepageMetadataString(item.metadata, 'subtitle') ??
+        collectionPresentation?.publicDescription ??
+        themeItem?.themeSnapshot.momentum;
+
+      if (!href || !title) {
+        return [];
+      }
+
+      const imageUrl = resolveHomepageItemImageUrl({
+        collectionPresentation,
+        item,
+        representativeSetCard,
+        setCard,
+        themeItem,
+      });
+      const visual =
+        item.referenceType === 'collection'
+          ? toCollectionVisual(collectionPresentation, themeItem?.visual)
+          : {
+              ...themeItem?.visual,
+              ...(imageUrl ? { imageUrl } : {}),
+            };
+
+      return [
+        {
+          ...(item.altOverride ? { alt: item.altOverride } : {}),
+          ...(item.ctaLabel ? { ctaLabel: item.ctaLabel } : {}),
+          ...(description ? { description } : {}),
+          href,
+          id: item.id ?? `${item.referenceType}:${item.referenceId ?? index}`,
+          ...(imageUrl ? { imageUrl } : {}),
+          ...(item.referenceId ? { referenceId: item.referenceId } : {}),
+          referenceType: item.referenceType,
+          title,
+          ...(visual
+            ? { visual: { ...visual, ...(imageUrl ? { imageUrl } : {}) } }
+            : {}),
+        },
+      ];
+    });
+  }
 
   return themeDirectoryItems
     .filter(
@@ -10630,7 +12067,30 @@ export async function listHomepageThemeSpotlightItems({
           catalogThemeDirectoryItem.themeSnapshot.name,
         ),
     )
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((themeItem, index): CatalogHomepageSpotlightItem => {
+      const imageUrl =
+        getHomepageThemePresentationImageUrl(themeItem) ??
+        getHomepageThemeFallbackImageUrl(themeItem);
+
+      return {
+        description: themeItem.themeSnapshot.momentum,
+        href: buildThemePath(themeItem.themeSnapshot.slug),
+        id: `theme:${themeItem.themeSnapshot.slug}:${index}`,
+        ...(imageUrl ? { imageUrl } : {}),
+        referenceId: themeItem.themeSnapshot.slug,
+        referenceType: 'theme',
+        title: themeItem.themeSnapshot.name,
+        ...(themeItem.visual
+          ? {
+              visual: {
+                ...themeItem.visual,
+                ...(imageUrl ? { imageUrl } : {}),
+              },
+            }
+          : {}),
+      };
+    });
 }
 
 export async function listCatalogThemePageSlugs({
@@ -10683,23 +12143,42 @@ export async function getCatalogThemePageBySlug({
     }
 
     try {
-      const { data: themeData, error: themeError } =
+      const loadThemeRow = async (selectColumns: string) =>
+        await activeSupabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select(selectColumns)
+          .eq('slug', slug)
+          .eq('status', 'active')
+          .eq('is_public', true)
+          .maybeSingle();
+      let { data: themeData, error: themeError } =
         await measureCatalogThemePageQuery({
           label: 'catalog_themes',
           slug,
-          load: async () =>
-            await activeSupabaseClient
-              .from(CATALOG_THEMES_TABLE)
-              .select(
-                'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order',
-              )
-              .eq('slug', slug)
-              .eq('status', 'active')
-              .eq('is_public', true)
-              .maybeSingle(),
+          load: () => loadThemeRow(CATALOG_THEME_SELECT_COLUMNS),
         });
 
+      if (
+        themeError &&
+        isCatalogMissingColumnError(themeError, 'public_tile_image_url')
+      ) {
+        logCatalogThemeReadDiagnostic('theme-page-legacy-select', {
+          error: getCatalogSupabaseErrorDiagnostic(themeError),
+          slug,
+        });
+        ({ data: themeData, error: themeError } =
+          await measureCatalogThemePageQuery({
+            label: 'catalog_themes:legacy',
+            slug,
+            load: () => loadThemeRow(CATALOG_THEME_LEGACY_SELECT_COLUMNS),
+          }));
+      }
+
       if (themeError) {
+        logCatalogThemeReadDiagnostic('theme-page-query-failed', {
+          error: getCatalogSupabaseErrorDiagnostic(themeError),
+          slug,
+        });
         throw new Error('Unable to load catalog theme page.');
       }
 
@@ -10708,6 +12187,30 @@ export async function getCatalogThemePageBySlug({
         | null;
 
       if (!themeRow) {
+        const { data: diagnosticRows, error: diagnosticError } =
+          await activeSupabaseClient
+            .from(CATALOG_THEMES_TABLE)
+            .select('id, slug, display_name, status, is_public')
+            .eq('slug', slug)
+            .limit(1);
+
+        logCatalogThemeReadDiagnostic('theme-page-not-found', {
+          diagnosticError: diagnosticError
+            ? getCatalogSupabaseErrorDiagnostic(diagnosticError)
+            : undefined,
+          reason:
+            (
+              diagnosticRows as Array<{
+                is_public?: boolean | null;
+                status?: string | null;
+              }> | null
+            )?.[0] == null
+              ? 'missing-row'
+              : 'filtered-status-or-public',
+          row: (diagnosticRows as unknown[] | null)?.[0],
+          slug,
+        });
+
         return undefined;
       }
 
@@ -10742,38 +12245,90 @@ export async function getCatalogThemePageBySlug({
         slug,
         load: () =>
           listCatalogThemeSummariesByThemeId({
+            context: `theme-page:${slug}`,
+            suppressErrors: true,
             supabaseClient: activeSupabaseClient,
             themeIds: [themeRow.id],
           }),
       });
       const themeSummary = themeSummariesByThemeId.get(themeRow.id);
-      const setQuery = activeSupabaseClient
-        .from(CATALOG_SETS_TABLE)
-        .select(
-          CATALOG_SET_SELECT_COLUMNS,
-          themeSummary ? undefined : { count: 'exact' },
-        )
-        .eq('status', 'active')
-        .eq('primary_theme_id', themeRow.id)
-        .order('release_year', { ascending: false })
-        .order('name', { ascending: true })
-        .order('set_id', { ascending: true })
-        .range(safeOffset, safeOffset + safeLimit - 1);
-      const {
-        count: fallbackSetCount,
-        data: setData,
-        error: setError,
-      } = await measureCatalogThemePageQuery({
-        label: 'catalog_sets',
-        slug,
-        load: async () => await setQuery,
-      });
+      const minifigureMembershipRows = isCatalogMinifigureThemeSlug(
+        themeRow.slug,
+      )
+        ? await measureCatalogThemePageQuery({
+            label: 'catalog_set_collections:minifigures',
+            slug,
+            load: () =>
+              listCatalogMinifigureMembershipRows({
+                supabaseClient: activeSupabaseClient,
+              }),
+          })
+        : [];
+      let fallbackSetCount: number | null = null;
+      let catalogRows: CatalogSetRow[] = [];
 
-      if (setError) {
-        throw new Error('Unable to load catalog theme page.');
+      if (minifigureMembershipRows.length) {
+        const { count, data, error } = await measureCatalogThemePageQuery({
+          label: 'catalog_sets:primary',
+          slug,
+          load: async () =>
+            await activeSupabaseClient
+              .from(CATALOG_SETS_TABLE)
+              .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
+              .eq('status', 'active')
+              .eq('primary_theme_id', themeRow.id)
+              .order('release_year', { ascending: false })
+              .order('name', { ascending: true })
+              .order('set_id', { ascending: true }),
+        });
+
+        if (error) {
+          throw new Error('Unable to load catalog theme page.');
+        }
+
+        const primaryRows = (data as CatalogSetRow[] | null) ?? [];
+        const rowBySetId = new Map(
+          primaryRows.map((row) => [row.set_id, row] as const),
+        );
+
+        for (const row of minifigureMembershipRows) {
+          rowBySetId.set(row.set_id, row);
+        }
+
+        const sortedRows = sortCatalogThemePageRows([...rowBySetId.values()]);
+
+        fallbackSetCount = sortedRows.length || count || primaryRows.length;
+        catalogRows = sortedRows.slice(safeOffset, safeOffset + safeLimit);
+      } else {
+        const setQuery = activeSupabaseClient
+          .from(CATALOG_SETS_TABLE)
+          .select(
+            CATALOG_SET_SELECT_COLUMNS,
+            themeSummary ? undefined : { count: 'exact' },
+          )
+          .eq('status', 'active')
+          .eq('primary_theme_id', themeRow.id)
+          .order('release_year', { ascending: false })
+          .order('name', { ascending: true })
+          .order('set_id', { ascending: true })
+          .range(safeOffset, safeOffset + safeLimit - 1);
+        const {
+          count,
+          data: setData,
+          error: setError,
+        } = await measureCatalogThemePageQuery({
+          label: 'catalog_sets',
+          slug,
+          load: async () => await setQuery,
+        });
+
+        if (setError) {
+          throw new Error('Unable to load catalog theme page.');
+        }
+
+        fallbackSetCount = count;
+        catalogRows = (setData as CatalogSetRow[] | null) ?? [];
       }
-
-      const catalogRows = (setData as CatalogSetRow[] | null) ?? [];
       const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
         catalogRows,
         supabaseClient: activeSupabaseClient,
@@ -10801,7 +12356,9 @@ export async function getCatalogThemePageBySlug({
         ...createPublicCatalogThemeSnapshot({
           setCards,
           setCount:
-            themeSummary?.active_set_count ??
+            (minifigureMembershipRows.length
+              ? fallbackSetCount
+              : themeSummary?.active_set_count) ??
             fallbackSetCount ??
             catalogRows.length,
           slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),

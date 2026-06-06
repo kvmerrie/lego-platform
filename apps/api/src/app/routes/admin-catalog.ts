@@ -2,10 +2,21 @@ import {
   createCatalogSet,
   createCatalogSetFromDiscoveryCandidate,
   getCatalogDiscoveryCandidate,
+  listAdminCatalogCollectionPresentations,
+  listAdminCatalogThemePresentations,
+  listAdminHomepageSections,
   listCatalogDiscoveryCandidates,
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   searchCatalogMissingSets,
+  saveAdminHomepageSection,
+  updateAdminCatalogCollectionPresentation,
+  updateAdminCatalogThemePresentation,
+  type AdminCatalogCollectionPresentation,
+  type AdminCatalogCollectionPresentationInput,
+  type AdminCatalogThemePresentation,
+  type AdminCatalogThemePresentationInput,
+  type AdminHomepageSectionSaveInput,
   updateCatalogDiscoveryCandidateReviewStatus,
   type CatalogDiscoveryCandidate,
   type CatalogDiscoveryCandidateStatus,
@@ -28,12 +39,17 @@ import {
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
   type CatalogSet,
+  type PublicPageSection,
+  type PublicPageSectionItemReferenceType,
 } from '@lego-platform/catalog/util';
 import {
   apiPaths,
   buildCatalogSetRevalidationTags,
   buildSetDetailPath,
   buildThemePath,
+  buildWebPath,
+  cacheTags,
+  webPathnames,
 } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 import { createAdminPreHandler } from '../lib/admin-authorization';
@@ -92,6 +108,24 @@ export interface AdminCatalogService {
   listCatalogSets(): Promise<AdminCatalogSetSummary[]>;
   listSuggestedSets(): Promise<CatalogSuggestedSet[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
+  listThemePresentations(input?: {
+    query?: string;
+  }): Promise<AdminCatalogThemePresentation[]>;
+  listCollectionPresentations(input?: {
+    query?: string;
+  }): Promise<AdminCatalogCollectionPresentation[]>;
+  updateThemePresentation(input: {
+    input: AdminCatalogThemePresentationInput;
+    slug: string;
+  }): Promise<AdminCatalogThemePresentation>;
+  updateCollectionPresentation(input: {
+    input: AdminCatalogCollectionPresentationInput;
+    slug: string;
+  }): Promise<AdminCatalogCollectionPresentation>;
+  listHomepageSections(): Promise<PublicPageSection[]>;
+  saveHomepageSection(
+    input: AdminHomepageSectionSaveInput,
+  ): Promise<PublicPageSection>;
 }
 
 export function buildCatalogDiscoveryCandidateStatusUpdate({
@@ -349,6 +383,16 @@ function createAdminCatalogService(): AdminCatalogService {
       })),
     listSuggestedSets: () => listCatalogSuggestedMissingSets(),
     searchMissingSets: (query) => searchCatalogMissingSets({ query }),
+    listThemePresentations: (input) =>
+      listAdminCatalogThemePresentations({ query: input?.query }),
+    listCollectionPresentations: (input) =>
+      listAdminCatalogCollectionPresentations({ query: input?.query }),
+    updateThemePresentation: (input) =>
+      updateAdminCatalogThemePresentation(input),
+    updateCollectionPresentation: (input) =>
+      updateAdminCatalogCollectionPresentation(input),
+    listHomepageSections: () => listAdminHomepageSections(),
+    saveHomepageSection: (input) => saveAdminHomepageSection({ input }),
   };
 }
 
@@ -672,11 +716,12 @@ async function runDiscoveryCandidateBulkImport(input: {
 
 async function revalidateCatalogSetSurfaces(
   catalogSet: Pick<CatalogSet, 'setId' | 'slug' | 'theme'>,
+  revalidatePublicWebFn = revalidatePublicWeb,
 ): Promise<void> {
   try {
     const themeSlug = buildCatalogThemeSlug(catalogSet.theme);
 
-    await revalidatePublicWeb({
+    await revalidatePublicWebFn({
       paths: [buildSetDetailPath(catalogSet.slug), buildThemePath(themeSlug)],
       reason: 'admin_catalog_set_mutation',
       tags: buildCatalogSetRevalidationTags({
@@ -694,6 +739,46 @@ async function revalidateCatalogSetSurfaces(
         : 'Public web catalog set revalidation failed.',
     );
   }
+}
+
+async function revalidateHomepageCmsSurfaces(
+  revalidatePublicWebFn = revalidatePublicWeb,
+): Promise<void> {
+  await revalidatePublicWebFn({
+    paths: [buildWebPath(webPathnames.home)],
+    reason: 'admin_homepage_cms_mutation',
+    tags: [cacheTags.homepage()],
+  });
+}
+
+async function revalidateThemePresentationSurfaces(
+  slug: string,
+  revalidatePublicWebFn = revalidatePublicWeb,
+): Promise<void> {
+  await revalidatePublicWebFn({
+    paths: [
+      buildWebPath(webPathnames.home),
+      buildWebPath(webPathnames.themes),
+      buildThemePath(slug),
+    ],
+    reason: 'admin_theme_presentation_mutation',
+    tags: [cacheTags.homepage(), cacheTags.themes(), cacheTags.theme(slug)],
+  });
+}
+
+async function revalidateCollectionPresentationSurfaces(
+  slug: string,
+  revalidatePublicWebFn = revalidatePublicWeb,
+): Promise<void> {
+  await revalidatePublicWebFn({
+    paths: [buildWebPath(webPathnames.home), `/${slug}`],
+    reason: 'admin_collection_presentation_mutation',
+    tags: [
+      cacheTags.homepage(),
+      cacheTags.collections(),
+      cacheTags.collection(slug),
+    ],
+  });
 }
 
 function readSearchQuery(value: unknown): string {
@@ -881,6 +966,147 @@ function readDiscoveryCandidateStatusInput(value: unknown): {
   return { status };
 }
 
+function readOptionalStringInput(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function readOptionalNumberInput(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) ? value : null;
+}
+
+function readMetadataInput(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? { ...(value as Record<string, unknown>) }
+    : undefined;
+}
+
+function readThemePresentationInput(
+  value: unknown,
+): AdminCatalogThemePresentationInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Theme presentation input ontbreekt.');
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return {
+    isPublic: record['isPublic'] !== false,
+    publicAccentColor: readOptionalStringInput(record['publicAccentColor']),
+    publicDescription: readOptionalStringInput(record['publicDescription']),
+    publicDisplayName: readOptionalStringInput(record['publicDisplayName']),
+    publicHeroTextColor: readOptionalStringInput(record['publicHeroTextColor']),
+    publicHomepageOrder: readOptionalNumberInput(record['publicHomepageOrder']),
+    publicImageUrl: readOptionalStringInput(record['publicImageUrl']),
+    publicLogoUrl: readOptionalStringInput(record['publicLogoUrl']),
+    publicOrder: readOptionalNumberInput(record['publicOrder']),
+    publicSurfaceColor: readOptionalStringInput(record['publicSurfaceColor']),
+    publicSurfaceTextColor: readOptionalStringInput(
+      record['publicSurfaceTextColor'],
+    ),
+    publicTileImageUrl: readOptionalStringInput(record['publicTileImageUrl']),
+    status: record['status'] === 'inactive' ? 'inactive' : 'active',
+  };
+}
+
+function readCollectionPresentationInput(
+  value: unknown,
+): AdminCatalogCollectionPresentationInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Collection presentation input ontbreekt.');
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return {
+    isPublic: record['isPublic'] !== false,
+    publicAccentColor: readOptionalStringInput(record['publicAccentColor']),
+    publicDescription: readOptionalStringInput(record['publicDescription']),
+    publicDisplayName: readOptionalStringInput(record['publicDisplayName']),
+    publicHeroTextColor: readOptionalStringInput(record['publicHeroTextColor']),
+    publicHomepageOrder: readOptionalNumberInput(record['publicHomepageOrder']),
+    publicImageUrl: readOptionalStringInput(record['publicImageUrl']),
+    publicLogoUrl: readOptionalStringInput(record['publicLogoUrl']),
+    publicOrder: readOptionalNumberInput(record['publicOrder']),
+    publicSurfaceColor: readOptionalStringInput(record['publicSurfaceColor']),
+    publicSurfaceTextColor: readOptionalStringInput(
+      record['publicSurfaceTextColor'],
+    ),
+    publicTileImageUrl: readOptionalStringInput(record['publicTileImageUrl']),
+    status: record['status'] === 'inactive' ? 'inactive' : 'active',
+  };
+}
+
+function readHomepageSectionInput(
+  value: unknown,
+): AdminHomepageSectionSaveInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Homepage section input ontbreekt.');
+  }
+
+  const record = value as Record<string, unknown>;
+  const sectionKey = readOptionalStringInput(record['sectionKey']);
+  const title = readOptionalStringInput(record['title']);
+
+  if (!sectionKey || !title) {
+    throw new Error('Homepage section mist sectionKey of title.');
+  }
+
+  const items = Array.isArray(record['items'])
+    ? record['items'].map((item, index) => {
+        const itemRecord =
+          item && typeof item === 'object' && !Array.isArray(item)
+            ? (item as Record<string, unknown>)
+            : {};
+        const referenceType = itemRecord['referenceType'];
+
+        const normalizedReferenceType: PublicPageSectionItemReferenceType =
+          referenceType === 'theme' ||
+          referenceType === 'set' ||
+          referenceType === 'collection' ||
+          referenceType === 'custom'
+            ? referenceType
+            : 'custom';
+
+        return {
+          altOverride:
+            readOptionalStringInput(itemRecord['altOverride']) ?? undefined,
+          ctaLabel:
+            readOptionalStringInput(itemRecord['ctaLabel']) ?? undefined,
+          ctaUrl: readOptionalStringInput(itemRecord['ctaUrl']) ?? undefined,
+          enabled: itemRecord['enabled'] !== false,
+          imageSetId:
+            readOptionalStringInput(itemRecord['imageSetId']) ?? undefined,
+          imageUrl:
+            readOptionalStringInput(itemRecord['imageUrl']) ?? undefined,
+          metadata: readMetadataInput(itemRecord['metadata']),
+          referenceId:
+            readOptionalStringInput(itemRecord['referenceId']) ?? undefined,
+          referenceType: normalizedReferenceType,
+          sortOrder:
+            readOptionalNumberInput(itemRecord['sortOrder']) ??
+            (index + 1) * 10,
+          titleOverride:
+            readOptionalStringInput(itemRecord['titleOverride']) ?? undefined,
+          useCustomImage: itemRecord['useCustomImage'] === true,
+        };
+      })
+    : [];
+
+  return {
+    enabled: record['enabled'] !== false,
+    items,
+    layout: readOptionalStringInput(record['layout']) ?? undefined,
+    metadata: readMetadataInput(record['metadata']),
+    pageKey: 'homepage',
+    sectionKey,
+    sortOrder: readOptionalNumberInput(record['sortOrder']) ?? 10,
+    subtitle: readOptionalStringInput(record['subtitle']) ?? undefined,
+    title,
+  };
+}
+
 function isDefaultProductionEnvironment(): boolean {
   return (
     process.env['BRICKHUNT_ENV'] === 'production' ||
@@ -893,10 +1119,12 @@ export function createAdminCatalogRoutes({
   adminPreHandler = createAdminPreHandler(),
   catalogService = createAdminCatalogService(),
   isProductionEnvironment = isDefaultProductionEnvironment,
+  revalidatePublicWebFn = revalidatePublicWeb,
 }: {
   adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   catalogService?: AdminCatalogService;
   isProductionEnvironment?: () => boolean;
+  revalidatePublicWebFn?: typeof revalidatePublicWeb;
 } = {}) {
   return async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', adminPreHandler);
@@ -913,6 +1141,28 @@ export function createAdminCatalogRoutes({
 
     fastify.get(apiPaths.adminCatalogSets, async function () {
       return catalogService.listCatalogSets();
+    });
+
+    fastify.get<{ Querystring: { query?: string } }>(
+      apiPaths.adminCatalogThemes,
+      async function (request) {
+        return catalogService.listThemePresentations({
+          query: request.query.query,
+        });
+      },
+    );
+
+    fastify.get<{ Querystring: { query?: string } }>(
+      apiPaths.adminCatalogCollections,
+      async function (request) {
+        return catalogService.listCollectionPresentations({
+          query: request.query.query,
+        });
+      },
+    );
+
+    fastify.get(apiPaths.adminHomepageSections, async function () {
+      return catalogService.listHomepageSections();
     });
 
     fastify.get(apiPaths.adminCatalogSuggestedSets, async function () {
@@ -1019,7 +1269,7 @@ export function createAdminCatalogRoutes({
         try {
           const input = readCatalogSetInput(request.body);
           const catalogSet = await catalogService.createSet(input);
-          await revalidateCatalogSetSurfaces(catalogSet);
+          await revalidateCatalogSetSurfaces(catalogSet, revalidatePublicWebFn);
 
           return reply.status(201).send(catalogSet);
         } catch (error) {
@@ -1027,6 +1277,98 @@ export function createAdminCatalogRoutes({
             message: toBadRequestMessage(
               error,
               'Catalog set input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.put<{ Body: unknown; Params: { slug: string } }>(
+      `${apiPaths.adminCatalogThemes}/:slug`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          const input = readThemePresentationInput(request.body);
+          const themePresentation =
+            await catalogService.updateThemePresentation({
+              input,
+              slug: request.params.slug,
+            });
+
+          await revalidateThemePresentationSurfaces(
+            themePresentation.slug,
+            revalidatePublicWebFn,
+          );
+
+          return themePresentation;
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Theme presentation input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.put<{ Body: unknown; Params: { slug: string } }>(
+      `${apiPaths.adminCatalogCollections}/:slug`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          const input = readCollectionPresentationInput(request.body);
+          const collectionPresentation =
+            await catalogService.updateCollectionPresentation({
+              input,
+              slug: request.params.slug,
+            });
+
+          await revalidateCollectionPresentationSurfaces(
+            collectionPresentation.collectionSlug,
+            revalidatePublicWebFn,
+          );
+
+          return collectionPresentation;
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Collection presentation input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.put<{ Body: unknown; Params: { sectionKey: string } }>(
+      `${apiPaths.adminHomepageSections}/:sectionKey`,
+      async function (request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          const input = {
+            ...readHomepageSectionInput(request.body),
+            sectionKey: request.params.sectionKey,
+          };
+          const section = await catalogService.saveHomepageSection(input);
+
+          await revalidateHomepageCmsSurfaces(revalidatePublicWebFn);
+
+          return section;
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Homepage section input is invalid.',
             ),
           });
         }

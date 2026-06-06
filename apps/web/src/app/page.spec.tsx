@@ -7,6 +7,7 @@ const pageMocks = vi.hoisted(() => ({
   catalogFeatureThemeList: vi.fn(),
   catalogFeatureThemeSpotlight: vi.fn(),
   getHomepagePage: vi.fn(),
+  getHomepageEditorialConfig: vi.fn(),
   getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
   getCatalogHomepageDealQualityDiagnostics: vi.fn(),
   getCatalogPartnerOfferRailDiagnostics: vi.fn(),
@@ -18,6 +19,7 @@ const pageMocks = vi.hoisted(() => ({
   listCatalogSetCardsByIds: vi.fn(),
   listDiscoverBestDealSetCards: vi.fn(),
   listDiscoverNowInterestingSetCards: vi.fn(),
+  listHomepageDiscoveryTiles: vi.fn(),
   listHomepageSetCards: vi.fn(),
   listHomepageThemeDirectoryItems: vi.fn(),
   listHomepageThemeSpotlightItems: vi.fn(),
@@ -32,6 +34,7 @@ vi.mock('next/headers', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  getHomepageEditorialConfig: pageMocks.getHomepageEditorialConfig,
   getCatalogCommerceRailRuntimeDiagnostics:
     pageMocks.getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogHomepageDealQualityDiagnostics:
@@ -50,6 +53,7 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listDiscoverBestDealSetCards: pageMocks.listDiscoverBestDealSetCards,
   listDiscoverNowInterestingSetCards:
     pageMocks.listDiscoverNowInterestingSetCards,
+  listHomepageDiscoveryTiles: pageMocks.listHomepageDiscoveryTiles,
   listHomepageSetCards: pageMocks.listHomepageSetCards,
   listHomepageThemeDirectoryItems: pageMocks.listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems: pageMocks.listHomepageThemeSpotlightItems,
@@ -87,7 +91,7 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
 vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
   CatalogFeatureThemeList: (props: unknown) => {
     pageMocks.catalogFeatureThemeList(props);
-    const typedProps = props as { tone?: string };
+    const typedProps = props as { title?: string; tone?: string };
 
     return React.createElement(
       'section',
@@ -95,11 +99,12 @@ vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
         'data-homepage-theme-list': 'explore-themes',
         'data-tone': typedProps.tone ?? 'default',
       },
-      'Fantasy, Star Wars of strak design?',
+      typedProps.title ?? 'Fantasy, Star Wars of strak design?',
     );
   },
   CatalogFeatureThemeSpotlight: (props: unknown) => {
     pageMocks.catalogFeatureThemeSpotlight(props);
+    const typedProps = props as { title?: string };
 
     return React.createElement(
       'section',
@@ -107,7 +112,7 @@ vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
         'data-homepage-theme-spotlight': 'theme-spotlight',
         'data-tone': 'plain',
       },
-      'Botanicals, kunst of modulaire straten?',
+      typedProps.title ?? 'Botanicals, kunst of modulaire straten?',
     );
   },
 }));
@@ -165,9 +170,107 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
   WishlistFeatureWishlistToggle: () => null,
 }));
 
+const defaultHomepageDiscoveryTiles = [
+  {
+    href: '/nieuwe-lego-sets',
+    id: 'new-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg',
+    referenceType: 'collection',
+    title: 'Nieuwe sets',
+    visual: {
+      backgroundColor: '#3aaee8',
+      textColor: '#08243a',
+    },
+  },
+  {
+    href: '/lego-voor-volwassenen',
+    id: 'adult-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg',
+    referenceType: 'collection',
+    title: 'LEGO voor volwassenen',
+    visual: {
+      backgroundColor: '#08636f',
+      textColor: '#ffffff',
+    },
+  },
+  {
+    href: '/lego-sets-onder-50-euro',
+    id: 'budget-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg',
+    referenceType: 'collection',
+    title: 'LEGO sets onder EUR 50',
+    visual: {
+      backgroundColor: '#35b765',
+      textColor: '#062817',
+    },
+  },
+  {
+    href: '/retiring-lego-sets',
+    id: 'retiring-sets',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
+    referenceType: 'collection',
+    title: 'Binnenkort uit handel',
+    visual: {
+      backgroundColor: '#f28c28',
+      textColor: '#281400',
+    },
+  },
+  {
+    href: '/deals',
+    id: 'deals',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg',
+    referenceType: 'custom',
+    title: 'Interessante deals',
+    visual: {
+      backgroundColor: '#00a99d',
+      textColor: '#062927',
+    },
+  },
+  {
+    href: '/themes',
+    id: 'themes',
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg',
+    referenceType: 'custom',
+    title: 'Populaire thema’s',
+    visual: {
+      backgroundColor: '#8758d8',
+      textColor: '#ffffff',
+    },
+  },
+] as const;
+
+function setupHomepageRenderMocks() {
+  pageMocks.getHomepagePage.mockResolvedValue({
+    sections: [],
+    seo: {
+      description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
+      noIndex: false,
+      title: 'Brickhunt',
+    },
+  });
+  pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
+  pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
+  pageMocks.listHomepageDiscoveryTiles.mockResolvedValue(
+    defaultHomepageDiscoveryTiles,
+  );
+  pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
+  pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
+  pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
+  pageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
+  pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+    new Map(),
+  );
+  pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
+  pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
+  pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
+  pageMocks.listHomepageSetCards.mockResolvedValue([]);
+  pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
+}
+
 describe('home metadata', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
     pageMocks.getCachedPublicLandingPageData.mockImplementation(
       async ({ load, ...cacheOptions }) =>
         JSON.parse(
@@ -177,6 +280,9 @@ describe('home metadata', () => {
           }),
         ),
     );
+    pageMocks.listHomepageDiscoveryTiles.mockResolvedValue(
+      defaultHomepageDiscoveryTiles,
+    );
     pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
     pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
     pageMocks.listHomepageSetCards.mockResolvedValue([]);
@@ -184,6 +290,196 @@ describe('home metadata', () => {
     pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
+  });
+
+  it.each([
+    ['undefined config', undefined],
+    ['null config', null],
+    ['empty config', { sections: [] }],
+  ])('renders curated homepage fallback for %s', async (_label, config) => {
+    setupHomepageRenderMocks();
+    pageMocks.getHomepageEditorialConfig.mockResolvedValue(config);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('Fantasy, Star Wars of strak design?');
+    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
+    expect(pageMocks.listHomepageThemeDirectoryItems).toHaveBeenCalledWith({
+      homepageEditorialConfig: undefined,
+    });
+  });
+
+  it('logs and renders curated fallback when homepage CMS fetch fails', async () => {
+    setupHomepageRenderMocks();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const cmsError = new Error('public_page_sections does not exist');
+    pageMocks.getHomepageEditorialConfig.mockRejectedValue(cmsError);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('Fantasy, Star Wars of strak design?');
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[homepage-cms] Falling back to curated homepage defaults.',
+      cmsError,
+    );
+  });
+
+  it('renders populated homepage CMS copy when config is available', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
+      sections: [
+        {
+          enabled: true,
+          items: [],
+          pageKey: 'homepage',
+          sectionKey: 'discovery_routes',
+          sortOrder: 10,
+          subtitle: 'Kies de route die bij je plank past.',
+          title: 'Kies je LEGO route',
+        },
+        {
+          enabled: true,
+          items: [],
+          pageKey: 'homepage',
+          sectionKey: 'theme_rail',
+          sortOrder: 20,
+          title: 'Draken, Death Stars of displaystukken?',
+        },
+        {
+          enabled: true,
+          items: [],
+          pageKey: 'homepage',
+          sectionKey: 'theme_spotlight',
+          sortOrder: 60,
+          title: 'Meer werelden voor je kast',
+        },
+      ],
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Kies je LEGO route');
+    expect(markup).toContain('Kies de route die bij je plank past.');
+    expect(markup).toContain('Draken, Death Stars of displaystukken?');
+    expect(markup).toContain('Meer werelden voor je kast');
+    expect(pageMocks.listHomepageThemeDirectoryItems).toHaveBeenCalledWith({
+      homepageEditorialConfig: expect.objectContaining({
+        sections: expect.any(Array),
+      }),
+    });
+  });
+
+  it('renders discovery route CMS tiles returned by catalog data-access', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.listHomepageDiscoveryTiles.mockResolvedValue([
+      {
+        alt: 'Rivendell displayset',
+        href: '/lego-voor-volwassenen',
+        id: 'cms-adult-sets',
+        imageUrl: 'https://example.test/rivendell.jpg',
+        referenceId: 'lego-voor-volwassenen',
+        referenceType: 'collection',
+        title: 'Displaysets voor je plank',
+        visual: {
+          backgroundColor: '#123456',
+          textColor: '#ffffff',
+        },
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('data-visual-tile="cms-adult-sets"');
+    expect(markup).toContain('href="/lego-voor-volwassenen"');
+    expect(markup).toContain('Displaysets voor je plank');
+    expect(markup).toContain('src="https://example.test/rivendell.jpg"');
+    expect(markup).toContain('alt="Rivendell displayset"');
+    expect(markup).toContain('--theme-surface:#123456');
+  });
+
+  it('passes theme spotlight CMS items to the spotlight renderer', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([
+      {
+        description: 'Kies deze als Hogwarts je kast in mag.',
+        href: '/themes/harry-potter',
+        id: 'cms-harry-potter',
+        imageUrl: 'https://example.test/hogwarts.jpg',
+        referenceId: 'harry-potter',
+        referenceType: 'theme',
+        title: 'Hogwarts en Goudgrijp',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(await pageModule.default());
+
+    expect(pageMocks.catalogFeatureThemeSpotlight).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themeItems: [
+          expect.objectContaining({
+            href: '/themes/harry-potter',
+            id: 'cms-harry-potter',
+            title: 'Hogwarts en Goudgrijp',
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('falls back per missing homepage CMS section when config is partial', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
+      sections: [
+        {
+          enabled: true,
+          items: [],
+          pageKey: 'homepage',
+          sectionKey: 'theme_rail',
+          sortOrder: 20,
+          title: 'Alleen deze rail komt uit CMS',
+        },
+      ],
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('Alleen deze rail komt uit CMS');
+    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
+  });
+
+  it('ignores malformed homepage CMS rows and renders fallback sections', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
+      sections: [
+        null,
+        {},
+        {
+          enabled: false,
+          items: [],
+          pageKey: 'homepage',
+          sectionKey: 'discovery_routes',
+          sortOrder: 10,
+          title: 'Deze uitgeschakelde rij mag niet renderen',
+        },
+      ],
+    });
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('Fantasy, Star Wars of strak design?');
+    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
+    expect(markup).not.toContain('Deze uitgeschakelde rij mag niet renderen');
   });
 
   it('renders current offer rail when hard and soft deal gates are empty', async () => {

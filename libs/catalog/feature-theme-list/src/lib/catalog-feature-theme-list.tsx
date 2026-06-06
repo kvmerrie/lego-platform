@@ -50,10 +50,18 @@ function dedupeThemeItems(
 }
 
 export function CatalogFeatureThemeList({
+  description,
+  eyebrow = 'Kies je hoek',
+  signal,
   themeItems = [],
+  title = 'Fantasy, Star Wars of strak design?',
   tone = 'default',
 }: {
+  description?: string;
+  eyebrow?: string;
+  signal?: string;
   themeItems?: readonly CatalogThemeDirectoryItem[];
+  title?: string;
   tone?: 'default' | 'inverse';
 }) {
   const renderedThemeItems = dedupeThemeItems(themeItems);
@@ -67,12 +75,16 @@ export function CatalogFeatureThemeList({
       as="section"
       bodyClassName={styles.body}
       className={styles.section}
-      eyebrow="Kies je hoek"
+      description={description}
+      eyebrow={eyebrow}
       headingClassName={styles.header}
       id="explore-themes"
       padding="default"
-      signal={`${renderedThemeItems.length} thema’s om mee te starten + alle thema’s`}
-      title="Fantasy, Star Wars of strak design?"
+      signal={
+        signal ??
+        `${renderedThemeItems.length} thema’s om mee te starten + alle thema’s`
+      }
+      title={title}
       tone={tone === 'inverse' ? 'inverse' : 'plain'}
     >
       <div className={styles.railViewport}>

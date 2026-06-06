@@ -21,6 +21,7 @@ import {
   type CatalogDiscoverySignal,
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogCollectionLandingPage,
+  getCatalogCollectionLandingPageConfigWithPresentation,
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
@@ -32,6 +33,7 @@ import {
   listCatalogCurrentOfferSummaries,
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
+  getHomepageEditorialConfig,
   getCatalogSetBySlug,
   listCanonicalCatalogSets,
   listCatalogCurrentOfferCandidateSetIds,
@@ -47,6 +49,7 @@ import {
   listCatalogSetSlugs,
   listCatalogSetSummaries,
   listCatalogThemeDirectoryItems,
+  listHomepageDiscoveryTiles,
   listCatalogThemePageSlugs,
   listDiscoverBestDealSetCards,
   listDiscoverBrowseThemeGroups,
@@ -155,8 +158,12 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
   options: {
     maxInFilterValues?: number;
     onSelect?: (args: unknown[]) => void;
+    selectError?: (
+      args: unknown[],
+    ) => { code?: string; message: string } | null;
   } = {},
 ) {
+  let selectArgs: unknown[] = [];
   const filters: Array<
     | {
         type: 'eq';
@@ -256,6 +263,7 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
       return builder;
     },
     select(...args: unknown[]) {
+      selectArgs = args;
       options.onSelect?.(args);
 
       return builder;
@@ -290,6 +298,16 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
           error: {
             message: `IN filter for ${oversizedInFilter.column} exceeded ${options.maxInFilterValues} values.`,
           },
+        }).then(onFulfilled, onRejected ?? undefined);
+      }
+
+      const selectError = options.selectError?.(selectArgs);
+
+      if (selectError) {
+        return Promise.resolve({
+          count: 0,
+          data: [],
+          error: selectError,
         }).then(onFulfilled, onRejected ?? undefined);
       }
 
@@ -406,6 +424,8 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
 function createCatalogSupabaseClientMock({
   catalogRows = [],
+  collectionPresentationRows = [],
+  collectionSetRows = [],
   collectionSnapshotRows = [],
   maxInFilterValues,
   primaryThemeRows = [],
@@ -414,15 +434,20 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows = [],
   offerSeedRows,
   priceHistoryRows = [],
+  publicPageSectionRows = [],
+  publicPageSectionItemRows = [],
   snapshotRows = [],
   sourceMetadataRows = [],
   onSelect,
   rpcHandlers = {},
+  selectErrors = {},
   sourceThemeRows = [],
   themeMappingRows = [],
   themeSummaryRows = [],
 }: {
   catalogRows?: readonly Record<string, unknown>[];
+  collectionPresentationRows?: readonly Record<string, unknown>[];
+  collectionSetRows?: readonly Record<string, unknown>[];
   collectionSnapshotRows?: readonly Record<string, unknown>[];
   maxInFilterValues?: number;
   primaryThemeRows?: readonly Record<string, unknown>[];
@@ -431,6 +456,8 @@ function createCatalogSupabaseClientMock({
   minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
   priceHistoryRows?: readonly Record<string, unknown>[];
+  publicPageSectionRows?: readonly Record<string, unknown>[];
+  publicPageSectionItemRows?: readonly Record<string, unknown>[];
   snapshotRows?: readonly Record<string, unknown>[];
   sourceMetadataRows?: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
@@ -440,6 +467,10 @@ function createCatalogSupabaseClientMock({
       data: unknown;
       error: { message?: string } | null;
     }
+  >;
+  selectErrors?: Record<
+    string,
+    (args: unknown[]) => { code?: string; message: string } | null
   >;
   sourceThemeRows?: readonly Record<string, unknown>[];
   themeMappingRows?: readonly Record<string, unknown>[];
@@ -471,6 +502,7 @@ function createCatalogSupabaseClientMock({
           {
             maxInFilterValues,
             onSelect: (args) => onSelect?.(table, args),
+            selectError: selectErrors[table],
           },
         );
       }
@@ -486,6 +518,7 @@ function createCatalogSupabaseClientMock({
         return createSupabaseTableBuilder(themeSummaryRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
+          selectError: selectErrors[table],
         });
       }
 
@@ -505,6 +538,20 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'collection_page_snapshots') {
         return createSupabaseTableBuilder(collectionSnapshotRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'catalog_collection_presentations') {
+        return createSupabaseTableBuilder(collectionPresentationRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'catalog_set_collections') {
+        return createSupabaseTableBuilder(collectionSetRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
@@ -540,6 +587,20 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'pricing_daily_set_history') {
         return createSupabaseTableBuilder(priceHistoryRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'public_page_sections') {
+        return createSupabaseTableBuilder(publicPageSectionRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'public_page_section_items') {
+        return createSupabaseTableBuilder(publicPageSectionItemRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
         });
@@ -2237,6 +2298,253 @@ describe('catalog effective data access web', () => {
     expect(result.totalSetCount).toBe(2);
   });
 
+  test('uses collectible-minifigures as the secondary minifigure membership slug', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/99999-1/1000.jpg',
+          name: 'Darth Vader Desk Display',
+          piece_count: 120,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2026,
+          set_id: '99999',
+          slug: 'darth-vader-desk-display-99999',
+          source: 'rebrickable',
+          source_set_number: '99999-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:lord-of-the-rings',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:566',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      collectionSetRows: [
+        {
+          collection_slug: 'collectible-minifigures',
+          enabled: true,
+          set_id: '99999',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          slug: 'star-wars',
+        },
+        {
+          display_name: 'The Lord of the Rings',
+          id: 'theme:lord-of-the-rings',
+          slug: 'the-lord-of-the-rings',
+        },
+      ],
+    });
+    const config = {
+      browseDescription: 'Minifiguren.',
+      browseEyebrow: 'Figuren verzamelen',
+      browseTitle: 'Minifiguren die het middelpunt zijn',
+      canonicalPath: '/themes/collectible-minifigures',
+      description: 'LEGO minifiguren.',
+      filters: {
+        collectionSlug: 'collectible-minifigures',
+      },
+      h1: 'LEGO minifiguren',
+      intro: 'Kijk naar figuren die zelf het punt zijn.',
+      links: {},
+      metaDescription: 'Bekijk LEGO minifiguren.',
+      metaTitle: 'LEGO minifiguren | Brickhunt',
+      signalLabel: 'minifiguur-items',
+      slug: 'collectible-minifigures',
+      sort: {
+        default: 'recommended',
+        options: ['recommended'],
+      },
+    } satisfies CatalogCollectionLandingPageConfig;
+
+    const result = await getCatalogCollectionLandingPage({
+      config,
+      sortKey: 'recommended',
+      supabaseClient,
+    });
+
+    expect(result.setCards.map((setCard) => setCard.id)).toEqual(['99999']);
+    expect(result.totalSetCount).toBe(1);
+  });
+
+  test('enriches Collectible Minifigures theme pages with secondary memberships while preserving primary theme identity', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75461-1/1000.jpg',
+          name: 'Grote minifiguur van Darth Vader',
+          piece_count: 592,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2026,
+          set_id: '75461',
+          slug: 'grote-minifiguur-van-darth-vader-75461',
+          source: 'rebrickable',
+          source_set_number: '75461-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/71045-1/1000.jpg',
+          name: 'Collectible Minifigures Series 25',
+          piece_count: 8,
+          primary_theme_id: 'theme:collectible-minifigures',
+          release_year: 2024,
+          set_id: '71045',
+          slug: 'collectible-minifigures-series-25-71045',
+          source: 'rebrickable',
+          source_set_number: '71045-1',
+          source_theme_id: 'rebrickable:535',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      collectionSetRows: [
+        {
+          collection_slug: 'collectible-minifigures',
+          enabled: true,
+          set_id: '75461',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          slug: 'star-wars',
+        },
+        {
+          display_name: 'Collectible Minifigures',
+          id: 'theme:collectible-minifigures',
+          public_display_name: 'Collectible Minifigures',
+          slug: 'collectible-minifigures',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 1,
+          representative_image_url:
+            'https://cdn.rebrickable.com/media/sets/71045-1/1000.jpg',
+          representative_set_id: '71045',
+          theme_id: 'theme:collectible-minifigures',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+    });
+
+    const starWarsPage = await getCatalogThemePageBySlug({
+      slug: 'star-wars',
+      supabaseClient,
+    });
+    const minifiguresThemePage = await getCatalogThemePageBySlug({
+      slug: 'collectible-minifigures',
+      supabaseClient,
+    });
+
+    expect(starWarsPage?.setCards.map((setCard) => setCard.id)).toEqual([
+      '75461',
+    ]);
+    expect(minifiguresThemePage?.setCards.map((setCard) => setCard.id)).toEqual(
+      ['75461', '71045'],
+    );
+    expect(minifiguresThemePage?.themeSnapshot.setCount).toBe(2);
+    expect(
+      minifiguresThemePage?.setCards.find((setCard) => setCard.id === '75461'),
+    ).toEqual(
+      expect.objectContaining({
+        publicTheme: expect.objectContaining({
+          slug: 'star-wars',
+        }),
+        theme: 'Star Wars',
+      }),
+    );
+  });
+
+  test('includes secondary minifigure memberships in the Collectible Minifigures directory count', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75461-1/1000.jpg',
+          name: 'Grote minifiguur van Darth Vader',
+          piece_count: 592,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2026,
+          set_id: '75461',
+          slug: 'grote-minifiguur-van-darth-vader-75461',
+          source: 'rebrickable',
+          source_set_number: '75461-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      collectionSetRows: [
+        {
+          collection_slug: 'collectible-minifigures',
+          enabled: true,
+          set_id: '75461',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Collectible Minifigures',
+          id: 'theme:collectible-minifigures',
+          public_display_name: 'Collectible Minifigures',
+          slug: 'collectible-minifigures',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 1,
+          representative_image_url:
+            'https://cdn.rebrickable.com/media/sets/71045-1/1000.jpg',
+          representative_set_id: '71045',
+          theme_id: 'theme:collectible-minifigures',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+    });
+
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(
+      directoryItems.find(
+        (directoryItem) =>
+          directoryItem.themeSnapshot.slug === 'collectible-minifigures',
+      )?.themeSnapshot.setCount,
+    ).toBe(2);
+  });
+
   test('prioritizes precise release metadata for new collection pages before narrow year-only fallbacks', async () => {
     const config = {
       browseDescription: 'Nieuwe sets.',
@@ -3303,9 +3611,194 @@ describe('catalog effective data access web', () => {
       'https://cdn.example.com/city-representative.jpg',
     );
     expect(cityItem?.visual?.backgroundColor).toBeUndefined();
-    expect(cityItem?.visual?.imageUrl).toBe(
-      'https://cdn.example.com/city-representative.jpg',
-    );
+    expect(cityItem?.visual?.imageUrl).toBeUndefined();
+  });
+
+  test('renders theme directory when optional tile image column is missing locally', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/icons-set.jpg',
+          name: 'Natural History Museum',
+          piece_count: 4014,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10326',
+          slug: 'natural-history-museum-10326',
+          source: 'rebrickable',
+          source_set_number: '10326-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_display_name: 'LEGO Icons',
+          public_image_url: 'https://cdn.example.com/icons-hero.jpg',
+          public_order: 1,
+          slug: 'icons',
+          status: 'active',
+        },
+      ],
+      selectErrors: {
+        catalog_themes: (args) =>
+          String(args[0] ?? '').includes('public_tile_image_url')
+            ? {
+                code: 'PGRST204',
+                message:
+                  "Could not find the 'public_tile_image_url' column of 'catalog_themes' in the schema cache",
+              }
+            : null,
+      },
+      themeSummaryRows: [
+        {
+          active_set_count: 56,
+          representative_image_url: 'https://cdn.example.com/icons-summary.jpg',
+          representative_set_id: '10326',
+          theme_id: 'theme:icons',
+          updated_at: '2026-06-06T00:00:00.000Z',
+        },
+      ],
+    });
+
+    const [iconsItem] = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(iconsItem?.themeSnapshot).toMatchObject({
+      name: 'LEGO Icons',
+      setCount: 56,
+      slug: 'icons',
+    });
+    expect(iconsItem?.imageUrl).toBe('https://cdn.example.com/icons-hero.jpg');
+  });
+
+  test('renders theme page when optional tile image column is missing locally', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/icons-set.jpg',
+          name: 'Natural History Museum',
+          piece_count: 4014,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10326',
+          slug: 'natural-history-museum-10326',
+          source: 'rebrickable',
+          source_set_number: '10326-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_display_name: 'LEGO Icons',
+          public_image_url: 'https://cdn.example.com/icons-hero.jpg',
+          public_order: 1,
+          slug: 'icons',
+          status: 'active',
+        },
+      ],
+      selectErrors: {
+        catalog_themes: (args) =>
+          String(args[0] ?? '').includes('public_tile_image_url')
+            ? {
+                code: 'PGRST204',
+                message:
+                  "Could not find the 'public_tile_image_url' column of 'catalog_themes' in the schema cache",
+              }
+            : null,
+      },
+      themeSummaryRows: [
+        {
+          active_set_count: 56,
+          representative_image_url: 'https://cdn.example.com/icons-summary.jpg',
+          representative_set_id: '10326',
+          theme_id: 'theme:icons',
+          updated_at: '2026-06-06T00:00:00.000Z',
+        },
+      ],
+    });
+
+    const themePage = await getCatalogThemePageBySlug({
+      slug: 'icons',
+      supabaseClient,
+    });
+
+    expect(themePage?.themeSnapshot).toMatchObject({
+      name: 'LEGO Icons',
+      setCount: 56,
+      slug: 'icons',
+    });
+    expect(themePage?.setCards.map((setCard) => setCard.id)).toEqual(['10326']);
+  });
+
+  test('renders theme directory with live set fallbacks when summaries fail', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/icons-set.jpg',
+          name: 'Natural History Museum',
+          piece_count: 4014,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10326',
+          slug: 'natural-history-museum-10326',
+          source: 'rebrickable',
+          source_set_number: '10326-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_order: 1,
+          slug: 'icons',
+          status: 'active',
+        },
+      ],
+      selectErrors: {
+        catalog_theme_summaries: () => ({
+          code: '42P01',
+          message: 'relation "catalog_theme_summaries" does not exist',
+        }),
+      },
+    });
+
+    const [iconsItem] = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(iconsItem?.themeSnapshot).toMatchObject({
+      name: 'Icons',
+      setCount: 1,
+      slug: 'icons',
+    });
+    expect(iconsItem?.imageUrl).toBe('https://cdn.example.com/icons-set.jpg');
   });
 
   test('keeps homepage theme rail curated while directory remains data-driven', async () => {
@@ -3572,6 +4065,165 @@ describe('catalog effective data access web', () => {
       'Botanicals',
       'Disney',
     ]);
+  });
+
+  test('uses CMS homepage theme rail order and representative set images while keeping dynamic counts', async () => {
+    const createCatalogRow = ({
+      imageUrl,
+      name,
+      primaryThemeId,
+      setId,
+      slug,
+    }: {
+      imageUrl: string;
+      name: string;
+      primaryThemeId: string;
+      setId: string;
+      slug: string;
+    }) => ({
+      created_at: '2026-06-01T00:00:00.000Z',
+      image_url: imageUrl,
+      name,
+      piece_count: 1000,
+      primary_theme_id: primaryThemeId,
+      release_date: null,
+      release_date_precision: 'year',
+      release_year: 2026,
+      set_id: setId,
+      slug,
+      source: 'rebrickable',
+      source_set_number: `${setId}-1`,
+      source_theme_id: null,
+      status: 'active',
+      updated_at: '2026-06-01T00:00:00.000Z',
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/76269.jpg',
+          name: 'Avengers Tower',
+          primaryThemeId: 'theme:marvel',
+          setId: '76269',
+          slug: 'avengers-tower-76269',
+        }),
+        createCatalogRow({
+          imageUrl: 'https://cdn.example.com/43222.jpg',
+          name: 'Disney Castle',
+          primaryThemeId: 'theme:disney',
+          setId: '43222',
+          slug: 'disney-castle-43222',
+        }),
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Marvel',
+          id: 'theme:marvel',
+          is_public: true,
+          public_display_name: 'Marvel',
+          public_homepage_order: 90,
+          public_order: 90,
+          slug: 'marvel',
+          status: 'active',
+        },
+        {
+          display_name: 'Disney',
+          id: 'theme:disney',
+          is_public: true,
+          public_display_name: 'Disney',
+          public_homepage_order: 120,
+          public_order: 120,
+          slug: 'disney',
+          status: 'active',
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-theme-rail',
+          layout: 'theme_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'theme_rail',
+          sort_order: 20,
+          subtitle: null,
+          title: 'Kies je wereld',
+        },
+      ],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-disney',
+          image_set_id: '43222',
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'disney',
+          reference_type: 'theme',
+          section_id: 'section-theme-rail',
+          sort_order: 10,
+          title_override: 'Disney Castle',
+        },
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-marvel',
+          image_set_id: '76269',
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'marvel',
+          reference_type: 'theme',
+          section_id: 'section-theme-rail',
+          sort_order: 20,
+          title_override: 'Avengers toren',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 31,
+          representative_image_url: 'https://cdn.example.com/random-disney.jpg',
+          representative_set_id: '43295',
+          theme_id: 'theme:disney',
+        },
+        {
+          active_set_count: 65,
+          representative_image_url: 'https://cdn.example.com/random-marvel.jpg',
+          representative_set_id: '76313',
+          theme_id: 'theme:marvel',
+        },
+      ],
+    });
+
+    const config = await getHomepageEditorialConfig({ supabaseClient });
+    const homepageItems = await listHomepageThemeDirectoryItems({
+      homepageEditorialConfig: config,
+      supabaseClient,
+    });
+
+    expect(
+      config.sections.find((section) => section.sectionKey === 'theme_rail')
+        ?.title,
+    ).toBe('Kies je wereld');
+    expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Disney',
+      'Marvel',
+    ]);
+    expect(homepageItems.map((item) => item.themeSnapshot.setCount)).toEqual([
+      31, 65,
+    ]);
+    expect(homepageItems.map((item) => item.imageUrl)).toEqual([
+      'https://cdn.example.com/43222.jpg',
+      'https://cdn.example.com/76269.jpg',
+    ]);
+    expect(
+      homepageItems.map((item) => item.themeSnapshot.signatureSet),
+    ).toEqual(['Disney Castle', 'Avengers toren']);
   });
 
   test('passes migrated Star Wars and Super Mario surface colors from Supabase', async () => {
@@ -3938,9 +4590,7 @@ describe('catalog effective data access web', () => {
     expect(editionsItem?.imageUrl).toBe('https://cdn.example.com/editions.jpg');
     expect(editionsItem?.visual?.backgroundColor).toBe('#e0b84f');
     expect(editionsItem?.visual?.textColor).toBe('#171a22');
-    expect(editionsItem?.visual?.imageUrl).toBe(
-      'https://cdn.example.com/editions.jpg',
-    );
+    expect(editionsItem?.visual?.imageUrl).toBeUndefined();
   });
 
   test('passes curated public theme visual metadata to theme detail pages', async () => {
@@ -4074,7 +4724,6 @@ describe('catalog effective data access web', () => {
     );
     expect(directoryItem?.visual).toEqual({
       backgroundColor: '#6bbf59',
-      imageUrl: 'https://cdn.example.com/animal-crossing-summary.jpg',
       textColor: '#10241f',
     });
     expect(themePage?.themeSnapshot.name).toBe('LEGO® Animal Crossing™');
@@ -5432,10 +6081,590 @@ describe('catalog effective data access web', () => {
       'LEGO® Icons',
       'Technic',
     ]);
-    expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
+    expect(spotlightItems.map((item) => item.title)).toEqual([
       'Botanicals',
       'Ideas',
     ]);
+  });
+
+  test('renders discovery route CMS collection items with presentation overrides', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionPresentationRows: [
+        {
+          collection_slug: 'lego-voor-volwassenen',
+          is_public: true,
+          metadata_json: {},
+          public_accent_color: '#08636f',
+          public_description: 'Displaysets voor Rivendell en Technic.',
+          public_display_name: 'Displaysets voor volwassenen',
+          public_hero_text_color: '#ffffff',
+          public_homepage_order: 10,
+          public_image_url: 'https://example.test/collection.jpg',
+          public_logo_url: 'https://example.test/collection-logo.svg',
+          public_order: 10,
+          public_surface_color: '#08636f',
+          public_surface_text_color: '#ffffff',
+          public_tile_image_url: 'https://example.test/collection-tile.jpg',
+          status: 'active',
+          updated_at: '2026-06-06T10:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: 'Rivendell op een plank',
+          cta_label: 'Bekijk collectie',
+          cta_url: null,
+          enabled: true,
+          id: 'item-adult',
+          image_set_id: null,
+          image_url: 'https://example.test/item-override.jpg',
+          metadata_json: {
+            description: 'Kies display boven speelfuncties.',
+            surfaceColor: '#ff0000',
+            surfaceTextColor: '#000000',
+          },
+          reference_id: 'lego-voor-volwassenen',
+          reference_type: 'collection',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: null,
+          use_custom_image: false,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tile).toMatchObject({
+      alt: 'Rivendell op een plank',
+      ctaLabel: 'Bekijk collectie',
+      href: '/lego-voor-volwassenen',
+      id: 'item-adult',
+      imageUrl: 'https://example.test/collection-tile.jpg',
+      referenceId: 'lego-voor-volwassenen',
+      referenceType: 'collection',
+      title: 'Displaysets voor volwassenen',
+      visual: {
+        backgroundColor: '#08636f',
+        imageUrl: 'https://example.test/collection-tile.jpg',
+        tileImageUrl: 'https://example.test/collection-tile.jpg',
+        textColor: '#ffffff',
+      },
+    });
+  });
+
+  test('uses explicit homepage image overrides only when enabled', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionPresentationRows: [
+        {
+          collection_slug: 'nieuwe-lego-sets',
+          is_public: true,
+          metadata_json: {},
+          public_accent_color: '#3aaee8',
+          public_description: 'Nieuwe dozen.',
+          public_display_name: 'Nieuwe sets',
+          public_hero_text_color: '#08243a',
+          public_homepage_order: 10,
+          public_image_url: 'https://example.test/new-sets-hero.jpg',
+          public_logo_url: 'https://example.test/new-sets-logo.svg',
+          public_order: 10,
+          public_surface_color: '#3aaee8',
+          public_surface_text_color: '#08243a',
+          public_tile_image_url: 'https://example.test/new-sets-tile.jpg',
+          status: 'active',
+          updated_at: '2026-06-06T10:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-default',
+          image_set_id: null,
+          image_url: 'https://example.test/disabled-override.jpg',
+          metadata_json: {},
+          reference_id: 'nieuwe-lego-sets',
+          reference_type: 'collection',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: null,
+          use_custom_image: false,
+        },
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-custom',
+          image_set_id: null,
+          image_url: 'https://example.test/enabled-override.jpg',
+          metadata_json: {},
+          reference_id: 'nieuwe-lego-sets',
+          reference_type: 'collection',
+          section_id: 'section-discovery',
+          sort_order: 20,
+          title_override: 'Nieuwe sets override',
+          use_custom_image: true,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const tiles = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tiles.map((tile) => tile.imageUrl)).toEqual([
+      'https://example.test/new-sets-tile.jpg',
+      'https://example.test/enabled-override.jpg',
+    ]);
+    expect(tiles[0]?.imageUrl).not.toBe(
+      'https://example.test/new-sets-logo.svg',
+    );
+  });
+
+  test('renders custom discovery deals tile colors from CMS metadata', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: '/deals',
+          enabled: true,
+          id: 'item-deals',
+          image_set_id: null,
+          image_url: 'https://example.test/deals.jpg',
+          metadata_json: {
+            surfaceColor: '#00a99d',
+            surfaceTextColor: '#062927',
+          },
+          reference_id: 'deals',
+          reference_type: 'custom',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: 'Interessante deals',
+          use_custom_image: true,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tile).toMatchObject({
+      href: '/deals',
+      imageUrl: 'https://example.test/deals.jpg',
+      referenceId: 'deals',
+      referenceType: 'custom',
+      title: 'Interessante deals',
+      visual: {
+        backgroundColor: '#00a99d',
+        imageUrl: 'https://example.test/deals.jpg',
+        textColor: '#062927',
+      },
+    });
+  });
+
+  test('renders custom popular themes tile colors from CMS metadata', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: '/themes',
+          enabled: true,
+          id: 'item-themes',
+          image_set_id: null,
+          image_url: 'https://example.test/themes.jpg',
+          metadata_json: {
+            surfaceColor: '#8758d8',
+            surfaceTextColor: '#ffffff',
+          },
+          reference_id: 'themes',
+          reference_type: 'custom',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: "Populaire thema's",
+          use_custom_image: true,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tile).toMatchObject({
+      href: '/themes',
+      imageUrl: 'https://example.test/themes.jpg',
+      referenceId: 'themes',
+      referenceType: 'custom',
+      title: "Populaire thema's",
+      visual: {
+        backgroundColor: '#8758d8',
+        imageUrl: 'https://example.test/themes.jpg',
+        textColor: '#ffffff',
+      },
+    });
+  });
+
+  test('falls back safely when custom discovery tile colors are missing', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: '/deals',
+          enabled: true,
+          id: 'item-deals',
+          image_set_id: null,
+          image_url: 'https://example.test/deals.jpg',
+          metadata_json: {},
+          reference_id: 'deals',
+          reference_type: 'custom',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: 'Interessante deals',
+          use_custom_image: true,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tile?.visual?.backgroundColor).toBeUndefined();
+    expect(tile?.visual?.textColor).toBeUndefined();
+    expect(tile?.imageUrl).toBe('https://example.test/deals.jpg');
+  });
+
+  test('renders theme spotlight CMS collection and theme items', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-01-01T00:00:00.000Z',
+          image_url: 'https://example.test/hogwarts.jpg',
+          name: 'Hogwarts Castle',
+          piece_count: 2660,
+          primary_theme_id: 'theme-harry-potter',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2024,
+          set_id: '76419',
+          slug: 'hogwarts-castle-and-grounds-76419',
+          source: 'rebrickable',
+          source_set_number: '76419-1',
+          source_theme_id: 'source-harry-potter',
+          status: 'active',
+          updated_at: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      collectionPresentationRows: [
+        {
+          collection_slug: 'lego-sets-onder-100-euro',
+          is_public: true,
+          metadata_json: {},
+          public_accent_color: '#00a99d',
+          public_description: 'Herkenbare sets tot 100 euro.',
+          public_display_name: 'Tot 100 euro',
+          public_hero_text_color: '#062927',
+          public_homepage_order: 20,
+          public_image_url: 'https://example.test/under-100.jpg',
+          public_logo_url: null,
+          public_order: 20,
+          public_surface_color: '#00a99d',
+          public_surface_text_color: '#062927',
+          public_tile_image_url: 'https://example.test/under-100-tile.jpg',
+          status: 'active',
+          updated_at: '2026-06-06T10:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Harry Potter',
+          id: 'theme-harry-potter',
+          is_public: true,
+          public_description: 'Hogwarts, Goudgrijp en minifiguren.',
+          public_display_name: 'Harry Potter',
+          public_tile_image_url: 'https://example.test/harry-potter-tile.jpg',
+          public_image_url: null,
+          slug: 'harry-potter',
+          status: 'active',
+        },
+      ],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-theme',
+          image_set_id: '76419',
+          image_url: null,
+          metadata_json: { description: 'Begin bij Hogwarts.' },
+          reference_id: 'harry-potter',
+          reference_type: 'theme',
+          section_id: 'section-spotlight',
+          sort_order: 10,
+          title_override: 'Hogwarts en Goudgrijp',
+          use_custom_image: false,
+        },
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-collection',
+          image_set_id: null,
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'lego-sets-onder-100-euro',
+          reference_type: 'collection',
+          section_id: 'section-spotlight',
+          sort_order: 20,
+          title_override: null,
+          use_custom_image: false,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-spotlight',
+          layout: 'theme_spotlight',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'theme_spotlight',
+          sort_order: 60,
+          subtitle: null,
+          title: 'Meer werelden',
+        },
+      ],
+    });
+
+    const items = await listHomepageThemeSpotlightItems({ supabaseClient });
+
+    expect(items).toEqual([
+      expect.objectContaining({
+        description: 'Begin bij Hogwarts.',
+        href: '/themes/harry-potter',
+        id: 'item-theme',
+        imageUrl: 'https://example.test/harry-potter-tile.jpg',
+        referenceType: 'theme',
+        title: 'Hogwarts en Goudgrijp',
+      }),
+      expect.objectContaining({
+        description: 'Herkenbare sets tot 100 euro.',
+        href: '/lego-sets-onder-100-euro',
+        id: 'item-collection',
+        imageUrl: 'https://example.test/under-100-tile.jpg',
+        referenceType: 'collection',
+        title: 'Tot 100 euro',
+      }),
+    ]);
+  });
+
+  test('applies collection presentation to collection page config', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionPresentationRows: [
+        {
+          collection_slug: 'nieuwe-lego-sets',
+          is_public: true,
+          metadata_json: {},
+          public_accent_color: '#3aaee8',
+          public_description: 'Nieuw binnen: speeders, kastelen en bloemen.',
+          public_display_name: 'Net binnen bij Brickhunt',
+          public_hero_text_color: '#08243a',
+          public_homepage_order: 10,
+          public_image_url: 'https://example.test/new-sets.jpg',
+          public_logo_url: null,
+          public_order: 10,
+          public_surface_color: '#3aaee8',
+          public_surface_text_color: '#08243a',
+          public_tile_image_url: 'https://example.test/new-sets-tile.jpg',
+          status: 'active',
+          updated_at: '2026-06-06T10:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+    });
+    const config = await getCatalogCollectionLandingPageConfigWithPresentation({
+      config: {
+        browseDescription: 'Fallback browse',
+        browseEyebrow: 'Fallback',
+        browseTitle: 'Fallback title',
+        canonicalPath: '/nieuwe-lego-sets',
+        description: 'Fallback description',
+        filters: {},
+        h1: 'Nieuwe LEGO sets',
+        intro: 'Fallback intro',
+        links: {},
+        metaDescription: 'Fallback meta',
+        metaTitle: 'Fallback meta title',
+        signalLabel: 'sets',
+        slug: 'nieuwe-lego-sets',
+        sort: {
+          default: 'recommended',
+          options: ['recommended'],
+        },
+      },
+      supabaseClient,
+    });
+
+    expect(config).toMatchObject({
+      browseDescription: 'Nieuw binnen: speeders, kastelen en bloemen.',
+      browseTitle: 'Net binnen bij Brickhunt',
+      description: 'Nieuw binnen: speeders, kastelen en bloemen.',
+      h1: 'Net binnen bij Brickhunt',
+      intro: 'Nieuw binnen: speeders, kastelen en bloemen.',
+      visual: {
+        backgroundColor: '#3aaee8',
+        imageUrl: 'https://example.test/new-sets.jpg',
+        textColor: '#08243a',
+      },
+    });
+  });
+
+  test('falls back from malformed collection tile image to hero image', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionPresentationRows: [
+        {
+          collection_slug: 'retiring-lego-sets',
+          is_public: true,
+          metadata_json: {},
+          public_accent_color: '#f28c28',
+          public_description: 'Niet laten liggen.',
+          public_display_name: 'Binnenkort weg',
+          public_hero_text_color: '#281400',
+          public_homepage_order: 10,
+          public_image_url: 'https://example.test/retiring-hero.jpg',
+          public_logo_url: null,
+          public_order: 10,
+          public_surface_color: '#f28c28',
+          public_surface_text_color: '#281400',
+          public_tile_image_url: 'not-a-url',
+          status: 'active',
+          updated_at: '2026-06-06T10:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-retiring',
+          image_set_id: null,
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'retiring-lego-sets',
+          reference_type: 'collection',
+          section_id: 'section-discovery',
+          sort_order: 10,
+          title_override: null,
+          use_custom_image: false,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-discovery',
+          layout: 'visual_tile_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'discovery_routes',
+          sort_order: 10,
+          subtitle: null,
+          title: 'Ontdek LEGO op jouw manier',
+        },
+      ],
+    });
+
+    const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
+
+    expect(tile?.imageUrl).toBe('https://example.test/retiring-hero.jpg');
   });
 
   test('does not synthesize hardcoded visuals for fallback directory themes', async () => {
@@ -6606,9 +7835,9 @@ describe('catalog effective data access web', () => {
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toContain(
       '43247',
     );
-    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '43247',
+    expect(result.map((catalogSetCard) => catalogSetCard.id).sort()).toEqual([
       '10316',
+      '43247',
     ]);
   });
 
@@ -6753,11 +7982,9 @@ describe('catalog effective data access web', () => {
     });
 
     expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([]);
-    expect(goodPriced.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '10311',
-      '43247',
-      '75446',
-    ]);
+    expect(
+      goodPriced.map((catalogSetCard) => catalogSetCard.id).sort(),
+    ).toEqual(['10311', '43247', '75446']);
   });
 
   test('excludes 71050-like unknown unit and unknown verdict cards from primary deal quality rails', () => {
@@ -7980,7 +9207,7 @@ describe('catalog effective data access web', () => {
       },
     });
 
-    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+    expect(result.map((catalogSetCard) => catalogSetCard.id).sort()).toEqual([
       '42143',
       '76269',
     ]);

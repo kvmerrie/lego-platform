@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import React from 'react';
 import {
   getCatalogCollectionLandingPage,
+  getCatalogCollectionLandingPageConfigWithPresentation,
   getCatalogCollectionLandingPageSnapshot,
 } from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureCollectionLandingPage } from '@lego-platform/catalog/feature-collection-landing';
@@ -227,11 +228,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { collectionSlug } = await params;
   const resolvedSearchParams = await searchParams;
-  const config = getCatalogCollectionLandingPageConfig(collectionSlug);
+  const baseConfig = getCatalogCollectionLandingPageConfig(collectionSlug);
 
-  if (!config) {
+  if (!baseConfig) {
     return {};
   }
+
+  const config = await getCatalogCollectionLandingPageConfigWithPresentation({
+    config: baseConfig,
+  });
 
   const currentPage = normalizeCollectionPageNumber(
     readSearchParam(resolvedSearchParams?.page),
@@ -284,11 +289,15 @@ export default async function CollectionLandingPage({
   }>;
 }) {
   const { collectionSlug } = await params;
-  const config = getCatalogCollectionLandingPageConfig(collectionSlug);
+  const baseConfig = getCatalogCollectionLandingPageConfig(collectionSlug);
 
-  if (!config) {
+  if (!baseConfig) {
     return notFound();
   }
+
+  const config = await getCatalogCollectionLandingPageConfigWithPresentation({
+    config: baseConfig,
+  });
 
   if (config.redirectPath) {
     permanentRedirect(config.redirectPath);

@@ -1,4 +1,7 @@
-import type { CatalogThemeVisual } from './catalog-util';
+import type {
+  CatalogCollectionPresentation,
+  CatalogThemeVisual,
+} from './catalog-util';
 
 export const catalogCollectionLandingPageSortKeys = [
   'recommended',
@@ -33,6 +36,7 @@ export function isCatalogCollectionPageSnapshotSlug(
 
 export interface CatalogCollectionLandingPageFilterConfig {
   adultCollector?: boolean;
+  collectionSlug?: string;
   maxBestPriceMinor?: number;
   recentRelease?: boolean;
   setStatuses?: readonly (
@@ -316,6 +320,62 @@ export function getCatalogCollectionLandingPageConfig(
   return catalogCollectionLandingPageConfigs.find(
     (config) => config.slug === slug,
   );
+}
+
+export function applyCatalogCollectionPresentation({
+  config,
+  presentation,
+}: {
+  config: CatalogCollectionLandingPageConfig;
+  presentation?: CatalogCollectionPresentation | null;
+}): CatalogCollectionLandingPageConfig {
+  if (
+    !presentation ||
+    presentation.status !== 'active' ||
+    !presentation.isPublic
+  ) {
+    return config;
+  }
+
+  const displayName = presentation.publicDisplayName?.trim();
+  const description = presentation.publicDescription?.trim();
+  const imageUrl = presentation.publicImageUrl?.trim();
+  const accentColor = presentation.publicAccentColor?.trim();
+  const surfaceColor = presentation.publicSurfaceColor?.trim();
+  const surfaceTextColor = presentation.publicSurfaceTextColor?.trim();
+  const heroTextColor = presentation.publicHeroTextColor?.trim();
+  const visual =
+    imageUrl || accentColor || surfaceColor || surfaceTextColor || heroTextColor
+      ? {
+          ...config.visual,
+          ...(accentColor ? { accentColor } : {}),
+          ...(surfaceColor ? { backgroundColor: surfaceColor } : {}),
+          ...((heroTextColor ?? surfaceTextColor)
+            ? { textColor: heroTextColor ?? surfaceTextColor }
+            : {}),
+          ...(imageUrl ? { imageUrl } : {}),
+        }
+      : config.visual;
+
+  return {
+    ...config,
+    ...(description
+      ? {
+          browseDescription: description,
+          description,
+          intro: description,
+          metaDescription: description,
+        }
+      : {}),
+    ...(displayName
+      ? {
+          browseTitle: displayName,
+          h1: displayName,
+          metaTitle: `${displayName} | Brickhunt`,
+        }
+      : {}),
+    ...(visual ? { visual } : {}),
+  };
 }
 
 export function normalizeCatalogCollectionLandingPageSortKey({

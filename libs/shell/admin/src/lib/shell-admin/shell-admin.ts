@@ -51,6 +51,11 @@ export class ShellAdminComponent {
       label: 'Health',
       path: '/health',
     },
+    {
+      description: 'Homepage rails en publieke theme-presentatie',
+      label: 'CMS',
+      path: '/cms',
+    },
   ] as const;
   readonly secondaryNavigationItems: readonly AdminNavigationItem[] = [];
 

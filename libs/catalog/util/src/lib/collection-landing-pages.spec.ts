@@ -26,6 +26,12 @@ describe('collection landing page configs', () => {
       configs.every((config) => config.h1 && config.metaTitle && config.intro),
     ).toBe(true);
     expect(configs.every((config) => config.visual === undefined)).toBe(true);
+    expect(getCatalogCollectionLandingPageConfig('lego-minifiguren')).toBe(
+      undefined,
+    );
+    expect(
+      getCatalogCollectionLandingPageConfig('collectible-minifigures'),
+    ).toBe(undefined);
   });
 
   it('keeps discovery colors dedicated to homepage tiles instead of collection heroes', () => {

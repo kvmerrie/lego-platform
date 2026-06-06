@@ -4,6 +4,7 @@ import {
   CommerceAdminAffiliateDiscoveredSetsPageComponent,
   CommerceAdminBulkOnboardingPageComponent,
   CommerceAdminCacheRevalidationPageComponent,
+  CommerceAdminCmsPageComponent,
   CommerceAdminCoveragePageComponent,
   CommerceAdminCoverageQueuePageComponent,
   CommerceAdminDashboardPageComponent,
@@ -48,6 +49,10 @@ export const appRoutes: Route[] = [
       {
         path: 'health',
         component: CommerceAdminHealthPageComponent,
+      },
+      {
+        path: 'cms',
+        component: CommerceAdminCmsPageComponent,
       },
       {
         path: 'workbench',

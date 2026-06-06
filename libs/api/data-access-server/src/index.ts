@@ -9,6 +9,7 @@ export * from './lib/catalog-bulk-onboarding-server';
 export * from './lib/catalog-discovery-candidates-server';
 export * from './lib/catalog-import-enrichment-server';
 export * from './lib/catalog-minifig-onboarding-server';
+export * from './lib/cms-promotion-server';
 export * from './lib/catalog-promotion-server';
 export * from './lib/commerce-refresh-server';
 export * from './lib/commerce-current-offer-snapshot-server';

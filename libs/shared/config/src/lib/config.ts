@@ -440,10 +440,14 @@ export const apiPaths = {
   wantedSets: '/api/v1/me/wanted-sets',
   recentlyViewedSets: '/api/v1/me/recently-viewed-sets',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
+  adminCatalogThemes: '/api/v1/admin/catalog/themes',
+  adminCatalogCollections: '/api/v1/admin/catalog/collections',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
   adminCatalogDiscoveryCandidates: '/api/v1/admin/catalog/discovery-candidates',
+  adminHomepageSections: '/api/v1/admin/cms/homepage/sections',
+  adminCmsPromotionPreview: '/api/v1/admin/promote/cms/preview',
   adminOperationsSummary: '/api/v1/admin/operations/summary',
   adminCatalogPromotionPreview: '/api/v1/admin/promote/catalog/preview',
   adminRuntimeConfig: '/api/v1/admin/runtime-config',
@@ -471,6 +475,7 @@ export const apiPaths = {
   adminCommerceAffiliateDiscoveredSets:
     '/api/v1/admin/commerce/affiliate-discovered-sets',
   adminCatalogPromotion: '/api/admin/promote/catalog',
+  adminCmsPromotion: '/api/admin/promote/cms',
   adminCacheRevalidation: '/api/admin/cache/revalidate',
 } as const;
 

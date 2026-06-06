@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import {
   CatalogBrowsePagination,
   CatalogPageIntro,
@@ -97,6 +97,19 @@ export function CatalogFeatureCollectionLandingPage({
 }) {
   const browseSectionId = 'sets';
   const hasSortOptions = config.sort.options.length > 1;
+  const introStyle = {
+    ...(config.visual?.backgroundColor
+      ? {
+          '--collection-page-surface': config.visual.backgroundColor,
+        }
+      : {}),
+    ...(config.visual?.textColor
+      ? {
+          '--collection-page-muted': config.visual.textColor,
+          '--collection-page-text': config.visual.textColor,
+        }
+      : {}),
+  } as CSSProperties;
   const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
   const normalizedPageSize =
     typeof pageSize === 'number' && pageSize > 0
@@ -128,21 +141,47 @@ export function CatalogFeatureCollectionLandingPage({
         }}
         className={styles.intro}
         contentClassName={styles.introContent}
+        style={introStyle}
       >
-        <p className={styles.eyebrow}>LEGO keuzehulp</p>
-        <div className={styles.headingGroup}>
-          <h1 className={styles.title}>{config.h1}</h1>
-          <p className={styles.lead}>{config.intro}</p>
-        </div>
-        <p className={styles.support}>{config.description}</p>
-        <div className={styles.actions}>
-          <ActionLink href={`#${browseSectionId}`} size="hero" tone="accent">
-            Bekijk de sets
-          </ActionLink>
-          {themeLinks[0] ? (
-            <ActionLink href={themeLinks[0].href} size="hero" tone="secondary">
-              Naar {themeLinks[0].label}
-            </ActionLink>
+        <div className={styles.introLayout}>
+          <div className={styles.introCopy}>
+            <p className={styles.eyebrow}>LEGO keuzehulp</p>
+            <div className={styles.headingGroup}>
+              <h1 className={styles.title}>{config.h1}</h1>
+              <p className={styles.lead}>{config.intro}</p>
+            </div>
+            <p className={styles.support}>{config.description}</p>
+            <div className={styles.actions}>
+              <ActionLink
+                href={`#${browseSectionId}`}
+                size="hero"
+                tone="accent"
+              >
+                Bekijk de sets
+              </ActionLink>
+              {themeLinks[0] ? (
+                <ActionLink
+                  href={themeLinks[0].href}
+                  size="hero"
+                  tone="secondary"
+                >
+                  Naar {themeLinks[0].label}
+                </ActionLink>
+              ) : null}
+            </div>
+          </div>
+          {config.visual?.imageUrl ? (
+            <div className={styles.introVisual} aria-hidden="true">
+              <img
+                alt=""
+                className={styles.introImage}
+                decoding="async"
+                height={420}
+                loading="eager"
+                src={config.visual.imageUrl}
+                width={560}
+              />
+            </div>
           ) : null}
         </div>
       </CatalogPageIntro>

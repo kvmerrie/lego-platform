@@ -50,6 +50,7 @@
     "cleanup:catalog-events": "pnpm nx run catalog-events-cleanup:run",
     "revalidate:public-web:post-deploy": "node scripts/post-deploy-public-web-revalidate.mjs",
     "diagnose:catalog-promote": "node scripts/catalog-promotion-diagnostics.mjs",
+    "promote:cms": "node scripts/promote-cms.mjs",
     "repair:theme-presentation": "pnpm nx run theme-presentation-repair:run",
     "deploy:route:affected": "node scripts/affected-deployment-router.mjs route",
     "sync:commerce:check": "pnpm sync:commerce:local:check",

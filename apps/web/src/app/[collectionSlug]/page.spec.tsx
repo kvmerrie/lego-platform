@@ -27,6 +27,9 @@ const collectionPageMocks = vi.hoisted(() => ({
   },
   featureCollectionLandingPage: vi.fn(),
   getCatalogCollectionLandingPage: vi.fn(),
+  getCatalogCollectionLandingPageConfigWithPresentation: vi.fn(
+    async ({ config }: { config: unknown }) => config,
+  ),
   getCatalogCollectionLandingPageSnapshot: vi.fn(),
   getCachedPublicBrowsePageData: vi.fn(),
   loadedCacheResults: [] as unknown[],
@@ -37,6 +40,8 @@ const collectionPageMocks = vi.hoisted(() => ({
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogCollectionLandingPage:
     collectionPageMocks.getCatalogCollectionLandingPage,
+  getCatalogCollectionLandingPageConfigWithPresentation:
+    collectionPageMocks.getCatalogCollectionLandingPageConfigWithPresentation,
   getCatalogCollectionLandingPageSnapshot:
     collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
 }));
@@ -235,6 +240,25 @@ describe('collection landing page route', () => {
         totalSetCount: 1,
       },
     );
+  });
+
+  it('does not render the removed minifiguren collection page', async () => {
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'lego-minifiguren',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('NEXT_NOT_FOUND');
+    expect(
+      collectionPageMocks.getCachedPublicBrowsePageData,
+    ).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).not.toHaveBeenCalled();
   });
 
   it('uses the shared browse cache with a serializable snapshot result shape', async () => {

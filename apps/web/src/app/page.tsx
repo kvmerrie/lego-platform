@@ -22,6 +22,7 @@ import {
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogHomepageDealQualityDiagnostics,
+  getHomepageEditorialConfig,
   getCatalogPartnerOfferRailDiagnostics,
   listCatalogCurrentOfferCandidateSetIds,
   listCatalogCurrentOfferSummaries,
@@ -31,16 +32,18 @@ import {
   listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards,
   listDiscoverNowInterestingSetCards,
+  listHomepageDiscoveryTiles,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   rankCatalogPartnerOfferSetCards,
   resolveHomepageFollowRailDiagnostics,
 } from '@lego-platform/catalog/data-access-web';
-import {
-  catalogDiscoveryVisualVariants,
-  type CatalogHomepageSetCard,
-  type CatalogThemeDirectoryItem,
+import type {
+  CatalogHomepageSetCard,
+  CatalogThemeDirectoryItem,
+  PublicHomepageEditorialConfig,
+  PublicPageSection,
 } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
@@ -83,20 +86,6 @@ const HOMEPAGE_CACHE_TAGS = [
   cacheTags.deals(),
 ] as const;
 
-interface HomepageDiscoveryTileConfig {
-  href: string;
-  id: string;
-  imageSetIds: readonly string[];
-  imageThemeSlugs: readonly string[];
-  imageUrl?: string;
-  title: string;
-  visual: {
-    backgroundColor?: string;
-    imageUrl?: string;
-    textColor?: string;
-  };
-}
-
 function getPublicMerchandisingRotationSeed(): number {
   return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
 }
@@ -117,67 +106,6 @@ const homepageValueSignals = [
     body: 'Nog geen goede deal? Volg de set. Is de vergelijking te dun, dan blijven we stil.',
   },
 ] as const;
-const homepageDiscoveryTileConfigs = [
-  {
-    href: '/nieuwe-lego-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg',
-    imageThemeSlugs: ['city', 'speed-champions', 'star-wars'],
-    imageSetIds: ['60445', '60443', '60462', '75405'],
-    id: 'new-sets',
-    title: 'Nieuwe sets',
-    visual: catalogDiscoveryVisualVariants.newReleases,
-  },
-  {
-    href: '/lego-voor-volwassenen',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg',
-    imageThemeSlugs: ['icons', 'the-lord-of-the-rings', 'technic'],
-    imageSetIds: ['10368', '10344', '10343', '10316', '10333', '42172'],
-    id: 'adult-sets',
-    title: 'LEGO voor volwassenen',
-    visual: catalogDiscoveryVisualVariants.adultCollectors,
-  },
-  {
-    href: '/lego-sets-onder-50-euro',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg',
-    imageThemeSlugs: ['speed-champions', 'botanicals', 'star-wars'],
-    imageSetIds: ['77244', '75405', '72035', '10344'],
-    id: 'budget-sets',
-    title: 'LEGO sets onder €50',
-    visual: catalogDiscoveryVisualVariants.under50,
-  },
-  {
-    href: '/retiring-lego-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
-    imageThemeSlugs: ['icons', 'star-wars', 'harry-potter'],
-    imageSetIds: ['75329', '10255', '76441', '75313'],
-    id: 'retiring-sets',
-    title: 'Binnenkort uit handel',
-    visual: catalogDiscoveryVisualVariants.retiringSoon,
-  },
-  {
-    href: '/deals',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg',
-    imageThemeSlugs: ['speed-champions', 'city', 'super-mario', 'star-wars'],
-    imageSetIds: ['77245', '72036', '60443', '72035'],
-    id: 'deals',
-    title: 'Interessante deals',
-    visual: catalogDiscoveryVisualVariants.deals,
-  },
-  {
-    href: '/themes',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg',
-    imageThemeSlugs: ['star-wars', 'icons', 'technic'],
-    imageSetIds: [],
-    id: 'themes',
-    title: 'Populaire thema’s',
-    visual: catalogDiscoveryVisualVariants.popularThemes,
-  },
-] as const satisfies readonly HomepageDiscoveryTileConfig[];
-
-type HomepageDiscoveryTile = HomepageDiscoveryTileConfig & {
-  imageUrl?: string;
-};
-
 type HomepageQueryMode = Awaited<ReturnType<typeof getEditorialQueryMode>>;
 
 type HomepageCurrentOfferSummaryEntries = ReadonlyArray<
@@ -211,6 +139,10 @@ interface HomepageLandingPageData {
   homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
   homepageFollowCurrentOfferSummaryEntries: HomepageCurrentOfferSummaryEntries;
   homepageFollowSetCards: readonly CatalogHomepageSetCard[];
+  homepageDiscoveryTiles: Awaited<
+    ReturnType<typeof listHomepageDiscoveryTiles>
+  >;
+  homepageEditorialConfig?: PublicHomepageEditorialConfig | null;
   homepagePage: Awaited<ReturnType<typeof getHomepagePage>>;
   homepageSoftDealCandidateSetCards: readonly CatalogHomepageSetCard[];
   homepageThemeDirectoryItems: readonly CatalogThemeDirectoryItem[];
@@ -219,73 +151,40 @@ interface HomepageLandingPageData {
   >;
 }
 
-function getThemeImageUrl(
-  themeItemsBySlug: ReadonlyMap<string, CatalogThemeDirectoryItem>,
-  themeSlugs: readonly string[],
-  usedImageUrls: ReadonlySet<string>,
-): string | undefined {
-  for (const themeSlug of themeSlugs) {
-    const themeItem = themeItemsBySlug.get(themeSlug);
-    const imageUrl = themeItem?.visual?.imageUrl ?? themeItem?.imageUrl;
-
-    if (imageUrl && !usedImageUrls.has(imageUrl)) {
-      return imageUrl;
-    }
+function getHomepageSectionConfig(
+  config: PublicHomepageEditorialConfig | null | undefined,
+  sectionKey: string,
+): PublicPageSection | undefined {
+  if (!Array.isArray(config?.sections) || config.sections.length === 0) {
+    return undefined;
   }
 
-  return undefined;
-}
-
-function getSetImageUrl(
-  setCardsById: ReadonlyMap<string, CatalogHomepageSetCard>,
-  setIds: readonly string[],
-  usedImageUrls: ReadonlySet<string>,
-): string | undefined {
-  for (const setId of setIds) {
-    const setCard = setCardsById.get(setId);
-    const imageUrl = setCard?.imageUrl ?? setCard?.primaryImage;
-
-    if (imageUrl && !usedImageUrls.has(imageUrl)) {
-      return imageUrl;
-    }
-  }
-
-  return undefined;
-}
-
-function buildHomepageDiscoveryTiles(
-  themeItems: readonly CatalogThemeDirectoryItem[],
-  setCards: readonly CatalogHomepageSetCard[],
-): HomepageDiscoveryTile[] {
-  const themeItemsBySlug = new Map(
-    themeItems.map((themeItem) => [themeItem.themeSnapshot.slug, themeItem]),
-  );
-  const setCardsById = new Map(
-    setCards.map((setCard) => [setCard.id, setCard]),
-  );
-
-  const usedImageUrls = new Set<string>();
-
-  return homepageDiscoveryTileConfigs.map((tileConfig) => {
-    const curatedImageUrl: string | undefined = tileConfig.imageUrl;
-    const imageUrl =
-      curatedImageUrl ??
-      getSetImageUrl(setCardsById, tileConfig.imageSetIds, usedImageUrls) ??
-      getThemeImageUrl(
-        themeItemsBySlug,
-        tileConfig.imageThemeSlugs,
-        usedImageUrls,
-      );
-
-    if (imageUrl) {
-      usedImageUrls.add(imageUrl);
+  return config.sections.find((section) => {
+    if (!section || typeof section !== 'object') {
+      return false;
     }
 
-    return {
-      ...tileConfig,
-      imageUrl,
-    };
+    return section.enabled === true && section.sectionKey === sectionKey;
   });
+}
+
+async function loadHomepageEditorialConfigSafely(): Promise<
+  PublicHomepageEditorialConfig | undefined
+> {
+  try {
+    const config = await getHomepageEditorialConfig();
+
+    return Array.isArray(config?.sections) && config.sections.length > 0
+      ? config
+      : undefined;
+  } catch (error) {
+    console.warn(
+      '[homepage-cms] Falling back to curated homepage defaults.',
+      error,
+    );
+
+    return undefined;
+  }
 }
 
 function toFeatureSetListItems(
@@ -625,18 +524,27 @@ async function loadHomepageLandingPageData({
 }: {
   queryMode: HomepageQueryMode;
 }): Promise<HomepageLandingPageData> {
-  const [
-    homepagePage,
-    allCatalogSetCards,
-    homepageThemeDirectoryItems,
-    homepageThemeSpotlightItems,
-  ] = await Promise.all([
+  const [homepagePage, allCatalogSetCards] = await Promise.all([
     getHomepagePage({
       mode: queryMode,
     }),
     listCatalogSetCards({ limit: 240 }),
-    listHomepageThemeDirectoryItems(),
-    listHomepageThemeSpotlightItems(),
+  ]);
+  const homepageEditorialConfig = await loadHomepageEditorialConfigSafely();
+  const [
+    homepageDiscoveryTiles,
+    homepageThemeDirectoryItems,
+    homepageThemeSpotlightItems,
+  ] = await Promise.all([
+    listHomepageDiscoveryTiles({
+      homepageEditorialConfig,
+    }),
+    listHomepageThemeDirectoryItems({
+      homepageEditorialConfig,
+    }),
+    listHomepageThemeSpotlightItems({
+      homepageEditorialConfig,
+    }),
   ]);
   const commerceRailRotationSeed = getPublicMerchandisingRotationSeed();
   const commerceCandidateSetIds = await listCatalogCurrentOfferCandidateSetIds({
@@ -758,6 +666,8 @@ async function loadHomepageLandingPageData({
       ...homepageFollowCurrentOfferSummaryBySetId.entries(),
     ],
     homepageFollowSetCards,
+    homepageDiscoveryTiles,
+    homepageEditorialConfig,
     homepagePage,
     homepageSoftDealCandidateSetCards,
     homepageThemeDirectoryItems,
@@ -792,6 +702,8 @@ export default async function HomePage() {
     currentOfferSummaryEntries,
     homepagePage,
     homepageBestDealCandidateSetCards,
+    homepageDiscoveryTiles,
+    homepageEditorialConfig,
     homepageFollowCurrentOfferSummaryEntries,
     homepageFollowSetCards,
     homepageSoftDealCandidateSetCards,
@@ -811,6 +723,36 @@ export default async function HomePage() {
       ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
       : undefined;
   const homepageHeroSection = getHeroSection(homepagePage.sections);
+  const renderedHomepageDiscoveryTiles = Array.isArray(homepageDiscoveryTiles)
+    ? homepageDiscoveryTiles
+    : await listHomepageDiscoveryTiles({
+        homepageEditorialConfig: homepageEditorialConfig ?? undefined,
+      });
+  const renderedHomepageThemeSpotlightItems =
+    Array.isArray(homepageThemeSpotlightItems) &&
+    homepageThemeSpotlightItems.every(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        'href' in item &&
+        typeof item.href === 'string',
+    )
+      ? homepageThemeSpotlightItems
+      : await listHomepageThemeSpotlightItems({
+          homepageEditorialConfig: homepageEditorialConfig ?? undefined,
+        });
+  const homepageDiscoverySection = getHomepageSectionConfig(
+    homepageEditorialConfig,
+    'discovery_routes',
+  );
+  const homepageThemeRailSection = getHomepageSectionConfig(
+    homepageEditorialConfig,
+    'theme_rail',
+  );
+  const homepageThemeSpotlightSection = getHomepageSectionConfig(
+    homepageEditorialConfig,
+    'theme_spotlight',
+  );
   const homepageBestDealCandidates = toFeatureSetListItems(
     homepageBestDealCandidateSetCards,
     currentOfferSummaryBySetId,
@@ -931,10 +873,6 @@ export default async function HomePage() {
     rotationSeed: commerceRailRotationSeed,
   });
 
-  const homepageDiscoveryTiles = buildHomepageDiscoveryTiles(
-    homepageThemeDirectoryItems,
-    allCatalogSetCards,
-  );
   const homepageHeroPage = homepageHeroSection
     ? {
         ...homepagePage,
@@ -963,21 +901,27 @@ export default async function HomePage() {
         </div>
         <CatalogSectionShell
           className={styles.discoveryTileSection}
-          description="Kies meteen de route die bij je kast past: nieuw, volwassen, budget, bijna weg of gewoon een scherpe prijs."
+          description={
+            homepageDiscoverySection?.subtitle ??
+            'Kies meteen de route die bij je kast past: nieuw, volwassen, budget, bijna weg of gewoon een scherpe prijs.'
+          }
           eyebrow="Begin hier"
           headingClassName={styles.discoveryTileHeading}
           id={HOMEPAGE_DISCOVERY_SECTION_ID}
           signal="6 routes"
-          title="Ontdek LEGO op jouw manier"
+          title={
+            homepageDiscoverySection?.title ?? 'Ontdek LEGO op jouw manier'
+          }
           tone="inverse"
         >
           <div className={styles.discoveryTileViewport}>
             <div className={styles.discoveryTileTrack}>
-              {homepageDiscoveryTiles.map((tile, index) => (
+              {renderedHomepageDiscoveryTiles.map((tile, index) => (
                 <CatalogVisualTile
                   className={styles.discoveryTile}
                   dataTile={tile.id}
                   href={tile.href}
+                  imageAlt={tile.alt}
                   imageUrl={tile.imageUrl}
                   key={tile.id}
                   title={tile.title}
@@ -1057,7 +1001,12 @@ export default async function HomePage() {
         )}
         <div className={styles.themeSection}>
           <CatalogFeatureThemeList
+            description={homepageThemeRailSection?.subtitle}
             themeItems={homepageThemeDirectoryItems}
+            title={
+              homepageThemeRailSection?.title ??
+              'Fantasy, Star Wars of strak design?'
+            }
             tone="inverse"
           />
         </div>
@@ -1123,7 +1072,12 @@ export default async function HomePage() {
         </Panel>
         <div className={styles.spotlightSection}>
           <CatalogFeatureThemeSpotlight
-            themeItems={homepageThemeSpotlightItems}
+            description={homepageThemeSpotlightSection?.subtitle}
+            themeItems={renderedHomepageThemeSpotlightItems}
+            title={
+              homepageThemeSpotlightSection?.title ??
+              'Botanicals, kunst of modulaire straten?'
+            }
           />
         </div>
       </div>

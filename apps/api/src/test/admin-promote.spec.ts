@@ -99,6 +99,59 @@ function createPromotionResult() {
   } satisfies Awaited<ReturnType<AdminPromoteService['promoteCatalog']>>;
 }
 
+function createCmsPromotionPreview() {
+  return {
+    affectedCollectionSlugs: ['nieuwe-lego-sets'],
+    affectedThemeSlugs: ['icons'],
+    generatedAt: '2026-04-22T08:59:00.000Z',
+    pendingPromoteCount: 4,
+    samples: [
+      {
+        changeType: 'update',
+        changedFields: ['title'],
+        key: 'page_key:homepage|section_key:theme_rail',
+        table: 'public_page_sections',
+      },
+    ],
+    sourceEnvironment: 'staging',
+    status: 'ok',
+    tables: {
+      catalog_collection_presentations: {
+        insertedCount: 0,
+        readCount: 1,
+        updatedCount: 1,
+      },
+      catalog_themes: {
+        insertedCount: 0,
+        readCount: 1,
+        skippedMissingProductionCount: 0,
+        updatedCount: 1,
+      },
+      public_page_section_items: {
+        insertedCount: 1,
+        readCount: 2,
+        replacedCount: 1,
+        updatedCount: 0,
+      },
+      public_page_sections: {
+        insertedCount: 0,
+        readCount: 1,
+        updatedCount: 1,
+      },
+    },
+    targetEnvironment: 'production',
+  } satisfies Awaited<ReturnType<AdminPromoteService['previewCms']>>;
+}
+
+function createCmsPromotionResult() {
+  return {
+    ...createCmsPromotionPreview(),
+    applied: true,
+    durationMs: 12,
+    startedAt: '2026-04-22T09:00:00.000Z',
+  } satisfies Awaited<ReturnType<AdminPromoteService['promoteCms']>>;
+}
+
 async function createAdminPromoteServer({
   adminPromoteService,
   getExpectedAdminSecret,
@@ -109,7 +162,9 @@ async function createAdminPromoteServer({
   revalidatePublicWebFn?: AdminPromoteRouteOptions['revalidatePublicWebFn'];
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
+    previewCms: vi.fn(async () => createCmsPromotionPreview()),
     previewCatalog: vi.fn(async () => createPromotionPreview()),
+    promoteCms: vi.fn(async () => createCmsPromotionResult()),
     promoteCatalog: vi.fn(async () => ({
       changedThemeSlugs: [],
       durationMs: 421,
@@ -193,7 +248,9 @@ async function createAuthenticatedAdminPromoteServer({
   getExpectedAdminSecret?: () => string;
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
+    previewCms: vi.fn(async () => createCmsPromotionPreview()),
     previewCatalog: vi.fn(async () => createPromotionPreview()),
+    promoteCms: vi.fn(async () => createCmsPromotionResult()),
     promoteCatalog: vi.fn(async () => createPromotionResult()),
   };
   const server = Fastify();
@@ -244,6 +301,104 @@ describe('admin promote routes', () => {
         targetEnvironment: 'production',
       }),
     );
+
+    await server.close();
+  });
+
+  test('returns a read-only CMS promotion preview', async () => {
+    const { adminPromoteService, server } = await createAdminPromoteServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/promote/cms/preview',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(adminPromoteService.previewCms).toHaveBeenCalled();
+    expect(adminPromoteService.promoteCms).not.toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        affectedCollectionSlugs: ['nieuwe-lego-sets'],
+        affectedThemeSlugs: ['icons'],
+        pendingPromoteCount: 4,
+        sourceEnvironment: 'staging',
+        targetEnvironment: 'production',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('promotes CMS changes with explicit confirmation and revalidation', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 4,
+      paths: ['/', '/themes', '/themes/icons', '/nieuwe-lego-sets'],
+      skipped: false,
+      tagCount: 5,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'theme:icons',
+        'collection:nieuwe-lego-sets',
+      ],
+    }));
+    const { adminPromoteService, server } = await createAdminPromoteServer({
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      payload: {
+        confirmationPhrase: 'PROMOTE CMS',
+      },
+      url: '/api/admin/promote/cms',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(adminPromoteService.promoteCms).toHaveBeenCalled();
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes', '/themes/icons', '/nieuwe-lego-sets'],
+      reason: 'cms_promote',
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'theme:icons',
+        'collection:nieuwe-lego-sets',
+      ],
+    });
+
+    await server.close();
+  });
+
+  test('requires explicit CMS confirmation phrase even with admin secret', async () => {
+    const { adminPromoteService, server } = await createAdminPromoteServer({
+      getExpectedAdminSecret: () => 'promote-secret',
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      payload: {
+        confirmationPhrase: 'WRONG',
+      },
+      url: '/api/admin/promote/cms',
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(adminPromoteService.promoteCms).not.toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      message: 'CMS promotion confirmation phrase is missing.',
+      status: 'error',
+    });
 
     await server.close();
   });
@@ -440,7 +595,9 @@ describe('admin promote routes', () => {
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
       promoteCatalog: vi.fn(async () => ({
         changedThemeSlugs: ['icons'],
         durationMs: 421,
@@ -563,7 +720,9 @@ describe('admin promote routes', () => {
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
       promoteCatalog: vi.fn(async () => ({
         changedThemeSlugs: Array.from(
           { length: 51 },
@@ -812,7 +971,9 @@ describe('admin promote routes', () => {
   test('does not revalidate when catalog promotion fails', async () => {
     const revalidatePublicWebFn = vi.fn();
     const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
       promoteCatalog: vi.fn(async () => {
         throw new Error('Promotion failed.');
       }),

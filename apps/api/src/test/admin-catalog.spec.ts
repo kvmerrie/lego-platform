@@ -279,6 +279,48 @@ async function createAdminCatalogServer({
           },
         ] satisfies CatalogExternalSetSearchResult[],
     ),
+    listThemePresentations: vi.fn(async () => [
+      {
+        displayName: 'Star Wars',
+        id: 'theme:star-wars',
+        isPublic: true,
+        slug: 'star-wars',
+        status: 'active',
+      },
+    ]),
+    listCollectionPresentations: vi.fn(async () => [
+      {
+        collectionSlug: 'lego-voor-volwassenen',
+        isPublic: true,
+        publicDisplayName: 'LEGO voor volwassenen',
+        status: 'active',
+      },
+    ]),
+    updateThemePresentation: vi.fn(async ({ input, slug }) => ({
+      displayName: 'Star Wars',
+      id: 'theme:star-wars',
+      isPublic: input.isPublic,
+      publicDisplayName: input.publicDisplayName,
+      slug,
+      status: input.status,
+    })),
+    updateCollectionPresentation: vi.fn(async ({ input, slug }) => ({
+      collectionSlug: slug,
+      isPublic: input.isPublic,
+      publicDisplayName: input.publicDisplayName,
+      status: input.status,
+    })),
+    listHomepageSections: vi.fn(async () => [
+      {
+        enabled: true,
+        items: [],
+        pageKey: 'homepage',
+        sectionKey: 'theme_rail',
+        sortOrder: 20,
+        title: 'Fantasy, Star Wars of strak design?',
+      },
+    ]),
+    saveHomepageSection: vi.fn(async (section) => section),
   };
   const server = Fastify();
 
@@ -313,6 +355,201 @@ describe('admin catalog routes', () => {
     ]);
 
     await server.close();
+  });
+
+  test('lists Admin CMS homepage sections, theme presentations, and collection presentations', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const [sectionsResponse, themesResponse, collectionsResponse] =
+      await Promise.all([
+        server.inject({
+          method: 'GET',
+          url: '/api/v1/admin/cms/homepage/sections',
+        }),
+        server.inject({
+          method: 'GET',
+          url: '/api/v1/admin/catalog/themes?query=star',
+        }),
+        server.inject({
+          method: 'GET',
+          url: '/api/v1/admin/catalog/collections?query=volwassenen',
+        }),
+      ]);
+
+    expect(sectionsResponse.statusCode).toBe(200);
+    expect(themesResponse.statusCode).toBe(200);
+    expect(collectionsResponse.statusCode).toBe(200);
+    expect(catalogService.listHomepageSections).toHaveBeenCalled();
+    expect(catalogService.listThemePresentations).toHaveBeenCalledWith({
+      query: 'star',
+    });
+    expect(catalogService.listCollectionPresentations).toHaveBeenCalledWith({
+      query: 'volwassenen',
+    });
+
+    await server.close();
+  });
+
+  test('saves homepage section and revalidates the homepage', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      skipped: false,
+      pathCount: 1,
+      paths: ['/'],
+      tagCount: 1,
+      tags: ['homepage'],
+    }));
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    await server.close();
+    const nextServer = Fastify();
+    await nextServer.register(
+      createAdminCatalogRoutes({
+        adminPreHandler: async () => undefined,
+        catalogService,
+        revalidatePublicWebFn,
+      }),
+    );
+
+    const response = await nextServer.inject({
+      method: 'PUT',
+      url: '/api/v1/admin/cms/homepage/sections/theme_rail',
+      payload: {
+        enabled: true,
+        items: [
+          {
+            enabled: true,
+            imageSetId: '75419',
+            imageUrl: 'https://example.test/death-star.jpg',
+            referenceId: 'star-wars',
+            referenceType: 'theme',
+            sortOrder: 10,
+            titleOverride: 'Death Star',
+            useCustomImage: true,
+          },
+        ],
+        sectionKey: 'theme_rail',
+        sortOrder: 20,
+        title: 'Fantasy, Star Wars of strak design?',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.saveHomepageSection).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({
+            useCustomImage: true,
+          }),
+        ],
+        sectionKey: 'theme_rail',
+      }),
+    );
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/'],
+      reason: 'admin_homepage_cms_mutation',
+      tags: ['homepage'],
+    });
+
+    await nextServer.close();
+  });
+
+  test('saves theme presentation and revalidates affected public surfaces', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      skipped: false,
+      pathCount: 3,
+      paths: ['/', '/themes', '/themes/star-wars'],
+      tagCount: 3,
+      tags: ['homepage', 'themes', 'theme:star-wars'],
+    }));
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    await server.close();
+    const nextServer = Fastify();
+    await nextServer.register(
+      createAdminCatalogRoutes({
+        adminPreHandler: async () => undefined,
+        catalogService,
+        revalidatePublicWebFn,
+      }),
+    );
+
+    const response = await nextServer.inject({
+      method: 'PUT',
+      url: '/api/v1/admin/catalog/themes/star-wars',
+      payload: {
+        isPublic: true,
+        publicDisplayName: 'Star Wars',
+        publicTileImageUrl: 'https://example.test/star-wars-tile.jpg',
+        status: 'active',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.updateThemePresentation).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        publicDisplayName: 'Star Wars',
+        publicTileImageUrl: 'https://example.test/star-wars-tile.jpg',
+      }),
+      slug: 'star-wars',
+    });
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes', '/themes/star-wars'],
+      reason: 'admin_theme_presentation_mutation',
+      tags: ['homepage', 'themes', 'theme:star-wars'],
+    });
+
+    await nextServer.close();
+  });
+
+  test('saves collection presentation and revalidates affected public surfaces', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      skipped: false,
+      pathCount: 2,
+      paths: ['/', '/lego-voor-volwassenen'],
+      tagCount: 3,
+      tags: ['homepage', 'collections', 'collection:lego-voor-volwassenen'],
+    }));
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    await server.close();
+    const nextServer = Fastify();
+    await nextServer.register(
+      createAdminCatalogRoutes({
+        adminPreHandler: async () => undefined,
+        catalogService,
+        revalidatePublicWebFn,
+      }),
+    );
+
+    const response = await nextServer.inject({
+      method: 'PUT',
+      url: '/api/v1/admin/catalog/collections/lego-voor-volwassenen',
+      payload: {
+        isPublic: true,
+        publicDisplayName: 'Displaysets voor volwassenen',
+        publicTileImageUrl: 'https://example.test/adult-tile.jpg',
+        status: 'active',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.updateCollectionPresentation).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        publicDisplayName: 'Displaysets voor volwassenen',
+        publicTileImageUrl: 'https://example.test/adult-tile.jpg',
+      }),
+      slug: 'lego-voor-volwassenen',
+    });
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/lego-voor-volwassenen'],
+      reason: 'admin_collection_presentation_mutation',
+      tags: ['homepage', 'collections', 'collection:lego-voor-volwassenen'],
+    });
+
+    await nextServer.close();
   });
 
   test('does not expose a LEGO image candidates route', async () => {
@@ -514,6 +751,22 @@ describe('admin catalog routes', () => {
       listCatalogSets: vi.fn(async () => []),
       listSuggestedSets: vi.fn(async () => []),
       searchMissingSets: vi.fn(async () => []),
+      listThemePresentations: vi.fn(async () => []),
+      listCollectionPresentations: vi.fn(async () => []),
+      updateThemePresentation: vi.fn(async ({ input, slug }) => ({
+        displayName: 'Star Wars',
+        id: 'theme:star-wars',
+        isPublic: input.isPublic,
+        slug,
+        status: input.status,
+      })),
+      updateCollectionPresentation: vi.fn(async ({ input, slug }) => ({
+        collectionSlug: slug,
+        isPublic: input.isPublic,
+        status: input.status,
+      })),
+      listHomepageSections: vi.fn(async () => []),
+      saveHomepageSection: vi.fn(async (section) => section),
     };
     const server = Fastify();
 

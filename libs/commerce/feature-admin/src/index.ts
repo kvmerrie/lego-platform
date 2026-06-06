@@ -3,6 +3,7 @@ export * from './lib/commerce-admin-add-set-page';
 export * from './lib/commerce-admin-affiliate-discovered-sets-page';
 export * from './lib/commerce-admin-bulk-onboarding-page';
 export * from './lib/commerce-admin-cache-revalidation-page';
+export * from './lib/commerce-admin-cms-page';
 export * from './lib/commerce-admin-coverage-page';
 export * from './lib/commerce-admin-coverage-queue-page';
 export * from './lib/commerce-admin-dashboard-page';

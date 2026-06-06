@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
+  type CatalogCollectionPresentation,
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
   type CatalogSet,
+  type PublicPageSection,
 } from '@lego-platform/catalog/util';
 import {
   type CommerceBenchmarkSet,
@@ -32,6 +34,29 @@ export interface CommerceAdminCatalogSetSummary {
   theme: string;
   updatedAt: string;
 }
+
+export interface CommerceAdminCatalogThemePresentation {
+  displayName: string;
+  id: string;
+  isPublic: boolean;
+  publicAccentColor?: string | null;
+  publicDescription?: string | null;
+  publicDisplayName?: string | null;
+  publicHeroTextColor?: string | null;
+  publicHomepageOrder?: number | null;
+  publicImageUrl?: string | null;
+  publicLogoUrl?: string | null;
+  publicOrder?: number | null;
+  publicSurfaceColor?: string | null;
+  publicSurfaceTextColor?: string | null;
+  publicTileImageUrl?: string | null;
+  slug: string;
+  status: string;
+  updatedAt?: string | null;
+}
+
+export type CommerceAdminCatalogCollectionPresentation =
+  CatalogCollectionPresentation;
 
 export type CommerceAdminCatalogDiscoveryCandidateConfidence =
   | 'high'
@@ -303,6 +328,49 @@ export interface CommerceAdminPromotionPreviewResult {
   targetEnvironment: 'production';
 }
 
+export interface CommerceAdminCmsPromotionTableSummary {
+  insertedCount: number;
+  readCount: number;
+  replacedCount?: number;
+  skippedMissingProductionCount?: number;
+  updatedCount: number;
+}
+
+export interface CommerceAdminCmsPromotionPreviewSample {
+  changeType: 'insert' | 'replace' | 'skip_missing_production' | 'update';
+  changedFields: readonly string[];
+  key: string;
+  table: string;
+}
+
+export interface CommerceAdminCmsPromotionPreviewResult {
+  affectedCollectionSlugs: readonly string[];
+  affectedThemeSlugs: readonly string[];
+  generatedAt: string;
+  pendingPromoteCount: number;
+  samples: readonly CommerceAdminCmsPromotionPreviewSample[];
+  sourceEnvironment: 'staging';
+  status: 'ok';
+  tables: Record<string, CommerceAdminCmsPromotionTableSummary>;
+  targetEnvironment: 'production';
+}
+
+export interface CommerceAdminCmsPromotionResult
+  extends CommerceAdminCmsPromotionPreviewResult {
+  applied: boolean;
+  durationMs: number;
+  revalidation?: {
+    attempted: boolean;
+    pathCount: number;
+    paths: readonly string[];
+    skipped: boolean;
+    tagCount: number;
+    tags: readonly string[];
+  };
+  revalidationWarning?: string;
+  startedAt: string;
+}
+
 export interface CommerceAdminPromotionTableSummary {
   insertedCount: number;
   readCount: number;
@@ -440,9 +508,14 @@ const adminApiPaths = {
   adminCatalogDiscoveryCandidates: '/api/v1/admin/catalog/discovery-candidates',
   adminCatalogPromotion: '/api/admin/promote/catalog',
   adminCatalogPromotionPreview: '/api/v1/admin/promote/catalog/preview',
+  adminCmsPromotion: '/api/admin/promote/cms',
+  adminCmsPromotionPreview: '/api/v1/admin/promote/cms/preview',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
+  adminCatalogThemes: '/api/v1/admin/catalog/themes',
+  adminCatalogCollections: '/api/v1/admin/catalog/collections',
+  adminHomepageSections: '/api/v1/admin/cms/homepage/sections',
   adminCommerceAffiliateDiscoveredSets:
     '/api/v1/admin/commerce/affiliate-discovered-sets',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
@@ -463,6 +536,73 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.get<CommerceAdminCatalogSetSummary[]>(
         adminApiPaths.adminCatalogSets,
+      ),
+    );
+  }
+
+  async listCatalogThemes(
+    query = '',
+  ): Promise<CommerceAdminCatalogThemePresentation[]> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminCatalogThemePresentation[]>(
+        adminApiPaths.adminCatalogThemes,
+        {
+          params: query ? { query } : {},
+        },
+      ),
+    );
+  }
+
+  async updateCatalogThemePresentation(input: {
+    slug: string;
+    theme: CommerceAdminCatalogThemePresentation;
+  }): Promise<CommerceAdminCatalogThemePresentation> {
+    return firstValueFrom(
+      this.http.put<CommerceAdminCatalogThemePresentation>(
+        `${adminApiPaths.adminCatalogThemes}/${input.slug}`,
+        input.theme,
+      ),
+    );
+  }
+
+  async listCatalogCollections(
+    query = '',
+  ): Promise<CommerceAdminCatalogCollectionPresentation[]> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminCatalogCollectionPresentation[]>(
+        adminApiPaths.adminCatalogCollections,
+        {
+          params: query ? { query } : {},
+        },
+      ),
+    );
+  }
+
+  async updateCatalogCollectionPresentation(input: {
+    collection: CommerceAdminCatalogCollectionPresentation;
+    slug: string;
+  }): Promise<CommerceAdminCatalogCollectionPresentation> {
+    return firstValueFrom(
+      this.http.put<CommerceAdminCatalogCollectionPresentation>(
+        `${adminApiPaths.adminCatalogCollections}/${input.slug}`,
+        input.collection,
+      ),
+    );
+  }
+
+  async listHomepageSections(): Promise<PublicPageSection[]> {
+    return firstValueFrom(
+      this.http.get<PublicPageSection[]>(adminApiPaths.adminHomepageSections),
+    );
+  }
+
+  async saveHomepageSection(
+    section: PublicPageSection,
+  ): Promise<PublicPageSection> {
+    return firstValueFrom(
+      this.http.put<PublicPageSection>(
+        `${adminApiPaths.adminHomepageSections}/${section.sectionKey}`,
+        section,
       ),
     );
   }
@@ -771,6 +911,41 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.post<CommerceAdminPromotionResult>(
         adminApiPaths.adminCatalogPromotion,
+        {
+          ...(input.confirmationPhrase
+            ? { confirmationPhrase: input.confirmationPhrase }
+            : {}),
+        },
+        options,
+      ),
+    );
+  }
+
+  async getCmsPromotionPreview(): Promise<CommerceAdminCmsPromotionPreviewResult> {
+    return firstValueFrom(
+      this.http.get<CommerceAdminCmsPromotionPreviewResult>(
+        adminApiPaths.adminCmsPromotionPreview,
+      ),
+    );
+  }
+
+  async promoteCms(input: {
+    adminSecret?: string;
+    confirmationPhrase?: string;
+  }): Promise<CommerceAdminCmsPromotionResult> {
+    const options: {
+      headers?: Record<string, string>;
+    } = input.adminSecret
+      ? {
+          headers: {
+            'x-admin-secret': input.adminSecret,
+          },
+        }
+      : {};
+
+    return firstValueFrom(
+      this.http.post<CommerceAdminCmsPromotionResult>(
+        adminApiPaths.adminCmsPromotion,
         {
           ...(input.confirmationPhrase
             ? { confirmationPhrase: input.confirmationPhrase }
