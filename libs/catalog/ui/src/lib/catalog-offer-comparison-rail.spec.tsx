@@ -375,7 +375,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
     ).not.toBeNull();
     expect(links[1]?.getAttribute('aria-label')).toBe('Naar winkel bij LEGO');
     expect(links[0]?.getAttribute('target')).toBe('_blank');
-    expect(links[0]?.getAttribute('rel')).toBe('noreferrer sponsored');
+    expect(links[0]?.getAttribute('rel')).toBe('noopener noreferrer sponsored');
     expect(links[0]?.getAttribute('data-brickhunt-event')).toBe('offer_click');
     expect(links[0]?.getAttribute('data-brickhunt-properties')).toContain(
       'comparison_row',

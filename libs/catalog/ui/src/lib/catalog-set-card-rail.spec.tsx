@@ -464,7 +464,7 @@ describe('CatalogSetCardRail', () => {
     });
 
     expect(container.textContent).toContain('€ 489,99');
-    expect(container.textContent).not.toContain('Vanaf € 489,99');
+    expect(container.innerHTML).toContain('>Vanaf </span>€ 489,99');
     expect(container.querySelector('[aria-label="Bekijk set"]')).not.toBeNull();
     expect(container.textContent).not.toContain('10316');
   });
@@ -1404,7 +1404,7 @@ describe('CatalogSetCardRail', () => {
       );
     });
 
-    expect(container.innerHTML).toContain('Vanaf € 489,99');
+    expect(container.innerHTML).toContain('>Vanaf </span>€ 489,99');
     expect(container.innerHTML).toContain('Prijs volgt');
     expect(
       container.querySelectorAll('[class*="cardCompactDecisionZone"]'),

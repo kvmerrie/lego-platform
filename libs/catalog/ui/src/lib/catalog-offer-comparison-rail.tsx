@@ -535,7 +535,7 @@ function CatalogOfferRailCard({
       className={styles.offerRailCardLink}
       href={offer.ctaHref}
       prefetch={false}
-      rel="noreferrer sponsored"
+      rel="noopener noreferrer sponsored"
       target="_blank"
       tone="card"
       {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
@@ -566,7 +566,7 @@ function CatalogOfferOverlayRow({
       })}
       className={styles.offerOverlayRowLink}
       href={offer.ctaHref}
-      rel="noreferrer sponsored"
+      rel="noopener noreferrer sponsored"
       target="_blank"
       tone="card"
       {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}

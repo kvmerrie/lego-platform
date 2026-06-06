@@ -166,7 +166,7 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('€ 30,00 goedkoper dan de rest');
     expect(markup).toContain('Bekijk deal bij bol');
     expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('data-brickhunt-event="offer_click"');
     expect(markup).toContain('offerPlacement');
     expect(markup).toContain('best_offer');
@@ -291,7 +291,7 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('€30,04 duurder');
     expect(markup).toContain('href="https://example.com/atat-bol"');
     expect(markup).toContain('href="https://example.com/atat-amazon"');
-    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
     expect(markup).toContain('Naar winkel');

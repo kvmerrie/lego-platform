@@ -80,7 +80,7 @@ export function AffiliateOfferCard({
         <ActionLink
           className={styles.offerLink}
           href={affiliateOffer.url}
-          rel="noreferrer sponsored"
+          rel="noopener noreferrer sponsored"
           target="_blank"
           tone="secondary"
         >
@@ -101,7 +101,7 @@ export function AffiliatePrimaryOfferAction({
       <ActionLink
         className={styles.primaryOfferLink}
         href={affiliateOffer.url}
-        rel="noreferrer sponsored"
+        rel="noopener noreferrer sponsored"
         target="_blank"
         tone="secondary"
       >

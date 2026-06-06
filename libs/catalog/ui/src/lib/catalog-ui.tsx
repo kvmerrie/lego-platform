@@ -17,7 +17,6 @@ import type {
 import {
   buildCatalogReleaseLabel,
   buildCatalogThemeSlug,
-  getCatalogThemeMutedTextColor,
   type CatalogSetImage,
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
@@ -118,6 +117,10 @@ type CatalogSetCardPriceDisplay = 'default' | 'subtle';
 type CatalogSetCardCollectionLayout = 'grid' | 'rail';
 type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
+
+const CATALOG_A11Y_TEXT_DARK = '#05070d';
+const CATALOG_A11Y_TEXT_LIGHT = '#ffffff';
+const CATALOG_A11Y_CONTRAST_AA = 4.5;
 
 export interface CatalogBrowsePaginationProps {
   ariaLabel: string;
@@ -766,11 +769,8 @@ function CatalogSetFactRow({
         const FactIcon = factItem.icon;
 
         return (
-          <span
-            aria-label={factItem.accessibleLabel}
-            className={styles.cardFactItem}
-            key={factItem.id}
-          >
+          <span className={styles.cardFactItem} key={factItem.id}>
+            <VisuallyHidden>{factItem.accessibleLabel}</VisuallyHidden>
             <FactIcon
               aria-hidden="true"
               className={styles.cardFactIcon}
@@ -1016,26 +1016,263 @@ function getCatalogThemeStyleVariables({
     return undefined;
   }
 
+  const themeCardForeground = getAccessibleCatalogCardForeground(
+    resolvedVisual.backgroundColor,
+    resolvedVisual.textColor,
+  );
+  const themeCardSurface = getAccessibleCatalogCardSurface(
+    resolvedVisual.backgroundColor,
+    themeCardForeground,
+  );
+
   return {
     ...(resolvedVisual.backgroundColor
       ? ({
           '--card-theme-badge-accent': resolvedVisual.backgroundColor,
           '--catalog-theme-badge-surface': resolvedVisual.backgroundColor,
           '--card-theme-badge-bg': resolvedVisual.backgroundColor,
-          '--theme-surface': resolvedVisual.backgroundColor,
+          '--theme-surface': themeCardSurface ?? resolvedVisual.backgroundColor,
         } as CSSProperties)
       : {}),
     ...(resolvedVisual.textColor
       ? ({
-          '--catalog-theme-badge-text': resolvedVisual.textColor,
-          '--card-theme-badge-text': resolvedVisual.textColor,
-          '--theme-text': resolvedVisual.textColor,
-          '--theme-muted': getCatalogThemeMutedTextColor(
+          '--catalog-theme-badge-text': getAccessibleCatalogTextColor(
+            resolvedVisual.backgroundColor,
+            resolvedVisual.textColor,
+          ),
+          '--card-theme-badge-text': getAccessibleCatalogTextColor(
+            resolvedVisual.backgroundColor,
             resolvedVisual.textColor,
           ),
         } as CSSProperties)
       : {}),
+    ...(themeCardForeground
+      ? ({
+          '--theme-card-foreground': themeCardForeground,
+          '--theme-text': themeCardForeground,
+          '--theme-muted': themeCardForeground,
+        } as CSSProperties)
+      : {}),
   };
+}
+
+function getAccessibleCatalogCardForeground(
+  backgroundColor?: string,
+  preferredTextColor?: string,
+): string | undefined {
+  const darkContrast = getCatalogColorContrastRatio(
+    CATALOG_A11Y_TEXT_DARK,
+    backgroundColor,
+  );
+  const lightContrast = getCatalogColorContrastRatio(
+    CATALOG_A11Y_TEXT_LIGHT,
+    backgroundColor,
+  );
+
+  if (typeof darkContrast === 'number' && typeof lightContrast === 'number') {
+    if (
+      darkContrast < CATALOG_A11Y_CONTRAST_AA &&
+      lightContrast < CATALOG_A11Y_CONTRAST_AA
+    ) {
+      return darkContrast >= lightContrast
+        ? CATALOG_A11Y_TEXT_DARK
+        : CATALOG_A11Y_TEXT_LIGHT;
+    }
+
+    return darkContrast >= lightContrast
+      ? CATALOG_A11Y_TEXT_DARK
+      : CATALOG_A11Y_TEXT_LIGHT;
+  }
+
+  return preferredTextColor;
+}
+
+function getAccessibleCatalogCardSurface(
+  backgroundColor?: string,
+  foregroundColor?: string,
+): string | undefined {
+  const currentContrast = getCatalogColorContrastRatio(
+    foregroundColor,
+    backgroundColor,
+  );
+
+  if (
+    !backgroundColor ||
+    !foregroundColor ||
+    typeof currentContrast !== 'number' ||
+    currentContrast >= CATALOG_A11Y_CONTRAST_AA
+  ) {
+    return backgroundColor;
+  }
+
+  const background = parseCatalogHexColor(backgroundColor);
+  const foreground = parseCatalogHexColor(foregroundColor);
+
+  if (!background || !foreground) {
+    return backgroundColor;
+  }
+
+  const foregroundIsDark =
+    getCatalogRelativeLuminance(foreground) <
+    getCatalogRelativeLuminance([255, 255, 255]);
+  const target: [red: number, green: number, blue: number] = foregroundIsDark
+    ? [255, 255, 255]
+    : [0, 0, 0];
+
+  for (const blendAmount of [0.04, 0.08, 0.12, 0.16, 0.2, 0.24]) {
+    const adjustedBackground = blendCatalogRgbColor(
+      background,
+      target,
+      blendAmount,
+    );
+    const adjustedBackgroundHex = formatCatalogHexColor(adjustedBackground);
+    const adjustedContrast = getCatalogColorContrastRatio(
+      foregroundColor,
+      adjustedBackgroundHex,
+    );
+
+    if (
+      typeof adjustedContrast === 'number' &&
+      adjustedContrast >= CATALOG_A11Y_CONTRAST_AA
+    ) {
+      return adjustedBackgroundHex;
+    }
+  }
+
+  return backgroundColor;
+}
+
+function getAccessibleCatalogTextColor(
+  backgroundColor?: string,
+  preferredTextColor?: string,
+): string | undefined {
+  if (!preferredTextColor) {
+    return undefined;
+  }
+
+  const preferredContrast = getCatalogColorContrastRatio(
+    preferredTextColor,
+    backgroundColor,
+  );
+
+  if (
+    typeof preferredContrast === 'number' &&
+    preferredContrast >= CATALOG_A11Y_CONTRAST_AA
+  ) {
+    return preferredTextColor;
+  }
+
+  const darkContrast = getCatalogColorContrastRatio(
+    CATALOG_A11Y_TEXT_DARK,
+    backgroundColor,
+  );
+  const lightContrast = getCatalogColorContrastRatio(
+    CATALOG_A11Y_TEXT_LIGHT,
+    backgroundColor,
+  );
+
+  if (typeof darkContrast !== 'number' || typeof lightContrast !== 'number') {
+    return preferredTextColor;
+  }
+
+  return darkContrast >= lightContrast
+    ? CATALOG_A11Y_TEXT_DARK
+    : CATALOG_A11Y_TEXT_LIGHT;
+}
+
+function getCatalogColorContrastRatio(
+  foregroundColor?: string,
+  backgroundColor?: string,
+): number | undefined {
+  const foreground = parseCatalogHexColor(foregroundColor);
+  const background = parseCatalogHexColor(backgroundColor);
+
+  if (!foreground || !background) {
+    return undefined;
+  }
+
+  const foregroundLuminance = getCatalogRelativeLuminance(foreground);
+  const backgroundLuminance = getCatalogRelativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function parseCatalogHexColor(
+  color?: string,
+): [red: number, green: number, blue: number] | undefined {
+  const normalizedColor = color?.trim().toLowerCase();
+
+  if (!normalizedColor) {
+    return undefined;
+  }
+
+  const shortHexMatch = normalizedColor.match(
+    /^#([0-9a-f])([0-9a-f])([0-9a-f])$/u,
+  );
+
+  if (shortHexMatch) {
+    return [
+      parseInt(`${shortHexMatch[1]}${shortHexMatch[1]}`, 16),
+      parseInt(`${shortHexMatch[2]}${shortHexMatch[2]}`, 16),
+      parseInt(`${shortHexMatch[3]}${shortHexMatch[3]}`, 16),
+    ];
+  }
+
+  const hexMatch = normalizedColor.match(
+    /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/u,
+  );
+
+  if (!hexMatch) {
+    return undefined;
+  }
+
+  return [
+    parseInt(hexMatch[1], 16),
+    parseInt(hexMatch[2], 16),
+    parseInt(hexMatch[3], 16),
+  ];
+}
+
+function getCatalogRelativeLuminance([red, green, blue]: [
+  red: number,
+  green: number,
+  blue: number,
+]): number {
+  const [linearRed, linearGreen, linearBlue] = [red, green, blue].map(
+    (channel) => {
+      const normalizedChannel = channel / 255;
+
+      return normalizedChannel <= 0.03928
+        ? normalizedChannel / 12.92
+        : ((normalizedChannel + 0.055) / 1.055) ** 2.4;
+    },
+  );
+
+  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
+}
+
+function blendCatalogRgbColor(
+  from: [red: number, green: number, blue: number],
+  to: [red: number, green: number, blue: number],
+  amount: number,
+): [red: number, green: number, blue: number] {
+  return [
+    Math.round(from[0] + (to[0] - from[0]) * amount),
+    Math.round(from[1] + (to[1] - from[1]) * amount),
+    Math.round(from[2] + (to[2] - from[2]) * amount),
+  ];
+}
+
+function formatCatalogHexColor([red, green, blue]: [
+  red: number,
+  green: number,
+  blue: number,
+]): string {
+  return `#${[red, green, blue]
+    .map((channel) => channel.toString(16).padStart(2, '0'))
+    .join('')}`;
 }
 
 function getCatalogPublicThemeVisual(
@@ -1151,7 +1388,7 @@ export function CatalogSetCard({
             <div className={styles.cardCompactFooter}>
               {href ? (
                 <span
-                  aria-label={primaryAction.ariaLabel}
+                  aria-hidden="true"
                   className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
                   title={primaryAction.ariaLabel}
                 >
@@ -1266,14 +1503,10 @@ export function CatalogSetCard({
             {priceContext ? (
               <>
                 <p
-                  aria-label={`Vanaf ${formatCompactBrowsePrice(
-                    priceContext.currentPrice,
-                  )}`}
                   className={`${styles.cardCompactBrowsePriceValue} ${styles.featuredPriceValue}`}
                 >
-                  <span aria-hidden="true">
-                    {formatCompactBrowsePrice(priceContext.currentPrice)}
-                  </span>
+                  <VisuallyHidden>Vanaf </VisuallyHidden>
+                  {formatCompactBrowsePrice(priceContext.currentPrice)}
                 </p>
                 {featuredDealValueLine ? (
                   <p

@@ -215,7 +215,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('6.181 stenen');
     expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('Bekijk set');
-    expect(markup).toContain('aria-label="Bekijk set, prijs volgt"');
+    expect(markup).toContain('aria-label="Bekijk Rivendell"');
+    expect(markup).not.toContain('aria-label="Bekijk set, prijs volgt"');
     expect(markup).toContain('title="Bekijk set, prijs volgt"');
     expect(markup).not.toContain('A flagship fantasy build');
     expect(markup).not.toContain('Reviewed prijs');
@@ -272,12 +273,14 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('aria-label="Uitgekomen in 2026"');
-    expect(markup).toContain('aria-label="788 stenen"');
+    expect(markup).toContain('Uitgekomen in 2026');
+    expect(markup).toContain('788 stenen');
+    expect(markup).not.toContain('aria-label="Uitgekomen in 2026"');
+    expect(markup).not.toContain('aria-label="788 stenen"');
     expect(markup).toContain('>2026</span>');
     expect(markup).toContain('>788</span>');
     expect(markup).not.toContain('>Nieuw in 2026</span>');
-    expect(markup).not.toContain('>788 stenen</span>');
+    expect(markup).toContain('>788 stenen</span>');
     expect(markup).toContain('lucide-toy-brick');
   });
 
@@ -622,8 +625,8 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('aria-label="Vanaf € 489,99"');
-    expect(markup).toContain('>€ 489,99</span>');
+    expect(markup).not.toContain('aria-label="Vanaf € 489,99"');
+    expect(markup).toContain('>Vanaf </span>€ 489,99');
     expect(markup).not.toContain('>Vanaf € 489,99<');
     expect(markup).not.toContain('6 ct/steen');
     expect(markup).not.toContain('cent per steen');
@@ -820,6 +823,36 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('--card-theme-badge-bg:#171717');
     expect(markup).toContain('--card-theme-badge-text:#ffffff');
     expect(markup).toContain('>Star Wars<');
+  });
+
+  it('keeps theme badge and muted tile text above AA contrast on medium theme colors', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/snackbartruck-60488"
+        setSummary={{
+          id: '60488',
+          slug: 'snackbartruck-60488',
+          name: 'Snackbartruck',
+          theme: 'City',
+          publicTheme: {
+            name: 'City',
+            slug: 'city',
+            surfaceColor: '#2f7fc0',
+            surfaceTextColor: '#ffffff',
+          },
+          releaseYear: 2025,
+          pieces: 345,
+          imageUrl: 'https://images.example/snackbartruck.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('--card-theme-badge-bg:#2f7fc0');
+    expect(markup).toContain('--card-theme-badge-text:#05070d');
+    expect(markup).toContain('--theme-card-foreground:#05070d');
+    expect(markup).toContain('--theme-muted:#05070d');
+    expect(markup).toContain('>City<');
   });
 
   it('keeps neutral badge colors when theme presentation colors are missing', () => {
@@ -2018,7 +2051,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('€30 duurder');
     expect(markup).toContain('href="https://example.com/rivendell"');
     expect(markup).toContain('href="https://example.com/rivendell-lego"');
-    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
     expect(markup).toContain('Naar winkel');
@@ -2864,11 +2897,13 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('width="420"');
     expect(markup).toContain('height="420"');
     expect(markup).toContain('--theme-surface:#cf554c');
-    expect(markup).toContain('--theme-text:#ffffff');
+    expect(markup).toContain('--theme-card-foreground:#05070d');
+    expect(markup).toContain('--theme-text:#05070d');
+    expect(markup).toContain('--theme-muted:#05070d');
     expect(markup).toContain('Bekijk sets');
   });
 
-  it('uses supplied dark and light database theme text colors on theme tiles', () => {
+  it('uses one accessible foreground color on theme tiles', () => {
     const darkMarkup = renderToStaticMarkup(
       <CatalogThemeHighlight
         href="/themes/star-wars"
@@ -2905,9 +2940,13 @@ describe('CatalogSetCard', () => {
     );
 
     expect(darkMarkup).toContain('--theme-surface:#5573b5');
+    expect(darkMarkup).toContain('--theme-card-foreground:#ffffff');
     expect(darkMarkup).toContain('--theme-text:#ffffff');
+    expect(darkMarkup).toContain('--theme-muted:#ffffff');
     expect(lightMarkup).toContain('--theme-surface:#6bbf59');
-    expect(lightMarkup).toContain('--theme-text:#10241f');
+    expect(lightMarkup).toContain('--theme-card-foreground:#05070d');
+    expect(lightMarkup).toContain('--theme-text:#05070d');
+    expect(lightMarkup).toContain('--theme-muted:#05070d');
   });
 
   it('can render feature theme tiles with only one helper line below the title', () => {
@@ -3001,7 +3040,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Icons');
     expect(markup).toContain('14 sets');
     expect(markup).toContain('--theme-surface:#f0c63b');
-    expect(markup).toContain('--theme-text:#171a22');
+    expect(markup).toContain('--theme-card-foreground:#05070d');
+    expect(markup).toContain('--theme-text:#05070d');
+    expect(markup).toContain('--theme-muted:#05070d');
     expect(markup).not.toContain('Bekijk sets');
     expect(markup).not.toContain('Pak eerst Rivendell');
     expect(markup).not.toContain(
@@ -3028,7 +3069,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('src="https://images.example/new-set.jpg"');
     expect(markup).toContain('Nieuwe sets');
     expect(markup).toContain('--theme-surface:#5573b5');
+    expect(markup).toContain('--theme-card-foreground:#ffffff');
     expect(markup).toContain('--theme-text:#ffffff');
+    expect(markup).toContain('--theme-muted:#ffffff');
     expect(markup).not.toContain('themePortraitMeta');
   });
 
@@ -3044,6 +3087,12 @@ describe('CatalogSetCard', () => {
 
     expect(portraitCardRule).toContain('background: var(--theme-surface);');
     expect(featureCardRule).toContain('background: var(--theme-surface);');
+    expect(portraitCardRule).toContain(
+      '--theme-text: var(--theme-card-foreground);',
+    );
+    expect(featureCardRule).toContain(
+      '--theme-muted: var(--theme-card-foreground);',
+    );
   });
 
   it('renders a lightweight quick-filter chip row with an active state', () => {

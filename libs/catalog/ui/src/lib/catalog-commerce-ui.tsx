@@ -160,7 +160,7 @@ function CatalogDecisionOfferCard({
         <ActionLink
           className={styles.bestDealAction}
           href={offer.ctaHref}
-          rel="noreferrer sponsored"
+          rel="noopener noreferrer sponsored"
           target="_blank"
           tone={offer.ctaTone ?? 'accent'}
           {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
@@ -450,7 +450,7 @@ export function CatalogOfferRow({ offer }: { offer: CatalogOfferItem }) {
         <ActionLink
           className={styles.offerAction}
           href={offer.ctaHref}
-          rel="noreferrer sponsored"
+          rel="noopener noreferrer sponsored"
           target="_blank"
           tone="secondary"
           {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
