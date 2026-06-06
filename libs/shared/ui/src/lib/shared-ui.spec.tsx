@@ -140,7 +140,7 @@ describe('Breadcrumbs', () => {
 });
 
 describe('SectionHeading', () => {
-  it('marks the eyebrow as a shared pre-title element', () => {
+  it('renders title and description without a pre-title eyebrow', () => {
     const markup = renderToStaticMarkup(
       <SectionHeading
         description="Begin hier."
@@ -150,8 +150,10 @@ describe('SectionHeading', () => {
       />,
     );
 
-    expect(markup).toContain('data-page-intro-eyebrow="true"');
-    expect(markup).toContain('Thema&#x27;s');
+    expect(markup).toContain('Alle thema&#x27;s');
+    expect(markup).toContain('Begin hier.');
+    expect(markup).not.toContain('data-page-intro-eyebrow');
+    expect(markup).not.toContain('Thema&#x27;s');
   });
 });
 

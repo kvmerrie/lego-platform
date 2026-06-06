@@ -6550,6 +6550,93 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('renders all configured theme spotlight CMS items beyond the fallback limit', async () => {
+    const spotlightThemes = [
+      ['botanicals', 'theme-botanicals', 'Botanicals'],
+      ['art', 'theme-art', 'Art'],
+      ['creator-3in1', 'theme-creator-3in1', 'Creator 3-in-1'],
+      ['architecture', 'theme-architecture', 'Architecture'],
+      ['icons', 'theme-icons', 'Icons'],
+    ] as const;
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionPresentationRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      primaryThemeRows: spotlightThemes.map(
+        ([slug, id, displayName], index) => ({
+          display_name: displayName,
+          id,
+          is_public: true,
+          public_description: `${displayName} om in je kast te laten spreken.`,
+          public_display_name: displayName,
+          public_homepage_order: (index + 1) * 10,
+          public_image_url: null,
+          public_order: (index + 1) * 10,
+          public_tile_image_url: `https://example.test/${slug}.jpg`,
+          slug,
+          status: 'active',
+        }),
+      ),
+      publicPageSectionItemRows: spotlightThemes.map(([slug], index) => ({
+        alt_override: null,
+        cta_label: null,
+        cta_url: null,
+        enabled: true,
+        id: `item-${slug}`,
+        image_set_id: null,
+        image_url: null,
+        metadata_json: {},
+        reference_id: slug,
+        reference_type: 'theme',
+        section_id: 'section-spotlight',
+        sort_order: (index + 1) * 10,
+        title_override: null,
+        use_custom_image: false,
+      })),
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-spotlight',
+          layout: 'theme_spotlight',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'theme_spotlight',
+          sort_order: 60,
+          subtitle: null,
+          title: 'Meer werelden',
+        },
+      ],
+      themeSummaryRows: spotlightThemes.map(([, id], index) => ({
+        active_set_count: index + 1,
+        representative_image_url: null,
+        representative_set_id: null,
+        theme_id: id,
+        updated_at: '2026-06-06T10:00:00.000Z',
+      })),
+    });
+
+    const items = await listHomepageThemeSpotlightItems({ supabaseClient });
+
+    expect(items.map((item) => item.referenceId)).toEqual([
+      'botanicals',
+      'art',
+      'creator-3in1',
+      'architecture',
+      'icons',
+    ]);
+    expect(items).toHaveLength(5);
+    expect(items.at(-1)).toEqual(
+      expect.objectContaining({
+        href: '/themes/icons',
+        id: 'item-icons',
+        imageUrl: 'https://example.test/icons.jpg',
+        referenceType: 'theme',
+        title: 'Icons',
+      }),
+    );
+  });
+
   test('applies collection presentation to collection page config', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       collectionPresentationRows: [

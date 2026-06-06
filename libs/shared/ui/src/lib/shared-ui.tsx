@@ -419,7 +419,6 @@ export function Badge({
 export function SectionHeading({
   className,
   description,
-  eyebrow,
   title,
   titleAs = 'h2',
   tone = 'default',
@@ -441,11 +440,6 @@ export function SectionHeading({
         className,
       )}
     >
-      {eyebrow ? (
-        <p className={styles.eyebrow} data-page-intro-eyebrow="true">
-          {eyebrow}
-        </p>
-      ) : null}
       <TitleTag className={styles.sectionTitle}>{title}</TitleTag>
       {description ? (
         <p className={styles.sectionDescription}>{description}</p>
@@ -460,7 +454,6 @@ export function Panel({
   className,
   description,
   elevation = 'rested',
-  eyebrow,
   headingClassName,
   headingTone = 'default',
   padding = 'md',
@@ -500,7 +493,6 @@ export function Panel({
         <SectionHeading
           className={headingClassName}
           description={description}
-          eyebrow={eyebrow}
           title={title}
           titleAs={titleAs}
           tone={headingTone}

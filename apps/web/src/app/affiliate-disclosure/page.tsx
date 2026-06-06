@@ -41,7 +41,6 @@ export default function AffiliateDisclosurePage() {
         >
           <SectionHeading
             description="Brickhunt kan commissie ontvangen via sommige winkelknoppen. Jij betaalt daardoor niets extra."
-            eyebrow="Transparantie"
             title="Affiliate disclosure"
             titleAs="h1"
             tone="display"
@@ -52,7 +51,6 @@ export default function AffiliateDisclosurePage() {
           as="section"
           className={styles.infoCard}
           description="Wat er gebeurt als je doorklikt naar een winkel."
-          eyebrow="Affiliate links"
           title="Sommige links kunnen commissie opleveren"
           tone="default"
         >
@@ -69,7 +67,6 @@ export default function AffiliateDisclosurePage() {
           as="section"
           className={styles.infoCard}
           description="Eerlijke prijscontext blijft belangrijker dan veel knoppen."
-          eyebrow="Uitgangspunt"
           title="De set en de prijs blijven voorop"
           tone="muted"
         >

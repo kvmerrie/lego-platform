@@ -130,7 +130,6 @@ export function AffiliateOffersPanel({
     >
       <SectionHeading
         description={`Vergelijk de ${getDefaultMarketAdjective()} winkels die we voor deze set hebben reviewed.`}
-        eyebrow="Koophulp"
         title="Reviewed aanbiedingen"
       />
       {comparisonInsight ? (
@@ -191,7 +190,6 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
     >
       <SectionHeading
         description={`We hebben voor deze set nog geen winkelprijzen reviewed.`}
-        eyebrow="Koophulp"
         title="Reviewed aanbiedingen"
       />
       <p className={styles.panelMeta}>{getOfferScopeLabel()}</p>
@@ -204,7 +202,6 @@ export function AffiliateUi() {
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
         description="Compacte aanbiedingskaarten die actuele winkelcontext direct en presentabel houden."
-        eyebrow="Affiliate-UI"
         title="Uitgaande aanbodoppervlakken zonder runtime-koppeling met commerce."
       />
     </Surface>

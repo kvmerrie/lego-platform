@@ -5,7 +5,6 @@
 
 .intro {
   --lego-section-heading-description: var(--theme-index-muted);
-  --lego-section-heading-eyebrow: var(--theme-index-text);
   --lego-section-heading-text: var(--theme-index-text);
   --theme-index-surface: var(--lego-surface-accent);
   --theme-index-text: var(--lego-text);

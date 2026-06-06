@@ -500,7 +500,7 @@ describe('CatalogSetCard', () => {
     const fallbackEnd = themeRouteSource.indexOf('/>', fallbackStart);
     const fallbackSource = themeRouteSource.slice(fallbackStart, fallbackEnd);
 
-    expect(fallbackSource).toContain('eyebrow="Nu interessant"');
+    expect(fallbackSource).not.toContain('eyebrow=');
     expect(fallbackSource).toContain('itemCount={5}');
     expect(fallbackSource).toContain('tone="inverse"');
     expect(fallbackSource).not.toContain('tone="default"');
@@ -2013,7 +2013,7 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Goede deal');
     expect(markup).toContain('The Lord of the Rings');
-    expect(markup).toContain('>10316</span>');
+    expect(markup).not.toContain('detailHeroIdentifier');
     expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
     expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
     expect(markup).toContain('alt="Icons logo"');
@@ -2029,7 +2029,7 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).not.toContain('--catalog-theme-badge-surface:#f0c63b');
     expect(markup).not.toContain('--catalog-theme-badge-text:#171a22');
-    expect(markup).toContain('Beste prijs nu');
+    expect(markup).not.toContain('Beste prijs nu');
     expect(markup).toContain('Bij bol');
     expect(markup).toContain('€ 30,00 goedkoper dan de rest');
     expect(markup).toContain(
@@ -2040,7 +2040,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('best_offer');
     expect(markup).toContain('Waarom nu');
     expect(markup).toContain('Beste prijs die we nu volgen.');
-    expect(markup).toContain('Vergelijk winkels');
+    expect(markup).not.toContain('Vergelijk winkels');
     expect(markup).toContain('Nu bij 2 winkels');
     expect(markup).toContain('2 winkels nagekeken');
     expect(markup).not.toContain('2 winkels nagekeken · 31 mrt om 09:00');
@@ -2058,9 +2058,6 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('LEGO');
     expect(markup).not.toContain('LEGO LEGO');
     expect(markup).not.toContain('Sterke deal');
-    expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
-      markup.indexOf('Prijs in het kort'),
-    );
     expect(markup).toContain('Nog niet klaar om te kopen?');
     expect(markup).toContain('Volg prijs');
     expect(markup.indexOf('Prijs in het kort')).toBeLessThan(
@@ -2622,7 +2619,6 @@ describe('CatalogSetCard', () => {
             'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
           decisionLabel: 'Nog geen actuele prijs',
           decisionTone: 'neutral',
-          eyebrow: 'Beschikbaarheid nu',
           merchantLabel: 'Nog geen actuele prijs',
           price: 'Nog geen actuele prijs',
           stockLabel: 'Nog geen actuele voorraad',
@@ -2649,7 +2645,6 @@ describe('CatalogSetCard', () => {
           tone: 'neutral',
         }}
         followCopy="Zodra we actuele voorraad zien bij de winkels die Brickhunt controleert, zie je dat hier terug."
-        followEyebrow="Beschikbaarheid"
         followTitle="We volgen deze set"
         priceAlertAction={<button type="button">Volg prijs</button>}
       />,
@@ -2719,7 +2714,7 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Slimmer om te wachten');
+    expect(markup).not.toContain('Slimmer om te wachten');
     expect(markup).toContain('Volg deze set');
     expect(markup).toContain('Waarom wachten');
     expect(markup).toContain('Bekijk bij bol');

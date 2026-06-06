@@ -1104,10 +1104,6 @@
     padding-inline: var(--catalog-page-intro-inline-padding);
   }
 
-  .pageIntro[data-has-breadcrumbs='true'] [data-page-intro-eyebrow='true'] {
-    display: none;
-  }
-
   .pageIntroContent {
     display: grid;
     gap: var(--lego-space-3);
@@ -1210,6 +1206,9 @@
 
   .sectionHeader {
     display: grid;
+  }
+
+  .sectionHeaderWithAside {
     gap: var(--lego-space-3);
   }
 
@@ -1222,16 +1221,6 @@
     display: grid;
     gap: var(--lego-space-1);
     max-width: var(--lego-max-width-reading);
-  }
-
-  .sectionHeaderEyebrow {
-    color: var(--lego-text-muted);
-    font-size: var(--lego-text-role-eyebrow-size);
-    font-weight: var(--lego-font-weight-bold);
-    letter-spacing: var(--lego-text-role-label-tracking);
-    line-height: var(--lego-text-role-eyebrow-line-height);
-    margin: 0;
-    text-transform: uppercase;
   }
 
   .sectionHeaderTitleRow {
@@ -1259,10 +1248,6 @@
 
   .sectionHeaderHeadingDisplay {
     gap: var(--lego-space-2);
-  }
-
-  .sectionHeaderHeadingDisplay .sectionHeaderEyebrow {
-    color: var(--lego-accent);
   }
 
   .sectionHeaderHeadingDisplay .sectionHeaderTitle {
@@ -1314,7 +1299,6 @@
   }
 
   .sectionHeaderInverse .sectionHeaderDescription,
-  .sectionHeaderInverse .sectionHeaderEyebrow,
   .sectionHeaderInverse .sectionHeaderSignal {
     color: rgba(255, 255, 255, 0.78);
   }
@@ -1414,31 +1398,6 @@
   .detailHeroPrimary {
     align-content: start;
     gap: var(--lego-space-4);
-  }
-
-  .detailHeroEyebrow {
-    display: flex;
-    min-width: 0;
-  }
-
-  .detailHeroIdentifier {
-    align-items: center;
-    background: var(--lego-surface-muted);
-    border: 1px solid var(--lego-border-subtle);
-    border-radius: 999px;
-    color: var(--lego-text-muted);
-    display: inline-flex;
-    font-size: var(--lego-text-role-eyebrow-size);
-    font-weight: var(--lego-font-weight-semibold);
-    gap: 0.34rem;
-    letter-spacing: var(--lego-text-role-label-tracking);
-    line-height: var(--lego-text-role-eyebrow-line-height);
-    margin: 0;
-    padding: 0.18rem 0.5rem;
-  }
-
-  .detailHeroIdentifierIcon {
-    flex: none;
   }
 
   .detailHeroSecondary,
@@ -1723,16 +1682,6 @@
 
   .productDescriptionHeading {
     display: grid;
-    gap: var(--lego-space-1);
-  }
-
-  .productDescriptionEyebrow {
-    color: var(--lego-text-muted);
-    font-size: var(--lego-text-role-label-size);
-    font-weight: var(--lego-font-weight-bold);
-    letter-spacing: var(--lego-text-role-label-tracking);
-    line-height: var(--lego-text-role-label-line-height);
-    text-transform: uppercase;
   }
 
   .productDescriptionTitle {
@@ -2037,18 +1986,6 @@
     gap: var(--lego-space-3);
   }
 
-  .bestDealEyebrow,
-  .alertEyebrow,
-  .supportEyebrow {
-    color: var(--lego-text-muted);
-    font-size: var(--lego-text-role-label-size);
-    font-weight: var(--lego-font-weight-bold);
-    letter-spacing: var(--lego-text-role-label-tracking);
-    line-height: var(--lego-text-role-label-line-height);
-    margin: 0;
-    text-transform: uppercase;
-  }
-
   .bestDealCard {
     background: var(--lego-surface-default);
     border-radius: var(--lego-radius-md);
@@ -2219,10 +2156,6 @@
   .alertCard[data-layout='compact'] {
     gap: var(--lego-space-1);
     padding: var(--lego-space-2) var(--lego-space-3);
-  }
-
-  .alertCard[data-layout='compact'] .alertEyebrow {
-    font-size: var(--lego-text-role-meta-size);
   }
 
   .alertCard[data-layout='compact'] .alertTitle {

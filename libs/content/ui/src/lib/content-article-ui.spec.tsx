@@ -479,10 +479,7 @@ describe('content article ui', () => {
           <div>
             <h2>Koopadvies</h2>
             <p>Pak de set die je plank verandert.</p>
-            <ContentArticleSetRail
-              eyebrow="Kun je niet wachten?"
-              title="Alternatieven om nu te bouwen"
-            >
+            <ContentArticleSetRail title="Alternatieven om nu te bouwen">
               <div>Star Wars rail</div>
             </ContentArticleSetRail>
           </div>
@@ -626,7 +623,7 @@ describe('content article ui', () => {
     expect(css).toContain('.sectionShell {');
     expect(css).toContain('.sectionShellInverse {');
     expect(css).toContain('.sectionShellPaddingDefault {');
-    expect(css).toContain('.sectionShellEyebrow {');
+    expect(css).not.toContain('.sectionShellEyebrow {');
     expect(css).toContain('background: #242424;');
     expect(css).toContain(
       'margin-inline: calc(-1 * var(--content-section-inline-padding));',
@@ -1288,7 +1285,6 @@ describe('content article ui', () => {
       <ContentArticleSetRail
         debugMessage="SetRail: geen sets gevonden voor 10358"
         emptyMessage="Deze selectie vullen we aan zodra de sets live staan in Brickhunt."
-        eyebrow="Kun je niet wachten?"
         subtitle="Display, UCS en sets die echt iets doen op je plank."
         title="Star Wars sets om te volgen"
       >

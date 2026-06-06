@@ -26,8 +26,6 @@ export function CatalogFeatureSetList({
   actionLabel,
   className,
   description = 'Grote sets die je plank én budget bepalen.',
-
-  eyebrow = 'Pronkstukken',
   layout = 'rail',
   prioritizeFirstImage = false,
   railLayoutMode = 'stable-square',
@@ -71,17 +69,24 @@ export function CatalogFeatureSetList({
     as: 'section' as const,
     bodySpacing: 'relaxed' as const,
     className: [styles.section, className].filter(Boolean).join(' '),
-    description,
-    eyebrow,
+    description:
+      layout === 'grid'
+        ? `${homepageSets.length} producten worden weergegeven`
+        : description,
     headingClassName: styles.header,
     id: sectionId,
     padding: 'default' as const,
-    signal: showSignal
-      ? (signalText ??
-        `${homepageSets.length} sets die meteen de kamer pakken${
-          reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
-        }`)
-      : undefined,
+    signal:
+      layout === 'grid'
+        ? undefined
+        : showSignal
+          ? (signalText ??
+            `${homepageSets.length} sets die meteen de kamer pakken${
+              reviewedSetCount
+                ? ` · ${reviewedSetCount} met nagekeken prijzen`
+                : ''
+            }`)
+          : undefined,
     spacing: 'relaxed' as const,
     title,
     tone,

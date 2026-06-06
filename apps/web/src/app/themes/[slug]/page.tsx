@@ -646,7 +646,6 @@ export default async function ThemePage({
               <CatalogSetCardRailSkeletonSection
                 ariaLabel={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name} laden`}
                 description={`We halen actuele ${themePage.themeSnapshot.name}-prijzen op voor deze rail.`}
-                eyebrow="Nu interessant"
                 itemCount={5}
                 title={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name}`}
                 tone="inverse"

@@ -161,7 +161,7 @@ describe('Catalog commerce UI', () => {
     );
 
     expect(markup).toContain('Goede deal');
-    expect(markup).toContain('Beste prijs nu');
+    expect(markup).not.toContain('Beste prijs nu');
     expect(markup).toContain('Bij bol');
     expect(markup).toContain('€ 30,00 goedkoper dan de rest');
     expect(markup).toContain('Bekijk deal bij bol');
@@ -190,7 +190,6 @@ describe('Catalog commerce UI', () => {
           decisionHelper: 'We volgen deze set zodra er voorraad terugkomt.',
           decisionLabel: 'Nog geen deal',
           decisionTone: 'neutral',
-          eyebrow: 'Beschikbaarheid nu',
           merchantLabel: 'Nog geen deal',
           price: 'Nog geen actuele prijs',
           stockLabel: 'Nog geen voorraad',
@@ -278,9 +277,9 @@ describe('Catalog commerce UI', () => {
       />,
     );
 
-    expect(markup).toContain('Vergelijk winkels');
+    expect(markup).not.toContain('Vergelijk winkels');
     expect(markup).toContain('Nu bij 2 winkels');
-    expect(markup).toContain('2 winkels nagekeken');
+    expect(markup).not.toContain('2 winkels nagekeken');
     expect(markup).not.toContain('2 winkels nagekeken · 2 apr om 09:00');
     expect(markup).toContain('Beste deal');
     expect(markup).toContain('bol');

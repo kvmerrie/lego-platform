@@ -20,16 +20,6 @@
 
 .themeResultsHeader {
   display: grid;
-  gap: var(--lego-space-1);
-}
-
-.themeResultsEyebrow {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-eyebrow-size);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: 0;
-  margin: 0;
-  text-transform: uppercase;
 }
 
 .themeResultsTitle {

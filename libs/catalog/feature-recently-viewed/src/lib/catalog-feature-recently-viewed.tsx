@@ -93,7 +93,6 @@ export function CatalogFeatureRecentlyViewed({
       <CatalogSetCardRailSkeletonSection
         ariaLabel="Recent bekeken LEGO sets laden"
         description="Sets waar je net naar keek verschijnen hier zodra je browserlijst is geladen."
-        eyebrow="Verder vergelijken"
         itemCount={4}
         title="Recent bekeken LEGO sets"
         tone="inverse"
@@ -110,7 +109,6 @@ export function CatalogFeatureRecentlyViewed({
       ariaLabel="Recent bekeken LEGO sets"
       bodySpacing="relaxed"
       description="Sets waar je net naar keek. Handig als je Rivendell, een Star Wars-ship of die ene displayset nog even naast elkaar wilt houden."
-      eyebrow="Verder vergelijken"
       items={setCards.map((setCard) => ({
         href: buildSetDetailPath(setCard.slug),
         id: setCard.id,

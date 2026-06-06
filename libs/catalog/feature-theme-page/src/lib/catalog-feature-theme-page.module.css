@@ -79,18 +79,6 @@
   max-width: min(44rem, 100%);
 }
 
-.introEyebrow {
-  color: var(--theme-page-text);
-  display: block;
-  font-size: var(--lego-text-role-eyebrow-size);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  line-height: var(--lego-text-role-eyebrow-line-height);
-  margin: 0;
-  opacity: 0.76;
-  text-transform: uppercase;
-}
-
 .introHeading {
   display: grid;
   gap: var(--lego-space-3);

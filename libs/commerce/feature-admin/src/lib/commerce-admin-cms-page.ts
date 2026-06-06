@@ -667,6 +667,24 @@ function createSectionItem(index: number): PublicPageSectionItem {
                           />
                         </label>
                         <label class="admin-field">
+                          <span>Description</span>
+                          <textarea
+                            class="admin-textarea"
+                            name="itemDescription-{{ $index }}"
+                            [ngModel]="
+                              getSectionItemMetadataString(item, 'description')
+                            "
+                            (ngModelChange)="
+                              updateSectionItemMetadataString(
+                                item,
+                                'description',
+                                $event
+                              )
+                            "
+                          ></textarea>
+                          <small>Stored as metadata_json.description.</small>
+                        </label>
+                        <label class="admin-field">
                           <span>Alt override</span>
                           <input
                             class="admin-input"
@@ -1780,6 +1798,7 @@ export class CommerceAdminCmsPageComponent implements OnInit {
 
     const {
       accentColor: _accentColor,
+      description: _description,
       heroTextColor: _heroTextColor,
       surfaceColor: _surfaceColor,
       surfaceTextColor: _surfaceTextColor,

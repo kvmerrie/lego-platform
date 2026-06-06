@@ -15,12 +15,6 @@ export interface MetricCard {
   tone?: StatusTone;
 }
 
-export interface SectionIntro {
-  eyebrow: string;
-  title: string;
-  description: string;
-}
-
 export interface TimelinePoint {
   label: string;
   value: number;

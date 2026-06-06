@@ -45,7 +45,6 @@ export default function AboutBrickhuntPage() {
         >
           <SectionHeading
             description="LEGO begon hier als jeugdhobby. Jaren later kwam het terug. Alleen nu met sets van honderden euro's en de vraag: is dit eigenlijk een goed moment om te kopen?"
-            eyebrow="Over Brickhunt"
             title="Gebouwd om beter te kiezen"
             titleAs="h1"
             tone="display"
@@ -57,7 +56,6 @@ export default function AboutBrickhuntPage() {
             as="section"
             className={styles.infoCard}
             description="Van jeugdhobby naar volwassen verzameling."
-            eyebrow="Hoe het begon"
             title="LEGO kwam terug, alleen nu met echte prijzen"
             tone="default"
           >
@@ -79,7 +77,6 @@ export default function AboutBrickhuntPage() {
             as="section"
             className={styles.infoCard}
             description="LEGO en software op dezelfde plank."
-            eyebrow="Achter Brickhunt"
             title="Kasper van Merrienboer"
             tone="muted"
           >
@@ -113,7 +110,6 @@ export default function AboutBrickhuntPage() {
             as="section"
             className={styles.infoCard}
             description="Eerst de set. Dan de prijs. Dan pas de winkel."
-            eyebrow="Waar Brickhunt voor is"
             title="Wat je hier wél krijgt"
             tone="default"
           >
@@ -130,7 +126,6 @@ export default function AboutBrickhuntPage() {
             as="section"
             className={styles.infoCard}
             description="We laten liever minder zien dan iets verzinnen."
-            eyebrow="Waar we stil blijven"
             title="Wat Brickhunt bewust niet doet"
             tone="muted"
           >
@@ -148,7 +143,6 @@ export default function AboutBrickhuntPage() {
           as="section"
           className={styles.transparencyCard}
           description="Rustig, duidelijk en zonder kleine lettertjes."
-          eyebrow="Transparantie"
           title="Als je doorklikt naar een winkel"
           tone="default"
         >

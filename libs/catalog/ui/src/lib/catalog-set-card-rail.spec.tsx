@@ -244,7 +244,10 @@ describe('CatalogSetCardRail', () => {
     });
 
     expect(container.textContent).toContain('Vergelijkbare LEGO sets');
-    expect(container.textContent).toContain('We zoeken vergelijkbare sets.');
+    expect(container.textContent).not.toContain(
+      'We zoeken vergelijkbare sets.',
+    );
+    expect(container.textContent).not.toContain('Hierna kijken');
     expect(
       container.querySelector('[class*="sectionShellDefault"]'),
     ).not.toBeNull();

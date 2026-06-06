@@ -16,7 +16,6 @@ export function CollectionFeatureCollectionOverview() {
   return (
     <section id="collection" className="section-stack">
       <header className="section-heading">
-        <p className="eyebrow">Collection overview</p>
         <h2>Collection health lives in libraries, not page files.</h2>
         <p className="section-copy">
           Metrics, shelf summaries, and valuation posture are surfaced through

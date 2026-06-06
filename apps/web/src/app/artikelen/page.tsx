@@ -31,7 +31,6 @@ import styles from './page.module.css';
 
 const articlesHero = {
   body: 'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
-  eyebrow: 'ARTIKELEN',
   id: 'articles-hero',
   title: 'LEGO nieuws & updates',
   type: 'hero',

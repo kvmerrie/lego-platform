@@ -24,6 +24,7 @@ const defaultMetadataTitle =
   'Brickhunt – LEGO sets kiezen, vergelijken en bewaren';
 const defaultMetadataDescription =
   'Van Rivendell tot AT-AT: vind sneller de LEGO-doos die je wilt hebben.';
+const bingWebmasterVerificationCode = 'D679C68888AADBE90DEA7E0E035F8053';
 
 const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 const isProduction = process.env.VERCEL_ENV === 'production';
@@ -55,6 +56,13 @@ export const metadata: Metadata = {
     title: defaultMetadataTitle,
     description: defaultMetadataDescription,
   },
+  verification: isProduction
+    ? {
+        other: {
+          'msvalidate.01': bingWebmasterVerificationCode,
+        },
+      }
+    : undefined,
   other: isProduction
     ? {
         'tradetracker-site-verification':

@@ -11612,12 +11612,14 @@ function resolveHomepageItemImageUrl({
 async function resolveHomepageEditorialItems({
   homepageEditorialConfig,
   limit,
+  limitConfiguredItems = true,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   sectionKey,
   supabaseClient,
 }: {
   homepageEditorialConfig?: PublicHomepageEditorialConfig;
   limit: number;
+  limitConfiguredItems?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   sectionKey: string;
   supabaseClient?: CatalogSupabaseClient;
@@ -11647,9 +11649,11 @@ async function resolveHomepageEditorialItems({
       ) ?? [];
   const fallbackItems =
     getDefaultHomepageEditorialSection(sectionKey)?.items ?? [];
-  const items = (configuredItems.length > 0 ? configuredItems : fallbackItems)
+  const hasConfiguredItems = configuredItems.length > 0;
+  const selectedItems = hasConfiguredItems ? configuredItems : fallbackItems;
+  const items = selectedItems
     .filter((item) => item.enabled)
-    .slice(0, limit);
+    .slice(0, hasConfiguredItems && !limitConfiguredItems ? undefined : limit);
   const setIds = [
     ...new Set(
       items.flatMap((item) => [
@@ -11934,6 +11938,7 @@ export async function listHomepageThemeSpotlightItems({
     } = await resolveHomepageEditorialItems({
       homepageEditorialConfig: editorialConfig,
       limit,
+      limitConfiguredItems: false,
       listCanonicalCatalogSetsFn,
       sectionKey: 'theme_spotlight',
       supabaseClient,

@@ -145,7 +145,6 @@ export function CatalogFeatureCollectionLandingPage({
       >
         <div className={styles.introLayout}>
           <div className={styles.introCopy}>
-            <p className={styles.eyebrow}>LEGO keuzehulp</p>
             <div className={styles.headingGroup}>
               <h1 className={styles.title}>{config.h1}</h1>
               <p className={styles.lead}>{config.intro}</p>
@@ -190,11 +189,9 @@ export function CatalogFeatureCollectionLandingPage({
         as="section"
         bodySpacing="relaxed"
         className={styles.browseSection}
-        description={config.browseDescription}
-        eyebrow={config.browseEyebrow}
+        description={`${setCards.length} producten worden weergegeven`}
         id={browseSectionId}
         padding="default"
-        signal={`${totalSetCount} ${config.signalLabel}`}
         spacing="relaxed"
         title={config.browseTitle}
         titleAs="h2"

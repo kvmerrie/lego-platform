@@ -25,7 +25,6 @@ import {
   ChevronRight,
   Clock3,
   Eye,
-  Hash,
   ToyBrick,
 } from 'lucide-react';
 import {
@@ -1817,7 +1816,6 @@ function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
       as="section"
       className={styles.ownershipCard}
       description="Vink deze set af als hij al op je plank staat."
-      eyebrow="Je collectie"
       elevation="rested"
       title="Al in huis?"
       tone="muted"
@@ -1828,11 +1826,9 @@ function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
 }
 
 function CatalogSetSupportCard({
-  eyebrow,
   items,
   title,
 }: {
-  eyebrow: string;
   items: readonly CatalogSetDetailSupportItem[];
   title: string;
 }) {
@@ -1844,7 +1840,6 @@ function CatalogSetSupportCard({
     <Panel
       as="section"
       className={styles.supportCard}
-      eyebrow={eyebrow}
       elevation="rested"
       title={title}
       tone="muted"
@@ -2115,9 +2110,6 @@ export function CatalogSetProductFeatures({
       <details className={styles.productDescriptionDisclosure}>
         <summary className={styles.productDescriptionSummary}>
           <span className={styles.productDescriptionHeading}>
-            <span className={styles.productDescriptionEyebrow}>
-              Details van LEGO
-            </span>
             <h2 className={styles.productDescriptionTitle}>Productkenmerken</h2>
           </span>
           <span className={styles.productDescriptionIconFrame}>
@@ -2156,7 +2148,6 @@ export function CatalogSetDetailPanel({
   dealSupportItems = [],
   dealVerdict,
   followCopy,
-  followEyebrow,
   followTitle,
   offerList = [],
   offerSummaryLabel,
@@ -2202,7 +2193,7 @@ export function CatalogSetDetailPanel({
     visual: getCatalogPublicThemeVisual(catalogSetDetail.publicTheme),
   });
   const hasFollowModule = Boolean(
-    priceAlertAction || followCopy || followTitle || followEyebrow,
+    priceAlertAction || followCopy || followTitle,
   );
   const shouldLeadHeroWithFollowAction = Boolean(
     priceAlertAction && !bestDeal?.ctaHref,
@@ -2287,17 +2278,6 @@ export function CatalogSetDetailPanel({
               primaryOffer={bestDeal}
             />
           }
-          eyebrow={
-            <span className={styles.detailHeroIdentifier}>
-              <Hash
-                aria-hidden="true"
-                className={styles.detailHeroIdentifierIcon}
-                size={14}
-                strokeWidth={2.2}
-              />
-              <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>
-            </span>
-          }
           gallery={
             <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
           }
@@ -2319,7 +2299,6 @@ export function CatalogSetDetailPanel({
             summaryLabel={offerSummaryLabel}
           />
           <CatalogSetSupportCard
-            eyebrow="Koopsignaal"
             items={dealSupportItems}
             title={getCatalogDecisionSupportTitle(dealVerdict)}
           />
@@ -2329,7 +2308,6 @@ export function CatalogSetDetailPanel({
               compact
               followAction={secondaryPriceAlertAction}
               followCopy={followCopy}
-              followEyebrow={followEyebrow}
               followTitle={followTitle}
               verdictTone={dealVerdict.tone}
             />
@@ -2354,7 +2332,6 @@ export function CatalogSetDetailPanel({
       <section className={styles.detailInfoGrid}>
         <CatalogSetOwnershipCard action={ownershipActions} />
         <CatalogSetSupportCard
-          eyebrow="Brickhunt checkt"
           items={brickhuntValueItems}
           title="Zo lees je dit"
         />
@@ -2584,7 +2561,6 @@ export function CatalogUi() {
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
         description="Presentatieblokken voor setontdekking en detailverhalen."
-        eyebrow="Catalogus-UI"
         title="Retailwaardige catalogusoppervlakken met metadata voor verzamelaars."
       />
     </Surface>

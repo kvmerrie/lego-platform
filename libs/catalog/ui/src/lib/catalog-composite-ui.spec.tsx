@@ -32,7 +32,18 @@ describe('CatalogSectionHeader', () => {
 
     expect(markup).toContain('Hier wil je nu kijken');
     expect(markup).toContain('3 sets met nagekeken prijzen');
+    expect(markup).toContain('sectionHeaderWithAside');
     expect(markup).toContain('Open volledig thema');
+  });
+
+  it('does not add aside spacing when no aside content is rendered', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSectionHeader title="Alleen een titel" />,
+    );
+
+    expect(markup).toContain('sectionHeader');
+    expect(markup).not.toContain('sectionHeaderWithAside');
+    expect(markup).not.toContain('sectionHeaderAside');
   });
 
   it('renders a rail action inside the title row before aside controls', () => {
@@ -137,6 +148,8 @@ describe('CatalogSplitIntroPanel', () => {
     expect(markup).toContain('Sneller kiezen. Slimmer kopen.');
     expect(markup).toContain('Kies eerst. Koop daarna slimmer.');
     expect(markup).toContain('Bekijk sets');
+    expect(markup).not.toContain('Hoe Brickhunt werkt');
+    expect(markup).not.toContain('Volgende stap');
   });
 });
 
@@ -195,7 +208,7 @@ describe('CatalogSetDetailHero', () => {
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('Hero-afbeelding');
     expect(markup).toContain('Setnummer');
-    expect(markup).toContain('Beste prijs nu');
+    expect(markup).not.toContain('Beste prijs nu');
     expect(markup).toContain('Waarom nu');
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Vergelijk winkels');

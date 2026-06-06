@@ -43,10 +43,10 @@ describe('CatalogFeatureSetList', () => {
     );
 
     expect(markup).toContain('Torens, walkers, supercars');
-    expect(markup).toContain('Grote sets die je plank én budget bepalen.');
+    expect(markup).not.toContain('Grote sets die je plank én budget bepalen.');
     expect(markup).toContain('Volg prijs');
-    expect(markup).toContain('2 sets die meteen de kamer pakken');
-    expect(markup).toContain('1 met nagekeken prijzen');
+    expect(markup).not.toContain('2 sets die meteen de kamer pakken');
+    expect(markup).not.toContain('1 met nagekeken prijzen');
     expect(markup).toContain('Prijs volgt');
     expect(markup).not.toContain(
       'Scroll Torens, walkers, supercars naar links',
@@ -93,8 +93,8 @@ describe('CatalogFeatureSetList', () => {
 
     expect(markup).toContain('id="best-current-deals"');
     expect(markup).toContain('Die doos komt dichterbij');
-    expect(markup).toContain('Stond hij al op je lijst? Kijk nu.');
-    expect(markup).toContain('3 dozen nu lager');
+    expect(markup).not.toContain('Stond hij al op je lijst? Kijk nu.');
+    expect(markup).not.toContain('3 dozen nu lager');
     expect(markup).not.toContain('1 dozen die je kast overnemen');
   });
 
@@ -196,8 +196,8 @@ describe('CatalogFeatureSetList', () => {
       <CatalogFeatureSetList setCards={setCards} title="Nu te vergelijken" />,
     );
 
-    expect(markup).toContain('20 sets die meteen de kamer pakken');
-    expect(markup).toContain('20 met nagekeken prijzen');
+    expect(markup).not.toContain('20 sets die meteen de kamer pakken');
+    expect(markup).not.toContain('20 met nagekeken prijzen');
     expect(markup).toContain('Homepage set 1');
     expect(markup).toContain('Homepage set 12');
     expect(markup).toContain('Homepage set 13');

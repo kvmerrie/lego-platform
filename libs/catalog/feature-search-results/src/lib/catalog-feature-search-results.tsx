@@ -179,7 +179,6 @@ export function CatalogFeatureSearchResults({
         as="section"
         className={styles.statePanel}
         description="Zoek op setnaam, personage of setnummer om direct naar reviewed prijzen, fancontext en setdetails te springen."
-        eyebrow="Zoeken"
         padding="default"
         title="Zoek sets"
         titleAs="h1"
@@ -232,9 +231,6 @@ export function CatalogFeatureSearchResults({
       ...searchMatch.setCard,
       priceContext: searchMatch.priceContext,
     }));
-  const reviewedResultCount = searchResults.filter(
-    (searchResult) => searchResult.priceContext,
-  ).length;
   const filteredSearchResults = searchResults.filter((searchResult) =>
     matchesCatalogQuickFilter({
       filter: normalizedFilter,
@@ -263,7 +259,6 @@ export function CatalogFeatureSearchResults({
         as="section"
         className={styles.statePanel}
         description={`Nog niets gevonden voor "${searchQuery}". Probeer een setnummer zoals 75355 of een sterkere setnaam.`}
-        eyebrow="Zoeken"
         padding="default"
         title={`Geen resultaten voor "${searchQuery}"`}
         titleAs="h1"
@@ -283,24 +278,8 @@ export function CatalogFeatureSearchResults({
       as="section"
       bodyClassName={styles.resultsBody}
       className={styles.resultsSection}
-      description={`Beste teksttreffers voor "${searchQuery}", waarbij reviewed prijscontext en verzamelcontext worden gebruikt om kleine verschillen tussen resultaten te beslissen.`}
-      eyebrow="Zoeken"
+      description={`${filteredSearchResults.length} producten worden weergegeven`}
       padding="none"
-      signal={`${filteredSearchResults.length} passende set${
-        filteredSearchResults.length === 1 ? '' : 's'
-      }${
-        resolvedThemeMatches.length
-          ? ` · ${resolvedThemeMatches.length} thema${
-              resolvedThemeMatches.length === 1 ? '' : "'s"
-            }`
-          : ''
-      }${
-        normalizedFilter !== 'all'
-          ? ` · ${activeQuickFilterOption?.label ?? 'Gefilterd'}`
-          : reviewedResultCount
-            ? ` · ${reviewedResultCount} met reviewed prijzen`
-            : ''
-      }`}
       spacing="default"
       title={`Resultaten voor "${searchQuery}"`}
       titleAs="h1"
@@ -316,7 +295,6 @@ export function CatalogFeatureSearchResults({
           className={styles.themeResults}
         >
           <div className={styles.themeResultsHeader}>
-            <p className={styles.themeResultsEyebrow}>Thema&apos;s</p>
             <h2
               className={styles.themeResultsTitle}
               id="search-theme-results-title"
@@ -370,7 +348,6 @@ export function CatalogFeatureSearchResults({
           description={`"${searchQuery}" heeft wel treffers, maar niets in ${(
             activeQuickFilterOption?.label ?? 'deze filter'
           ).toLowerCase()}. Probeer een andere filter of maak je zoekopdracht breder.`}
-          eyebrow="Zoeken"
           padding="default"
           title={`Geen ${(
             activeQuickFilterOption?.label ?? 'gefilterde'
@@ -401,7 +378,6 @@ export function CatalogFeatureSearchResultsLoading() {
       as="section"
       className={styles.statePanel}
       description="De huidige setcatalogus wordt doorzocht."
-      eyebrow="Zoeken"
       padding="default"
       title="Sets worden gezocht"
       titleAs="h1"

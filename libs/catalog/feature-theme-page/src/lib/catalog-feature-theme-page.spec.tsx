@@ -113,10 +113,10 @@ describe('CatalogFeatureThemePage', () => {
     expect(dealSectionMarkup).not.toContain('sectionShellDefault');
     expect(dealSectionMarkup).not.toContain('setCardRailSectionThemed');
     expect(dealSectionMarkup).toContain('sectionHeaderTitle');
-    expect(dealSectionMarkup).toContain('sectionHeaderDescription');
-    expect(dealSectionMarkup).toContain('sectionHeaderSignal');
+    expect(dealSectionMarkup).not.toContain('sectionHeaderDescription');
+    expect(dealSectionMarkup).not.toContain('sectionHeaderSignal');
     expect(dealSectionMarkup).toContain('setCard');
-    expect(markup).toContain('Kies je set');
+    expect(markup).toContain('2 producten worden weergegeven');
     expect(markup).toContain('Alle');
     expect(markup).not.toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');

@@ -780,6 +780,8 @@ export function CatalogSetCardRailSection({
             .join(' ')}
           tone={tone}
           {...sectionProps}
+          description={undefined}
+          signal={undefined}
           utility={controls}
           utilityPlacement="aside"
         >
@@ -795,12 +797,9 @@ export function CatalogSetCardRailSection({
 export function CatalogSetCardRailSkeletonSection({
   ariaLabel,
   className,
-  description,
-  eyebrow,
   itemCount = 4,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
-  signal,
   surfaceVariant = 'default',
   title,
   tone = surfaceVariant === 'themed' ? 'default' : 'plain',
@@ -835,9 +834,8 @@ export function CatalogSetCardRailSkeletonSection({
       ]
         .filter(Boolean)
         .join(' ')}
-      description={description}
-      eyebrow={eyebrow}
-      signal={signal}
+      description={undefined}
+      signal={undefined}
       title={title}
       tone={tone}
     >

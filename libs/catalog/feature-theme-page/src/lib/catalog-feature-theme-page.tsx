@@ -76,7 +76,6 @@ export function CatalogFeatureThemePage({
 }) {
   const { setCards, themeSnapshot } = themePage;
   const themeName = themeSnapshot.name;
-  const themeSignatureSet = themeSnapshot.signatureSet || themeName;
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
   const themeVisual = themePage.visual;
@@ -146,9 +145,6 @@ export function CatalogFeatureThemePage({
         contentClassName={styles.introContent}
         data-button-surface={themeHeroButtonSurface}
       >
-        <p className={styles.introEyebrow} data-page-intro-eyebrow="true">
-          Thema
-        </p>
         <div className={styles.introHeading}>
           <h1 className={styles.introTitle}>
             <span className="notranslate" translate="no">
@@ -203,22 +199,8 @@ export function CatalogFeatureThemePage({
         bodySpacing="relaxed"
         className={styles.browseSection}
         id={browseSectionId}
-        description={
-          <>
-            Van{' '}
-            <span className="notranslate" translate="no">
-              {themeSignatureSet}
-            </span>{' '}
-            tot de rest van{' '}
-            <span className="notranslate" translate="no">
-              {themeName}
-            </span>
-            . Vergelijk hier welke set het best op je plank past.
-          </>
-        }
-        eyebrow="Kies je set"
+        description={`${visibleSetCards.length} producten worden weergegeven`}
         padding="default"
-        signal={`${setCards.length} sets`}
         spacing="relaxed"
         title={
           <>
@@ -297,7 +279,6 @@ export function CatalogFeatureThemeDealRail({
           alles wilt openen.
         </>
       }
-      eyebrow="Nu interessant"
       items={dealSetCards.map((dealSetCard) => ({
         actions: dealSetCard.actions,
         ctaMode: dealSetCard.ctaMode,
@@ -350,7 +331,6 @@ export function CatalogFeatureThemeRelatedArticles({
           .
         </>
       }
-      eyebrow="Verder lezen"
       padding="default"
       signal={`${relatedArticles.length} artikelen`}
       spacing="relaxed"

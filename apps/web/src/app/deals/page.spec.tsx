@@ -220,6 +220,14 @@ describe('deals page snapshots', () => {
     expect(markup).toContain('Nieuwe deals');
     expect(markup).toContain('Premium deals');
     expect(markup).toContain('Onder €20');
+    const discoveryStart = markup.indexOf('Ontdek deals op jouw manier');
+    const discoveryEnd = markup.indexOf('id="deals-collection"');
+    const discoveryMarkup = markup.slice(
+      Math.max(0, discoveryStart - 700),
+      discoveryEnd,
+    );
+    expect(discoveryMarkup).toContain('sectionShellInverse');
+    expect(discoveryMarkup).toContain('sectionHeaderInverse');
     expect(markup).toContain('/deals/nieuwe-deals#deals-collection');
     expect(markup).toContain('/deals/grootste-kortingen#deals-collection');
     expect(markup).toContain('/deals/prijs-per-steen#deals-collection');

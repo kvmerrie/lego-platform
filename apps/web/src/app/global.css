@@ -112,14 +112,6 @@
     max-width: 62ch;
   }
 
-  .eyebrow {
-    color: var(--lego-accent);
-    font-size: var(--lego-text-role-eyebrow-size);
-    font-weight: var(--lego-font-weight-bold);
-    letter-spacing: var(--lego-text-role-label-tracking);
-    text-transform: uppercase;
-  }
-
   .surface-grid,
   .metric-grid {
     display: grid;

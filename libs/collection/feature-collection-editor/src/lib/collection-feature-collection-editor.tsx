@@ -6,7 +6,6 @@ export function CollectionFeatureCollectionEditor() {
   return (
     <section className="section-stack">
       <header className="section-heading">
-        <p className="eyebrow">Collection editor</p>
         <h2>
           CRUD-ready collection sections with space for future admin workflows.
         </h2>

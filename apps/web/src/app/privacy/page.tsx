@@ -41,7 +41,6 @@ export default function PrivacyPage() {
         >
           <SectionHeading
             description="Kort en feitelijk: we verzamelen alleen wat nodig is om Brickhunt bruikbaar en veilig te houden."
-            eyebrow="Privacy"
             title="Privacybeleid"
             titleAs="h1"
             tone="display"
@@ -52,7 +51,6 @@ export default function PrivacyPage() {
           as="section"
           className={styles.infoCard}
           description="Wat Brickhunt met gegevens doet."
-          eyebrow="Gegevens"
           title="Wat we gebruiken"
           tone="default"
         >
@@ -69,7 +67,6 @@ export default function PrivacyPage() {
           as="section"
           className={styles.infoCard}
           description="Voor vragen of correcties."
-          eyebrow="Contact"
           title="Je kunt ons mailen"
           tone="muted"
         >

@@ -6,7 +6,6 @@ export function ContentFeaturePreview() {
   return (
     <section className="surface split-card">
       <div className="stack">
-        <p className="eyebrow">Preview flow</p>
         <h2 className="surface-title">{previewPanel.status}</h2>
         <p>{previewPanel.summary}</p>
       </div>

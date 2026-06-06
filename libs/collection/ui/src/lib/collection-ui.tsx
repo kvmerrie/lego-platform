@@ -285,12 +285,7 @@ export function CollectorCollectionPanel({
       tone={state === 'populated' ? 'default' : 'muted'}
     >
       <div className={styles.collectionHeader}>
-        <SectionHeading
-          description={description}
-          eyebrow="Verzamelaarscollectie"
-          title={title}
-          titleAs="h1"
-        />
+        <SectionHeading description={description} title={title} titleAs="h1" />
         <p className={styles.collectionMeta}>
           {state === 'loading'
             ? 'Opslagen laden'
@@ -368,7 +363,6 @@ export function CollectionUi() {
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
         description="Displaystatistieken, planken en beheeroppervlakken zonder ingebakken businesslogica."
-        eyebrow="Collectie-UI"
         title="Verzamelaarsoppervlakken met heldere status en acties."
       />
     </Surface>

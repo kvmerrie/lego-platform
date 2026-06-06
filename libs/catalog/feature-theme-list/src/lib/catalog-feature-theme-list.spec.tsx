@@ -59,9 +59,9 @@ describe('CatalogFeatureThemeList', () => {
       />,
     );
 
-    expect(markup).toContain('Kies je hoek');
+    expect(markup).not.toContain('Kies je hoek');
     expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(markup).toContain('6 thema’s om mee te starten + alle thema’s');
+    expect(markup).not.toContain('6 thema’s om mee te starten + alle thema’s');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Marvel');
     expect(markup).toContain('href="/themes/icons"');
@@ -134,9 +134,9 @@ describe('CatalogFeatureThemeList', () => {
       />,
     );
 
-    expect(markup).toContain('Meer om te ontdekken');
+    expect(markup).not.toContain('Meer om te ontdekken');
     expect(markup).toContain('Botanicals, kunst of modulaire straten?');
-    expect(markup).toContain('4 thema&#x27;s als je iets anders zoekt');
+    expect(markup).not.toContain('4 thema&#x27;s als je iets anders zoekt');
     expect(markup).toContain('data-theme-spotlight-layout="rail"');
     expect(markup).toContain('sectionShellInverse');
     expect(markup).toContain('href="/themes/modular-buildings"');

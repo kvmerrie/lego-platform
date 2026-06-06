@@ -20,4 +20,16 @@ describe('RootLayout theme tokens', () => {
     expect(headSource).toContain('getThemeStyles()');
     expect(bodySource).not.toContain('getThemeStyles()');
   });
+
+  it('exposes the Bing Webmaster Tools verification only for production metadata', () => {
+    const layoutSource = readFileSync(layoutSourcePath, 'utf8');
+
+    expect(layoutSource).toContain(
+      "const bingWebmasterVerificationCode = 'D679C68888AADBE90DEA7E0E035F8053';",
+    );
+    expect(layoutSource).toContain('verification: isProduction');
+    expect(layoutSource).toContain(
+      "'msvalidate.01': bingWebmasterVerificationCode,",
+    );
+  });
 });

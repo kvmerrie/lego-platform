@@ -31,15 +31,9 @@ function dedupeSpotlightItems(
 }
 
 export function CatalogFeatureThemeSpotlight({
-  description,
-  eyebrow = 'Meer om te ontdekken',
-  signal,
   themeItems = [],
   title = 'Botanicals, kunst of modulaire straten?',
 }: {
-  description?: string;
-  eyebrow?: string;
-  signal?: string;
   themeItems?: readonly CatalogHomepageSpotlightItem[];
   title?: string;
 }) {
@@ -55,15 +49,9 @@ export function CatalogFeatureThemeSpotlight({
       bodyClassName={styles.body}
       className={styles.section}
       data-theme-spotlight-layout="rail"
-      description={description}
-      eyebrow={eyebrow}
       headingClassName={styles.header}
       id="theme-spotlight"
       padding="default"
-      signal={
-        signal ??
-        `${renderedThemeItems.length} thema's als je iets anders zoekt`
-      }
       title={title}
       tone="inverse"
     >

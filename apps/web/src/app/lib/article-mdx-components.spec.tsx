@@ -982,7 +982,7 @@ Klaar.`,
     expect(markup).not.toContain('Setselectie');
   });
 
-  it('passes a custom SetRail eyebrow from MDX props', async () => {
+  it('renders a custom SetRail title without a pre-title eyebrow', async () => {
     listCatalogSetCardsByIds.mockResolvedValue([
       {
         id: '75446',
@@ -996,21 +996,19 @@ Klaar.`,
     ]);
 
     const SetRail = getArticleMdxComponents().SetRail as (props: {
-      eyebrow?: string;
       setIds?: readonly string[] | string;
       title?: string;
     }) => Promise<React.ReactNode>;
     const markup = renderToStaticMarkup(
       await SetRail({
-        eyebrow: 'Kun je niet wachten?',
         setIds: '75446',
         title: 'Andere helmets om nu te bouwen',
       }),
     );
 
-    expect(markup).toContain('Kun je niet wachten?');
     expect(markup).toContain('Andere helmets om nu te bouwen');
     expect(markup).not.toContain('Setselectie');
+    expect(markup).not.toContain('Kun je niet wachten?');
   });
 
   it('renders cards without requiring prices or offer summaries', async () => {

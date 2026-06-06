@@ -106,6 +106,23 @@ describe('ShellWeb', () => {
     );
   });
 
+  it('uses the shared section gutter for header and footer alignment', () => {
+    const css = readShellCss();
+
+    expect(css).toContain('.shell {\n  --shell-header-height:');
+    expect(css).toContain(
+      '--lego-section-inline-padding: var(--lego-space-3);',
+    );
+    expect(css).toMatch(
+      /\.headerBar \{\n  align-items: center;[\s\S]*padding-inline: var\(--lego-section-inline-padding\);/u,
+    );
+    expect(css).toContain(
+      '.footerInner {\n  padding-bottom: calc(var(--lego-space-8) + var(--shell-mobile-tabbar-offset));\n  padding-inline: var(--lego-section-inline-padding);',
+    );
+    expect(css).not.toContain('padding-left: var(--lego-space-6);');
+    expect(css).not.toContain('padding-right: var(--lego-space-6);');
+  });
+
   it('renders a compact retail-style shell header with calm mobile chrome and a shared bottom tab bar', () => {
     const markup = renderToStaticMarkup(
       <ShellWeb>

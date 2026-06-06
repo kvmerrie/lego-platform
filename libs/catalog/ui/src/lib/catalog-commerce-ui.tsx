@@ -101,7 +101,6 @@ function CatalogDecisionOfferCard({
   if (!offer) {
     return (
       <section className={styles.bestDealCard} data-commerce-state="follow">
-        <p className={styles.bestDealEyebrow}>Prijs volgen</p>
         <p className={styles.bestDealFallbackValue}>Nog geen deal</p>
         <p className={styles.bestDealMeta}>Prijsbeeld bouwt nog op.</p>
         {followAction ? (
@@ -120,9 +119,6 @@ function CatalogDecisionOfferCard({
       data-tone={offer.decisionTone ?? 'neutral'}
     >
       <div className={styles.bestDealHeader}>
-        <p className={styles.bestDealEyebrow}>
-          {offer.eyebrow ?? 'Beste prijs nu'}
-        </p>
         {offer.decisionLabel ? (
           <Badge tone={offer.decisionTone ?? 'neutral'}>
             {offer.decisionLabel}
@@ -213,22 +209,16 @@ function getFollowCopy(tone?: CatalogDecisionVerdict['tone']): string {
   return 'Volg deze set als je straks opnieuw wilt kijken.';
 }
 
-function getFollowEyebrow(tone?: CatalogDecisionVerdict['tone']): string {
-  return tone === 'warning' ? 'Slimmer om te wachten' : 'Prijs volgen';
-}
-
 function CatalogFollowActionCard({
   action,
   copy,
   compact = false,
-  eyebrow,
   title,
   tone,
 }: {
   action?: ReactNode;
   copy?: string;
   compact?: boolean;
-  eyebrow?: string;
   title?: string;
   tone?: CatalogDecisionVerdict['tone'];
 }) {
@@ -238,7 +228,6 @@ function CatalogFollowActionCard({
       data-emphasis={tone === 'warning' ? 'primary' : 'secondary'}
       data-layout={compact ? 'compact' : 'default'}
     >
-      <p className={styles.alertEyebrow}>{eyebrow ?? getFollowEyebrow(tone)}</p>
       <p className={styles.alertTitle}>
         <BellRing aria-hidden="true" size={17} strokeWidth={2.2} />
         <span>{title ?? getFollowTitle(tone)}</span>
@@ -253,7 +242,6 @@ export function CatalogPriceDecisionSecondary({
   compact = false,
   followAction,
   followCopy,
-  followEyebrow,
   followTitle,
   supportItems = [],
   supportTitle,
@@ -264,7 +252,6 @@ export function CatalogPriceDecisionSecondary({
       action={followAction}
       copy={followCopy}
       compact={compact}
-      eyebrow={followEyebrow}
       title={followTitle}
       tone={verdictTone}
     />
@@ -305,7 +292,6 @@ function CatalogOfferCoverageState({
         .filter(Boolean)
         .join(' ')}
       description={summaryLabel}
-      eyebrow="Vergelijking"
       elevation="rested"
       id={id}
       title="Nog geen vergelijking"
@@ -378,7 +364,6 @@ export function CatalogPriceDecisionPanel({
   compact = false,
   followAction,
   followCopy,
-  followEyebrow,
   followTitle,
   leadWithFollow = false,
   primaryOffer,
@@ -397,7 +382,6 @@ export function CatalogPriceDecisionPanel({
       compact={compact}
       followAction={followAction}
       followCopy={followCopy}
-      followEyebrow={followEyebrow}
       followTitle={followTitle}
       supportItems={supportItems}
       supportTitle={supportTitle}
@@ -501,11 +485,9 @@ export function CatalogOfferComparison({
 }
 
 export function CatalogTrustPanel({
-  eyebrow = 'Laatste check',
   title = 'Wat Brickhunt nu ziet',
   trustSignals,
 }: {
-  eyebrow?: string;
   title?: string;
   trustSignals: readonly CatalogTrustSignal[];
 }) {
@@ -517,7 +499,6 @@ export function CatalogTrustPanel({
     <Panel
       as="section"
       className={styles.trustCard}
-      eyebrow={eyebrow}
       elevation="rested"
       title={title}
       tone="muted"

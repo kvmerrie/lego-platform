@@ -240,21 +240,6 @@
   width: 2rem;
 }
 
-.stepLabel,
-.cardEyebrow {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-label-size);
-  font-weight: var(--lego-font-weight-semibold);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  line-height: var(--lego-text-role-label-line-height);
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.priceSection .cardEyebrow {
-  color: var(--lego-commerce);
-}
-
 .cardTitle {
   font-family: var(--lego-font-family-heading);
   font-size: var(--lego-text-role-card-title-size);

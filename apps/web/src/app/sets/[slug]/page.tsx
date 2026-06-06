@@ -1353,7 +1353,6 @@ function buildBestDeal({
       decisionHelper: decisionPresentation.noOfferCopy,
       decisionLabel: dealVerdict.label,
       decisionTone: dealVerdict.tone,
-      eyebrow: 'Prijsbeeld nu',
       merchantLabel: decisionPresentation.noOfferTitle,
       price: formatPriceMinor({
         currencyCode: pricePanelSnapshot.currencyCode,
@@ -1397,7 +1396,6 @@ function buildBestDeal({
     decisionHelper: shortenCommerceHeroDecisionHelper(dealVerdict.explanation),
     decisionLabel: dealVerdict.label,
     decisionTone: dealVerdict.tone,
-    eyebrow: 'Beste prijs nu',
     merchantLabel: `Bij ${merchantName}`,
     price: formatOfferPrice(catalogOffer),
     rankingLabel: buildBestOfferRankingLabel({
@@ -1529,7 +1527,6 @@ function buildTrackedAvailabilityFallbackBestDeal({
       : 'Recent gecontroleerd',
     coverageLabel: buildMerchantCoverageLabel(primarySeedCount),
     decisionTone: 'neutral' as const,
-    eyebrow: 'Beschikbaarheid nu',
   };
 
   if (state === 'retired') {
@@ -1793,7 +1790,6 @@ export function SetNewsRail({
   return (
     <section aria-labelledby="set-news-title" className={styles.setNewsRail}>
       <div className={styles.setNewsHeader}>
-        <p className={styles.setNewsEyebrow}>Updates</p>
         <h2 className={styles.setNewsTitle} id="set-news-title">
           Laatste updates
         </h2>
@@ -1863,7 +1859,6 @@ export function SetDetailInternalLinkRails({
         <CatalogFeatureSetList
           className={styles.comparableSetsRail}
           description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${displayTitle} staan.`}
-          eyebrow="Zelfde thema"
           key={block.id}
           railLayoutMode="default"
           sectionId="same-theme-sets"
@@ -1894,7 +1889,6 @@ export function SetDetailCollectionDiscoveryLinks({
       className={styles.discoveryLinks}
     >
       <div className={styles.discoveryLinksHeader}>
-        <p className={styles.discoveryLinksEyebrow}>Meer keuzes</p>
         <h2
           className={styles.discoveryLinksTitle}
           id="set-discovery-links-title"
@@ -2378,11 +2372,6 @@ export default async function SetDetailPage({
               : availabilityFallbackState === 'no_current_stock'
                 ? 'Zodra er weer nieuwe voorraad opduikt bij de winkels die Brickhunt volgt, zie je dat hier terug.'
                 : defaultDecisionPresentation.followCopy
-        }
-        followEyebrow={
-          hasTrackedAvailabilityFallback
-            ? 'Beschikbaarheid'
-            : defaultDecisionPresentation.followEyebrow
         }
         followTitle={
           availabilityFallbackState === 'retired'

@@ -74,7 +74,6 @@ export function CatalogSectionHeader({
   actionClassName,
   className,
   description,
-  eyebrow,
   headingClassName,
   headingTone = 'default',
   signal,
@@ -102,13 +101,14 @@ export function CatalogSectionHeader({
   utilityClassName?: string;
   utilityPlacement?: CatalogSectionHeaderUtilityPlacement;
 }) {
-  const hasAside = signal || (utility && utilityPlacement === 'aside');
+  const hasAside = Boolean(signal || (utility && utilityPlacement === 'aside'));
   const TitleTag = titleAs;
 
   return (
     <div
       className={joinClasses(
         styles.sectionHeader,
+        hasAside && styles.sectionHeaderWithAside,
         tone === 'inverse' && styles.sectionHeaderInverse,
         className,
       )}
@@ -121,9 +121,6 @@ export function CatalogSectionHeader({
             headingClassName,
           )}
         >
-          {eyebrow ? (
-            <p className={styles.sectionHeaderEyebrow}>{eyebrow}</p>
-          ) : null}
           <div className={styles.sectionHeaderTitleRow}>
             <TitleTag className={styles.sectionHeaderTitle}>{title}</TitleTag>
             {action ? (
@@ -236,7 +233,6 @@ export function CatalogSectionShell({
   children,
   className,
   description,
-  eyebrow,
   headerClassName,
   headerTone,
   headingClassName,
@@ -285,7 +281,6 @@ export function CatalogSectionShell({
         actionClassName={actionClassName}
         className={headerClassName}
         description={description}
-        eyebrow={eyebrow}
         headingClassName={headingClassName}
         headingTone={headingTone}
         signal={signal}
@@ -392,7 +387,6 @@ export function CatalogSplitIntroPanel({
           <SectionHeading
             className={styles.heroCopy}
             description={primary.description}
-            eyebrow={primary.eyebrow}
             title={primary.title}
             titleAs={primary.titleAs}
             tone={primary.tone}
@@ -406,7 +400,6 @@ export function CatalogSplitIntroPanel({
         <SectionHeading
           className={styles.heroCopy}
           description={secondary.description}
-          eyebrow={secondary.eyebrow}
           title={secondary.title}
           titleAs={secondary.titleAs}
           tone={secondary.tone}
@@ -432,7 +425,6 @@ export function CatalogSetDetailHero({
   decisionPrimary,
   decisionSecondary,
   decisionPanel,
-  eyebrow,
   gallery,
   keyFacts,
   title,
@@ -445,7 +437,6 @@ export function CatalogSetDetailHero({
   decisionPanel?: ReactNode;
   decisionPrimary?: ReactNode;
   decisionSecondary?: ReactNode;
-  eyebrow?: ReactNode;
   gallery: ReactNode;
   keyFacts?: ReactNode;
   title: ReactNode;
@@ -455,9 +446,6 @@ export function CatalogSetDetailHero({
   const heroHeader = (
     <div className={styles.detailHeroHeader}>
       {badges ? <div className={styles.badgeRow}>{badges}</div> : null}
-      {eyebrow ? (
-        <div className={styles.detailHeroEyebrow}>{eyebrow}</div>
-      ) : null}
       <TitleTag className={styles.detailTitle}>{title}</TitleTag>
       {titleSupplement ? titleSupplement : null}
     </div>

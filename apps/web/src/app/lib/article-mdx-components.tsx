@@ -249,7 +249,6 @@ function resolveArticleSetRailSurfaceVariant({
 export async function renderArticleMdxSetRail({
   articleSlug,
   excludedCanonicalIds = [],
-  eyebrow,
   setIds = [],
   subtitle,
   surfaceVariant = 'themed',
@@ -257,7 +256,6 @@ export async function renderArticleMdxSetRail({
 }: {
   articleSlug?: string;
   excludedCanonicalIds?: readonly string[];
-  eyebrow?: string;
   setIds?:
     | readonly string[]
     | Record<string, readonly string[] | string | number | undefined>
@@ -283,7 +281,6 @@ export async function renderArticleMdxSetRail({
     <ArticleMdxSetRailClient
       articleSlug={articleSlug}
       canonicalIds={canonicalIds}
-      eyebrow={eyebrow}
       initialSetCards={setCards}
       subtitle={subtitle}
       surfaceVariant={surfaceVariant}
@@ -504,7 +501,6 @@ export function getArticleMdxComponents({
   }
 
   async function SetRail(props: {
-    eyebrow?: string;
     setIds?:
       | readonly string[]
       | Record<string, readonly string[] | string | number | undefined>
@@ -518,7 +514,6 @@ export function getArticleMdxComponents({
     );
     const railNode = await renderArticleMdxSetRail({
       articleSlug,
-      eyebrow: props.eyebrow,
       excludedCanonicalIds: [...usedCanonicalIds],
       setIds: uniqueCanonicalIds,
       subtitle: props.subtitle,

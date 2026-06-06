@@ -199,7 +199,6 @@ export function ShellFeatureWishlistAlertSummary() {
         description={`${wishlistAlertSummary.activeCount} set${
           wishlistAlertSummary.activeCount === 1 ? '' : 's'
         } op je verlanglijst hebben nu een actief koopsignaal.`}
-        eyebrow="Verlanglijstsignalen"
         title={
           wishlistNewAlertSummary
             ? `${wishlistNewAlertSummary.newCount} nieuwe dealupdate${

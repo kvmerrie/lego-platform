@@ -175,7 +175,6 @@ export default async function ArticleThemePage({
         <EditorialHeroPanel
           editorialSection={{
             body: `Nieuwe artikelen, releases en updates binnen ${themeLabel}.`,
-            eyebrow: 'ARTIKELEN',
             id: `articles-${theme}`,
             title: `${themeLabel} nieuws`,
             type: 'hero',

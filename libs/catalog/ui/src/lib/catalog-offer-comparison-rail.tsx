@@ -750,8 +750,6 @@ export function CatalogOfferComparisonRail({
       <Panel
         as="section"
         className={[styles.offerListCard, className].filter(Boolean).join(' ')}
-        description={offerCountSummaryLabel}
-        eyebrow="Vergelijk winkels"
         elevation="rested"
         headingClassName={styles.offerRailHeading}
         id={id}

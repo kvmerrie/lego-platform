@@ -4,33 +4,13 @@ import type {
   HeroEditorialSection,
   RichTextEditorialSection,
 } from '@lego-platform/content/util';
-import {
-  ActionLink,
-  Badge,
-  SectionHeading,
-  Surface,
-} from '@lego-platform/shared/ui';
+import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './content-ui.module.css';
 
 type BodyEditorialSection =
   | CalloutEditorialSection
   | HeroEditorialSection
   | RichTextEditorialSection;
-
-function getEditorialSectionLabel(editorialSection: EditorialSection): string {
-  if (editorialSection.eyebrow) {
-    return editorialSection.eyebrow;
-  }
-
-  switch (editorialSection.type) {
-    case 'callout':
-      return 'Callout';
-    case 'richText':
-      return 'Editorial note';
-    case 'hero':
-      return 'Hero';
-  }
-}
 
 function getEditorialCtaTone(
   editorialSectionType: EditorialSection['type'],
@@ -87,7 +67,6 @@ export function EditorialHeroPanel({
       <div className={styles.heroContent}>
         <SectionHeading
           description={editorialSection.body}
-          eyebrow={editorialSection.eyebrow}
           title={editorialSection.title}
           titleAs="h1"
           tone="display"
@@ -108,13 +87,6 @@ function EditorialBodySectionCard({
 }: {
   editorialSection: BodyEditorialSection;
 }) {
-  const badgeTone =
-    editorialSection.type === 'callout'
-      ? 'accent'
-      : editorialSection.type === 'richText'
-        ? 'info'
-        : 'neutral';
-
   return (
     <Surface
       as="article"
@@ -123,9 +95,6 @@ function EditorialBodySectionCard({
       tone={editorialSection.type === 'callout' ? 'accent' : 'default'}
     >
       <div className={styles.panelHeader}>
-        <Badge tone={badgeTone}>
-          {getEditorialSectionLabel(editorialSection)}
-        </Badge>
         <h3 className={styles.panelTitle}>{editorialSection.title}</h3>
       </div>
       <p className={styles.panelBody}>{editorialSection.body}</p>
@@ -152,7 +121,6 @@ export function ContentUi() {
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
         description="Editorial panels that can move cleanly from static copy to CMS-backed rendering."
-        eyebrow="Content UI"
         title="Warm, curated surfaces for editorial storytelling."
       />
     </Surface>

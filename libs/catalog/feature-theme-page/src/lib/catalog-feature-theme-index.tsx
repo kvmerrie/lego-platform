@@ -67,7 +67,6 @@ export function CatalogFeatureThemeIndex({
       >
         <SectionHeading
           description="Weet je al waar je naar zoekt? Begin hier en duik direct een thema in"
-          eyebrow="Thema's"
           title="Alle thema's"
           titleAs="h1"
         />
@@ -81,7 +80,6 @@ export function CatalogFeatureThemeIndex({
         bodyClassName={styles.directorySectionBody}
         bodySpacing="compact"
         description="Icons, Star Wars, Botanicals en meer. Kies hier de lijn waar je als eerste in wilt duiken."
-        eyebrow="Begin hier"
         padding="default"
         signal={`${themeDirectoryItems.length} thema's`}
         spacing="default"

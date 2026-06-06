@@ -419,7 +419,6 @@ export async function renderDealsPage({
       <main className={styles.page}>
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
-            <p className={styles.heroEyebrow}>LEGO deals</p>
             <h1 className={styles.heroTitle}>{sortConfig.title}</h1>
             <p className={styles.heroDescription}>{sortConfig.description}</p>
             <a
@@ -459,13 +458,10 @@ export async function renderDealsPage({
         <CatalogSectionShell
           as="section"
           className={styles.discoveryTileSection}
-          description="Kies meteen het type deal dat bij je zoektocht past."
-          eyebrow="Begin hier"
           headingClassName={styles.discoveryTileHeading}
-          signal="7 routes"
           title="Ontdek deals op jouw manier"
           titleAs="h2"
-          tone="default"
+          tone="inverse"
         >
           <nav
             aria-label="Deal categorieen"
@@ -502,11 +498,9 @@ export async function renderDealsPage({
           as="section"
           bodySpacing="relaxed"
           className={styles.browseSection}
-          description="Deze lijst komt uit de deal-snapshot. Geen live winkelrefresh tijdens het laden, wel actuele prijscontext uit de laatste commerce-sync."
-          eyebrow="Dealbrowser"
+          description={`${dealsPage.setCards.length} producten worden weergegeven`}
           id={DEALS_COLLECTION_SECTION_ID}
           padding="default"
-          signal={`${dealsPage.totalSetCount} deals`}
           spacing="relaxed"
           title={sortConfig.label}
           titleAs="h2"

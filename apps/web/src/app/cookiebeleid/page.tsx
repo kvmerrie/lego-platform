@@ -41,7 +41,6 @@ export default function CookiePolicyPage() {
         >
           <SectionHeading
             description="Cookies moeten de site laten werken, niet in de weg zitten terwijl je sets vergelijkt."
-            eyebrow="Cookies"
             title="Cookiebeleid"
             titleAs="h1"
             tone="display"
@@ -52,7 +51,6 @@ export default function CookiePolicyPage() {
           as="section"
           className={styles.infoCard}
           description="Welke technieken je kunt tegenkomen."
-          eyebrow="Gebruik"
           title="Waar cookies voor dienen"
           tone="default"
         >
@@ -69,7 +67,6 @@ export default function CookiePolicyPage() {
           as="section"
           className={styles.infoCard}
           description="Vragen over cookies of tracking."
-          eyebrow="Contact"
           title="Mail ons gerust"
           tone="muted"
         >

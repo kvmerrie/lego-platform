@@ -123,14 +123,12 @@ export function ContentArticleSectionShell({
   bodyClassName,
   children,
   className,
-  eyebrow,
   title,
   tone = 'default',
 }: {
   bodyClassName?: string;
   children: ReactNode;
   className?: string;
-  eyebrow?: string;
   title: string;
   tone?: 'default' | 'inverse';
 }) {
@@ -147,9 +145,6 @@ export function ContentArticleSectionShell({
       data-content-section-shell={tone}
     >
       <div className={styles.sectionShellHeader}>
-        {eyebrow ? (
-          <p className={styles.sectionShellEyebrow}>{eyebrow}</p>
-        ) : null}
         <h2 className={styles.sectionShellTitle}>{title}</h2>
       </div>
       <div className={joinClasses(styles.sectionShellBody, bodyClassName)}>
@@ -409,7 +404,6 @@ export function ContentArticleCompactRail({
     <ContentArticleSectionShell
       bodyClassName={styles.compactRailBody}
       className={styles.compactRail}
-      eyebrow="POPULAIR"
       title={title}
       tone="inverse"
     >
@@ -476,12 +470,7 @@ export function ContentArticleRail({
 
   return (
     <section className={joinClasses(styles.rail, className)} aria-label={title}>
-      <SectionHeading
-        description={subtitle}
-        eyebrow="Artikelen"
-        title={title}
-        titleAs="h2"
-      />
+      <SectionHeading description={subtitle} title={title} titleAs="h2" />
       <ContentArticleGrid contentArticles={visibleArticles} />
     </section>
   );
@@ -515,14 +504,12 @@ export function ContentArticleSetRail({
   children,
   debugMessage,
   emptyMessage,
-  eyebrow,
   subtitle,
   title,
 }: {
   children?: ReactNode;
   debugMessage?: string;
   emptyMessage?: string;
-  eyebrow?: string;
   subtitle?: string;
   title: string;
 }) {
@@ -543,12 +530,7 @@ export function ContentArticleSetRail({
         elevation="rested"
         tone="muted"
       >
-        <SectionHeading
-          description={subtitle}
-          eyebrow={eyebrow}
-          title={title}
-          titleAs="h2"
-        />
+        <SectionHeading description={subtitle} title={title} titleAs="h2" />
         {debugMessage ? (
           <p className={styles.embeddedRailDebug} role="status">
             {debugMessage}

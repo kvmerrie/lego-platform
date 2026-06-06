@@ -97,7 +97,7 @@ const homepageValueSignals = [
   },
   {
     id: 'when-to-buy',
-    title: 'Niet alleen waar, maar wanneer',
+    title: 'Het juiste koopmoment',
     body: 'Brickhunt helpt je zien of nu instappen slim is of dat wachten beter voelt.',
   },
   {
@@ -901,14 +901,8 @@ export default async function HomePage() {
         </div>
         <CatalogSectionShell
           className={styles.discoveryTileSection}
-          description={
-            homepageDiscoverySection?.subtitle ??
-            'Kies meteen de route die bij je kast past: nieuw, volwassen, budget, bijna weg of gewoon een scherpe prijs.'
-          }
-          eyebrow="Begin hier"
           headingClassName={styles.discoveryTileHeading}
           id={HOMEPAGE_DISCOVERY_SECTION_ID}
-          signal="6 routes"
           title={
             homepageDiscoverySection?.title ?? 'Ontdek LEGO op jouw manier'
           }
@@ -945,7 +939,6 @@ export default async function HomePage() {
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
               description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
-              eyebrow="Deals"
               prioritizeFirstImage
               railLayoutMode="stable-square"
               sectionId={HOMEPAGE_PRIMARY_DEAL_SECTION_ID}
@@ -959,7 +952,6 @@ export default async function HomePage() {
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
               description="Sets die nu lager staan dan recent. Geen hard deal-label, wel een goed moment om te kijken."
-              eyebrow="Prijsbeweging"
               prioritizeFirstImage
               railLayoutMode="stable-square"
               sectionId={HOMEPAGE_SOFT_DEAL_SECTION_ID}
@@ -973,7 +965,6 @@ export default async function HomePage() {
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
               description="Geen harde kortingclaim, wel actuele prijzen met een werkende winkelroute. Begin hier als je nu wilt vergelijken."
-              eyebrow="Actuele prijzen"
               prioritizeFirstImage
               railLayoutMode="stable-square"
               sectionId={HOMEPAGE_CURRENT_OFFERS_SECTION_ID}
@@ -988,7 +979,6 @@ export default async function HomePage() {
             <Panel
               as="section"
               description="We tonen hier alleen sets waarvan prijs, winkel en settype goed vergelijkbaar zijn. Vandaag is er nog geen deal die hard genoeg is."
-              eyebrow="Deals"
               padding="md"
               title="Nog geen harde deals"
               tone="muted"
@@ -1001,7 +991,6 @@ export default async function HomePage() {
         )}
         <div className={styles.themeSection}>
           <CatalogFeatureThemeList
-            description={homepageThemeRailSection?.subtitle}
             themeItems={homepageThemeDirectoryItems}
             title={
               homepageThemeRailSection?.title ??
@@ -1013,7 +1002,6 @@ export default async function HomePage() {
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
             description="Geen deal-label, wel sets die je collectie richting geven. Volg ze en pak het moment zodra prijs of voorraad goed wordt."
-            eyebrow="Volgen"
             railLayoutMode="stable-square"
             setCards={homepageSetCards}
             sectionId={HOMEPAGE_POPULAR_TO_FOLLOW_SECTION_ID}
@@ -1025,9 +1013,8 @@ export default async function HomePage() {
           as="section"
           className={styles.valueSection}
           description="Geen couponsite. Eerst begrijpen of een set nu echt opvalt, dan pas kiezen waar je heen gaat."
-          eyebrow="Waarom Brickhunt"
           padding="lg"
-          title="Niet alleen waar, maar wanneer"
+          title="Waarom Brickhunt?"
           tone="muted"
         >
           <div className={styles.valueGrid}>
@@ -1072,7 +1059,6 @@ export default async function HomePage() {
         </Panel>
         <div className={styles.spotlightSection}>
           <CatalogFeatureThemeSpotlight
-            description={homepageThemeSpotlightSection?.subtitle}
             themeItems={renderedHomepageThemeSpotlightItems}
             title={
               homepageThemeSpotlightSection?.title ??

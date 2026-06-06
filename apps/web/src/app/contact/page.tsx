@@ -29,7 +29,6 @@ export default function ContactPage() {
         >
           <SectionHeading
             description="Vraag over een set, prijs of samenwerking? Stuur gerust een bericht."
-            eyebrow="Contact"
             title="Mail Brickhunt"
             titleAs="h1"
             tone="display"
@@ -40,7 +39,6 @@ export default function ContactPage() {
           as="section"
           className={styles.infoCard}
           description="We lezen alles, maar Brickhunt blijft een klein project. Een inhoudelijk bericht werkt het best."
-          eyebrow="Support"
           title="hello@brickhunt.nl"
           tone="default"
         >

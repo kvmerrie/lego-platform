@@ -14,19 +14,16 @@ export const revalidate = 86_400;
 const coreSteps = [
   {
     id: 'choose',
-    label: 'Stap 1',
     title: 'Kies je set',
     body: 'Begin bij sets die je echt wilt blijven bekijken. Rivendell, een supercar of Hogwarts: eerst wat je op je plank wilt zien.',
   },
   {
     id: 'understand-price',
-    label: 'Stap 2',
     title: 'Begrijp de prijs',
     body: 'We tonen nagekeken prijzen uit echte aanbiedingen. "Onder normaal" betekent onder wat we voor die set meestal zien, niet onder een verzonnen korting.',
   },
   {
     id: 'buy-or-follow',
-    label: 'Stap 3',
     title: 'Koop of volg',
     body: 'Klopt de prijs? Open de set en ga naar de winkel. Nog niet? Bewaar de set of volg de prijs en wacht op een beter moment.',
   },
@@ -97,7 +94,6 @@ export default function HowItWorksPage() {
               <SectionHeading
                 className={styles.sectionHeader}
                 description="Kies eerst welke set je wilt. Zie daarna wanneer de prijs interessant is. Brickhunt helpt je beide sneller te zien."
-                eyebrow="Hoe Brickhunt werkt"
                 title="Sneller kiezen. Slimmer kopen."
                 titleAs="h1"
                 tone="display"
@@ -126,7 +122,6 @@ export default function HowItWorksPage() {
           as="section"
           className={styles.stepSection}
           description="Eerst kiezen. Dan prijs begrijpen. Dan kopen of volgen."
-          eyebrow="In drie stappen"
           elevation="floating"
           headingClassName={styles.sectionHeader}
           padding="lg"
@@ -148,7 +143,6 @@ export default function HowItWorksPage() {
                       {index + 1}
                     </span>
                     <div className={styles.stepHeading}>
-                      <p className={styles.stepLabel}>{step.label}</p>
                       <h3 className={styles.cardTitle}>{step.title}</h3>
                     </div>
                   </div>
@@ -163,7 +157,6 @@ export default function HowItWorksPage() {
           as="section"
           className={styles.priceSection}
           description="Alleen prijscontext die we echt kunnen onderbouwen."
-          eyebrow="Prijsuitleg"
           elevation="rested"
           headingClassName={styles.sectionHeader}
           padding="lg"
@@ -180,7 +173,6 @@ export default function HowItWorksPage() {
                   spacing="compact"
                   tone="default"
                 >
-                  <p className={styles.cardEyebrow}>Nagekeken prijs</p>
                   <h3 className={styles.cardTitle}>{pricingCheck.title}</h3>
                   <p className={styles.cardBody}>{pricingCheck.body}</p>
                 </Panel>
@@ -194,7 +186,6 @@ export default function HowItWorksPage() {
             as="section"
             className={styles.whyCard}
             description="Kort, bruikbaar en zonder nep-kortingen."
-            eyebrow="Waarom Brickhunt"
             elevation="rested"
             headingClassName={styles.sectionHeader}
             title="Waarom eerst hier kijken"
@@ -213,7 +204,6 @@ export default function HowItWorksPage() {
             as="section"
             className={styles.transparencyCard}
             description="Rustig en duidelijk. Zonder kleine lettertjes."
-            eyebrow="Transparantie"
             elevation="rested"
             headingClassName={styles.sectionHeader}
             title="Als je doorklikt naar een winkel"
