@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import {
@@ -183,9 +184,9 @@ async function createApiServer({
 describe('api v1 auth and set-status routes', () => {
   test('creates own-row RLS policies for user theme favorites', () => {
     const migrationSql = readFileSync(
-      new URL(
-        '../../../../supabase/migrations/20260606190000_user_theme_favorites.sql',
-        import.meta.url,
+      join(
+        process.cwd(),
+        'supabase/migrations/20260606190000_user_theme_favorites.sql',
       ),
       'utf-8',
     );
