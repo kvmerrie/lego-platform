@@ -3,25 +3,26 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { act, type ComponentProps } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  addUserThemeFavoriteForBrowser,
-  listUserThemeFavoritesForBrowser,
-  removeUserThemeFavoriteForBrowser,
-} from '@lego-platform/catalog/data-access-web';
 import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
 import { CatalogFeatureThemeIndex } from './catalog-feature-theme-index';
 import { CatalogFeatureFavoriteThemesRail } from './catalog-feature-theme-favorites';
 import { CatalogFeatureThemePage } from './catalog-feature-theme-page';
 
-vi.mock('@lego-platform/catalog/data-access-web', () => ({
-  addUserThemeFavoriteForBrowser: vi.fn(),
-  getUserThemeFavoriteContextForBrowser: vi.fn(),
-  listUserThemeFavoritesForBrowser: vi.fn(),
-  removeUserThemeFavoriteForBrowser: vi.fn(),
+const dataAccessMocks = vi.hoisted(() => ({
+  addUserThemeFavoriteForBrowser:
+    vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  getUserThemeFavoriteContextForBrowser:
+    vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  listUserThemeFavoritesForBrowser:
+    vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  removeUserThemeFavoriteForBrowser:
+    vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }));
+
+vi.mock('@lego-platform/catalog/data-access-web', () => dataAccessMocks);
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -373,7 +374,7 @@ describe('CatalogFeatureThemePage', () => {
 
 describe('CatalogFeatureFavoriteThemesRail', () => {
   it('renders a logged-in minecraft favorite once', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: ['theme:minecraft'],
       themes: [
@@ -410,11 +411,15 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
     ).toHaveLength(1);
     expect(container.querySelector('[data-theme="minecraft"]')).not.toBeNull();
     expect(container.textContent).toContain('Thema’s toevoegen');
-    expect(listUserThemeFavoritesForBrowser).toHaveBeenCalledTimes(1);
+    expect(
+      dataAccessMocks.listUserThemeFavoritesForBrowser,
+    ).toHaveBeenCalledTimes(1);
 
     await flushFavoriteRailEffects();
 
-    expect(listUserThemeFavoritesForBrowser).toHaveBeenCalledTimes(1);
+    expect(
+      dataAccessMocks.listUserThemeFavoritesForBrowser,
+    ).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();
@@ -422,7 +427,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('uses safe card fallbacks when optional favorite fields are missing', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: ['theme:minecraft'],
       themes: [
@@ -435,14 +440,16 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
           },
         },
       ],
-    } as Awaited<ReturnType<typeof listUserThemeFavoritesForBrowser>>);
+    });
 
     const { container, root } = await renderFavoriteThemesRail();
 
     expect(container.textContent).toContain('Minecraft®');
     expect(container.textContent).toContain('0 sets');
     expect(container.querySelector('img')).toBeNull();
-    expect(listUserThemeFavoritesForBrowser).toHaveBeenCalledTimes(1);
+    expect(
+      dataAccessMocks.listUserThemeFavoritesForBrowser,
+    ).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();
@@ -450,7 +457,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('skips malformed favorites and keeps the logged-in add tile usable', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: ['theme:minecraft'],
       themes: [
@@ -461,14 +468,16 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
           },
         },
       ],
-    } as Awaited<ReturnType<typeof listUserThemeFavoritesForBrowser>>);
+    });
 
     const { container, root } = await renderFavoriteThemesRail();
 
     expect(container.textContent).toContain('Jouw favoriete thema’s');
     expect(container.textContent).toContain('Thema’s toevoegen');
     expect(container.querySelector('a')).toBeNull();
-    expect(listUserThemeFavoritesForBrowser).toHaveBeenCalledTimes(1);
+    expect(
+      dataAccessMocks.listUserThemeFavoritesForBrowser,
+    ).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();
@@ -476,7 +485,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('renders null when the favorites API fails', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockRejectedValue(
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockRejectedValue(
       new Error('network unavailable'),
     );
 
@@ -484,7 +493,9 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
 
     expect(container.textContent).not.toContain('Jouw favoriete thema’s');
     expect(container.querySelector('a')).toBeNull();
-    expect(listUserThemeFavoritesForBrowser).toHaveBeenCalledTimes(1);
+    expect(
+      dataAccessMocks.listUserThemeFavoritesForBrowser,
+    ).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       root.unmount();
@@ -525,7 +536,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('renders an add tile for logged-in users without favorites', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: [],
       themes: [],
@@ -545,7 +556,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('opens the theme picker from the add tile', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: [],
       themes: [],
@@ -576,17 +587,17 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('optimistically adds and removes favorite themes from the picker', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: [],
       themes: [],
     });
-    vi.mocked(addUserThemeFavoriteForBrowser).mockResolvedValue({
+    dataAccessMocks.addUserThemeFavoriteForBrowser.mockResolvedValue({
       isAuthenticated: true,
       isFavorited: true,
       themeId: 'theme:icons',
     });
-    vi.mocked(removeUserThemeFavoriteForBrowser).mockResolvedValue({
+    dataAccessMocks.removeUserThemeFavoriteForBrowser.mockResolvedValue({
       isAuthenticated: true,
       isFavorited: false,
       themeId: 'theme:icons',
@@ -612,9 +623,11 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(addUserThemeFavoriteForBrowser).toHaveBeenCalledWith({
-      themeId: 'theme:icons',
-    });
+    expect(dataAccessMocks.addUserThemeFavoriteForBrowser).toHaveBeenCalledWith(
+      {
+        themeId: 'theme:icons',
+      },
+    );
     expect(container.querySelector('a[href="/themes/icons"]')).not.toBeNull();
 
     const selectedIconsButton = Array.from(
@@ -628,7 +641,9 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(removeUserThemeFavoriteForBrowser).toHaveBeenCalledWith({
+    expect(
+      dataAccessMocks.removeUserThemeFavoriteForBrowser,
+    ).toHaveBeenCalledWith({
       themeId: 'theme:icons',
     });
     expect(container.querySelector('a[href="/themes/icons"]')).toBeNull();
@@ -639,12 +654,12 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('rolls back picker optimistic updates on API errors', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: true,
       themeIds: [],
       themes: [],
     });
-    vi.mocked(addUserThemeFavoriteForBrowser).mockRejectedValue(
+    dataAccessMocks.addUserThemeFavoriteForBrowser.mockRejectedValue(
       new Error('nope'),
     );
 
@@ -679,7 +694,7 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
   });
 
   it('opens the gated modal when an anonymous add action is exposed', async () => {
-    vi.mocked(listUserThemeFavoritesForBrowser).mockResolvedValue({
+    dataAccessMocks.listUserThemeFavoritesForBrowser.mockResolvedValue({
       isAuthenticated: false,
       themeIds: [],
       themes: [],
