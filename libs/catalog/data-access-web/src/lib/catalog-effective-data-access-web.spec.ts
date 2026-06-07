@@ -436,6 +436,7 @@ function createCatalogSupabaseClientMock({
   priceHistoryRows = [],
   publicPageSectionRows = [],
   publicPageSectionItemRows = [],
+  setImageRows = [],
   snapshotRows = [],
   sourceMetadataRows = [],
   onSelect,
@@ -458,6 +459,7 @@ function createCatalogSupabaseClientMock({
   priceHistoryRows?: readonly Record<string, unknown>[];
   publicPageSectionRows?: readonly Record<string, unknown>[];
   publicPageSectionItemRows?: readonly Record<string, unknown>[];
+  setImageRows?: readonly Record<string, unknown>[];
   snapshotRows?: readonly Record<string, unknown>[];
   sourceMetadataRows?: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
@@ -533,6 +535,14 @@ function createCatalogSupabaseClientMock({
         return createSupabaseTableBuilder(sourceMetadataRows, {
           maxInFilterValues,
           onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'catalog_set_images') {
+        return createSupabaseTableBuilder(setImageRows, {
+          maxInFilterValues,
+          onSelect: (args) => onSelect?.(table, args),
+          selectError: selectErrors[table],
         });
       }
 
@@ -738,6 +748,429 @@ describe('catalog effective data access web', () => {
       primaryTheme: 'Star Wars',
       secondaryLabels: ['Ultimate Collector Series'],
     });
+  });
+
+  test('prefers stored catalog set images over external catalog images', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'rivendell-10316',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10316-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      setImageRows: [
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_type: 'hero',
+          public_url:
+            'https://storage.example.com/catalog-set-images/sets/10316/hero.webp',
+          set_id: '10316',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10316/hero.webp',
+          width: 1200,
+        },
+        {
+          content_type: 'image/jpeg',
+          height: 630,
+          image_type: 'social',
+          public_url: 'https://www.brickhunt.nl/images/sets/10316/social.jpg',
+          set_id: '10316',
+          sha256: 'abcdef1234567890abcdef1234567890',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10316/social.jpg',
+          width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 480,
+          image_type: 'card',
+          public_url: '/images/sets/10316/card.webp',
+          set_id: '10316',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10316/card.webp',
+          width: 640,
+        },
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_type: 'gallery',
+          public_url: '/images/sets/10316/gallery/1.webp',
+          set_id: '10316',
+          sort_order: 1,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10316/gallery/1.webp',
+          width: 1200,
+        },
+      ],
+    });
+
+    const [catalogSet] = await listCanonicalCatalogSets({
+      supabaseClient,
+    });
+
+    expect(catalogSet?.imageUrl).toBe('/images/sets/10316/hero.webp');
+    expect(catalogSet?.images).toEqual([
+      {
+        order: -100,
+        sha256: 'abcdef1234567890abcdef1234567890',
+        type: 'social',
+        url: '/images/sets/10316/social.jpg',
+      },
+      {
+        order: 201,
+        type: 'detail',
+        url: '/images/sets/10316/gallery/1.webp',
+      },
+    ]);
+
+    const [setCard] = await listCatalogSetCards({
+      supabaseClient,
+    });
+
+    expect(setCard?.imageUrl).toBe('/images/sets/10316/card.webp');
+    expect(setCard?.primaryImage).toBe('/images/sets/10316/hero.webp');
+  });
+
+  test('keeps stored set detail gallery ahead of Brickset gallery fallback', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10309-1.jpg',
+          name: 'Succulents',
+          piece_count: 771,
+          primary_theme_id: 'theme:botanicals',
+          release_year: 2022,
+          set_id: '10309',
+          slug: 'succulents-10309',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10309-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Botanicals',
+          id: 'theme:botanicals',
+        },
+      ],
+      setImageRows: [
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_type: 'hero',
+          public_url:
+            'https://www.brickhunt.nl/images/sets/10309/hero.webp?legacy=1',
+          set_id: '10309',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: null,
+          width: 1200,
+        },
+        {
+          content_type: 'image/jpeg',
+          height: 630,
+          image_type: 'social',
+          public_url: '/images/sets/10309/social.jpg',
+          set_id: '10309',
+          sha256: '1234567890abcdef1234567890abcdef',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/social.jpg',
+          width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 480,
+          image_type: 'card',
+          public_url: '/images/sets/10309/card.webp',
+          set_id: '10309',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/card.webp',
+          width: 640,
+        },
+        {
+          content_type: 'image/webp',
+          height: 240,
+          image_type: 'thumbnail',
+          public_url: '/images/sets/10309/thumbs/0.webp',
+          set_id: '10309',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/thumbs/0.webp',
+          width: 320,
+        },
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_type: 'gallery',
+          metadata_json: {
+            galleryRank: 3,
+            galleryRoleRank: 8,
+            gallerySuppressed: true,
+            gallerySuppressionReason:
+              'model image in the first 2 gallery positions is too similar to hero',
+          },
+          public_url: '/images/sets/10309/gallery/1.webp',
+          set_id: '10309',
+          sort_order: 1,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/gallery/1.webp',
+          width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_role: 'box_front',
+          image_type: 'gallery',
+          metadata_json: {
+            galleryRank: 1,
+            galleryRoleRank: 0,
+            gallerySuppressed: false,
+          },
+          public_url: '/images/sets/10309/gallery/2.webp',
+          set_id: '10309',
+          sort_order: 2,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/gallery/2.webp',
+          width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 900,
+          image_role: 'model_secondary',
+          image_type: 'gallery',
+          metadata_json: {
+            galleryRank: 2,
+            galleryRoleRank: 2,
+            gallerySuppressed: false,
+          },
+          public_url:
+            'https://www.brickhunt.nl/images/sets/10309/gallery/3.webp',
+          set_id: '10309',
+          sort_order: 3,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: null,
+          width: 1200,
+        },
+        {
+          content_type: 'image/jpeg',
+          duplicate_distance: 0,
+          duplicate_reason: 'sha256',
+          height: 900,
+          image_type: 'gallery',
+          image_role: 'model_secondary',
+          perceptual_hash: '0000000000000000',
+          public_url: '/images/sets/10309/gallery/2-duplicate.webp',
+          set_id: '10309',
+          sort_order: 4,
+          status: 'duplicate',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/gallery/2-duplicate.webp',
+          width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 240,
+          image_type: 'thumbnail',
+          public_url: '/images/sets/10309/thumbs/1.webp',
+          set_id: '10309',
+          sort_order: 1,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/thumbs/1.webp',
+          width: 320,
+        },
+        {
+          content_type: 'image/webp',
+          height: 240,
+          image_type: 'thumbnail',
+          public_url: '/images/sets/10309/thumbs/2.webp',
+          set_id: '10309',
+          sort_order: 2,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/thumbs/2.webp',
+          width: 320,
+        },
+        {
+          content_type: 'image/webp',
+          height: 240,
+          image_type: 'thumbnail',
+          public_url:
+            'https://ggqystcenwpbrjlkcmnt.supabase.co/storage/v1/object/public/catalog-set-images/sets/10309/thumbs/3.webp?download=1',
+          set_id: '10309',
+          sort_order: 3,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: null,
+          width: 320,
+        },
+      ],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10309',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            images: [
+              {
+                imageUrl:
+                  'https://images.brickset.com/sets/AdditionalImages/10309-1/10309_alt1.jpg',
+                sourceField: 'additionalImage',
+                type: 'additional',
+              },
+            ],
+          },
+          policy: 'render_publicly_with_attribution',
+          source: 'brickset',
+        },
+      ],
+    });
+
+    const catalogSet = await getCatalogSetBySlug({
+      slug: 'succulents-10309',
+      supabaseClient,
+    });
+
+    expect(catalogSet?.imageUrl).toBe('/images/sets/10309/hero.webp');
+    expect(catalogSet?.primaryImage).toBe('/images/sets/10309/hero.webp');
+    expect(catalogSet?.images).toEqual([
+      {
+        order: 0,
+        thumbnailUrl: '/images/sets/10309/thumbs/0.webp',
+        type: 'hero',
+        url: '/images/sets/10309/hero.webp',
+      },
+      {
+        order: -100,
+        sha256: '1234567890abcdef1234567890abcdef',
+        type: 'social',
+        url: '/images/sets/10309/social.jpg',
+      },
+      {
+        order: 201,
+        thumbnailUrl: '/images/sets/10309/thumbs/2.webp',
+        type: 'detail',
+        url: '/images/sets/10309/gallery/2.webp',
+      },
+      {
+        order: 202,
+        thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
+        type: 'detail',
+        url: '/images/sets/10309/gallery/3.webp',
+      },
+    ]);
+    expect(catalogSet?.images?.[2]?.url).toBe(
+      '/images/sets/10309/gallery/2.webp',
+    );
+    expect(
+      catalogSet?.images?.some((image) =>
+        image.url.includes('images.brickset.com'),
+      ),
+    ).toBe(false);
+    expect(
+      catalogSet?.images?.some((image) =>
+        image.url.includes('cdn.rebrickable.com'),
+      ),
+    ).toBe(false);
+    expect(
+      catalogSet?.images?.some((image) =>
+        image.url.includes('2-duplicate.webp'),
+      ),
+    ).toBe(false);
+    expect(
+      catalogSet?.images?.some((image) => image.url.includes('gallery/1.webp')),
+    ).toBe(false);
+    expect(
+      catalogSet?.images?.some((image) => image.url.includes('card.webp')),
+    ).toBe(false);
+  });
+
+  test('falls back to external catalog images when stored images are unavailable', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'rivendell-10316',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10316-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      selectErrors: {
+        catalog_set_images: () => ({
+          message: 'relation "catalog_set_images" does not exist',
+        }),
+      },
+    });
+
+    const [catalogSet] = await listCanonicalCatalogSets({
+      supabaseClient,
+    });
+
+    expect(catalogSet?.imageUrl).toBe(
+      'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+    );
+    expect(catalogSet?.images).toBeUndefined();
   });
 
   test('uses direct normalized themes for clean canonical reads', async () => {

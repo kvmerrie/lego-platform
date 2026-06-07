@@ -166,47 +166,120 @@ function summarizeThemePresentationCompleteness(rows) {
   };
 }
 
+function buildCatalogSetImageKey(row) {
+  return `${row.set_id}::${row.image_type}::${row.sort_order}`;
+}
+
+function compareCatalogSetImages({ productionRows, stagingRows }) {
+  const productionByKey = new Map(
+    productionRows.map((row) => [buildCatalogSetImageKey(row), row]),
+  );
+  const fields = [
+    'source',
+    'source_url',
+    'storage_bucket',
+    'storage_path',
+    'public_url',
+    'width',
+    'height',
+    'content_type',
+    'byte_size',
+    'sha256',
+    'status',
+  ];
+  let changed = 0;
+  let missingInProduction = 0;
+
+  for (const stagingRow of stagingRows) {
+    const productionRow = productionByKey.get(
+      buildCatalogSetImageKey(stagingRow),
+    );
+
+    if (!productionRow) {
+      missingInProduction += 1;
+      continue;
+    }
+
+    if (
+      fields.some((field) =>
+        isDifferent(stagingRow[field], productionRow[field]),
+      )
+    ) {
+      changed += 1;
+    }
+  }
+
+  return {
+    changed,
+    missingInProduction,
+  };
+}
+
+function summarizeCatalogSetImages(rows) {
+  const activeRows = rows.filter((row) => row.status === 'active');
+
+  return {
+    activeGalleryRows: activeRows.filter((row) => row.image_type === 'gallery')
+      .length,
+    activeHeroRows: activeRows.filter((row) => row.image_type === 'hero')
+      .length,
+    activeSocialRows: activeRows.filter((row) => row.image_type === 'social')
+      .length,
+    affectedSets: new Set(rows.map((row) => row.set_id)).size,
+    rows: rows.length,
+  };
+}
+
 async function readEnvironmentSnapshot({ client }) {
-  const [themes, sets, summaries, mappings, sourceThemes] = await Promise.all([
-    readRows({
-      client,
-      columns:
-        'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, is_public, public_order, status, created_at, updated_at',
-      orderBy: 'slug',
-      table: 'catalog_themes',
-    }),
-    readRows({
-      client,
-      columns:
-        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
-      orderBy: 'set_id',
-      table: 'catalog_sets',
-    }),
-    readRows({
-      client,
-      columns:
-        'theme_id, active_set_count, representative_set_id, representative_image_url, updated_at',
-      orderBy: 'theme_id',
-      table: 'catalog_theme_summaries',
-    }),
-    readRows({
-      client,
-      columns: 'source_theme_id, primary_theme_id, created_at, updated_at',
-      orderBy: 'source_theme_id',
-      table: 'catalog_theme_mappings',
-    }),
-    readRows({
-      client,
-      columns:
-        'id, source_system, source_theme_name, parent_source_theme_id, created_at, updated_at',
-      orderBy: 'id',
-      table: 'catalog_source_themes',
-    }),
-  ]);
+  const [themes, sets, summaries, mappings, sourceThemes, setImages] =
+    await Promise.all([
+      readRows({
+        client,
+        columns:
+          'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, is_public, public_order, status, created_at, updated_at',
+        orderBy: 'slug',
+        table: 'catalog_themes',
+      }),
+      readRows({
+        client,
+        columns:
+          'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+        orderBy: 'set_id',
+        table: 'catalog_sets',
+      }),
+      readRows({
+        client,
+        columns:
+          'theme_id, active_set_count, representative_set_id, representative_image_url, updated_at',
+        orderBy: 'theme_id',
+        table: 'catalog_theme_summaries',
+      }),
+      readRows({
+        client,
+        columns: 'source_theme_id, primary_theme_id, created_at, updated_at',
+        orderBy: 'source_theme_id',
+        table: 'catalog_theme_mappings',
+      }),
+      readRows({
+        client,
+        columns:
+          'id, source_system, source_theme_name, parent_source_theme_id, created_at, updated_at',
+        orderBy: 'id',
+        table: 'catalog_source_themes',
+      }),
+      readRows({
+        client,
+        columns:
+          'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+        orderBy: 'set_id',
+        table: 'catalog_set_images',
+      }),
+    ]);
 
   return {
     mappings,
     sets,
+    setImages,
     sourceThemes,
     summaries,
     themes,
@@ -285,6 +358,7 @@ async function main() {
           (row) => row.status === 'active' && row.is_public === true,
         ).length,
         sourceThemes: production.sourceThemes.length,
+        setImages: summarizeCatalogSetImages(production.setImages),
         summaries: production.summaries.length,
         themes: production.themes.length,
       },
@@ -296,6 +370,7 @@ async function main() {
           (row) => row.status === 'active' && row.is_public === true,
         ).length,
         sourceThemes: staging.sourceThemes.length,
+        setImages: summarizeCatalogSetImages(staging.setImages),
         summaries: staging.summaries.length,
         themes: staging.themes.length,
       },
@@ -347,6 +422,10 @@ async function main() {
         key: 'theme_id',
         productionRows: production.summaries,
         stagingRows: staging.summaries,
+      }),
+      catalogSetImages: compareCatalogSetImages({
+        productionRows: production.setImages,
+        stagingRows: staging.setImages,
       }),
       catalogThemesPresentation: themePresentationDiff,
     },

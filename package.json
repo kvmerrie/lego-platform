@@ -35,6 +35,7 @@
     "sync:misterbricks-feed": "pnpm nx run misterbricks-feed-sync:run",
     "sync:brickfever-feed": "pnpm nx run brickfever-feed-sync:run",
     "sync:brickset-enrichment": "pnpm nx run brickset-enrichment-sync:run",
+    "sync:set-images": "pnpm nx run catalog-set-image-sync:run",
     "sync:collection-page-snapshots": "pnpm nx run collection-page-snapshot-sync:run",
     "sync:set-detail-related-theme-snapshots": "pnpm nx run set-detail-related-theme-snapshot-sync:run",
     "sync:deal-page-snapshots": "pnpm nx run deal-page-snapshot-sync:run",

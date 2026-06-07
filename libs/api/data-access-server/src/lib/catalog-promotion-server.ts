@@ -22,6 +22,7 @@ import {
 const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
+const CATALOG_SET_IMAGES_TABLE = 'catalog_set_images';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
@@ -43,6 +44,7 @@ const CATALOG_PROMOTION_NON_PRICE_COLLECTION_SNAPSHOT_SLUGS = new Set([
 const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
   CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+  CATALOG_SET_IMAGES_TABLE,
   CATALOG_SET_SOURCE_METADATA_TABLE,
   COLLECTION_PAGE_SNAPSHOTS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
@@ -127,6 +129,20 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'synced_at',
     'created_at',
     'updated_at',
+  ],
+  [CATALOG_SET_IMAGES_TABLE]: [
+    'source',
+    'source_url',
+    'storage_bucket',
+    'storage_path',
+    'public_url',
+    'width',
+    'height',
+    'content_type',
+    'byte_size',
+    'sha256',
+    'status',
+    'metadata_json',
   ],
   [CATALOG_SET_SOURCE_METADATA_TABLE]: [
     'last_seen_at',
@@ -229,6 +245,23 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
     curated: [],
     generatedRuntime: ['minifig_count', 'source_minifig_count', 'synced_at'],
     protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_SET_IMAGES_TABLE]: {
+    canonical: ['set_id', 'image_type', 'sort_order', 'source', 'source_url'],
+    curated: [],
+    generatedRuntime: [
+      'storage_bucket',
+      'storage_path',
+      'public_url',
+      'width',
+      'height',
+      'content_type',
+      'byte_size',
+      'sha256',
+      'status',
+      'metadata_json',
+    ],
+    protected: [],
   },
   [CATALOG_SET_SOURCE_METADATA_TABLE]: {
     canonical: [
@@ -346,6 +379,40 @@ interface CatalogSetMinifigSummaryRow {
   updated_at: string;
 }
 
+interface CatalogSetImageRow {
+  byte_size: number | null;
+  content_type: string | null;
+  duplicate_distance: number | null;
+  duplicate_of_id: string | null;
+  duplicate_reason: 'perceptual' | 'sha256' | null;
+  height: number | null;
+  image_role:
+    | 'box_back'
+    | 'box_front'
+    | 'build'
+    | 'detail'
+    | 'lifestyle_people'
+    | 'lifestyle_room'
+    | 'logo'
+    | 'minifigure'
+    | 'model_primary'
+    | 'model_secondary'
+    | 'unknown';
+  image_type: 'gallery' | 'hero' | 'social' | 'thumbnail';
+  metadata_json: Record<string, unknown>;
+  perceptual_hash: string | null;
+  public_url: string | null;
+  set_id: string;
+  sha256: string | null;
+  sort_order: number;
+  source: 'brickset' | 'manual' | 'rebrickable';
+  source_url: string;
+  status: 'active' | 'duplicate' | 'failed';
+  storage_bucket: string | null;
+  storage_path: string | null;
+  width: number | null;
+}
+
 interface CommerceMerchantRow {
   affiliate_network: string | null;
   created_at: string;
@@ -425,6 +492,7 @@ export interface CatalogPromotionPreviewSample {
 }
 
 export interface CatalogPromotionPreviewResult {
+  catalogSetImages?: CatalogSetImagePromotionDiagnostics;
   generatedAt: string;
   meaningfulPendingPromoteCount: number;
   operatorSummary: {
@@ -442,6 +510,17 @@ export interface CatalogPromotionPreviewResult {
   targetEnvironment: 'production';
 }
 
+export interface CatalogSetImagePromotionDiagnostics {
+  activeGalleryCount: number;
+  activeHeroCount: number;
+  activeSocialCount: number;
+  affectedSetCount: number;
+  insertedCount: number;
+  readCount: number;
+  updatedCount: number;
+  upsertedCount?: number;
+}
+
 export interface CatalogPromotionResult {
   affectedThemeCount?: number;
   affectedThemeSlugs?: string[];
@@ -454,9 +533,18 @@ export interface CatalogPromotionResult {
   collectionPageSnapshotsBySlug?: Record<string, number>;
   collectionPageSnapshotsReadCount?: number;
   collectionPageSnapshotsUpsertedCount?: number;
+  catalog_set_images_active_gallery_count?: number;
+  catalog_set_images_active_hero_count?: number;
+  catalog_set_images_active_social_count?: number;
+  catalog_set_images_affected_set_count?: number;
+  catalog_set_images_read_count?: number;
+  catalog_set_images_upserted_count?: number;
+  catalogSetImages?: CatalogSetImagePromotionDiagnostics;
   durationMs: number;
   promotedMetadataSetIds?: string[];
   promotedMetadataSetSlugs?: string[];
+  promotedImageMetadataSetIds?: string[];
+  promotedImageMetadataSetSlugs?: string[];
   rakuten_source_metadata_promoted_count?: number;
   rakutenSourceMetadataPromotedCount?: number;
   skipped_source_metadata_count?: number;
@@ -481,6 +569,7 @@ export interface CatalogPromotionResult {
     catalog_theme_mappings: CatalogPromotionTableSummary;
     catalog_sets: CatalogPromotionTableSummary;
     catalog_set_minifig_summaries: CatalogPromotionTableSummary;
+    catalog_set_images: CatalogPromotionTableSummary;
     catalog_set_source_metadata?: CatalogPromotionTableSummary;
     collection_page_snapshots?: CatalogPromotionTableSummary;
     commerce_merchants?: CatalogPromotionTableSummary;
@@ -567,6 +656,13 @@ const CATALOG_PROMOTION_PREVIEW_TABLES = [
     onConflict: 'set_id',
     orderBy: 'set_id',
     table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+  },
+  {
+    columns:
+      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+    onConflict: 'set_id,image_type,sort_order',
+    orderBy: 'set_id',
+    table: CATALOG_SET_IMAGES_TABLE,
   },
   {
     columns:
@@ -884,6 +980,37 @@ function filterCatalogSetSourceMetadataRowsForPromotion<
       row,
     }),
   );
+}
+
+function buildCatalogSetImagePromotionDiagnostics({
+  rows,
+  summary,
+}: {
+  rows: readonly Pick<CatalogSetImageRow, 'image_type' | 'set_id' | 'status'>[];
+  summary: Pick<
+    CatalogPromotionTableSummary | CatalogPromotionPreviewTableSummary,
+    'insertedCount' | 'readCount' | 'updatedCount'
+  > & {
+    upsertedCount?: number;
+  };
+}): CatalogSetImagePromotionDiagnostics {
+  const activeRows = rows.filter((row) => row.status === 'active');
+
+  return {
+    activeGalleryCount: activeRows.filter((row) => row.image_type === 'gallery')
+      .length,
+    activeHeroCount: activeRows.filter((row) => row.image_type === 'hero')
+      .length,
+    activeSocialCount: activeRows.filter((row) => row.image_type === 'social')
+      .length,
+    affectedSetCount: new Set(rows.map((row) => row.set_id)).size,
+    insertedCount: summary.insertedCount,
+    readCount: summary.readCount,
+    updatedCount: summary.updatedCount,
+    ...(typeof summary.upsertedCount === 'number'
+      ? { upsertedCount: summary.upsertedCount }
+      : {}),
+  };
 }
 
 function countRowsWithInvalidPromotionTimestamp({
@@ -1626,6 +1753,7 @@ async function previewPromotionTable({
   columns,
   onConflict,
   orderBy,
+  preloadedStagingRows,
   promotedCatalogSetIds,
   productionSupabaseClient,
   samples,
@@ -1635,6 +1763,7 @@ async function previewPromotionTable({
   columns: string;
   onConflict: string;
   orderBy: string;
+  preloadedStagingRows?: readonly Record<string, unknown>[];
   promotedCatalogSetIds?: ReadonlySet<string>;
   productionSupabaseClient: CatalogPromotionSupabaseClient;
   samples: CatalogPromotionPreviewSample[];
@@ -1647,13 +1776,15 @@ async function previewPromotionTable({
     onConflict,
     table,
   });
-  const stagingRows = await readOrderedRows<Record<string, unknown>>({
-    columns: previewColumns,
-    orderBy,
-    supabaseClient: stagingSupabaseClient,
-    table,
-  });
-  const promotableStagingRows: Record<string, unknown>[] =
+  const stagingRows =
+    preloadedStagingRows ??
+    (await readOrderedRows<Record<string, unknown>>({
+      columns: previewColumns,
+      orderBy,
+      supabaseClient: stagingSupabaseClient,
+      table,
+    }));
+  const promotableStagingRows: readonly Record<string, unknown>[] =
     table === CATALOG_SET_SOURCE_METADATA_TABLE && promotedCatalogSetIds
       ? (filterCatalogSetSourceMetadataRowsForPromotion({
           promotedCatalogSetIds,
@@ -2470,6 +2601,7 @@ export async function promoteCatalogFromStagingToProduction({
       catalogThemeMappings,
       catalogSets,
       catalogSetMinifigSummaries,
+      catalogSetImages,
       catalogSetSourceMetadata,
       collectionPageSnapshots,
     ] = await Promise.all([
@@ -2506,6 +2638,13 @@ export async function promoteCatalogFromStagingToProduction({
         orderBy: 'set_id',
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+      }),
+      readOrderedRows<CatalogSetImageRow>({
+        columns:
+          'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+        orderBy: 'set_id',
+        supabaseClient: stagingSupabaseClient,
+        table: CATALOG_SET_IMAGES_TABLE,
       }),
       readOrderedRows<CatalogSetSourceMetadataRow>({
         columns:
@@ -2567,6 +2706,10 @@ export async function promoteCatalogFromStagingToProduction({
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
     assertPromotionReadWasNotDefaultCapped({
+      readCount: catalogSetImages.length,
+      table: CATALOG_SET_IMAGES_TABLE,
+    });
+    assertPromotionReadWasNotDefaultCapped({
       readCount: catalogSetSourceMetadata.length,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
     });
@@ -2622,6 +2765,7 @@ export async function promoteCatalogFromStagingToProduction({
           summary,
         }),
     );
+    const normalizedCatalogSetImages = [...catalogSetImages];
     const promotedCatalogSetIds = new Set(
       normalizedCatalogSets.map((catalogSet) => catalogSet.set_id),
     );
@@ -2771,6 +2915,20 @@ export async function promoteCatalogFromStagingToProduction({
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
     validatePromotionRowsRequiredColumns({
+      columns: ['set_id', 'source', 'source_url', 'image_type', 'status'],
+      rows: normalizedCatalogSetImages as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SET_IMAGES_TABLE,
+    });
+    validatePromotionRowsRequiredNumberColumns({
+      columns: ['sort_order'],
+      rows: normalizedCatalogSetImages as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SET_IMAGES_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
       columns: [
         'catalog_set_id',
         'source',
@@ -2915,6 +3073,18 @@ export async function promoteCatalogFromStagingToProduction({
           .filter((slug): slug is string => Boolean(slug)),
       ),
     ].sort((left, right) => left.localeCompare(right));
+    const promotedImageMetadataSetIds = [
+      ...new Set(
+        normalizedCatalogSetImages.map((imageMetadata) => imageMetadata.set_id),
+      ),
+    ].sort((left, right) => left.localeCompare(right));
+    const promotedImageMetadataSetSlugs = [
+      ...new Set(
+        promotedImageMetadataSetIds
+          .map((setId) => catalogSetBySetId.get(setId)?.slug)
+          .filter((slug): slug is string => Boolean(slug)),
+      ),
+    ].sort((left, right) => left.localeCompare(right));
 
     tables.catalog_source_themes = await upsertRows({
       nowIso: startedAtIso,
@@ -2951,6 +3121,13 @@ export async function promoteCatalogFromStagingToProduction({
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
+    tables.catalog_set_images = await upsertRows({
+      nowIso: startedAtIso,
+      onConflict: 'set_id,image_type,sort_order',
+      rows: normalizedCatalogSetImages,
+      supabaseClient: productionSupabaseClient,
+      table: CATALOG_SET_IMAGES_TABLE,
+    });
     tables.catalog_set_source_metadata = await upsertRows({
       nowIso: startedAtIso,
       onConflict: 'catalog_set_id,source,locale',
@@ -2977,6 +3154,25 @@ export async function promoteCatalogFromStagingToProduction({
       source_metadata_read_count: catalogSetSourceMetadata.length,
       skipped_source_metadata_count: skippedSourceMetadataCount,
       table: CATALOG_SET_SOURCE_METADATA_TABLE,
+    });
+    const catalogSetImagesDiagnostics =
+      buildCatalogSetImagePromotionDiagnostics({
+        rows: normalizedCatalogSetImages,
+        summary: tables.catalog_set_images,
+      });
+    console.info('[catalog-promotion] promote_catalog_set_images', {
+      active_gallery_count: catalogSetImagesDiagnostics.activeGalleryCount,
+      active_hero_count: catalogSetImagesDiagnostics.activeHeroCount,
+      active_social_count: catalogSetImagesDiagnostics.activeSocialCount,
+      affected_set_count: catalogSetImagesDiagnostics.affectedSetCount,
+      catalog_set_images_inserted_count:
+        catalogSetImagesDiagnostics.insertedCount,
+      catalog_set_images_read_count: catalogSetImagesDiagnostics.readCount,
+      catalog_set_images_updated_count:
+        catalogSetImagesDiagnostics.updatedCount,
+      catalog_set_images_upserted_count:
+        catalogSetImagesDiagnostics.upsertedCount,
+      table: CATALOG_SET_IMAGES_TABLE,
     });
     console.info('[catalog-promotion] promote_collection_page_snapshots', {
       collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
@@ -3065,7 +3261,21 @@ export async function promoteCatalogFromStagingToProduction({
       collectionPageSnapshotsReadCount: collectionPageSnapshots.length,
       collectionPageSnapshotsUpsertedCount:
         tables.collection_page_snapshots.upsertedCount,
+      catalog_set_images_active_gallery_count:
+        catalogSetImagesDiagnostics.activeGalleryCount,
+      catalog_set_images_active_hero_count:
+        catalogSetImagesDiagnostics.activeHeroCount,
+      catalog_set_images_active_social_count:
+        catalogSetImagesDiagnostics.activeSocialCount,
+      catalog_set_images_affected_set_count:
+        catalogSetImagesDiagnostics.affectedSetCount,
+      catalog_set_images_read_count: catalogSetImagesDiagnostics.readCount,
+      catalog_set_images_upserted_count:
+        catalogSetImagesDiagnostics.upsertedCount,
+      catalogSetImages: catalogSetImagesDiagnostics,
       durationMs: now().getTime() - startedAt.getTime(),
+      promotedImageMetadataSetIds,
+      promotedImageMetadataSetSlugs,
       promotedMetadataSetIds,
       promotedMetadataSetSlugs,
       rakuten_source_metadata_promoted_count:
@@ -3095,7 +3305,7 @@ export async function promoteCatalogFromStagingToProduction({
         ? error.message
         : 'Catalog promotion failed unexpectedly.';
     const failedTableMatch = message.match(
-      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|catalog_set_source_metadata|collection_page_snapshots|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
+      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|catalog_set_images|catalog_set_source_metadata|collection_page_snapshots|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
     );
 
     throw new CatalogPromotionError(message, {
@@ -3143,6 +3353,17 @@ export async function previewCatalogPromotionFromStagingToProduction({
   const promotedCatalogSetIds = new Set(
     catalogSetIdRows.map((catalogSet) => catalogSet.set_id),
   );
+  const catalogSetImageRows = await readOrderedRows<CatalogSetImageRow>({
+    columns:
+      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+    orderBy: 'set_id',
+    supabaseClient: stagingSupabaseClient,
+    table: CATALOG_SET_IMAGES_TABLE,
+  });
+  assertPromotionReadWasNotDefaultCapped({
+    readCount: catalogSetImageRows.length,
+    table: CATALOG_SET_IMAGES_TABLE,
+  });
   const skippedHeavyTables = tableConfigs
     .filter(
       (tableConfig) =>
@@ -3169,6 +3390,14 @@ export async function previewCatalogPromotionFromStagingToProduction({
         tableConfig.table,
         await previewPromotionTable({
           ...tableConfig,
+          ...(tableConfig.table === CATALOG_SET_IMAGES_TABLE
+            ? {
+                preloadedStagingRows: catalogSetImageRows as unknown as Record<
+                  string,
+                  unknown
+                >[],
+              }
+            : {}),
           promotedCatalogSetIds,
           productionSupabaseClient,
           samples,
@@ -3220,8 +3449,17 @@ export async function previewCatalogPromotionFromStagingToProduction({
       total + tableSummary.insertedCount + tableSummary.updatedCount,
     0,
   );
+  const catalogSetImages = buildCatalogSetImagePromotionDiagnostics({
+    rows: catalogSetImageRows,
+    summary: tables[CATALOG_SET_IMAGES_TABLE] ?? {
+      insertedCount: 0,
+      readCount: 0,
+      updatedCount: 0,
+    },
+  });
 
   return {
+    catalogSetImages,
     generatedAt: now().toISOString(),
     excludedTables,
     meaningfulPendingPromoteCount,

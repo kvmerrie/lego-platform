@@ -1530,7 +1530,7 @@ describe('ImageGallery', () => {
     expect(css).toContain(".detailGallery[data-has-multiple-images='true'] {");
     expect(css).toContain('gap: 0;');
     expect(css).toContain('grid-template-columns: 160px minmax(0, 1fr);');
-    expect(css).toContain('background: #f3f4f6;');
+    expect(css).toContain('background: #f2f2f2;');
     expect(css).toContain('border: var(--lego-border-width-1) solid');
     expect(css).toContain('overflow: hidden;');
     expect(css).toContain('padding: var(--lego-space-3);');
@@ -1675,6 +1675,9 @@ describe('ImageGallery', () => {
       'https://cdn.example.com/10307-main.jpg',
     );
     expect(thumbnails).toHaveLength(2);
+    expect(thumbnails[0]?.getAttribute('src')).toBe(
+      'https://cdn.example.com/10307-main.jpg',
+    );
     expect(thumbnails[1]?.getAttribute('src')).toBe(
       'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_alt1_jpg.jpg',
     );

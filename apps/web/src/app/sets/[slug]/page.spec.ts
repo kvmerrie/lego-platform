@@ -65,6 +65,12 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     };
     catalogSetDetail?: {
       displayTitle?: string;
+      imageUrl?: string;
+      images?: readonly {
+        thumbnailUrl?: string;
+        type?: string;
+        url: string;
+      }[];
       legoProductDescription?: string;
       legoProductFeatures?: readonly {
         body: string;
@@ -93,6 +99,15 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             catalogSetDetail.displayTitle ?? catalogSetDetail.name,
           )
         : null,
+      ...(catalogSetDetail?.images ?? []).map((image, index) =>
+        createElement('img', {
+          alt: `${catalogSetDetail.name} ${index + 1}`,
+          'data-thumbnail-src': image.thumbnailUrl,
+          'data-type': image.type,
+          key: image.url,
+          src: image.url,
+        }),
+      ),
       themeDirectoryHref
         ? createElement('a', { href: themeDirectoryHref }, "Thema's")
         : null,
@@ -543,9 +558,71 @@ describe('set detail static generation', () => {
         'attribution_required',
       ],
       expect.objectContaining({
-        tags: [expect.any(String)],
+        tags: ['sets', 'set:eiffel-tower-10307'],
       }),
     );
+  });
+
+  it('renders Brickhunt-owned set images as path-only UI sources', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '10309',
+      imageUrl: '/images/sets/10309/hero.webp',
+      images: [
+        {
+          order: 0,
+          thumbnailUrl: '/images/sets/10309/thumbs/0.webp',
+          type: 'hero',
+          url: '/images/sets/10309/hero.webp',
+        },
+        {
+          order: 201,
+          thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
+          type: 'detail',
+          url: '/images/sets/10309/gallery/3.webp',
+        },
+      ],
+      name: 'Succulents',
+      pieces: 771,
+      primaryImage: '/images/sets/10309/hero.webp',
+      publicTheme: {
+        name: 'Botanicals',
+        slug: 'botanicals',
+      },
+      releaseYear: 2022,
+      slug: 'succulents-10309',
+      theme: 'Botanicals',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 0,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'succulents-10309',
+        }),
+      }),
+    );
+
+    expect(html).toContain('src="/images/sets/10309/hero.webp"');
+    expect(html).toContain('src="/images/sets/10309/gallery/3.webp"');
+    expect(html).toContain(
+      'data-thumbnail-src="/images/sets/10309/thumbs/3.webp"',
+    );
+    expect(html).not.toContain('https://www.brickhunt.nl/images/sets/');
   });
 
   it('builds relevant collection discovery links for set detail pages', async () => {
@@ -1043,6 +1120,105 @@ describe('set detail metadata', () => {
     ]);
   });
 
+  it('prefers stored social set images for OG and Twitter previews', async () => {
+    const { buildSetDetailMetadata } = await import('./page');
+    const previousDeployEnvironment = process.env['BRICKHUNT_DEPLOY_ENV'];
+    const previousWebBaseUrl = process.env['WEB_BASE_URL'];
+
+    process.env['BRICKHUNT_DEPLOY_ENV'] = 'production';
+    process.env['WEB_BASE_URL'] = 'https://www.brickhunt.nl';
+
+    const metadata = buildSetDetailMetadata({
+      catalogSetDetail: {
+        ...baseSet,
+        images: [
+          {
+            sha256: 'abcdef1234567890abcdef1234567890',
+            type: 'social',
+            url: '/images/sets/75459/social.jpg',
+          },
+          {
+            type: 'hero',
+            url: '/images/sets/75459/hero.webp',
+          },
+        ],
+        primaryImage: '/images/sets/75459/hero.webp',
+      },
+    });
+
+    if (previousDeployEnvironment == null) {
+      delete process.env['BRICKHUNT_DEPLOY_ENV'];
+    } else {
+      process.env['BRICKHUNT_DEPLOY_ENV'] = previousDeployEnvironment;
+    }
+    if (previousWebBaseUrl == null) {
+      delete process.env['WEB_BASE_URL'];
+    } else {
+      process.env['WEB_BASE_URL'] = previousWebBaseUrl;
+    }
+
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://www.brickhunt.nl/images/sets/75459/social.jpg?v=abcdef123456',
+        secureUrl:
+          'https://www.brickhunt.nl/images/sets/75459/social.jpg?v=abcdef123456',
+        type: 'image/jpeg',
+        width: 1200,
+        height: 1200,
+      }),
+    ]);
+    expect(metadata.twitter?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://www.brickhunt.nl/images/sets/75459/social.jpg?v=abcdef123456',
+      }),
+    ]);
+  });
+
+  it('keeps stored social metadata images unversioned when sha256 is missing', async () => {
+    const { buildSetDetailMetadata } = await import('./page');
+    const previousDeployEnvironment = process.env['BRICKHUNT_DEPLOY_ENV'];
+    const previousWebBaseUrl = process.env['WEB_BASE_URL'];
+
+    process.env['BRICKHUNT_DEPLOY_ENV'] = 'production';
+    process.env['WEB_BASE_URL'] = 'https://www.brickhunt.nl';
+
+    const metadata = buildSetDetailMetadata({
+      catalogSetDetail: {
+        ...baseSet,
+        images: [
+          {
+            type: 'social',
+            url: '/images/sets/75459/social.jpg',
+          },
+        ],
+        primaryImage: '/images/sets/75459/hero.webp',
+      },
+    });
+
+    if (previousDeployEnvironment == null) {
+      delete process.env['BRICKHUNT_DEPLOY_ENV'];
+    } else {
+      process.env['BRICKHUNT_DEPLOY_ENV'] = previousDeployEnvironment;
+    }
+    if (previousWebBaseUrl == null) {
+      delete process.env['WEB_BASE_URL'];
+    } else {
+      process.env['WEB_BASE_URL'] = previousWebBaseUrl;
+    }
+
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://www.brickhunt.nl/images/sets/75459/social.jpg',
+        secureUrl: 'https://www.brickhunt.nl/images/sets/75459/social.jpg',
+      }),
+    ]);
+    expect(metadata.twitter?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://www.brickhunt.nl/images/sets/75459/social.jpg',
+      }),
+    ]);
+  });
+
   it('prefers share-compatible jpg or png set images over webp-only candidates', async () => {
     const { buildSetDetailMetadata } = await import('./page');
     const metadata = buildSetDetailMetadata({
@@ -1410,7 +1586,7 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('data-testid="best-deal"');
     expect(html).toContain('data-tone="positive"');
-    expect(html).toContain('Sterke deal');
+    expect(html).toContain('Goede deal');
     expect(html).toContain('€ 50,00 goedkoper dan de rest');
   });
 

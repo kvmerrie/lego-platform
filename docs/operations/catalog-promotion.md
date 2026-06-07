@@ -33,6 +33,10 @@ Generated enrichment promoted from staging:
 
 - `catalog_set_minifig_summaries`: one aggregate minifigure count per set,
   keyed by `set_id`
+- `catalog_set_images`: set image metadata only, keyed by
+  `set_id,image_type,sort_order`. Promotion copies production-bucket URLs and
+  storage paths, but never uploads, deletes, or duplicates Supabase Storage
+  objects. The canonical bucket remains `catalog-set-images`.
 
 ### Production-owned public presentation
 
@@ -142,6 +146,8 @@ The diagnostic reads staging and production, then reports:
 - public active theme counts
 - changed curated theme presentation fields
 - mapping/source/set parity differences
+- `catalog_set_images` row counts, active hero/gallery/social counts, affected
+  set count, and staging-vs-production metadata drift
 - first public themes as a quick visual sanity check
 
 Do not promote if the diagnostic shows unexpected source or mapping drift.
@@ -155,8 +161,10 @@ Do not promote if the diagnostic shows unexpected source or mapping drift.
 5. Confirm the response has `status: "ok"`.
 6. Check the `revalidation` object. Successful promotion revalidates:
    - paths: `/`, `/themes`, plus targeted `/themes/<slug>` paths for changed
-     public theme presentation rows
-   - tags: `homepage`, `themes`, `catalog`
+     public theme presentation rows, plus targeted `/sets/<slug>` paths for
+     promoted set metadata when the affected set count is small
+   - tags: `homepage`, `themes`, `catalog`, `sets`, and affected `set:<setId>`
+     tags for promoted metadata rows
    - reason: `catalog_promote`
 7. If the response has `revalidationWarning`, retry public web revalidation or
    redeploy the web after confirming the promoted data is correct.
@@ -173,7 +181,9 @@ Catalog promotion owns public catalog/theme freshness. `commerce-sync` owns
 commerce freshness.
 
 - `promote/catalog`: `/`, `/themes`, targeted changed public
-  `/themes/<slug>` paths, tags `homepage`, `themes`, `catalog`
+  `/themes/<slug>` paths, targeted `/sets/<slug>` paths for small metadata
+  batches, tags `homepage`, `themes`, `catalog`, `sets`, and affected
+  `set:<setId>` tags
 - `commerce-sync`: set/deal/price paths and tags for changed commerce data
 - production web deploy: `/`, `/deals`, `/themes`, tags `homepage`, `deals`,
   `themes`
@@ -183,6 +193,11 @@ theme slugs only when public presentation or visibility changes. If more than 50
 public theme detail paths would be revalidated, the API skips the slug paths,
 keeps `/` and `/themes`, and logs `broad_theme_revalidation_fallback`. This
 avoids invalidating every theme page during large catalog operations.
+
+Set detail metadata paths are also targeted. If more than 25 affected set paths
+would be revalidated, the API skips explicit set paths and relies on tags. The
+revalidation sender batches payloads, so large image-metadata promotes do not
+exceed the public web path batch limit.
 
 ## Deployment
 

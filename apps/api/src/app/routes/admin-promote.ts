@@ -27,7 +27,7 @@ import {
 } from '../lib/admin-authorization';
 
 const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
-const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 50;
+const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 25;
 const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
 const CATALOG_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CATALOG';
 const CMS_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CMS';
@@ -209,6 +209,10 @@ function buildCmsPromoteRevalidationTargets({
       ...uniqueCollectionSlugs.map((slug) => cacheTags.collection(slug)),
     ],
   };
+}
+
+function uniqueSorted(values: readonly string[]): string[] {
+  return [...new Set(values)].sort((left, right) => left.localeCompare(right));
 }
 
 export function createAdminPromoteRoutes({
@@ -428,8 +432,14 @@ export function createAdminPromoteRoutes({
           changedThemeSlugs: result.changedThemeSlugs,
           log: request.log,
         });
-        const promotedMetadataSetSlugs = result.promotedMetadataSetSlugs ?? [];
-        const promotedMetadataSetIds = result.promotedMetadataSetIds ?? [];
+        const promotedMetadataSetSlugs = uniqueSorted([
+          ...(result.promotedMetadataSetSlugs ?? []),
+          ...(result.promotedImageMetadataSetSlugs ?? []),
+        ]);
+        const promotedMetadataSetIds = uniqueSorted([
+          ...(result.promotedMetadataSetIds ?? []),
+          ...(result.promotedImageMetadataSetIds ?? []),
+        ]);
         const promotedMetadataSetPathFallback =
           promotedMetadataSetSlugs.length >
           MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
@@ -511,6 +521,7 @@ export function createAdminPromoteRoutes({
                 result.collection_page_snapshots_upserted_count ??
                 result.collectionPageSnapshotsUpsertedCount,
             },
+            catalogSetImages: result.catalogSetImages,
             sourceMetadata: {
               bricksetPromoted:
                 result.brickset_source_metadata_promoted_count ??

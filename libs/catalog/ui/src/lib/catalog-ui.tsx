@@ -1732,7 +1732,9 @@ function getCatalogGalleryImages(
       imageUrl: catalogSetDetail.imageUrl,
       images: catalogSetDetail.images,
       primaryImage: catalogSetDetail.primaryImage,
-    }).images ?? []
+    }).images?.filter(
+      (image) => image.type !== 'social' && image.type !== 'thumbnail',
+    ) ?? []
   );
 }
 

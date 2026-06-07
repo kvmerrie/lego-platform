@@ -1,0 +1,41 @@
+{
+  "name": "catalog-set-image-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-set-image-sync/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-set-image-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-set-image-sync/src/main.ts",
+        "tsConfig": "apps/catalog-set-image-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-set-image-sync/main.cjs"
+      }
+    }
+  }
+}

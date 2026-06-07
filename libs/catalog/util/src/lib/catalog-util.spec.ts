@@ -419,6 +419,50 @@ describe('catalog snapshot helpers', () => {
     });
   });
 
+  test('normalizes Brickhunt-owned set image URLs to path-only UI sources', () => {
+    expect(
+      normalizeCatalogSetImages({
+        imageUrl:
+          'https://www.brickhunt.nl/images/sets/10309/hero.webp?legacy=1',
+        images: [
+          {
+            thumbnailUrl:
+              'https://www.brickhunt.nl/images/sets/10309/thumbs/3.webp',
+            type: 'detail',
+            url: 'https://www.brickhunt.nl/images/sets/10309/gallery/3.webp',
+          },
+          {
+            type: 'detail',
+            url: 'https://cdn.rebrickable.com/media/sets/10309-1/1000.jpg',
+          },
+        ],
+        primaryImage:
+          'https://ggqystcenwpbrjlkcmnt.supabase.co/storage/v1/object/public/catalog-set-images/sets/10309/hero.webp',
+      }),
+    ).toEqual({
+      imageUrl: '/images/sets/10309/hero.webp',
+      images: [
+        {
+          order: 0,
+          type: 'hero',
+          url: '/images/sets/10309/hero.webp',
+        },
+        {
+          order: 1,
+          thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
+          type: 'detail',
+          url: '/images/sets/10309/gallery/3.webp',
+        },
+        {
+          order: 2,
+          type: 'detail',
+          url: 'https://cdn.rebrickable.com/media/sets/10309-1/1000.jpg',
+        },
+      ],
+      primaryImage: '/images/sets/10309/hero.webp',
+    });
+  });
+
   test('dedupes image URLs and prefers the explicit primary image first', () => {
     expect(
       normalizeCatalogSetImages({

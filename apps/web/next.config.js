@@ -11,6 +11,13 @@ const snapshotBackedCollectionHeaderSources = [
   '/lego-sets-onder-100-euro',
   '/lego-voor-volwassenen',
 ];
+const catalogSetImagesStorageOrigin = (
+  process.env.CATALOG_SET_IMAGES_STORAGE_ORIGIN ??
+  process.env.SUPABASE_URL_PRODUCTION ??
+  'https://ggqystcenwpbrjlkcmnt.supabase.co'
+).replace(/\/$/, '');
+const catalogSetImagesStoragePublicPath =
+  '/storage/v1/object/public/catalog-set-images';
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
@@ -42,6 +49,18 @@ const nextConfig = {
       process.env.API_PROXY_TARGET ?? 'http://localhost:3333';
 
     return [
+      {
+        source: '/images/sets/:setId/gallery/:file',
+        destination: `${catalogSetImagesStorageOrigin}${catalogSetImagesStoragePublicPath}/sets/:setId/gallery/:file`,
+      },
+      {
+        source: '/images/sets/:setId/thumbs/:file',
+        destination: `${catalogSetImagesStorageOrigin}${catalogSetImagesStoragePublicPath}/sets/:setId/thumbs/:file`,
+      },
+      {
+        source: '/images/sets/:setId/:file',
+        destination: `${catalogSetImagesStorageOrigin}${catalogSetImagesStoragePublicPath}/sets/:setId/:file`,
+      },
       {
         source: '/api/:path*',
         destination: `${apiProxyTarget}/api/:path*`,

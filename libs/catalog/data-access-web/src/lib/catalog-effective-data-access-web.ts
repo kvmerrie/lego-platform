@@ -78,6 +78,8 @@ import {
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_TABLE = 'catalog_sets';
+const CATALOG_SET_IMAGES_TABLE = 'catalog_set_images';
+const BRICKHUNT_SET_IMAGE_PUBLIC_PATH_PREFIX = '/images/';
 const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
 const CATALOG_SET_COLLECTIONS_TABLE = 'catalog_set_collections';
@@ -365,6 +367,7 @@ const catalogSimilarSetCandidatesByThemeSlug = new Map<
 const CATALOG_THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const CATALOG_THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let catalogThemePagePerfLogCount = 0;
+let hasLoggedStoredCatalogSetImagesReadWarning = false;
 
 function isCatalogThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
@@ -507,6 +510,20 @@ interface CatalogSetSourceMetadataRow {
   catalog_set_id: string;
   metadata_json: unknown;
   policy?: string;
+}
+
+interface CatalogStoredSetImageRow {
+  content_type: string | null;
+  height: number | null;
+  image_type: 'card' | 'gallery' | 'hero' | 'social' | 'thumbnail';
+  metadata_json?: unknown;
+  public_url: string | null;
+  set_id: string;
+  sha256: string | null;
+  sort_order: number;
+  storage_bucket: string | null;
+  storage_path: string | null;
+  width: number | null;
 }
 
 interface CatalogSetMinifigSummaryRow {
@@ -2403,6 +2420,316 @@ async function enrichCanonicalCatalogSetsWithLegoNlDisplayTitles({
   }
 }
 
+function logStoredCatalogSetImagesReadWarningOnce(error: unknown): void {
+  if (hasLoggedStoredCatalogSetImagesReadWarning) {
+    return;
+  }
+
+  hasLoggedStoredCatalogSetImagesReadWarning = true;
+  console.warn('[catalog-set-images]', {
+    error: error instanceof Error ? error.message : String(error),
+    message: 'Falling back to external catalog image URLs.',
+  });
+}
+
+async function listStoredCatalogSetImagesBySetId({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogStoredSetImageRow[]>> {
+  const imagesBySetId = new Map<string, CatalogStoredSetImageRow[]>();
+
+  if (!setIds.length) {
+    return imagesBySetId;
+  }
+
+  try {
+    for (const setIdChunk of chunkCatalogValues(setIds, 100)) {
+      const { data, error } = await supabaseClient
+        .from(CATALOG_SET_IMAGES_TABLE)
+        .select(
+          'set_id, image_type, sort_order, public_url, width, height, content_type, storage_bucket, storage_path, sha256, metadata_json',
+        )
+        .eq('status', 'active')
+        .in('set_id', setIdChunk);
+
+      if (error) {
+        throw new Error('Unable to load stored catalog set images.');
+      }
+
+      for (const row of (data as CatalogStoredSetImageRow[] | null) ?? []) {
+        if (!getStoredSetImagePublicUrl(row)) {
+          continue;
+        }
+
+        const rows = imagesBySetId.get(row.set_id) ?? [];
+        rows.push(row);
+        imagesBySetId.set(row.set_id, rows);
+      }
+    }
+  } catch (error) {
+    logStoredCatalogSetImagesReadWarningOnce(error);
+
+    return new Map();
+  }
+
+  for (const rows of imagesBySetId.values()) {
+    rows.sort(
+      (left, right) =>
+        left.sort_order - right.sort_order ||
+        left.image_type.localeCompare(right.image_type),
+    );
+  }
+
+  return imagesBySetId;
+}
+
+function getStoredSetImageMetadata(
+  row: CatalogStoredSetImageRow,
+): Record<string, unknown> {
+  return row.metadata_json && typeof row.metadata_json === 'object'
+    ? (row.metadata_json as Record<string, unknown>)
+    : {};
+}
+
+function toBrickhuntStoredSetImagePublicUrl(
+  storagePath: string | null | undefined,
+): string | null {
+  const normalizedStoragePath = storagePath?.trim();
+
+  if (!normalizedStoragePath?.startsWith('sets/')) {
+    return null;
+  }
+
+  const encodedStoragePath = normalizedStoragePath
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+
+  return `${BRICKHUNT_SET_IMAGE_PUBLIC_PATH_PREFIX}${encodedStoragePath}`;
+}
+
+function normalizeStoredSetImagePublicUrl(
+  publicUrl: string | null,
+): string | null {
+  if (!publicUrl) {
+    return null;
+  }
+
+  const normalizedPublicUrl = publicUrl.trim();
+
+  if (!normalizedPublicUrl) {
+    return null;
+  }
+
+  if (
+    normalizedPublicUrl.startsWith(
+      `${BRICKHUNT_SET_IMAGE_PUBLIC_PATH_PREFIX}sets/`,
+    )
+  ) {
+    return normalizedPublicUrl.split(/[?#]/u, 1)[0] ?? null;
+  }
+
+  const storageObjectPathMarker = '/catalog-set-images/sets/';
+  const storageObjectPathMarkerIndex = normalizedPublicUrl.indexOf(
+    storageObjectPathMarker,
+  );
+
+  if (storageObjectPathMarkerIndex >= 0) {
+    const [storageObjectPath] = normalizedPublicUrl
+      .slice(storageObjectPathMarkerIndex + storageObjectPathMarker.length)
+      .split(/[?#]/u, 1);
+
+    return storageObjectPath
+      ? `${BRICKHUNT_SET_IMAGE_PUBLIC_PATH_PREFIX}sets/${storageObjectPath}`
+      : null;
+  }
+
+  try {
+    const parsedUrl = new URL(normalizedPublicUrl);
+
+    if (
+      parsedUrl.pathname.startsWith(
+        `${BRICKHUNT_SET_IMAGE_PUBLIC_PATH_PREFIX}sets/`,
+      )
+    ) {
+      return parsedUrl.pathname;
+    }
+
+    return normalizedPublicUrl;
+  } catch {
+    return normalizedPublicUrl;
+  }
+}
+
+function getStoredSetImagePublicUrl(
+  row: CatalogStoredSetImageRow,
+): string | null {
+  return (
+    toBrickhuntStoredSetImagePublicUrl(row.storage_path) ??
+    normalizeStoredSetImagePublicUrl(row.public_url)
+  );
+}
+
+function isStoredGalleryImageSuppressed(
+  row: CatalogStoredSetImageRow,
+): boolean {
+  return getStoredSetImageMetadata(row)['gallerySuppressed'] === true;
+}
+
+function getStoredGalleryImageOrder(row: CatalogStoredSetImageRow): number {
+  const galleryRank = getStoredSetImageMetadata(row)['galleryRank'];
+
+  return (
+    200 +
+    (typeof galleryRank === 'number' && Number.isFinite(galleryRank)
+      ? galleryRank
+      : row.sort_order)
+  );
+}
+
+function toStoredCatalogSetImage(
+  row: CatalogStoredSetImageRow,
+  thumbnailUrlBySortOrder: ReadonlyMap<number, string>,
+): CatalogSetImage | undefined {
+  const publicUrl = getStoredSetImagePublicUrl(row);
+
+  if (!publicUrl) {
+    return undefined;
+  }
+
+  if (
+    row.image_type === 'card' ||
+    row.image_type === 'hero' ||
+    row.image_type === 'thumbnail'
+  ) {
+    return undefined;
+  }
+
+  if (row.image_type === 'gallery' && isStoredGalleryImageSuppressed(row)) {
+    return undefined;
+  }
+
+  return {
+    order: row.image_type === 'social' ? -100 : getStoredGalleryImageOrder(row),
+    ...(row.sha256
+      ? {
+          sha256: row.sha256,
+        }
+      : {}),
+    type: row.image_type === 'social' ? 'social' : 'detail',
+    url: publicUrl,
+    ...(row.image_type === 'gallery' &&
+    thumbnailUrlBySortOrder.has(row.sort_order)
+      ? {
+          thumbnailUrl: thumbnailUrlBySortOrder.get(row.sort_order),
+        }
+      : {}),
+  };
+}
+
+function applyStoredCatalogSetImages({
+  canonicalCatalogSets,
+  storedImagesBySetId,
+}: {
+  canonicalCatalogSets: readonly CatalogCanonicalSet[];
+  storedImagesBySetId: ReadonlyMap<string, readonly CatalogStoredSetImageRow[]>;
+}): CatalogCanonicalSet[] {
+  return canonicalCatalogSets.map((canonicalCatalogSet) => {
+    const storedRows = storedImagesBySetId.get(canonicalCatalogSet.setId) ?? [];
+    const storedHeroUrl = storedRows.find(
+      (row) => row.image_type === 'hero' && getStoredSetImagePublicUrl(row),
+    );
+    const storedHeroPublicUrl = storedHeroUrl
+      ? getStoredSetImagePublicUrl(storedHeroUrl)
+      : null;
+    const storedCardUrl = storedRows.find(
+      (row) => row.image_type === 'card' && getStoredSetImagePublicUrl(row),
+    );
+    const storedCardPublicUrl = storedCardUrl
+      ? getStoredSetImagePublicUrl(storedCardUrl)
+      : null;
+    const thumbnailUrlBySortOrder = new Map(
+      storedRows
+        .filter(
+          (row) =>
+            row.image_type === 'thumbnail' && getStoredSetImagePublicUrl(row),
+        )
+        .map((row) => [
+          row.sort_order,
+          getStoredSetImagePublicUrl(row) as string,
+        ]),
+    );
+    const storedHeroThumbnailUrl = thumbnailUrlBySortOrder.get(0);
+    const storedHeroImage =
+      storedHeroPublicUrl && storedHeroThumbnailUrl
+        ? {
+            order: 0,
+            thumbnailUrl: storedHeroThumbnailUrl,
+            type: 'hero' as const,
+            url: storedHeroPublicUrl,
+          }
+        : undefined;
+    const storedImages = storedRows
+      .map((row) => toStoredCatalogSetImage(row, thumbnailUrlBySortOrder))
+      .filter((image): image is CatalogSetImage => image != null)
+      .sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
+
+    if (
+      !storedCardPublicUrl &&
+      !storedHeroPublicUrl &&
+      !storedHeroImage &&
+      !storedImages.length
+    ) {
+      return canonicalCatalogSet;
+    }
+
+    return {
+      ...canonicalCatalogSet,
+      ...(storedCardPublicUrl ? { cardImageUrl: storedCardPublicUrl } : {}),
+      ...(storedHeroPublicUrl ? { imageUrl: storedHeroPublicUrl } : {}),
+      ...(storedHeroImage ||
+      storedImages.length ||
+      canonicalCatalogSet.images?.length
+        ? {
+            images: [
+              ...(storedHeroImage ? [storedHeroImage] : []),
+              ...storedImages,
+              ...(canonicalCatalogSet.images ?? []),
+            ],
+          }
+        : {}),
+    };
+  });
+}
+
+async function enrichCanonicalCatalogSetsWithStoredImages({
+  canonicalCatalogSets,
+  supabaseClient,
+}: {
+  canonicalCatalogSets: readonly CatalogCanonicalSet[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogCanonicalSet[]> {
+  const storedImagesBySetId = await listStoredCatalogSetImagesBySetId({
+    setIds: canonicalCatalogSets.map(
+      (canonicalCatalogSet) => canonicalCatalogSet.setId,
+    ),
+    supabaseClient,
+  });
+
+  if (!storedImagesBySetId.size) {
+    return [...canonicalCatalogSets];
+  }
+
+  return applyStoredCatalogSetImages({
+    canonicalCatalogSets,
+    storedImagesBySetId,
+  });
+}
+
 async function enrichCanonicalCatalogSetsWithPublicMetadata({
   canonicalCatalogSets,
   supabaseClient,
@@ -2416,8 +2743,14 @@ async function enrichCanonicalCatalogSetsWithPublicMetadata({
       supabaseClient,
     });
 
-  return enrichCanonicalCatalogSetsWithBricksetMetadata({
-    canonicalCatalogSets: withDisplayTitles,
+  const withBricksetMetadata =
+    await enrichCanonicalCatalogSetsWithBricksetMetadata({
+      canonicalCatalogSets: withDisplayTitles,
+      supabaseClient,
+    });
+
+  return enrichCanonicalCatalogSetsWithStoredImages({
+    canonicalCatalogSets: withBricksetMetadata,
     supabaseClient,
   });
 }
@@ -2470,7 +2803,12 @@ function toCatalogSummaryFromCanonicalSet(
     releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
-    imageUrl: canonicalCatalogSet.imageUrl,
+    imageUrl: canonicalCatalogSet.cardImageUrl ?? canonicalCatalogSet.imageUrl,
+    ...(canonicalCatalogSet.imageUrl
+      ? {
+          primaryImage: canonicalCatalogSet.imageUrl,
+        }
+      : {}),
   };
 }
 
@@ -2493,6 +2831,14 @@ function toCatalogSetDetailFromCanonicalSet(
     canonicalCatalogSet.primaryTheme;
   const subtheme =
     catalogSetOverlay?.subtheme ?? canonicalCatalogSet.secondaryLabels[0];
+  const primaryImageThumbnailUrl = canonicalCatalogSet.images?.find(
+    (image) =>
+      image.type === 'hero' && image.url === canonicalCatalogSet.imageUrl,
+  )?.thumbnailUrl;
+  const nonPrimaryCanonicalImages = canonicalCatalogSet.images?.filter(
+    (image) =>
+      !(image.type === 'hero' && image.url === canonicalCatalogSet.imageUrl),
+  );
 
   return {
     ...(canonicalCatalogSet.catalogName
@@ -2564,19 +2910,24 @@ function toCatalogSetDetailFromCanonicalSet(
           subtheme,
         }
       : {}),
-    ...(canonicalCatalogSet.imageUrl || canonicalCatalogSet.images?.length
+    ...(canonicalCatalogSet.imageUrl || nonPrimaryCanonicalImages?.length
       ? {
           images: [
             ...(canonicalCatalogSet.imageUrl
               ? [
                   {
                     order: 0,
+                    ...(primaryImageThumbnailUrl
+                      ? {
+                          thumbnailUrl: primaryImageThumbnailUrl,
+                        }
+                      : {}),
                     type: 'hero' as const,
                     url: canonicalCatalogSet.imageUrl,
                   },
                 ]
               : []),
-            ...(canonicalCatalogSet.images ?? []),
+            ...(nonPrimaryCanonicalImages ?? []),
           ],
           ...(canonicalCatalogSet.imageUrl
             ? {
@@ -3358,6 +3709,7 @@ export function resetWebCatalogSupabaseClientsForTests() {
   webCatalogSupabaseAdminClient = undefined;
   webCatalogSupabasePublicClient = undefined;
   hasLoggedLegoNlDisplayTitleAudit = false;
+  hasLoggedStoredCatalogSetImagesReadWarning = false;
 }
 
 async function getCanonicalCatalogSetByColumn({
@@ -3501,7 +3853,7 @@ function toCatalogSetCardFromCanonicalSet(
     releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
     releaseYear: catalogSetDetail.releaseYear,
     pieces: catalogSetDetail.pieces,
-    imageUrl: catalogSetDetail.imageUrl,
+    imageUrl: canonicalCatalogSet.cardImageUrl ?? catalogSetDetail.imageUrl,
     images: catalogSetDetail.images,
     primaryImage: catalogSetDetail.primaryImage,
     ...(catalogSetDetail.recommendedAge
@@ -10725,12 +11077,20 @@ export async function getCatalogSetBySlug({
     setId: canonicalCatalogSet.setId,
     supabaseClient: activeSupabaseClient,
   });
+  const canonicalImages = canonicalCatalogSet.images ?? [];
+  const hasStoredGalleryImages = canonicalImages.some(
+    (image) => image.type === 'detail',
+  );
+  const detailImages = [
+    ...canonicalImages,
+    ...(hasStoredGalleryImages ? [] : (bricksetGalleryImages ?? [])),
+  ];
 
   return toCatalogSetDetailFromCanonicalSet({
     ...canonicalCatalogSet,
-    ...(bricksetGalleryImages?.length
+    ...(detailImages.length
       ? {
-          images: bricksetGalleryImages,
+          images: detailImages,
         }
       : {}),
     ...(legoProductMetadata?.description

@@ -74,6 +74,7 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import {
+  type CatalogSetImage,
   getCatalogCollectionLandingPageConfig,
   getCatalogReleaseYear,
   resolveCatalogReleaseDatePrecision,
@@ -92,7 +93,7 @@ import styles from './page.module.css';
 
 export const dynamicParams = true;
 export const revalidate = 21_600;
-const SET_DETAIL_CACHE_VERSION = 'v2';
+const SET_DETAIL_CACHE_VERSION = 'v3';
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SET_DETAIL_INTERNAL_LINK_RAIL_LIMIT = 8;
@@ -103,6 +104,7 @@ const SET_DETAIL_SIMILAR_RAIL_TIMEOUT_MS = 1_500;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
+const SET_DETAIL_METADATA_IMAGE_VERSION_LENGTH = 12;
 const SET_DETAIL_OG_IMAGE_WIDTH = 1200;
 const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
 const SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
@@ -361,7 +363,7 @@ async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
     ],
     {
       revalidate,
-      tags: [cacheTags.set(slug)],
+      tags: [cacheTags.sets(), cacheTags.set(slug)],
     },
   )();
 }
@@ -597,7 +599,7 @@ function formatMetadataPrice({
 }
 
 function toAbsoluteMetadataUrl(url: string | undefined): string {
-  const baseUrl = publicWebBaseUrls.production;
+  const baseUrl = getSetDetailMetadataBaseUrl();
 
   if (!url) {
     return `${baseUrl}${DEFAULT_SET_DETAIL_OG_IMAGE}`;
@@ -616,12 +618,63 @@ function toAbsoluteMetadataUrl(url: string | undefined): string {
   }
 }
 
+function getSetDetailMetadataBaseUrl(): string {
+  const configuredBaseUrl =
+    process.env['WEB_BASE_URL'] ??
+    process.env['NEXT_PUBLIC_WEB_BASE_URL'] ??
+    process.env['NEXT_PUBLIC_SITE_URL'];
+
+  if (configuredBaseUrl) {
+    try {
+      const configuredUrl = new URL(configuredBaseUrl);
+      const hostname = configuredUrl.hostname.toLowerCase();
+
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return publicWebBaseUrls.local;
+      }
+
+      if (
+        hostname === 'staging.brickhunt.nl' ||
+        hostname.startsWith('staging.') ||
+        hostname.startsWith('staging-')
+      ) {
+        return publicWebBaseUrls.staging;
+      }
+
+      return publicWebBaseUrls.production;
+    } catch {
+      // Fall back to deploy environment below.
+    }
+  }
+
+  const deployEnvironment = (
+    process.env['BRICKHUNT_DEPLOY_ENV'] ?? process.env['VERCEL_ENV']
+  )
+    ?.trim()
+    .toLowerCase();
+
+  if (deployEnvironment === 'staging' || deployEnvironment === 'preview') {
+    return publicWebBaseUrls.staging;
+  }
+
+  if (deployEnvironment === 'production') {
+    return publicWebBaseUrls.production;
+  }
+
+  return process.env.NODE_ENV === 'development'
+    ? publicWebBaseUrls.local
+    : publicWebBaseUrls.production;
+}
+
 function getMetadataImageMimeType(imageUrl: string): string | undefined {
   const pathname = (() => {
     try {
-      return new URL(imageUrl).pathname.toLowerCase();
+      return new URL(
+        imageUrl,
+        getSetDetailMetadataBaseUrl(),
+      ).pathname.toLowerCase();
     } catch {
-      return imageUrl.toLowerCase();
+      return imageUrl.split(/[?#]/, 1)[0]?.toLowerCase() ?? '';
     }
   })();
 
@@ -647,9 +700,12 @@ function isSharePreferredImageUrl(imageUrl: string | undefined): boolean {
 
   const pathname = (() => {
     try {
-      return new URL(imageUrl).pathname.toLowerCase();
+      return new URL(
+        imageUrl,
+        getSetDetailMetadataBaseUrl(),
+      ).pathname.toLowerCase();
     } catch {
-      return imageUrl.toLowerCase();
+      return imageUrl.split(/[?#]/, 1)[0]?.toLowerCase() ?? '';
     }
   })();
 
@@ -660,13 +716,58 @@ function isSharePreferredImageUrl(imageUrl: string | undefined): boolean {
   );
 }
 
+function getSetDetailMetadataImageVersion(
+  sha256: string | undefined,
+): string | undefined {
+  const normalizedSha256 = sha256?.trim().toLowerCase();
+
+  return normalizedSha256 && /^[a-f0-9]{8,}$/.test(normalizedSha256)
+    ? normalizedSha256.slice(0, SET_DETAIL_METADATA_IMAGE_VERSION_LENGTH)
+    : undefined;
+}
+
+function withSetDetailMetadataImageVersion(
+  image: CatalogSetImage | undefined,
+): string | undefined {
+  if (!image?.url) {
+    return undefined;
+  }
+
+  const version = getSetDetailMetadataImageVersion(image.sha256);
+
+  if (!version) {
+    return image.url;
+  }
+
+  try {
+    const versionedUrl = new URL(image.url);
+    versionedUrl.searchParams.set('v', version);
+
+    return versionedUrl.toString();
+  } catch {
+    const [urlWithoutHash = '', hash = ''] = image.url.split('#', 2);
+    const [pathname = '', search = ''] = urlWithoutHash.split('?', 2);
+    const searchParams = new URLSearchParams(search);
+    searchParams.set('v', version);
+    const queryString = searchParams.toString();
+
+    return `${pathname}${queryString ? `?${queryString}` : ''}${
+      hash ? `#${hash}` : ''
+    }`;
+  }
+}
+
 function getSetDetailMetadataImageCandidateUrl(
   catalogSetDetail: Pick<
     CatalogSetDetail,
     'imageUrl' | 'images' | 'primaryImage'
   >,
 ): string {
+  const socialImage = catalogSetDetail.images?.find(
+    (image) => image.type === 'social',
+  );
   const candidates = [
+    withSetDetailMetadataImageVersion(socialImage),
     catalogSetDetail.primaryImage,
     catalogSetDetail.images?.find((image) => image.type === 'hero')?.url,
     catalogSetDetail.imageUrl,

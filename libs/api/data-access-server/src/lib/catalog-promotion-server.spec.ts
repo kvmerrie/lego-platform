@@ -104,6 +104,72 @@ function createOfferSeedRows(count: number) {
   });
 }
 
+function createCatalogSetImageRows(setId = '10316') {
+  return [
+    {
+      byte_size: 104_200,
+      content_type: 'image/webp',
+      height: 900,
+      image_type: 'hero',
+      metadata_json: {
+        generatedVariant: 'hero.webp',
+      },
+      public_url:
+        'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/hero.webp',
+      set_id: setId,
+      sha256: 'hero-sha',
+      sort_order: 0,
+      source: 'rebrickable',
+      source_url: 'https://cdn.rebrickable.com/media/sets/10316-1.jpg',
+      status: 'active',
+      storage_bucket: 'catalog-set-images',
+      storage_path: 'sets/10316/hero.webp',
+      width: 1280,
+    },
+    {
+      byte_size: 141_000,
+      content_type: 'image/jpeg',
+      height: 630,
+      image_type: 'social',
+      metadata_json: {
+        generatedVariant: 'social.jpg',
+      },
+      public_url:
+        'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/social.jpg',
+      set_id: setId,
+      sha256: 'social-sha',
+      sort_order: 0,
+      source: 'rebrickable',
+      source_url: 'https://cdn.rebrickable.com/media/sets/10316-1.jpg',
+      status: 'active',
+      storage_bucket: 'catalog-set-images',
+      storage_path: 'sets/10316/social.jpg',
+      width: 1200,
+    },
+    {
+      byte_size: 118_500,
+      content_type: 'image/webp',
+      height: 960,
+      image_type: 'gallery',
+      metadata_json: {
+        generatedVariant: 'gallery.webp',
+      },
+      public_url:
+        'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/gallery/1.webp',
+      set_id: setId,
+      sha256: 'gallery-sha',
+      sort_order: 1,
+      source: 'brickset',
+      source_url:
+        'https://images.brickset.com/sets/AdditionalImages/10316-1/1.jpg',
+      status: 'active',
+      storage_bucket: 'catalog-set-images',
+      storage_path: 'sets/10316/gallery/1.webp',
+      width: 1280,
+    },
+  ];
+}
+
 function createPromotionSupabaseClient({
   rpcResult = { data: null, error: null },
   rowsByTable,
@@ -330,6 +396,147 @@ describe('catalog promotion server', () => {
     });
     expect(result.meaningfulPendingPromoteCount).toBe(1);
     expect(result.operatorSummary.sets.insertedCount).toBe(1);
+  });
+
+  test('includes catalog set image metadata in the default promotion preview', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_images: createCatalogSetImageRows(),
+        catalog_sets: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_images: [],
+      },
+    });
+
+    const result = await previewCatalogPromotionFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient,
+      createStagingSupabaseClient: () => stagingClient,
+      now: () => new Date('2026-06-07T12:00:00.000Z'),
+    });
+
+    expect(result.tables.catalog_set_images).toEqual({
+      insertedCount: 3,
+      readCount: 3,
+      skipped: false,
+      strategy: 'sample_diff',
+      updatedCount: 0,
+    });
+    expect(result.catalogSetImages).toEqual({
+      activeGalleryCount: 1,
+      activeHeroCount: 1,
+      activeSocialCount: 1,
+      affectedSetCount: 1,
+      insertedCount: 3,
+      readCount: 3,
+      updatedCount: 0,
+    });
+    expect(result.samples).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          changeType: 'insert',
+          key: 'set_id:10316|image_type:hero|sort_order:0',
+          table: 'catalog_set_images',
+        }),
+      ]),
+    );
+  });
+
+  test('promotes catalog set image metadata without touching storage objects', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
+    const storageSpy = {
+      from: vi.fn(),
+    };
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/10316.jpg',
+            name: 'Rivendell',
+            piece_count: 6167,
+            primary_theme_id: 'icons',
+            release_year: 2023,
+            set_id: '10316',
+            slug: 'lord-of-the-rings-rivendell-10316',
+            source: 'rebrickable',
+            source_set_number: '10316-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_set_images: createCatalogSetImageRows(),
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_images: [
+          {
+            ...createCatalogSetImageRows()[0],
+            public_url:
+              'https://old-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/hero.webp',
+          },
+        ],
+      },
+    });
+    (stagingClient as unknown as { storage: typeof storageSpy }).storage =
+      storageSpy;
+    (productionClient as unknown as { storage: typeof storageSpy }).storage =
+      storageSpy;
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-06-07T12:00:00.000Z'))
+        .mockReturnValue(new Date('2026-06-07T12:00:01.000Z')),
+    });
+
+    expect(result.tables.catalog_set_images).toEqual({
+      insertedCount: 2,
+      readCount: 3,
+      updatedCount: 1,
+      upsertedCount: 3,
+    });
+    expect(result.catalogSetImages).toEqual({
+      activeGalleryCount: 1,
+      activeHeroCount: 1,
+      activeSocialCount: 1,
+      affectedSetCount: 1,
+      insertedCount: 2,
+      readCount: 3,
+      updatedCount: 1,
+      upsertedCount: 3,
+    });
+    expect(result.promotedImageMetadataSetIds).toEqual(['10316']);
+    expect(result.promotedImageMetadataSetSlugs).toEqual([
+      'lord-of-the-rings-rivendell-10316',
+    ]);
+    expect(
+      productionClient.upsertByTable.get('catalog_set_images'),
+    ).toHaveBeenCalledWith(createCatalogSetImageRows(), {
+      onConflict: 'set_id,image_type,sort_order',
+    });
+    expect(storageSpy.from).not.toHaveBeenCalled();
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] promote_catalog_set_images',
+      expect.objectContaining({
+        active_gallery_count: 1,
+        active_hero_count: 1,
+        active_social_count: 1,
+        affected_set_count: 1,
+        catalog_set_images_upserted_count: 3,
+        table: 'catalog_set_images',
+      }),
+    );
+
+    consoleInfoSpy.mockRestore();
   });
 
   test('excludes commerce seed tables from default catalog promotion', async () => {

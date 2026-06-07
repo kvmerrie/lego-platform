@@ -47,11 +47,18 @@ export interface CatalogSetSummary {
   primaryImage?: string;
 }
 
-export type CatalogSetImageType = 'hero' | 'detail' | 'minifig';
+export type CatalogSetImageType =
+  | 'card'
+  | 'detail'
+  | 'hero'
+  | 'minifig'
+  | 'social'
+  | 'thumbnail';
 
 export interface CatalogSetImage {
   attributionText?: string;
   order?: number;
+  sha256?: string;
   thumbnailUrl?: string;
   type?: CatalogSetImageType;
   url: string;
@@ -690,6 +697,7 @@ export type CatalogCanonicalSetSource =
 export type CatalogCanonicalSetStatus = CatalogOverlaySetStatus;
 
 export interface CatalogCanonicalSet {
+  cardImageUrl?: string;
   catalogName?: string;
   createdAt: string;
   displayTitle?: string;
@@ -1370,6 +1378,63 @@ export function getCatalogThemeSurfaceTone(
   return 'light';
 }
 
+const BRICKHUNT_CATALOG_SET_IMAGE_PATH_PREFIX = '/images/sets/';
+const CATALOG_SET_IMAGES_STORAGE_OBJECT_PATH_MARKER =
+  '/catalog-set-images/sets/';
+
+function normalizeBrickhuntOwnedCatalogImageUrl(
+  value: string,
+): string | undefined {
+  if (value.startsWith(BRICKHUNT_CATALOG_SET_IMAGE_PATH_PREFIX)) {
+    return value.split(/[?#]/u, 1)[0];
+  }
+
+  const storageObjectMarkerIndex = value.indexOf(
+    CATALOG_SET_IMAGES_STORAGE_OBJECT_PATH_MARKER,
+  );
+
+  if (storageObjectMarkerIndex >= 0) {
+    const storageObjectPath = value.slice(
+      storageObjectMarkerIndex +
+        CATALOG_SET_IMAGES_STORAGE_OBJECT_PATH_MARKER.length,
+    );
+    const [pathOnly] = storageObjectPath.split(/[?#]/u, 1);
+
+    return pathOnly
+      ? `${BRICKHUNT_CATALOG_SET_IMAGE_PATH_PREFIX}${pathOnly}`
+      : undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(value);
+
+    if (
+      parsedUrl.pathname.startsWith(BRICKHUNT_CATALOG_SET_IMAGE_PATH_PREFIX)
+    ) {
+      return parsedUrl.pathname;
+    }
+
+    const parsedStorageObjectMarkerIndex = parsedUrl.pathname.indexOf(
+      CATALOG_SET_IMAGES_STORAGE_OBJECT_PATH_MARKER,
+    );
+
+    if (parsedStorageObjectMarkerIndex >= 0) {
+      const storageObjectPath = parsedUrl.pathname.slice(
+        parsedStorageObjectMarkerIndex +
+          CATALOG_SET_IMAGES_STORAGE_OBJECT_PATH_MARKER.length,
+      );
+
+      return storageObjectPath
+        ? `${BRICKHUNT_CATALOG_SET_IMAGE_PATH_PREFIX}${storageObjectPath}`
+        : undefined;
+    }
+  } catch {
+    // Relative non-Brickhunt image paths are handled by the caller.
+  }
+
+  return undefined;
+}
+
 function normalizeCatalogImageUrl(value?: string): string | undefined {
   if (!value) {
     return undefined;
@@ -1377,7 +1442,13 @@ function normalizeCatalogImageUrl(value?: string): string | undefined {
 
   const normalizedValue = value.trim().replace(/\\+$/g, '');
 
-  return normalizedValue ? normalizedValue : undefined;
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  return (
+    normalizeBrickhuntOwnedCatalogImageUrl(normalizedValue) ?? normalizedValue
+  );
 }
 
 function toCatalogSetImageSeed(
@@ -1407,6 +1478,11 @@ function toCatalogSetImageSeed(
         }
       : {}),
     ...(typeof image.order === 'number' ? { order: image.order } : {}),
+    ...(typeof image.sha256 === 'string' && image.sha256.trim()
+      ? {
+          sha256: image.sha256.trim(),
+        }
+      : {}),
     ...(normalizedThumbnailUrl
       ? {
           thumbnailUrl: normalizedThumbnailUrl,
@@ -1504,6 +1580,8 @@ export function normalizeCatalogSetImages({
         typeof existingCatalogSetImage.order === 'number'
           ? existingCatalogSetImage.order
           : normalizedCatalogSetImage.order,
+      sha256:
+        existingCatalogSetImage.sha256 ?? normalizedCatalogSetImage.sha256,
       thumbnailUrl:
         existingCatalogSetImage.thumbnailUrl ??
         normalizedCatalogSetImage.thumbnailUrl,
@@ -1534,6 +1612,11 @@ export function normalizeCatalogSetImages({
       ...(catalogSetImage.thumbnailUrl
         ? {
             thumbnailUrl: catalogSetImage.thumbnailUrl,
+          }
+        : {}),
+      ...(catalogSetImage.sha256
+        ? {
+            sha256: catalogSetImage.sha256,
           }
         : {}),
       ...(catalogSetImage.type

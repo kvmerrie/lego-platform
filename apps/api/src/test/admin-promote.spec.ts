@@ -78,24 +78,34 @@ function createPromotionTableSummary() {
   };
 }
 
+function createCatalogPromotionTables(
+  overrides: Partial<
+    Awaited<ReturnType<AdminPromoteService['promoteCatalog']>>['tables']
+  > = {},
+) {
+  return {
+    catalog_set_images: createPromotionTableSummary(),
+    catalog_set_minifig_summaries: createPromotionTableSummary(),
+    catalog_set_source_metadata: createPromotionTableSummary(),
+    catalog_sets: createPromotionTableSummary(),
+    catalog_source_themes: createPromotionTableSummary(),
+    catalog_theme_mappings: createPromotionTableSummary(),
+    catalog_themes: createPromotionTableSummary(),
+    collection_page_snapshots: createPromotionTableSummary(),
+    commerce_benchmark_sets: createPromotionTableSummary(),
+    commerce_merchants: createPromotionTableSummary(),
+    commerce_offer_seeds: createPromotionTableSummary(),
+    ...overrides,
+  };
+}
+
 function createPromotionResult() {
   return {
     changedThemeSlugs: [],
     durationMs: 10,
     startedAt: '2026-04-22T09:00:00.000Z',
     status: 'ok' as const,
-    tables: {
-      catalog_set_minifig_summaries: createPromotionTableSummary(),
-      catalog_set_source_metadata: createPromotionTableSummary(),
-      catalog_sets: createPromotionTableSummary(),
-      catalog_source_themes: createPromotionTableSummary(),
-      catalog_theme_mappings: createPromotionTableSummary(),
-      catalog_themes: createPromotionTableSummary(),
-      collection_page_snapshots: createPromotionTableSummary(),
-      commerce_benchmark_sets: createPromotionTableSummary(),
-      commerce_merchants: createPromotionTableSummary(),
-      commerce_offer_seeds: createPromotionTableSummary(),
-    },
+    tables: createCatalogPromotionTables(),
   } satisfies Awaited<ReturnType<AdminPromoteService['promoteCatalog']>>;
 }
 
@@ -170,7 +180,7 @@ async function createAdminPromoteServer({
       durationMs: 421,
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok' as const,
-      tables: {
+      tables: createCatalogPromotionTables({
         catalog_source_themes: {
           insertedCount: 2,
           readCount: 2,
@@ -219,7 +229,7 @@ async function createAdminPromoteServer({
           updatedCount: 0,
           upsertedCount: 5,
         },
-      },
+      }),
     })),
   };
   const server = Fastify();
@@ -569,6 +579,172 @@ describe('admin promote routes', () => {
     await server.close();
   });
 
+  test('revalidates affected set detail pages after catalog image metadata promotion', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 6,
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+        '/sets/lord-of-the-rings-rivendell-10316',
+      ],
+      skipped: false,
+      tagCount: 9,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
+        'catalog',
+        'sets',
+        'set:10316',
+      ],
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        catalogSetImages: {
+          activeGalleryCount: 1,
+          activeHeroCount: 1,
+          activeSocialCount: 1,
+          affectedSetCount: 1,
+          insertedCount: 3,
+          readCount: 3,
+          updatedCount: 0,
+          upsertedCount: 3,
+        },
+        promotedImageMetadataSetIds: ['10316'],
+        promotedImageMetadataSetSlugs: ['lord-of-the-rings-rivendell-10316'],
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+        '/sets/lord-of-the-rings-rivendell-10316',
+      ],
+      reason: 'catalog_promote',
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
+        'catalog',
+        'sets',
+        'set:10316',
+      ],
+    });
+
+    await server.close();
+  });
+
+  test('uses tag-only set revalidation when image metadata affects too many set pages', async () => {
+    const setIds = Array.from({ length: 26 }, (_, index) =>
+      String(30_000 + index),
+    );
+    const setSlugs = setIds.map((setId) => `catalog-set-${setId}`);
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
+      skipped: false,
+      tagCount: 34,
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
+        'catalog',
+        'sets',
+        ...setIds.map((setId) => `set:${setId}`),
+      ],
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        promotedImageMetadataSetIds: setIds,
+        promotedImageMetadataSetSlugs: setSlugs,
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: [
+        '/',
+        '/themes',
+        '/nieuwe-lego-sets',
+        '/retiring-lego-sets',
+        '/lego-voor-volwassenen',
+      ],
+      reason: 'catalog_promote',
+      tags: [
+        'homepage',
+        'themes',
+        'collections',
+        'collection:nieuwe-lego-sets',
+        'collection:retiring-lego-sets',
+        'collection:lego-voor-volwassenen',
+        'catalog',
+        'sets',
+        ...setIds.map((setId) => `set:${setId}`),
+      ],
+    });
+
+    await server.close();
+  });
+
   test('revalidates changed public theme detail paths after promotion', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
@@ -603,7 +779,7 @@ describe('admin promote routes', () => {
         durationMs: 421,
         startedAt: '2026-04-22T09:00:00.000Z',
         status: 'ok' as const,
-        tables: {
+        tables: createCatalogPromotionTables({
           catalog_source_themes: {
             insertedCount: 0,
             readCount: 0,
@@ -652,7 +828,7 @@ describe('admin promote routes', () => {
             updatedCount: 0,
             upsertedCount: 0,
           },
-        },
+        }),
       })),
     };
     const { server } = await createAdminPromoteServer({
@@ -731,7 +907,7 @@ describe('admin promote routes', () => {
         durationMs: 421,
         startedAt: '2026-04-22T09:00:00.000Z',
         status: 'ok' as const,
-        tables: {
+        tables: createCatalogPromotionTables({
           catalog_source_themes: {
             insertedCount: 0,
             readCount: 0,
@@ -780,7 +956,7 @@ describe('admin promote routes', () => {
             updatedCount: 0,
             upsertedCount: 0,
           },
-        },
+        }),
       })),
     };
     const { server } = await createAdminPromoteServer({

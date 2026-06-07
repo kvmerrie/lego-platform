@@ -2061,11 +2061,21 @@ describe('CatalogSetCard', () => {
               url: 'https://images.example/rivendell-1.jpg',
             },
             {
+              order: -100,
+              type: 'social',
+              url: 'https://images.example/rivendell-social.jpg',
+            },
+            {
               attributionText: 'Image(s) courtesy of Brickset.com',
               order: 1,
               thumbnailUrl: 'https://images.example/rivendell-2-thumb.jpg',
               type: 'detail',
               url: 'https://images.example/rivendell-2.jpg',
+            },
+            {
+              order: 2,
+              type: 'thumbnail',
+              url: 'https://images.example/rivendell-thumbnail-row.webp',
             },
           ],
           primaryImage: 'https://images.example/rivendell-1.jpg',
@@ -2215,6 +2225,8 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('Bekijk afbeelding 2');
     expect(markup).toContain('https://images.example/rivendell-2-thumb.jpg');
+    expect(markup).not.toContain('rivendell-social.jpg');
+    expect(markup).not.toContain('rivendell-thumbnail-row.webp');
     expect(markup).toContain('Image(s) courtesy of Brickset.com');
     expect(markup).toContain('In collectie zetten');
     expect(markup).not.toContain('Set 10316');
