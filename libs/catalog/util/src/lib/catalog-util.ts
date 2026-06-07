@@ -575,6 +575,7 @@ export function listCatalogSetCardSearchMatches<
 }
 
 export interface CatalogThemeSnapshot {
+  id?: string;
   introSupport?: string;
   name: string;
   slug: string;

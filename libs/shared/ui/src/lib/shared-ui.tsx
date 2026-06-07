@@ -6,6 +6,7 @@ import type {
   HTMLAttributes,
   ReactNode,
 } from 'react';
+import { forwardRef } from 'react';
 import styles from './shared-ui.module.css';
 
 function joinClasses(
@@ -72,6 +73,47 @@ export interface BreadcrumbItem {
   href?: string;
   id: string;
   label: ReactNode;
+}
+
+function appendGatedActionSearchParams({
+  action,
+  href,
+  reason,
+  returnUrl,
+}: {
+  action?: string;
+  href: string;
+  reason?: string;
+  returnUrl?: string;
+}): string {
+  if (!action && !reason && !returnUrl) {
+    return href;
+  }
+
+  const hashIndex = href.indexOf('#');
+  const hrefWithoutHash = hashIndex >= 0 ? href.slice(0, hashIndex) : href;
+  const hash = hashIndex >= 0 ? href.slice(hashIndex) : '';
+  const queryIndex = hrefWithoutHash.indexOf('?');
+  const pathname =
+    queryIndex >= 0 ? hrefWithoutHash.slice(0, queryIndex) : hrefWithoutHash;
+  const search = queryIndex >= 0 ? hrefWithoutHash.slice(queryIndex + 1) : '';
+  const searchParams = new URLSearchParams(search);
+
+  if (action) {
+    searchParams.set('action', action);
+  }
+
+  if (reason) {
+    searchParams.set('reason', reason);
+  }
+
+  if (returnUrl) {
+    searchParams.set('next', returnUrl);
+  }
+
+  const nextSearch = searchParams.toString();
+
+  return `${pathname}${nextSearch ? `?${nextSearch}` : ''}${hash}`;
 }
 
 const buttonToneClasses: Record<Exclude<ActionTone, 'card'>, string> = {
@@ -247,23 +289,29 @@ export function Container({
   );
 }
 
-export function Button({
-  children,
-  className,
-  disabled,
-  isLoading,
-  size = 'default',
-  surface = 'default',
-  tone = 'secondary',
-  type = 'button',
-  ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: ReactNode;
-  isLoading?: boolean;
-  size?: ActionSize;
-  surface?: ActionSurface;
-  tone?: Exclude<ActionTone, 'card'>;
-}) {
+export const Button = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    children: ReactNode;
+    isLoading?: boolean;
+    size?: ActionSize;
+    surface?: ActionSurface;
+    tone?: Exclude<ActionTone, 'card'>;
+  }
+>(function Button(
+  {
+    children,
+    className,
+    disabled,
+    isLoading,
+    size = 'default',
+    surface = 'default',
+    tone = 'secondary',
+    type = 'button',
+    ...rest
+  },
+  ref,
+) {
   const usesInlineLayout = tone === 'inline';
 
   return (
@@ -278,13 +326,14 @@ export function Button({
       )}
       data-loading={isLoading || undefined}
       disabled={disabled || isLoading}
+      ref={ref}
       type={type}
       {...rest}
     >
       <span className={styles.interactiveContent}>{children}</span>
     </button>
   );
-}
+});
 
 export function ActionLink({
   children,
@@ -670,6 +719,85 @@ export function LabelValueList({
         </div>
       ))}
     </dl>
+  );
+}
+
+export function GatedActionModal({
+  action,
+  body,
+  primaryHref,
+  primaryLabel,
+  reason,
+  returnUrl,
+  secondaryHref,
+  secondaryLabel,
+  tertiaryLabel = 'Niet nu',
+  title,
+  onClose,
+}: {
+  action?: string;
+  body: ReactNode;
+  onClose: () => void;
+  primaryHref: string;
+  primaryLabel: string;
+  reason?: string;
+  returnUrl?: string;
+  secondaryHref: string;
+  secondaryLabel: string;
+  tertiaryLabel?: string;
+  title: ReactNode;
+}) {
+  const titleId = 'gated-action-modal-title';
+  const bodyId = 'gated-action-modal-body';
+  const primaryActionHref = appendGatedActionSearchParams({
+    action,
+    href: primaryHref,
+    reason,
+    returnUrl,
+  });
+  const secondaryActionHref = appendGatedActionSearchParams({
+    action,
+    href: secondaryHref,
+    reason,
+    returnUrl,
+  });
+
+  return (
+    <div className={styles.gatedActionLayer}>
+      <button
+        aria-label="Sluit melding"
+        className={styles.gatedActionBackdrop}
+        type="button"
+        onClick={onClose}
+      />
+      <section
+        aria-describedby={bodyId}
+        aria-labelledby={titleId}
+        aria-modal="true"
+        className={styles.gatedActionDialog}
+        role="dialog"
+      >
+        <div className={styles.gatedActionCopy}>
+          <h2 className={styles.gatedActionTitle} id={titleId}>
+            {title}
+          </h2>
+          <p className={styles.gatedActionBody} id={bodyId}>
+            {body}
+          </p>
+        </div>
+        <div className={styles.gatedActionActions}>
+          <ActionLink autoFocus href={primaryActionHref} tone="accent">
+            {primaryLabel}
+          </ActionLink>
+          <ActionLink href={secondaryActionHref} tone="secondary">
+            {secondaryLabel}
+          </ActionLink>
+          <Button tone="ghost" type="button" onClick={onClose}>
+            {tertiaryLabel}
+          </Button>
+        </div>
+      </section>
+    </div>
   );
 }
 

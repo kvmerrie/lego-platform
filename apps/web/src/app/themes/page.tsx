@@ -1,4 +1,7 @@
-import { CatalogFeatureThemeIndex } from '@lego-platform/catalog/feature-theme-page';
+import {
+  CatalogFeatureFavoriteThemesRail,
+  CatalogFeatureThemeIndex,
+} from '@lego-platform/catalog/feature-theme-page';
 import { listCatalogThemeDirectoryItems } from '@lego-platform/catalog/data-access-web';
 import { ShellWeb } from '@lego-platform/shell/web';
 import React from 'react';
@@ -44,7 +47,14 @@ export default async function ThemesPage() {
 
   return (
     <ShellWeb>
-      <CatalogFeatureThemeIndex themeDirectoryItems={themeDirectoryItems} />
+      <CatalogFeatureThemeIndex
+        beforeDirectory={
+          <CatalogFeatureFavoriteThemesRail
+            availableThemes={themeDirectoryItems}
+          />
+        }
+        themeDirectoryItems={themeDirectoryItems}
+      />
     </ShellWeb>
   );
 }

@@ -1,16 +1,33 @@
+/** @vitest-environment jsdom */
+
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   ActionLink,
   Breadcrumbs,
   Button,
   Container,
+  GatedActionModal,
   LabelValueList,
   MarkerList,
   Panel,
   SectionHeading,
 } from './shared-ui';
+import { ResponsiveDialog } from './responsive-dialog';
+import { SelectableItemDialog } from './selectable-item-dialog';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+afterEach(() => {
+  document.body.innerHTML = '';
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+  vi.clearAllMocks();
+});
 
 describe('Container', () => {
   it('renders shared alignment markup around its children', () => {
@@ -100,6 +117,169 @@ describe('LabelValueList', () => {
   });
 });
 
+describe('GatedActionModal', () => {
+  it('renders reusable gated-action copy with post-auth context links', () => {
+    const markup = renderToStaticMarkup(
+      <GatedActionModal
+        action="theme_favorite"
+        body="Maak een gratis account aan om je favoriete thema’s te bewaren."
+        primaryHref="/account"
+        primaryLabel="Inloggen"
+        reason="theme_favorite"
+        returnUrl="/themes/icons"
+        secondaryHref="/account?auth=sign-up"
+        secondaryLabel="Account maken"
+        title="Log in om dit te bewaren"
+        onClose={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('role="dialog"');
+    expect(markup).toContain('aria-modal="true"');
+    expect(markup).toContain('Log in om dit te bewaren');
+    expect(markup).toContain('Inloggen');
+    expect(markup).toContain('Account maken');
+    expect(markup).toContain('Niet nu');
+    expect(markup).toContain(
+      'href="/account?action=theme_favorite&amp;reason=theme_favorite&amp;next=%2Fthemes%2Ficons"',
+    );
+    expect(markup).toContain(
+      'href="/account?auth=sign-up&amp;action=theme_favorite&amp;reason=theme_favorite&amp;next=%2Fthemes%2Ficons"',
+    );
+  });
+});
+
+describe('ResponsiveDialog', () => {
+  it('renders accessible dialog chrome and closes with Escape', async () => {
+    const onClose = vi.fn();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <ResponsiveDialog
+          description="Kies meerdere thema’s achter elkaar."
+          isOpen={true}
+          title="Thema’s toevoegen"
+          onClose={onClose}
+        >
+          <button type="button">Icons</button>
+        </ResponsiveDialog>,
+      );
+    });
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+
+    expect(dialog).not.toBeNull();
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(document.body.textContent).toContain('Thema’s toevoegen');
+    expect(
+      document.body.querySelector('[data-responsive-dialog-panel="true"]'),
+    ).not.toBeNull();
+
+    await act(async () => {
+      dialog?.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }),
+      );
+    });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('defines a mobile bottom-sheet presentation', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
+      'utf-8',
+    );
+    const mobileRuleStart = css.indexOf('@media (max-width: 47.9375rem)');
+    const mobileCss = css.slice(mobileRuleStart);
+
+    expect(mobileCss).toContain('.responsiveDialogLayer');
+    expect(mobileCss).toContain('align-items: end;');
+    expect(mobileCss).toContain('.responsiveDialogPanel');
+    expect(mobileCss).toContain('border-end-end-radius: 0;');
+    expect(mobileCss).toContain('max-block-size: 88vh;');
+  });
+});
+
+describe('SelectableItemDialog', () => {
+  it('filters selectable items and reports toggles', async () => {
+    const onToggle = vi.fn();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <SelectableItemDialog
+          isOpen={true}
+          items={[
+            {
+              id: 'theme:icons',
+              isSelected: true,
+              label: 'Icons',
+              meta: '38 sets',
+              searchText: 'icons rivendell',
+            },
+            {
+              id: 'theme:minecraft',
+              label: 'Minecraft®',
+              meta: '35 sets',
+              searchText: 'minecraft creeper',
+            },
+          ]}
+          title="Thema’s toevoegen"
+          onClose={() => undefined}
+          onToggle={onToggle}
+        />,
+      );
+    });
+
+    const searchInput = document.body.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    );
+
+    expect(document.body.textContent).toContain('Icons');
+    expect(document.body.textContent).toContain('Minecraft®');
+
+    await act(async () => {
+      if (searchInput) {
+        Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set?.call(searchInput, 'mine');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+
+    expect(document.body.textContent).not.toContain('Icons');
+    expect(document.body.textContent).toContain('Minecraft®');
+
+    const minecraftButton = Array.from(
+      document.body.querySelectorAll<HTMLButtonElement>('button'),
+    ).find((button) => button.textContent?.includes('Minecraft®'));
+
+    await act(async () => {
+      minecraftButton?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
+    });
+
+    expect(onToggle).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'theme:minecraft' }),
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+});
+
 describe('Breadcrumbs', () => {
   it('renders semantic breadcrumb markup with linked ancestors and a current page label', () => {
     const markup = renderToStaticMarkup(
@@ -125,7 +305,7 @@ describe('Breadcrumbs', () => {
 
   it('keeps mobile breadcrumbs on one line and truncates the current page', () => {
     const css = readFileSync(
-      new URL('./shared-ui.module.css', import.meta.url),
+      resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
       'utf-8',
     );
 

@@ -134,6 +134,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
     );
 
     expect(trigger).not.toBeUndefined();
+    trigger?.focus();
 
     act(() => {
       trigger?.dispatchEvent(
@@ -225,8 +226,13 @@ describe('CatalogOfferComparisonRail overlay', () => {
     );
 
     expect(backdrop).not.toBeNull();
-    expect(backdrop?.parentElement).toBe(document.body);
+    expect(backdrop?.parentElement).toBe(
+      document.body.querySelector('[data-responsive-dialog-layer="true"]'),
+    );
     expect(dialog).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-responsive-dialog-panel="true"]'),
+    ).toBe(dialog);
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.documentElement.style.overflow).toBe('hidden');
     expect(css).toContain('.offerOverlayBackdrop {');
@@ -242,7 +248,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
       '[data-offer-comparison-dialog="true"]',
     );
     const closeButton = document.body.querySelector<HTMLButtonElement>(
-      'button[aria-label="Vergelijking sluiten"]',
+      '[data-offer-comparison-dialog="true"] button[aria-label="Vergelijking sluiten"]',
     );
     const offerLinks = document.body.querySelectorAll<HTMLAnchorElement>(
       '[data-offer-comparison-dialog="true"] a[href]',

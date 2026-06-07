@@ -467,24 +467,9 @@
 
   .setCardCompact[data-catalog-set-card-variant='compact'] .cardThemeBadge,
   .setCardCompact[data-catalog-set-card-variant='featured'] .cardThemeBadge {
-    background: var(--card-theme-badge-accent, var(--lego-surface-muted));
-    border-color: color-mix(
-      in srgb,
-      var(--card-theme-badge-accent, var(--lego-border-subtle)) 32%,
-      transparent
-    );
+    background: var(--card-theme-badge-bg, var(--lego-surface-muted));
+    border-color: var(--card-theme-badge-bg, var(--lego-border-subtle));
     color: var(--card-theme-badge-text, var(--lego-text));
-  }
-
-  @supports (background: color-mix(in srgb, white, black)) {
-    .setCardCompact[data-catalog-set-card-variant='compact'] .cardThemeBadge,
-    .setCardCompact[data-catalog-set-card-variant='featured'] .cardThemeBadge {
-      background: color-mix(
-        in srgb,
-        var(--card-theme-badge-accent, var(--lego-surface-muted)) 14%,
-        var(--lego-surface-default) 86%
-      );
-    }
   }
 
   .cardBadgeRow,
@@ -4817,11 +4802,11 @@
     }
 
     .offerOverlay {
-      border-radius: 0;
+      border-radius: var(--lego-radius-lg) var(--lego-radius-lg) 0 0;
       grid-template-rows: 64px minmax(0, 1fr);
-      max-height: 100dvh;
+      max-height: min(88dvh, 42rem);
       max-width: 100%;
-      min-height: 100dvh;
+      min-height: 0;
       width: 100%;
     }
 

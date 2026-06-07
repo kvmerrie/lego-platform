@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -311,6 +313,36 @@ describe('home metadata', () => {
     });
   });
 
+  it('does not import or mount the favorite themes rail on the homepage', () => {
+    const source = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/page.tsx'),
+      'utf-8',
+    );
+
+    expect(source).not.toContain('CatalogFeatureFavoriteThemesRail');
+    expect(source).not.toContain('NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL');
+  });
+
+  it('renders the homepage even when the former favorite rail flag is enabled', async () => {
+    setupHomepageRenderMocks();
+    const previousFlag = process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'];
+    process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'] = 'true';
+
+    try {
+      const pageModule = await import('./page');
+      const markup = renderToStaticMarkup(await pageModule.default());
+
+      expect(markup).toContain('Ontdek LEGO op jouw manier');
+      expect(markup).not.toContain('Jouw favoriete thema’s');
+    } finally {
+      if (previousFlag === undefined) {
+        delete process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'];
+      } else {
+        process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'] = previousFlag;
+      }
+    }
+  });
+
   it('logs and renders curated fallback when homepage CMS fetch fails', async () => {
     setupHomepageRenderMocks();
     const warnSpy = vi
@@ -366,7 +398,6 @@ describe('home metadata', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('Kies je LEGO route');
-    expect(markup).toContain('Kies de route die bij je plank past.');
     expect(markup).toContain('Draken, Death Stars of displaystukken?');
     expect(markup).toContain('Meer werelden voor je kast');
     expect(pageMocks.listHomepageThemeDirectoryItems).toHaveBeenCalledWith({

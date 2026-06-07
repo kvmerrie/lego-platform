@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import {
   getCatalogThemeMutedTextColor,
   type CatalogThemeDirectoryItem,
@@ -18,9 +18,11 @@ import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-index.module.css';
 
 export function CatalogFeatureThemeIndex({
+  beforeDirectory,
   themeDirectoryItems = [],
   visual,
 }: {
+  beforeDirectory?: ReactNode;
   themeDirectoryItems?: readonly CatalogThemeDirectoryItem[];
   visual?: CatalogThemeVisual;
 }) {
@@ -75,6 +77,7 @@ export function CatalogFeatureThemeIndex({
           voor gemengd bladeren
         </p>
       </CatalogPageIntro>
+      {beforeDirectory}
       <CatalogSectionShell
         as="section"
         bodyClassName={styles.directorySectionBody}

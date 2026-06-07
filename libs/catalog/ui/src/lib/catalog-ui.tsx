@@ -118,6 +118,7 @@ type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
 const CATALOG_A11Y_TEXT_DARK = '#05070d';
+const CATALOG_A11Y_BADGE_TEXT_DARK = '#171a22';
 const CATALOG_A11Y_TEXT_LIGHT = '#ffffff';
 const CATALOG_A11Y_CONTRAST_AA = 4.5;
 
@@ -1023,26 +1024,30 @@ function getCatalogThemeStyleVariables({
     resolvedVisual.backgroundColor,
     themeCardForeground,
   );
+  const themeBadgeText = getAccessibleCatalogTextColor(
+    resolvedVisual.backgroundColor,
+    resolvedVisual.textColor,
+  );
+  const themeBadgeSurface = getAccessibleCatalogCardSurface(
+    resolvedVisual.backgroundColor,
+    themeBadgeText,
+  );
 
   return {
     ...(resolvedVisual.backgroundColor
       ? ({
           '--card-theme-badge-accent': resolvedVisual.backgroundColor,
-          '--catalog-theme-badge-surface': resolvedVisual.backgroundColor,
-          '--card-theme-badge-bg': resolvedVisual.backgroundColor,
+          '--catalog-theme-badge-surface':
+            themeBadgeSurface ?? resolvedVisual.backgroundColor,
+          '--card-theme-badge-bg':
+            themeBadgeSurface ?? resolvedVisual.backgroundColor,
           '--theme-surface': themeCardSurface ?? resolvedVisual.backgroundColor,
         } as CSSProperties)
       : {}),
-    ...(resolvedVisual.textColor
+    ...(themeBadgeText
       ? ({
-          '--catalog-theme-badge-text': getAccessibleCatalogTextColor(
-            resolvedVisual.backgroundColor,
-            resolvedVisual.textColor,
-          ),
-          '--card-theme-badge-text': getAccessibleCatalogTextColor(
-            resolvedVisual.backgroundColor,
-            resolvedVisual.textColor,
-          ),
+          '--catalog-theme-badge-text': themeBadgeText,
+          '--card-theme-badge-text': themeBadgeText,
         } as CSSProperties)
       : {}),
     ...(themeCardForeground
@@ -1145,10 +1150,6 @@ function getAccessibleCatalogTextColor(
   backgroundColor?: string,
   preferredTextColor?: string,
 ): string | undefined {
-  if (!preferredTextColor) {
-    return undefined;
-  }
-
   const preferredContrast = getCatalogColorContrastRatio(
     preferredTextColor,
     backgroundColor,
@@ -1162,7 +1163,7 @@ function getAccessibleCatalogTextColor(
   }
 
   const darkContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_TEXT_DARK,
+    CATALOG_A11Y_BADGE_TEXT_DARK,
     backgroundColor,
   );
   const lightContrast = getCatalogColorContrastRatio(
@@ -1175,7 +1176,7 @@ function getAccessibleCatalogTextColor(
   }
 
   return darkContrast >= lightContrast
-    ? CATALOG_A11Y_TEXT_DARK
+    ? CATALOG_A11Y_BADGE_TEXT_DARK
     : CATALOG_A11Y_TEXT_LIGHT;
 }
 

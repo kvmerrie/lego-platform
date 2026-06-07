@@ -3,6 +3,7 @@ import {
   type CatalogCanonicalSet,
   type CatalogDiscoverySignal,
   type CatalogExternalSetSearchResult,
+  type CatalogThemeDirectoryItem,
   type CatalogSuggestedSetConfidence,
   type CatalogSuggestedSet,
   type CatalogSet,
@@ -66,6 +67,8 @@ const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+const CATALOG_THEME_SUMMARIES_TABLE = 'catalog_theme_summaries';
+const USER_THEME_FAVORITES_TABLE = 'user_theme_favorites';
 const REBRICKABLE_SETS_TABLE = 'rebrickable_sets';
 const REBRICKABLE_THEMES_TABLE = 'rebrickable_themes';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
@@ -88,6 +91,291 @@ interface SupabaseDiagnosticError {
   details?: string;
   hint?: string;
   message?: string;
+}
+
+interface UserThemeFavoriteRow {
+  created_at: string;
+  theme_id: string;
+  user_id: string;
+}
+
+interface UserThemeFavoriteThemeRow {
+  display_name: string;
+  id: string;
+  is_public: boolean;
+  public_accent_color: string | null;
+  public_description: string | null;
+  public_display_name: string | null;
+  public_hero_text_color: string | null;
+  public_image_url: string | null;
+  public_logo_url: string | null;
+  public_surface_color: string | null;
+  public_surface_text_color: string | null;
+  public_tile_image_url: string | null;
+  slug: string;
+  status: string;
+}
+
+interface UserThemeFavoriteSummaryRow {
+  active_set_count: number | null;
+  representative_image_url: string | null;
+  representative_set_id: string | null;
+  theme_id: string;
+}
+
+export interface UserThemeFavoriteState {
+  isFavorited: boolean;
+  themeId: string;
+}
+
+export interface UserThemeFavoriteItem extends CatalogThemeDirectoryItem {
+  favoritedAt: string;
+}
+
+export interface UserThemeFavoriteRepository {
+  addFavorite(input: {
+    themeId: string;
+    userId: string;
+  }): Promise<UserThemeFavoriteState>;
+  getFavoriteState(input: {
+    themeId: string;
+    userId: string;
+  }): Promise<UserThemeFavoriteState>;
+  listFavoriteThemeIds(userId: string): Promise<string[]>;
+  listFavoriteThemes(userId: string): Promise<UserThemeFavoriteItem[]>;
+  removeFavorite(input: {
+    themeId: string;
+    userId: string;
+  }): Promise<UserThemeFavoriteState>;
+}
+
+function normalizeUserThemeFavoriteThemeId(themeId: string): string {
+  return themeId.trim();
+}
+
+function normalizePublicThemeText(value?: string | null): string | undefined {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue ? normalizedValue : undefined;
+}
+
+function normalizePublicThemeImageUrl(
+  value?: string | null,
+): string | undefined {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue && /^https?:\/\/[^\s"'<>]+$/iu.test(normalizedValue)
+    ? normalizedValue
+    : undefined;
+}
+
+function normalizePublicThemeColor(value?: string | null): string | undefined {
+  const normalizedValue = value?.trim();
+
+  return normalizedValue &&
+    /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/iu.test(normalizedValue)
+    ? normalizedValue
+    : undefined;
+}
+
+function createFavoriteThemeDirectoryItem({
+  favorite,
+  summary,
+  theme,
+}: {
+  favorite: UserThemeFavoriteRow;
+  summary?: UserThemeFavoriteSummaryRow;
+  theme: UserThemeFavoriteThemeRow;
+}): UserThemeFavoriteItem | undefined {
+  if (theme.status !== 'active' || theme.is_public !== true) {
+    return undefined;
+  }
+
+  const displayName =
+    normalizePublicThemeText(theme.public_display_name) ?? theme.display_name;
+  const publicDescription = normalizePublicThemeText(theme.public_description);
+  const publicImageUrl = normalizePublicThemeImageUrl(theme.public_image_url);
+  const publicTileImageUrl = normalizePublicThemeImageUrl(
+    theme.public_tile_image_url,
+  );
+  const representativeImageUrl = normalizePublicThemeImageUrl(
+    summary?.representative_image_url,
+  );
+  const imageUrl =
+    publicTileImageUrl ?? publicImageUrl ?? representativeImageUrl;
+  const backgroundColor =
+    normalizePublicThemeColor(theme.public_surface_color) ??
+    normalizePublicThemeColor(theme.public_accent_color);
+  const textColor =
+    normalizePublicThemeColor(theme.public_surface_text_color) ??
+    normalizePublicThemeColor(theme.public_hero_text_color);
+
+  return {
+    favoritedAt: favorite.created_at,
+    ...(imageUrl ? { imageUrl } : {}),
+    themeSnapshot: {
+      id: theme.id,
+      introSupport: undefined,
+      momentum:
+        publicDescription ??
+        `Bekijk welke ${displayName}-sets de moeite waard zijn.`,
+      name: displayName,
+      setCount: summary?.active_set_count ?? 0,
+      signatureSet: displayName,
+      slug: theme.slug,
+    },
+    visual: {
+      ...(backgroundColor ? { backgroundColor } : {}),
+      ...(publicImageUrl ? { imageUrl: publicImageUrl } : {}),
+      ...(textColor ? { textColor } : {}),
+      ...(publicTileImageUrl ? { tileImageUrl: publicTileImageUrl } : {}),
+    },
+  } satisfies UserThemeFavoriteItem;
+}
+
+export function createUserThemeFavoriteRepository(
+  supabaseAdminClient?: CatalogSupabaseClient,
+): UserThemeFavoriteRepository {
+  function getSupabaseAdminClient() {
+    return supabaseAdminClient ?? getServerSupabaseAdminClient();
+  }
+
+  async function getFavoriteRows(
+    userId: string,
+  ): Promise<UserThemeFavoriteRow[]> {
+    const { data, error } = await getSupabaseAdminClient()
+      .from(USER_THEME_FAVORITES_TABLE)
+      .select('user_id, theme_id, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .order('theme_id', { ascending: true });
+
+    if (error) {
+      throw new Error('Unable to load theme favorites.');
+    }
+
+    return (data as UserThemeFavoriteRow[] | null) ?? [];
+  }
+
+  return {
+    async addFavorite({ themeId, userId }) {
+      const normalizedThemeId = normalizeUserThemeFavoriteThemeId(themeId);
+      const { error } = await getSupabaseAdminClient()
+        .from(USER_THEME_FAVORITES_TABLE)
+        .upsert(
+          {
+            theme_id: normalizedThemeId,
+            user_id: userId,
+          },
+          { onConflict: 'user_id,theme_id' },
+        );
+
+      if (error) {
+        throw new Error('Unable to save theme favorite.');
+      }
+
+      return {
+        isFavorited: true,
+        themeId: normalizedThemeId,
+      };
+    },
+
+    async getFavoriteState({ themeId, userId }) {
+      const normalizedThemeId = normalizeUserThemeFavoriteThemeId(themeId);
+      const { data, error } = await getSupabaseAdminClient()
+        .from(USER_THEME_FAVORITES_TABLE)
+        .select('theme_id')
+        .eq('user_id', userId)
+        .eq('theme_id', normalizedThemeId)
+        .maybeSingle();
+
+      if (error) {
+        throw new Error('Unable to load theme favorite.');
+      }
+
+      return {
+        isFavorited: Boolean(data),
+        themeId: normalizedThemeId,
+      };
+    },
+
+    async listFavoriteThemeIds(userId) {
+      return (await getFavoriteRows(userId)).map((row) => row.theme_id);
+    },
+
+    async listFavoriteThemes(userId) {
+      const favoriteRows = await getFavoriteRows(userId);
+      const themeIds = favoriteRows.map((favoriteRow) => favoriteRow.theme_id);
+
+      if (themeIds.length === 0) {
+        return [];
+      }
+
+      const [themeResponse, summaryResponse] = await Promise.all([
+        getSupabaseAdminClient()
+          .from(CATALOG_THEMES_TABLE)
+          .select(
+            'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, status, is_public',
+          )
+          .in('id', themeIds),
+        getSupabaseAdminClient()
+          .from(CATALOG_THEME_SUMMARIES_TABLE)
+          .select(
+            'theme_id, active_set_count, representative_set_id, representative_image_url',
+          )
+          .in('theme_id', themeIds),
+      ]);
+
+      if (themeResponse.error || summaryResponse.error) {
+        throw new Error('Unable to load favorite themes.');
+      }
+
+      const themeById = new Map(
+        ((themeResponse.data as UserThemeFavoriteThemeRow[] | null) ?? []).map(
+          (themeRow) => [themeRow.id, themeRow] as const,
+        ),
+      );
+      const summaryByThemeId = new Map(
+        (
+          (summaryResponse.data as UserThemeFavoriteSummaryRow[] | null) ?? []
+        ).map((summaryRow) => [summaryRow.theme_id, summaryRow] as const),
+      );
+
+      return favoriteRows.flatMap((favoriteRow) => {
+        const theme = themeById.get(favoriteRow.theme_id);
+
+        if (!theme) {
+          return [];
+        }
+
+        const favoriteTheme = createFavoriteThemeDirectoryItem({
+          favorite: favoriteRow,
+          summary: summaryByThemeId.get(favoriteRow.theme_id),
+          theme,
+        });
+
+        return favoriteTheme ? [favoriteTheme] : [];
+      });
+    },
+
+    async removeFavorite({ themeId, userId }) {
+      const normalizedThemeId = normalizeUserThemeFavoriteThemeId(themeId);
+      const { error } = await getSupabaseAdminClient()
+        .from(USER_THEME_FAVORITES_TABLE)
+        .delete()
+        .eq('user_id', userId)
+        .eq('theme_id', normalizedThemeId);
+
+      if (error) {
+        throw new Error('Unable to remove theme favorite.');
+      }
+
+      return {
+        isFavorited: false,
+        themeId: normalizedThemeId,
+      };
+    },
+  };
 }
 
 function formatSupabaseDiagnosticError(error: unknown): string {

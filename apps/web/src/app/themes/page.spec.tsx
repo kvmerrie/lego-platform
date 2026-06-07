@@ -16,10 +16,19 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
+  CatalogFeatureFavoriteThemesRail: () => (
+    <section data-testid="favorite-themes-rail">Jouw favoriete thema’s</section>
+  ),
   CatalogFeatureThemeIndex: (props: unknown) => {
     themeIndexPageMocks.catalogFeatureThemeIndex(props);
+    const typedProps = props as { beforeDirectory?: React.ReactNode };
 
-    return <main data-testid="theme-index" />;
+    return (
+      <main data-testid="theme-index">
+        {typedProps.beforeDirectory}
+        <section data-testid="theme-directory">Kies je thema</section>
+      </main>
+    );
   },
 }));
 
@@ -59,7 +68,21 @@ describe('themes index page', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('data-testid="theme-index"');
+    expect(markup).toContain('data-testid="favorite-themes-rail"');
+    expect(markup.indexOf('data-testid="favorite-themes-rail"')).toBeLessThan(
+      markup.indexOf('data-testid="theme-directory"'),
+    );
     expect(themeIndexPageMocks.catalogFeatureThemeIndex).toHaveBeenCalled();
+    expect(
+      themeIndexPageMocks.catalogFeatureThemeIndex.mock.calls[0]?.[0] as {
+        beforeDirectory?: unknown;
+        visual?: unknown;
+      },
+    ).toEqual(
+      expect.objectContaining({
+        beforeDirectory: expect.any(Object),
+      }),
+    );
     expect(
       themeIndexPageMocks.catalogFeatureThemeIndex.mock.calls[0]?.[0] as {
         visual?: unknown;

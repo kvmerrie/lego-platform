@@ -43,6 +43,10 @@ export interface CatalogFeatureThemePageArticleLink {
   title: string;
 }
 
+type CatalogFeatureThemeFavoriteAction =
+  | ReactNode
+  | ((context: { buttonSurface: 'dark' | 'light' }) => ReactNode);
+
 function getThemeButtonSurfaceFromVisual(
   visual?: CatalogThemeVisual,
 ): 'dark' | 'light' {
@@ -62,6 +66,7 @@ export function CatalogFeatureThemePage({
   pageSize,
   relatedArticles = [],
   relatedArticlesRail,
+  themeFavoriteAction,
   themePage,
 }: {
   currentPage?: number;
@@ -70,6 +75,7 @@ export function CatalogFeatureThemePage({
   pageSize?: number;
   relatedArticles?: readonly CatalogFeatureThemePageArticleLink[];
   relatedArticlesRail?: ReactNode;
+  themeFavoriteAction?: CatalogFeatureThemeFavoriteAction;
   themePage: Omit<CatalogThemeLandingPage, 'setCards'> & {
     setCards: readonly CatalogFeatureThemePageSetCard[];
   };
@@ -80,6 +86,10 @@ export function CatalogFeatureThemePage({
   const browseSectionId = 'theme-browse';
   const themeVisual = themePage.visual;
   const themeHeroButtonSurface = getThemeButtonSurfaceFromVisual(themeVisual);
+  const renderedThemeFavoriteAction =
+    typeof themeFavoriteAction === 'function'
+      ? themeFavoriteAction({ buttonSurface: themeHeroButtonSurface })
+      : themeFavoriteAction;
   const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
   const normalizedPageSize =
     typeof pageSize === 'number' && pageSize > 0
@@ -172,6 +182,7 @@ export function CatalogFeatureThemePage({
               sets
             </span>
           </ActionLink>
+          {renderedThemeFavoriteAction}
           {dealSetCards.length ? (
             <ActionLink
               className={styles.introSecondaryAction}

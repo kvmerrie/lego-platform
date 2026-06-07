@@ -1,10 +1,14 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import {
+  apiPaths,
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
 } from '@lego-platform/shared/config';
+import type { UserThemeFavoriteRepository } from '@lego-platform/catalog/data-access-server';
 import {
   createAnonymousUserSession,
   type UserSession,
@@ -37,6 +41,7 @@ async function createApiServer({
   requestPrincipal = {
     state: 'anonymous',
   } satisfies RequestPrincipal,
+  userThemeFavoriteRepository,
   listCatalogSetLiveOffersBySetId = vi
     .fn()
     .mockResolvedValue([]) as NonNullable<
@@ -57,6 +62,7 @@ async function createApiServer({
   publicRateLimit?: ApiV1RouteDependencies['publicRateLimit'];
   recentlyViewedSetRepository?: RecentlyViewedSetRepository;
   requestPrincipal?: RequestPrincipal;
+  userThemeFavoriteRepository?: UserThemeFavoriteRepository;
   userProfileRepository?: UserProfileRepository;
   userSession?: UserSession;
 } = {}) {
@@ -123,6 +129,23 @@ async function createApiServer({
         createdAt: '2026-06-03T08:00:00.000Z',
       }),
     };
+  const nextUserThemeFavoriteRepository: UserThemeFavoriteRepository =
+    userThemeFavoriteRepository ?? {
+      addFavorite: vi.fn().mockResolvedValue({
+        isFavorited: true,
+        themeId: 'theme-icons',
+      }),
+      getFavoriteState: vi.fn().mockResolvedValue({
+        isFavorited: false,
+        themeId: 'theme-icons',
+      }),
+      listFavoriteThemeIds: vi.fn().mockResolvedValue([]),
+      listFavoriteThemes: vi.fn().mockResolvedValue([]),
+      removeFavorite: vi.fn().mockResolvedValue({
+        isFavorited: false,
+        themeId: 'theme-icons',
+      }),
+    };
   const server = Fastify();
 
   await server.register(
@@ -140,6 +163,7 @@ async function createApiServer({
       userProfileRepository: nextUserProfileRepository,
       userSessionService,
       userSetStatusRepository,
+      userThemeFavoriteRepository: nextUserThemeFavoriteRepository,
     }),
   );
 
@@ -153,10 +177,36 @@ async function createApiServer({
     userProfileRepository: nextUserProfileRepository,
     userSessionService,
     userSetStatusRepository,
+    userThemeFavoriteRepository: nextUserThemeFavoriteRepository,
   };
 }
 
 describe('api v1 auth and set-status routes', () => {
+  test('creates own-row RLS policies for user theme favorites', () => {
+    const migrationSql = readFileSync(
+      join(
+        process.cwd(),
+        'supabase/migrations/20260606190000_user_theme_favorites.sql',
+      ),
+      'utf-8',
+    );
+
+    expect(migrationSql).toContain(
+      'alter table public.user_theme_favorites enable row level security;',
+    );
+    expect(migrationSql).toContain(
+      'create policy "user_theme_favorites_select_own"',
+    );
+    expect(migrationSql).toContain(
+      'create policy "user_theme_favorites_insert_own"',
+    );
+    expect(migrationSql).toContain(
+      'create policy "user_theme_favorites_delete_own"',
+    );
+    expect(migrationSql).toContain('using (auth.uid() = user_id)');
+    expect(migrationSql).toContain('with check (auth.uid() = user_id)');
+  });
+
   test('returns public current offer summaries for many sets', async () => {
     const currentOfferSummaries = [
       {
@@ -951,6 +1001,143 @@ describe('api v1 auth and set-status routes', () => {
     );
     expect(response.json()).toEqual({
       setIds: ['10316', '75355'],
+    });
+
+    await server.close();
+  });
+
+  test('returns 401 for theme favorite mutations when no valid user is present', async () => {
+    const { server, userThemeFavoriteRepository } = await createApiServer();
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: `${apiPaths.themeFavorites}/theme-icons`,
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(userThemeFavoriteRepository.addFavorite).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('lists favorite themes for authenticated users', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const userThemeFavoriteRepository: UserThemeFavoriteRepository = {
+      addFavorite: vi.fn(),
+      getFavoriteState: vi.fn(),
+      listFavoriteThemeIds: vi.fn(),
+      listFavoriteThemes: vi.fn().mockResolvedValue([
+        {
+          favoritedAt: '2026-06-06T18:00:00.000Z',
+          themeSnapshot: {
+            id: 'theme-icons',
+            name: 'Icons',
+            slug: 'icons',
+            setCount: 38,
+            momentum: 'Displaymodellen die gebouwd zijn om te blijven staan.',
+            signatureSet: 'Icons',
+          },
+        },
+      ]),
+      removeFavorite: vi.fn(),
+    };
+    const { server } = await createApiServer({
+      requestPrincipal,
+      userThemeFavoriteRepository,
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: apiPaths.themeFavorites,
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(userThemeFavoriteRepository.listFavoriteThemes).toHaveBeenCalledWith(
+      'user-123',
+    );
+    expect(response.json()).toEqual({
+      themeIds: ['theme-icons'],
+      themes: [
+        {
+          favoritedAt: '2026-06-06T18:00:00.000Z',
+          themeSnapshot: {
+            id: 'theme-icons',
+            name: 'Icons',
+            slug: 'icons',
+            setCount: 38,
+            momentum: 'Displaymodellen die gebouwd zijn om te blijven staan.',
+            signatureSet: 'Icons',
+          },
+        },
+      ],
+    });
+
+    await server.close();
+  });
+
+  test('adds and removes theme favorites for authenticated users', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const userThemeFavoriteRepository: UserThemeFavoriteRepository = {
+      addFavorite: vi.fn().mockResolvedValue({
+        isFavorited: true,
+        themeId: 'theme-icons',
+      }),
+      getFavoriteState: vi.fn(),
+      listFavoriteThemeIds: vi.fn(),
+      listFavoriteThemes: vi.fn(),
+      removeFavorite: vi.fn().mockResolvedValue({
+        isFavorited: false,
+        themeId: 'theme-icons',
+      }),
+    };
+    const { server } = await createApiServer({
+      requestPrincipal,
+      userThemeFavoriteRepository,
+    });
+
+    const addResponse = await server.inject({
+      method: 'PUT',
+      url: `${apiPaths.themeFavorites}/theme-icons`,
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+    const removeResponse = await server.inject({
+      method: 'DELETE',
+      url: `${apiPaths.themeFavorites}/theme-icons`,
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(addResponse.statusCode).toBe(200);
+    expect(removeResponse.statusCode).toBe(200);
+    expect(userThemeFavoriteRepository.addFavorite).toHaveBeenCalledWith({
+      themeId: 'theme-icons',
+      userId: 'user-123',
+    });
+    expect(userThemeFavoriteRepository.removeFavorite).toHaveBeenCalledWith({
+      themeId: 'theme-icons',
+      userId: 'user-123',
+    });
+    expect(addResponse.json()).toEqual({
+      isFavorited: true,
+      themeId: 'theme-icons',
+    });
+    expect(removeResponse.json()).toEqual({
+      isFavorited: false,
+      themeId: 'theme-icons',
     });
 
     await server.close();

@@ -1,7 +1,9 @@
 import {
+  createUserThemeFavoriteRepository,
   listCatalogCurrentOfferSummariesBySetIds as listCatalogCurrentOfferSummariesBySetIdsServer,
   listCatalogDiscoverySignals as listCatalogDiscoverySignalsServer,
   listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer,
+  type UserThemeFavoriteRepository,
 } from '@lego-platform/catalog/data-access-server';
 import {
   getPublishedArticleBySlug,
@@ -64,6 +66,7 @@ export interface ApiV1RouteDependencies {
   userProfileRepository?: UserProfileRepository;
   publicRateLimit?: ApiV1PublicRateLimitOptions;
   recentlyViewedSetRepository?: RecentlyViewedSetRepository;
+  userThemeFavoriteRepository?: UserThemeFavoriteRepository;
   userSessionService?: UserSessionService;
   userSetStatusRepository?: UserSetStatusRepository;
 }
@@ -131,6 +134,7 @@ export function createApiV1Routes({
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
   publicRateLimit,
   recentlyViewedSetRepository = createRecentlyViewedSetRepository(),
+  userThemeFavoriteRepository = createUserThemeFavoriteRepository(),
   userProfileRepository = createUserProfileRepository(),
   userSetStatusRepository = createUserSetStatusRepository(),
   userSessionService = createUserSessionService({
@@ -504,6 +508,51 @@ export function createApiV1Routes({
         ),
       };
     });
+
+    fastify.get(apiPaths.themeFavorites, async function (request, reply) {
+      if (request.requestPrincipal?.state !== 'authenticated') {
+        return reply.status(401).send(createUnauthorizedResponse());
+      }
+
+      const themes = await userThemeFavoriteRepository.listFavoriteThemes(
+        request.requestPrincipal.userId,
+      );
+
+      return {
+        themeIds: themes.flatMap((theme) =>
+          theme.themeSnapshot.id ? [theme.themeSnapshot.id] : [],
+        ),
+        themes,
+      };
+    });
+
+    fastify.put<{ Params: { themeId: string } }>(
+      `${apiPaths.themeFavorites}/:themeId`,
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        return userThemeFavoriteRepository.addFavorite({
+          themeId: request.params.themeId,
+          userId: request.requestPrincipal.userId,
+        });
+      },
+    );
+
+    fastify.delete<{ Params: { themeId: string } }>(
+      `${apiPaths.themeFavorites}/:themeId`,
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        return userThemeFavoriteRepository.removeFavorite({
+          themeId: request.params.themeId,
+          userId: request.requestPrincipal.userId,
+        });
+      },
+    );
 
     fastify.post<{ Body: { setIds?: readonly string[] | string } }>(
       `${apiPaths.recentlyViewedSets}/merge`,

@@ -19,6 +19,46 @@ import {
 } from './catalog-set-card-mobile-layout';
 
 describe('CatalogSetCard', () => {
+  function parseTestHexColor(
+    color: string,
+  ): [red: number, green: number, blue: number] {
+    const match = color.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/iu);
+
+    if (!match) {
+      throw new Error(`Invalid hex color: ${color}`);
+    }
+
+    return [
+      parseInt(match[1], 16),
+      parseInt(match[2], 16),
+      parseInt(match[3], 16),
+    ];
+  }
+
+  function getTestRelativeLuminance(color: string): number {
+    const [red, green, blue] = parseTestHexColor(color).map((channel) => {
+      const normalizedChannel = channel / 255;
+
+      return normalizedChannel <= 0.03928
+        ? normalizedChannel / 12.92
+        : ((normalizedChannel + 0.055) / 1.055) ** 2.4;
+    });
+
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  }
+
+  function getTestContrastRatio(
+    foregroundColor: string,
+    backgroundColor: string,
+  ): number {
+    const foregroundLuminance = getTestRelativeLuminance(foregroundColor);
+    const backgroundLuminance = getTestRelativeLuminance(backgroundColor);
+    const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+    const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
   function readPaginationBreakpointMarkup(
     markup: string,
     breakpoint: 'desktop' | 'mobile' | 'tablet',
@@ -797,6 +837,8 @@ describe('CatalogSetCard', () => {
   });
 
   it('uses Supabase theme presentation colors for compact set-card theme badges', () => {
+    const surfaceColor = '#171717';
+    const textColor = '#ffffff';
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/darth-vader-bust-75439"
@@ -808,8 +850,8 @@ describe('CatalogSetCard', () => {
           publicTheme: {
             name: 'Star Wars',
             slug: 'star-wars',
-            surfaceColor: '#171717',
-            surfaceTextColor: '#ffffff',
+            surfaceColor,
+            surfaceTextColor: textColor,
           },
           releaseYear: 2025,
           pieces: 327,
@@ -820,12 +862,51 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('--card-theme-badge-accent:#171717');
-    expect(markup).toContain('--card-theme-badge-bg:#171717');
-    expect(markup).toContain('--card-theme-badge-text:#ffffff');
+    expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
+    expect(markup).toContain(`--card-theme-badge-text:${textColor}`);
+    expect(
+      getTestContrastRatio(textColor, surfaceColor),
+    ).toBeGreaterThanOrEqual(4.5);
     expect(markup).toContain('>Star Wars<');
   });
 
+  it('uses Pokémon theme presentation colors for set-card theme badges', () => {
+    const surfaceColor = '#f5d547';
+    const textColor = '#171a22';
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/pikachu-21587"
+        setSummary={{
+          id: '21587',
+          slug: 'pikachu-21587',
+          name: 'Pikachu',
+          theme: 'Pokémon',
+          publicTheme: {
+            name: 'Pokémon',
+            slug: 'pokemon',
+            surfaceColor,
+            surfaceTextColor: textColor,
+          },
+          releaseYear: 2026,
+          pieces: 683,
+          imageUrl: 'https://images.example/pikachu.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
+    expect(markup).toContain(`--card-theme-badge-text:${textColor}`);
+    expect(
+      getTestContrastRatio(textColor, surfaceColor),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(markup).toContain('>Pokémon<');
+  });
+
   it('keeps theme badge and muted tile text above AA contrast on medium theme colors', () => {
+    const surfaceColor = '#2f7fc0';
+    const adjustedBadgeSurfaceColor = '#2d7ab8';
+    const accessibleTextColor = '#ffffff';
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/snackbartruck-60488"
@@ -837,7 +918,7 @@ describe('CatalogSetCard', () => {
           publicTheme: {
             name: 'City',
             slug: 'city',
-            surfaceColor: '#2f7fc0',
+            surfaceColor,
             surfaceTextColor: '#ffffff',
           },
           releaseYear: 2025,
@@ -848,11 +929,65 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('--card-theme-badge-bg:#2f7fc0');
-    expect(markup).toContain('--card-theme-badge-text:#05070d');
+    expect(markup).toContain(`--card-theme-badge-accent:${surfaceColor}`);
+    expect(markup).toContain(
+      `--card-theme-badge-bg:${adjustedBadgeSurfaceColor}`,
+    );
+    expect(markup).toContain(`--card-theme-badge-text:${accessibleTextColor}`);
+    expect(
+      getTestContrastRatio(accessibleTextColor, adjustedBadgeSurfaceColor),
+    ).toBeGreaterThanOrEqual(4.5);
     expect(markup).toContain('--theme-card-foreground:#05070d');
     expect(markup).toContain('--theme-muted:#05070d');
     expect(markup).toContain('>City<');
+  });
+
+  it('computes an accessible badge text color when theme text color is missing', () => {
+    const surfaceColor = '#e0b84f';
+    const accessibleTextColor = '#171a22';
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/modular-display-10350"
+        setSummary={{
+          id: '10350',
+          slug: 'modular-display-10350',
+          name: 'Modular Display',
+          theme: 'Icons',
+          publicTheme: {
+            name: 'Icons',
+            slug: 'icons',
+            surfaceColor,
+          },
+          releaseYear: 2026,
+          pieces: 2210,
+          imageUrl: 'https://images.example/modular-display.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
+    expect(markup).toContain(`--card-theme-badge-text:${accessibleTextColor}`);
+    expect(
+      getTestContrastRatio(accessibleTextColor, surfaceColor),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('does not tint set-card theme badges with translucent overlay styling', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const compactBadgeRule =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\] \.cardThemeBadge,[\s\S]*?\.cardMetaRow \{/u,
+      )?.[0] ?? '';
+
+    expect(compactBadgeRule).toContain(
+      'background: var(--card-theme-badge-bg, var(--lego-surface-muted));',
+    );
+    expect(compactBadgeRule).not.toContain('background: color-mix');
+    expect(compactBadgeRule).not.toContain('transparent');
   });
 
   it('keeps neutral badge colors when theme presentation colors are missing', () => {

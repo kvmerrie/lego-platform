@@ -966,6 +966,297 @@
     margin: 0;
   }
 
+  .gatedActionLayer {
+    align-items: center;
+    display: grid;
+    inset: 0;
+    justify-items: center;
+    padding: var(--lego-space-3);
+    position: fixed;
+    z-index: 1000;
+  }
+
+  .gatedActionBackdrop {
+    background: color-mix(in srgb, var(--lego-contrast-ink) 58%, transparent);
+    border: 0;
+    cursor: pointer;
+    inset: 0;
+    padding: 0;
+    position: absolute;
+  }
+
+  .gatedActionDialog {
+    background: var(--lego-surface-raised);
+    border: 1px solid var(--lego-color-border-subtle);
+    border-radius: var(--lego-radius-lg);
+    box-shadow: 0 1.4rem 4rem
+      color-mix(in srgb, var(--lego-contrast-ink) 24%, transparent);
+    color: var(--lego-text);
+    display: grid;
+    gap: var(--lego-space-4);
+    inline-size: min(100%, 32rem);
+    padding: var(--lego-space-4);
+    position: relative;
+  }
+
+  .gatedActionCopy {
+    display: grid;
+    gap: var(--lego-space-2);
+  }
+
+  .gatedActionTitle,
+  .gatedActionBody {
+    margin: 0;
+  }
+
+  .gatedActionTitle {
+    font-family: var(--lego-font-family-heading);
+    font-size: var(--lego-font-size-xl);
+    line-height: 1.1;
+  }
+
+  .gatedActionBody {
+    color: var(--lego-text-muted);
+    line-height: var(--lego-text-role-body-line-height);
+  }
+
+  .gatedActionActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lego-space-2);
+  }
+
+  .responsiveDialogLayer {
+    align-items: center;
+    display: grid;
+    inset: 0;
+    justify-items: center;
+    padding: var(--lego-space-4);
+    position: fixed;
+    z-index: 1400;
+  }
+
+  .responsiveDialogBackdrop {
+    background: rgba(12, 18, 32, 0.82);
+    border: 0;
+    cursor: pointer;
+    inset: 0;
+    padding: 0;
+    position: fixed;
+  }
+
+  .responsiveDialogPanel {
+    background: var(--lego-surface-raised);
+    border-radius: var(--lego-radius-lg);
+    box-shadow: 0 24px 80px rgb(5 10 20 / 0.32);
+    color: var(--lego-text);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    max-block-size: min(82vh, 48rem);
+    max-inline-size: min(42rem, 100%);
+    min-inline-size: min(36rem, 100%);
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+
+  .responsiveDialogHeader {
+    align-items: start;
+    border-bottom: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    display: flex;
+    gap: var(--lego-space-3);
+    justify-content: space-between;
+    padding: var(--lego-space-4);
+  }
+
+  .responsiveDialogHeading {
+    display: grid;
+    gap: var(--lego-space-1);
+    min-width: 0;
+  }
+
+  .responsiveDialogTitle,
+  .responsiveDialogDescription {
+    margin: 0;
+  }
+
+  .responsiveDialogTitle {
+    font-family: var(--lego-font-family-heading);
+    font-size: var(--lego-text-role-section-size);
+    font-weight: var(--lego-text-role-section-weight);
+    letter-spacing: -0.03em;
+    line-height: var(--lego-text-role-section-line-height);
+  }
+
+  .responsiveDialogDescription {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-text-role-support-size);
+    line-height: var(--lego-text-role-support-line-height);
+    max-width: var(--lego-max-width-reading);
+  }
+
+  .responsiveDialogClose {
+    flex: 0 0 auto;
+  }
+
+  .responsiveDialogBody {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: var(--lego-space-4);
+  }
+
+  .responsiveDialogFooter {
+    border-top: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lego-space-2);
+    justify-content: flex-end;
+    padding: var(--lego-space-3) var(--lego-space-4);
+  }
+
+  .selectableDialogContent {
+    display: grid;
+    gap: var(--lego-space-3);
+  }
+
+  .selectableDialogSearch {
+    display: block;
+  }
+
+  .selectableDialogSearchInput {
+    background: var(--lego-surface-default);
+    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    border-radius: var(--lego-radius-sm);
+    color: var(--lego-text);
+    font: inherit;
+    inline-size: 100%;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.82rem;
+  }
+
+  .selectableDialogSearchInput:focus-visible {
+    border-color: var(--lego-focus-ring);
+    outline: 3px solid
+      color-mix(in srgb, var(--lego-focus-ring) 36%, transparent);
+    outline-offset: 1px;
+  }
+
+  .selectableDialogList {
+    display: grid;
+    gap: var(--lego-space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .selectableDialogItem {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: var(--lego-radius-sm);
+    color: var(--lego-text);
+    cursor: pointer;
+    display: grid;
+    gap: var(--lego-space-3);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    inline-size: 100%;
+    min-height: 4rem;
+    padding: var(--lego-space-2);
+    text-align: left;
+  }
+
+  .selectableDialogItem:hover,
+  .selectableDialogItem:focus-visible {
+    background: var(--lego-surface-muted);
+    outline: none;
+  }
+
+  .selectableDialogItem:focus-visible {
+    box-shadow: inset 0 0 0 3px var(--lego-focus-ring);
+  }
+
+  .selectableDialogItem[data-selected='true'] {
+    background: var(--lego-accent-subtle);
+  }
+
+  .selectableDialogItemVisual {
+    --selectable-item-swatch: var(--lego-accent);
+    align-items: center;
+    background: var(--selectable-item-swatch);
+    border-radius: var(--lego-radius-sm);
+    display: flex;
+    height: 2.75rem;
+    justify-content: center;
+    overflow: hidden;
+    width: 2.75rem;
+  }
+
+  .selectableDialogItemImage {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .selectableDialogItemCopy {
+    display: grid;
+    gap: 0.12rem;
+    min-width: 0;
+  }
+
+  .selectableDialogItemTitle {
+    font-weight: var(--lego-font-weight-bold);
+    line-height: 1.16;
+  }
+
+  .selectableDialogItemDescription,
+  .selectableDialogItemMeta,
+  .selectableDialogState {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-text-role-meta-size);
+    line-height: var(--lego-text-role-meta-line-height);
+  }
+
+  .selectableDialogItemStatus {
+    color: var(--lego-accent);
+    display: inline-flex;
+  }
+
+  .selectableDialogItemStatus[data-loading='true'] {
+    opacity: 0.45;
+  }
+
+  .selectableDialogState {
+    margin: 0;
+    padding: var(--lego-space-4) 0;
+  }
+
+  @media (max-width: 47.9375rem) {
+    .responsiveDialogLayer {
+      align-items: end;
+      padding: 0;
+    }
+
+    .responsiveDialogPanel {
+      border-end-end-radius: 0;
+      border-end-start-radius: 0;
+      border-start-end-radius: var(--lego-radius-lg);
+      border-start-start-radius: var(--lego-radius-lg);
+      max-block-size: 88vh;
+      max-inline-size: 100%;
+      min-inline-size: 0;
+    }
+
+    .responsiveDialogHeader {
+      padding: var(--lego-space-3) var(--lego-space-4);
+    }
+
+    .responsiveDialogBody {
+      padding: var(--lego-space-3) var(--lego-space-4) var(--lego-space-4);
+    }
+  }
+
   .visuallyHidden {
     border: 0;
     clip: rect(0 0 0 0);

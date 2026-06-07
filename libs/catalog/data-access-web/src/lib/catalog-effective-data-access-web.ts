@@ -8238,6 +8238,7 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
               slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
               theme: publicDisplayName,
             }),
+            id: themeRow.id,
             ...(publicDescription
               ? {
                   introSupport: undefined,
@@ -12316,6 +12317,7 @@ export async function getCatalogThemePageBySlug({
           slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
           theme: publicDisplayName,
         }),
+        id: themeRow.id,
         ...(publicDescription
           ? {
               introSupport: undefined,

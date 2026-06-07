@@ -11,6 +11,7 @@ import {
   normalizeTheme,
 } from '@lego-platform/catalog/util';
 import {
+  CatalogFeatureThemeFavoriteToggle,
   CatalogFeatureThemePage,
   CatalogFeatureThemeDealRail,
   CatalogFeatureThemeRelatedArticles,
@@ -663,6 +664,17 @@ export default async function ThemePage({
               themeName={themePage.themeSnapshot.name}
             />
           </Suspense>
+        }
+        themeFavoriteAction={
+          pricedThemePage.themeSnapshot.id
+            ? ({ buttonSurface }) => (
+                <CatalogFeatureThemeFavoriteToggle
+                  buttonSurface={buttonSurface}
+                  themeId={pricedThemePage.themeSnapshot.id ?? ''}
+                  themeName={pricedThemePage.themeSnapshot.name}
+                />
+              )
+            : undefined
         }
         themePage={pricedThemePage}
       />
