@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
@@ -26,6 +26,24 @@ import {
   type ApiV1RouteDependencies,
 } from '../app/routes/api-v1';
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
+
+function readWorkspaceMigration(relativeMigrationPath: string) {
+  const candidatePaths = [
+    join(process.cwd(), relativeMigrationPath),
+    join(process.cwd(), '../..', relativeMigrationPath),
+  ];
+  const migrationPath = candidatePaths.find((candidatePath) =>
+    existsSync(candidatePath),
+  );
+
+  if (!migrationPath) {
+    throw new Error(
+      `Could not find migration ${relativeMigrationPath} from ${process.cwd()}`,
+    );
+  }
+
+  return readFileSync(migrationPath, 'utf-8');
+}
 
 async function createApiServer({
   listCatalogCurrentOfferSummariesBySetIds = vi
@@ -183,12 +201,8 @@ async function createApiServer({
 
 describe('api v1 auth and set-status routes', () => {
   test('creates own-row RLS policies for user theme favorites', () => {
-    const migrationSql = readFileSync(
-      join(
-        process.cwd(),
-        'supabase/migrations/20260606190000_user_theme_favorites.sql',
-      ),
-      'utf-8',
+    const migrationSql = readWorkspaceMigration(
+      'supabase/migrations/20260606190000_user_theme_favorites.sql',
     );
 
     expect(migrationSql).toContain(
