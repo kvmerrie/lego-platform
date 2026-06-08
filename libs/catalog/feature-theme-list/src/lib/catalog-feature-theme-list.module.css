@@ -11,23 +11,32 @@
 }
 
 .railViewport {
+  -webkit-overflow-scrolling: touch;
   margin-inline: calc(
     -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
   );
   overflow-x: auto;
   padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
     var(--lego-space-1);
+  overscroll-behavior-x: contain;
   scroll-padding-inline: var(
     --catalog-section-inline-padding,
     var(--lego-space-4)
   );
+  scrollbar-width: none;
+}
+
+.railViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .railTrack {
   display: flex;
   gap: var(--lego-space-2);
   margin: 0;
+  scroll-behavior: smooth;
   scroll-snap-type: x proximity;
+  touch-action: pan-x pan-y;
 }
 
 .railTrack::after {
@@ -36,7 +45,7 @@
 }
 
 .railTrack > * {
-  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
+  flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
   scroll-snap-align: start;
 }
@@ -82,15 +91,15 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  min-height: 11.25rem;
+  min-height: 8.75rem;
   overflow: hidden;
   padding: var(--lego-space-4) var(--lego-space-3) 0;
 }
 
 .allThemesIcon {
   color: #ffffff;
-  height: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
-  width: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
+  height: clamp(3.5rem, 2.5rem + 5vw, 4.5rem);
+  width: clamp(3.5rem, 2.5rem + 5vw, 4.5rem);
 }
 
 .allThemesBody {
@@ -104,7 +113,7 @@
 .allThemesTitle {
   color: #ffffff;
   display: -webkit-box;
-  font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+  font-size: clamp(1.02rem, 0.92rem + 0.55vw, 1.28rem);
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.03em;
   line-height: 1.02;
@@ -126,6 +135,25 @@
 .allThemesLink:focus-visible {
   outline: 3px solid var(--lego-focus-ring);
   outline-offset: -3px;
+}
+
+@media (min-width: 48rem) {
+  .railTrack > * {
+    flex-basis: min(13rem, calc(100% - var(--lego-space-6)));
+  }
+
+  .allThemesVisual {
+    min-height: 11.25rem;
+  }
+
+  .allThemesIcon {
+    height: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
+    width: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
+  }
+
+  .allThemesTitle {
+    font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+  }
 }
 
 @media (min-width: 75rem) {

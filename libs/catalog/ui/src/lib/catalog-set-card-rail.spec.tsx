@@ -315,11 +315,13 @@ describe('CatalogSetCardRail', () => {
     expect(skeletonTrackRule).toContain('align-items: stretch;');
     expect(skeletonTrackRule).toContain('grid-auto-flow: column;');
     expect(skeletonTrackRule).toContain(
-      'grid-auto-columns: calc(\n      (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5\n    );',
+      'grid-auto-columns: calc(\n      (100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75\n    );',
     );
     expect(skeletonTrackRule).toContain('overflow-x: auto;');
     expect(skeletonTrackRule).toContain('overflow-y: hidden;');
+    expect(skeletonTrackRule).toContain('-webkit-overflow-scrolling: touch;');
     expect(skeletonTrackRule).toContain('scroll-snap-type: x proximity;');
+    expect(skeletonTrackRule).toContain('touch-action: pan-x pan-y;');
     expect(skeletonTrackRule).not.toContain('grid-auto-columns: 100%;');
     expect(skeletonTrackRule).not.toContain('overflow: hidden;');
     expect(skeletonImageRule).toContain('aspect-ratio: 1 / 1;');
@@ -1244,7 +1246,7 @@ describe('CatalogSetCardRail', () => {
     expect(railTrackRule).toContain('100% -');
     expect(skeletonTrackRule).toContain('grid-auto-columns: calc(');
     expect(skeletonTrackRule).toContain(
-      '(100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5',
+      '(100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75',
     );
     expect(skeletonTrackRule).toContain('grid-auto-flow: column;');
     expect(skeletonTrackRule).toContain('overflow-x: auto;');
@@ -1524,7 +1526,7 @@ describe('CatalogSetCardRail', () => {
     );
 
     expect(css).toContain('.setCardRailTrack {');
-    expect(css).toContain('touch-action: auto;');
+    expect(css).toContain('touch-action: pan-x pan-y;');
     expect(css).not.toContain('touch-action: pan-y;');
     expect(css).not.toContain('touch-action: pan-x;');
   });

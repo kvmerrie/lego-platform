@@ -106,14 +106,19 @@ describe('CatalogFeatureThemeList', () => {
     expect(tileRule).toContain('background: #6f8594;');
     expect(tileRule).toContain('border-radius: var(--lego-radius-sm);');
     expect(linkRule).toContain('grid-template-rows: minmax(0, 1fr) auto;');
-    expect(visualRule).toContain('min-height: 11.25rem;');
-    expect(iconRule).toContain('height: clamp(4.25rem');
-    expect(iconRule).toContain('width: clamp(4.25rem');
+    expect(visualRule).toContain('min-height: 8.75rem;');
+    expect(iconRule).toContain('height: clamp(3.5rem');
+    expect(iconRule).toContain('width: clamp(3.5rem');
     expect(bodyRule).toContain(
       'padding: var(--lego-space-3) var(--lego-space-3) var(--lego-space-4);',
     );
     expect(titleRule).toContain('-webkit-line-clamp: 2;');
     expect(metaRule).toContain('color: #f4f7fb;');
+    expect(css).toContain('flex: 0 0 min(10rem');
+    expect(css).toContain('-webkit-overflow-scrolling: touch;');
+    expect(css).toContain('scroll-snap-type: x proximity;');
+    expect(css).toContain('touch-action: pan-x pan-y;');
+    expect(css).toContain('flex-basis: min(13rem');
     expect(css).not.toContain('.allThemesTags');
     expect(css).not.toContain('.allThemesAction');
     expect(css).toContain('.railTrack::after {\n    content: none;');
@@ -165,13 +170,17 @@ describe('CatalogFeatureThemeList', () => {
       )?.[0] ?? '';
 
     expect(railViewportRule).toContain('overflow-x: auto;');
+    expect(railViewportRule).toContain('-webkit-overflow-scrolling: touch;');
+    expect(railViewportRule).toContain('overscroll-behavior-x: contain;');
     expect(railViewportRule).toContain('scroll-padding-inline:');
     expect(railTrackRule).toContain('display: flex;');
     expect(railTrackRule).toContain('scroll-snap-type: x proximity;');
+    expect(railTrackRule).toContain('touch-action: pan-x pan-y;');
     expect(spotlightItemRule).toContain('flex: 0 0');
+    expect(spotlightItemRule).toContain('min(10.5rem');
     expect(spotlightItemRule).toContain('scroll-snap-align: start;');
     expect(tabletRule).toContain('flex-basis: clamp(15.5rem');
-    expect(spotlightTileRule).toContain('min-height: 22.5rem;');
+    expect(spotlightTileRule).toContain('min-height: 18.5rem;');
     expect(spotlightTileRule).not.toContain('min-height: 0;');
     expect(css).not.toContain('grid-template-columns: repeat(auto-fit');
   });

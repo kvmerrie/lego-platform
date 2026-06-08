@@ -1,6 +1,8 @@
 .shell {
-  --shell-header-height: calc(2.9rem + (2 * var(--lego-space-2)));
   --shell-navbar-control-height: 2.5rem;
+  --shell-header-height: calc(
+    var(--shell-navbar-control-height) + (2 * var(--lego-space-2))
+  );
   --shell-mobile-tabbar-height: 3.95rem;
   --shell-mobile-viewport-bottom-offset: 0px;
   --shell-fragment-scroll-margin: var(--lego-space-1);
@@ -76,7 +78,7 @@
   display: flex;
   gap: var(--lego-space-3);
   justify-content: space-between;
-  min-height: 2.9rem;
+  min-height: var(--shell-navbar-control-height);
   padding-inline: var(--lego-section-inline-padding);
 }
 
@@ -868,11 +870,13 @@
 @media (min-width: 64rem) {
   .shell {
     --shell-fragment-scroll-margin: var(--lego-space-4);
+    --shell-header-height: calc(2.9rem + (2 * var(--lego-space-2)));
     min-height: 100dvh;
   }
 
   .headerBar {
     gap: var(--lego-space-4);
+    min-height: 2.9rem;
   }
 
   .headerPrimary {

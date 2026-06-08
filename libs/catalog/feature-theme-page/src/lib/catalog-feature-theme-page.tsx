@@ -175,11 +175,16 @@ export function CatalogFeatureThemePage({
             tone="accent"
           >
             <span className={styles.introPrimaryLabel}>
-              Bekijk alle{' '}
-              <span className="notranslate" translate="no">
-                {themeName}
+              <span className={styles.introPrimaryLabelDesktop}>
+                Bekijk alle{' '}
+                <span className="notranslate" translate="no">
+                  {themeName}
+                </span>{' '}
+                sets
               </span>{' '}
-              sets
+              <span className={styles.introPrimaryLabelMobile}>
+                Bekijk alle sets
+              </span>
             </span>
           </ActionLink>
           {renderedThemeFavoriteAction}

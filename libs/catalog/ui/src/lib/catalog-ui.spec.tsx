@@ -1314,6 +1314,17 @@ describe('CatalogSetCard', () => {
       'background: color-mix(in srgb, var(--lego-accent) 9%, transparent);',
     );
     expect(css).toContain('.sectionHeaderAction');
+    expect(css).not.toMatch(/^  \.sectionHeaderWithAside \{/mu);
+    expect(css).toMatch(
+      /@media \(min-width: 56rem\) \{[\s\S]*?\.sectionHeaderWithAside \{\s*gap: var\(--lego-space-3\);/u,
+    );
+    expect(css).toContain(
+      'font-size: clamp(1.45rem, 1.28rem + 0.7vw, 1.75rem);',
+    );
+    expect(css).toContain('font-size: clamp(1.8rem, 1.5rem + 1.2vw, 2.25rem);');
+    expect(css).toContain(
+      '.sectionHeaderTitle {\n      font-size: var(--lego-text-role-section-size);',
+    );
     expect(css).toContain('text-decoration: underline;');
     expect(source).toContain('tone="card"');
   });
@@ -3135,7 +3146,10 @@ describe('CatalogSetCard', () => {
     const featureHoverRule =
       css.match(/\.themeFeatureLink:hover \{[^}]+\}/u)?.[0] ?? '';
 
-    expect(featureCardRule).toContain('min-height: 22.5rem;');
+    expect(featureCardRule).toContain('min-height: 18.5rem;');
+    expect(css).toContain(
+      '.themeCard.themeFeatureCard {\n      min-height: 22.5rem;',
+    );
     expect(featureCardRule).toContain('overflow: hidden;');
     expect(featureLinkRule).toContain('display: grid;');
     expect(featureLinkRule).toContain(
@@ -3339,7 +3353,7 @@ describe('CatalogSetCardCollection', () => {
       /\.setCardCollectionBrowse\.setCardCollectionMobileTwoColumn\s+> \.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{\s+inline-size: var\(--catalog-card-action-height\);\s+min-height: 2\.75rem;\s+min-width: var\(--catalog-card-action-height\);\s+padding-inline: 0;/u,
     );
     expect(css).toMatch(
-      /@media \(min-width: 48rem\) \{\s+\.setCardMobileLayoutToggle \{\s+display: none;/u,
+      /@media \(min-width: 48rem\) \{[\s\S]*?\.setCardMobileLayoutToggle \{\s+display: none;/u,
     );
   });
 

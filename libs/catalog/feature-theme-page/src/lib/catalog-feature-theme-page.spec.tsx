@@ -8,7 +8,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
 import { CatalogFeatureThemeIndex } from './catalog-feature-theme-index';
-import { CatalogFeatureFavoriteThemesRail } from './catalog-feature-theme-favorites';
+import {
+  CatalogFeatureFavoriteThemesRail,
+  CatalogFeatureThemeFavoriteToggle,
+} from './catalog-feature-theme-favorites';
 import { CatalogFeatureThemePage } from './catalog-feature-theme-page';
 
 const dataAccessMocks = vi.hoisted(() => ({
@@ -90,6 +93,30 @@ async function renderFavoriteThemesRail(
   };
 }
 
+async function renderThemeFavoriteToggle(
+  props?: Partial<ComponentProps<typeof CatalogFeatureThemeFavoriteToggle>>,
+) {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  await act(async () => {
+    root.render(
+      <CatalogFeatureThemeFavoriteToggle
+        themeId="theme:marvel"
+        themeName="Marvel"
+        {...props}
+      />,
+    );
+  });
+  await flushFavoriteRailEffects();
+
+  return {
+    container,
+    root,
+  };
+}
+
 describe('CatalogFeatureThemePage', () => {
   it('renders a dedicated theme landing with browse grid and optional deals', () => {
     const markup = renderToStaticMarkup(
@@ -134,8 +161,13 @@ describe('CatalogFeatureThemePage', () => {
           },
         ]}
         themeFavoriteAction={({ buttonSurface }) => (
-          <button data-button-surface={buttonSurface} type="button">
-            Bewaar thema
+          <button
+            aria-label="Thema bewaren"
+            data-button-surface={buttonSurface}
+            data-testid="theme-favorite-icon"
+            type="button"
+          >
+            <svg aria-hidden="true" />
           </button>
         )}
         themePage={{
@@ -180,7 +212,9 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
     expect(markup).toContain('Bekijk alle');
-    expect(markup).toContain('Bewaar thema');
+    expect(markup).toContain('aria-label="Thema bewaren"');
+    expect(markup).toContain('data-testid="theme-favorite-icon"');
+    expect(markup).not.toContain('Bewaar thema');
     expect(markup).toContain('data-button-surface="light"');
     expect(markup).toContain('Bekijk beste deals');
     expect(markup).toContain('Themacontext');
@@ -190,6 +224,16 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).not.toContain('_introVisualStage_');
     expect(markup).not.toContain('Klaar voor themabeeld');
+    expect(markup.indexOf('href="#theme-browse"')).toBeLessThan(
+      markup.indexOf('data-testid="theme-favorite-icon"'),
+    );
+    expect(markup.indexOf('data-testid="theme-favorite-icon"')).toBeLessThan(
+      markup.indexOf('href="#theme-deals"'),
+    );
+    expect(markup.indexOf('<h1')).toBeLessThan(
+      markup.indexOf('href="#theme-browse"'),
+    );
+    expect(markup).toContain('Bekijk alle sets');
     expect(markup).toContain('Hier wil je nu als eerste kijken in');
     expect(markup).not.toContain(
       'Scroll Hier wil je nu als eerste kijken in Marvel naar rechts',
@@ -335,6 +379,85 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('interactiveSurfaceLight');
   });
 
+  it('keeps the theme favorite action in the CTA row with mobile fixed width', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/catalog-feature-theme-page.module.css'),
+      'utf-8',
+    );
+    const ctaRule = css.match(/\.introActions \{[^}]+\}/u)?.[0] ?? '';
+    const favoriteRule =
+      Array.from(css.matchAll(/^\.introFavoriteAction \{[^}]+\}/gmu))
+        .map((match) => match[0])
+        .find((rule) => rule.includes('inline-size: 2.75rem;')) ?? '';
+    const favoriteLabelRule =
+      css.match(/^\.introFavoriteLabel \{[^}]+\}/mu)?.[0] ?? '';
+    const desktopFavoriteRule =
+      css.match(
+        /@media \(min-width: 48rem\) \{[\s\S]*?\.introFavoriteLabel \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const activeFavoriteRule =
+      css.match(
+        /^\.introFavoriteAction\[aria-pressed='true'\] \{[^}]+\}/mu,
+      )?.[0] ?? '';
+    const primaryActionRule =
+      css.match(/\.introPrimaryAction \{[^}]+\}/u)?.[0] ?? '';
+    const ctaSizingRule =
+      css.match(
+        /\.introPrimaryAction,\n\.introSecondaryAction,\n\.introFavoriteAction \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(css).not.toContain('.introTitleRow');
+    expect(ctaRule).toContain('display: grid;');
+    expect(ctaRule).toContain('grid-template-columns: minmax(0, 1fr) auto;');
+    expect(primaryActionRule).toContain('width: 100%;');
+    expect(favoriteRule).toContain('inline-size: 2.75rem;');
+    expect(favoriteRule).toContain('min-block-size: 2.75rem;');
+    expect(favoriteRule).toContain('min-inline-size: 2.75rem;');
+    expect(favoriteRule).toContain('--lego-button-secondary-background');
+    expect(favoriteRule).toContain('border: var(--lego-action-border-width)');
+    expect(favoriteRule).toContain('--lego-button-secondary-border-color');
+    expect(favoriteLabelRule).toContain('display: none;');
+    expect(favoriteLabelRule).toContain('font-size: inherit;');
+    expect(favoriteLabelRule).toContain('font-weight: inherit;');
+    expect(ctaSizingRule).toContain('--lego-action-min-height: 2.9rem;');
+    expect(ctaSizingRule).toContain('--lego-action-padding-block: 0.68rem;');
+    expect(ctaSizingRule).toContain('--lego-action-padding-inline: 1.15rem;');
+    expect(ctaSizingRule).toContain(
+      '--lego-action-font-size: var(--lego-font-size-base);',
+    );
+    expect(desktopFavoriteRule).toContain('@media (min-width: 48rem)');
+    expect(desktopFavoriteRule).toContain('inline-size: auto;');
+    expect(desktopFavoriteRule).toContain(
+      'min-block-size: var(--lego-action-min-height);',
+    );
+    expect(desktopFavoriteRule).toContain(
+      'padding-block: var(--lego-action-padding-block);',
+    );
+    expect(desktopFavoriteRule).toContain(
+      'padding-inline: var(--lego-action-padding-inline);',
+    );
+    expect(desktopFavoriteRule).toContain('display: inline;');
+    expect(activeFavoriteRule).toContain(
+      'background: var(--theme-page-favorite-fill-background);',
+    );
+    expect(activeFavoriteRule).toContain(
+      'border-color: var(--theme-page-favorite-fill-background);',
+    );
+    expect(activeFavoriteRule).toContain(
+      'color: var(--theme-page-favorite-fill-foreground);',
+    );
+    expect(css).toContain(
+      '--theme-page-favorite-fill-background: var(\n    --theme-page-button-fill-default-light-surface',
+    );
+    expect(css).toContain(
+      '--theme-page-favorite-fill-background: var(\n    --theme-page-button-fill-default-dark-surface',
+    );
+    expect(css).toContain('@media (min-width: 36rem)');
+    expect(css).toContain('.introPrimaryLabelMobile');
+    expect(css).toContain('display: none;');
+    expect(ctaSizingRule).toContain('.introFavoriteAction');
+  });
+
   it('uses curated public theme visual metadata when provided', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemePage
@@ -369,6 +492,110 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('--theme-page-surface:#e0b84f');
     expect(markup).toContain('--theme-page-text:#171a22');
     expect(markup).toContain('interactiveSurfaceLight');
+  });
+});
+
+describe('CatalogFeatureThemeFavoriteToggle', () => {
+  it('renders a compact icon button with active pressed state', async () => {
+    dataAccessMocks.getUserThemeFavoriteContextForBrowser.mockResolvedValue({
+      isAuthenticated: true,
+      isFavorited: true,
+      themeId: 'theme:marvel',
+    });
+
+    const { container, root } = await renderThemeFavoriteToggle();
+    const button = container.querySelector('button');
+
+    expect(button?.getAttribute('aria-label')).toBe('Thema opgeslagen');
+    expect(button?.getAttribute('aria-pressed')).toBe('true');
+    expect(button?.textContent).not.toContain('Opgeslagen');
+    expect(button?.textContent).not.toContain('Bewaar thema');
+    expect(button?.textContent).toContain('Volgt');
+    expect(container.querySelector('svg')?.getAttribute('fill')).toBe(
+      'currentColor',
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('opens the gated auth modal for anonymous theme favorite clicks', async () => {
+    dataAccessMocks.getUserThemeFavoriteContextForBrowser.mockResolvedValue({
+      isAuthenticated: false,
+      isFavorited: false,
+      themeId: 'theme:marvel',
+    });
+
+    const { container, root } = await renderThemeFavoriteToggle();
+    const button = container.querySelector('button');
+
+    expect(button?.getAttribute('aria-label')).toBe('Thema bewaren');
+    expect(button?.getAttribute('aria-pressed')).toBe('false');
+    expect(button?.textContent).toContain('Volg thema');
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(document.body.textContent).toContain('Log in om dit te bewaren');
+    expect(
+      dataAccessMocks.addUserThemeFavoriteForBrowser,
+    ).not.toHaveBeenCalled();
+    expect(
+      dataAccessMocks.removeUserThemeFavoriteForBrowser,
+    ).not.toHaveBeenCalled();
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it('optimistically adds and removes a logged-in theme favorite', async () => {
+    dataAccessMocks.getUserThemeFavoriteContextForBrowser.mockResolvedValue({
+      isAuthenticated: true,
+      isFavorited: false,
+      themeId: 'theme:marvel',
+    });
+    dataAccessMocks.addUserThemeFavoriteForBrowser.mockResolvedValue({
+      isFavorited: true,
+      themeId: 'theme:marvel',
+    });
+    dataAccessMocks.removeUserThemeFavoriteForBrowser.mockResolvedValue({
+      isFavorited: false,
+      themeId: 'theme:marvel',
+    });
+
+    const { container, root } = await renderThemeFavoriteToggle();
+    const button = container.querySelector('button');
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await flushFavoriteRailEffects();
+
+    expect(dataAccessMocks.addUserThemeFavoriteForBrowser).toHaveBeenCalledWith(
+      {
+        themeId: 'theme:marvel',
+      },
+    );
+    expect(button?.getAttribute('aria-pressed')).toBe('true');
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await flushFavoriteRailEffects();
+
+    expect(
+      dataAccessMocks.removeUserThemeFavoriteForBrowser,
+    ).toHaveBeenCalledWith({
+      themeId: 'theme:marvel',
+    });
+    expect(button?.getAttribute('aria-pressed')).toBe('false');
+
+    await act(async () => {
+      root.unmount();
+    });
   });
 });
 
@@ -521,15 +748,19 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
     expect(source).toContain('CatalogThemeHighlight');
     expect(source).toContain('variant="portrait"');
     expect(source).toContain('tone="inverse"');
+    expect(viewportRule).toContain('-webkit-overflow-scrolling: touch;');
     expect(viewportRule).toContain('overflow-x: auto;');
+    expect(viewportRule).toContain('overscroll-behavior-x: contain;');
     expect(viewportRule).toContain('scroll-padding-inline:');
     expect(trackRule).toContain('display: flex;');
     expect(trackRule).toContain('gap: var(--lego-space-2);');
     expect(trackRule).toContain('scroll-snap-type: x proximity;');
+    expect(trackRule).toContain('touch-action: pan-x pan-y;');
     expect(itemRule).toContain(
-      'flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));',
+      'flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));',
     );
-    expect(itemRule).toContain('max-inline-size: 13rem;');
+    expect(itemRule).toContain('max-inline-size: 10rem;');
+    expect(css).toContain('flex-basis: min(13rem');
     expect(css).not.toContain(
       '.favoriteThemesRailTrack > * {\n    flex: 1 1 0;',
     );

@@ -12,23 +12,32 @@
 }
 
 .discoveryTileViewport {
+  -webkit-overflow-scrolling: touch;
   margin-inline: calc(
     -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
   );
   overflow-x: auto;
   padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
     var(--lego-space-1);
+  overscroll-behavior-x: contain;
   scroll-padding-inline: var(
     --catalog-section-inline-padding,
     var(--lego-space-4)
   );
+  scrollbar-width: none;
+}
+
+.discoveryTileViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .discoveryTileTrack {
   display: flex;
   gap: var(--lego-space-2);
   margin: 0;
+  scroll-behavior: smooth;
   scroll-snap-type: x proximity;
+  touch-action: pan-x pan-y;
 }
 
 .discoveryTileTrack::after {
@@ -37,7 +46,7 @@
 }
 
 .discoveryTileTrack > * {
-  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
+  flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
   scroll-snap-align: start;
 }
@@ -99,6 +108,10 @@
 }
 
 @media (min-width: 48rem) {
+  .discoveryTileTrack > * {
+    flex-basis: min(13rem, calc(100% - var(--lego-space-6)));
+  }
+
   .valueGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

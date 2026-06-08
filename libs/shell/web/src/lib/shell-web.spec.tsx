@@ -63,6 +63,13 @@ describe('ShellWeb', () => {
     const css = readShellCss();
 
     expect(css).toContain('--shell-navbar-control-height: 2.5rem;');
+    expect(css).toContain(
+      '--shell-header-height: calc(\n    var(--shell-navbar-control-height) + (2 * var(--lego-space-2))\n  );',
+    );
+    expect(css).toContain('min-height: var(--shell-navbar-control-height);');
+    expect(css).toContain(
+      '--shell-header-height: calc(2.9rem + (2 * var(--lego-space-2)));',
+    );
     expect(css).toContain('.brandLink {');
     expect(css).toContain('min-height: var(--shell-navbar-control-height);');
     expect(css).toContain('.brandMark {');
@@ -109,7 +116,8 @@ describe('ShellWeb', () => {
   it('uses the shared section gutter for header and footer alignment', () => {
     const css = readShellCss();
 
-    expect(css).toContain('.shell {\n  --shell-header-height:');
+    expect(css).toContain('.shell {\n  --shell-navbar-control-height: 2.5rem;');
+    expect(css).toContain('--shell-header-height: calc(');
     expect(css).toContain(
       '--lego-section-inline-padding: var(--lego-space-3);',
     );

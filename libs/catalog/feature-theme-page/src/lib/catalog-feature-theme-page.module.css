@@ -98,6 +98,7 @@
   letter-spacing: -0.05em;
   line-height: 0.95;
   max-width: 10ch;
+  min-width: 0;
 }
 
 .introLead {
@@ -123,10 +124,11 @@
 }
 
 .introActions {
-  align-items: flex-start;
-  display: flex;
-  flex-wrap: wrap;
+  align-items: stretch;
+  display: grid;
   gap: var(--lego-space-2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  max-width: min(44rem, 100%);
 }
 
 .introPrimaryAction,
@@ -151,15 +153,25 @@
   --lego-button-accent-color: var(--theme-page-button-filled-foreground);
   --lego-button-accent-hover-color: var(--theme-page-button-filled-foreground);
   --lego-button-accent-active-color: var(--theme-page-button-filled-foreground);
+  min-width: 0;
+  width: 100%;
 }
 
 .introPrimaryLabel {
   display: inline-block;
   line-height: inherit;
+  min-width: 0;
 }
 
-.introSecondaryAction,
-.introFavoriteAction {
+.introPrimaryLabelDesktop {
+  display: none;
+}
+
+.introPrimaryLabelMobile {
+  display: inline;
+}
+
+.introSecondaryAction {
   --lego-button-secondary-hover-background: var(
     --theme-page-button-filled-hover-background
   );
@@ -175,8 +187,7 @@
 }
 
 .intro[data-button-surface='light'] .introPrimaryAction,
-.intro[data-button-surface='light'] .introSecondaryAction,
-.intro[data-button-surface='light'] .introFavoriteAction {
+.intro[data-button-surface='light'] .introSecondaryAction {
   --theme-page-button-filled-background: var(
     --theme-page-button-fill-default-light-surface
   );
@@ -192,8 +203,7 @@
 }
 
 .intro[data-button-surface='dark'] .introPrimaryAction,
-.intro[data-button-surface='dark'] .introSecondaryAction,
-.intro[data-button-surface='dark'] .introFavoriteAction {
+.intro[data-button-surface='dark'] .introSecondaryAction {
   --theme-page-button-filled-background: var(
     --theme-page-button-fill-default-dark-surface
   );
@@ -208,12 +218,150 @@
   );
 }
 
-@media (min-width: 48rem) {
+.intro[data-button-surface='light'] .introFavoriteAction {
+  --theme-page-favorite-fill-background: var(
+    --theme-page-button-fill-default-light-surface
+  );
+  --theme-page-favorite-fill-hover-background: var(
+    --theme-page-button-fill-hover-light-surface
+  );
+  --theme-page-favorite-fill-foreground: var(
+    --theme-page-button-foreground-light-surface
+  );
+}
+
+.intro[data-button-surface='dark'] .introFavoriteAction {
+  --theme-page-favorite-fill-background: var(
+    --theme-page-button-fill-default-dark-surface
+  );
+  --theme-page-favorite-fill-hover-background: var(
+    --theme-page-button-fill-hover-dark-surface
+  );
+  --theme-page-favorite-fill-foreground: var(
+    --theme-page-button-foreground-dark-surface
+  );
+}
+
+.introFavoriteAction {
+  --theme-page-favorite-fill-background: var(--theme-page-text);
+  --theme-page-favorite-fill-foreground: var(--theme-page-surface);
+  --theme-page-favorite-fill-hover-background: color-mix(
+    in srgb,
+    var(--theme-page-text) 88%,
+    var(--theme-page-surface) 12%
+  );
+  align-items: center;
+  background: var(
+    --lego-button-secondary-background,
+    var(--lego-button-surface-secondary-background, transparent)
+  );
+  border: var(--lego-action-border-width) solid
+    var(
+      --lego-button-secondary-border-color,
+      var(
+        --lego-button-surface-secondary-border-color,
+        color-mix(in srgb, var(--theme-page-text) 78%, transparent)
+      )
+    );
+  box-shadow: none;
+  color: var(
+    --lego-button-secondary-color,
+    var(--lego-button-surface-secondary-color, var(--theme-page-text))
+  );
+  inline-size: 2.75rem;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  padding: 0;
+}
+
+.introFavoriteAction:hover {
+  background: var(
+    --lego-button-secondary-hover-background,
+    color-mix(in srgb, var(--theme-page-text) 9%, transparent)
+  );
+  border-color: var(
+    --lego-button-secondary-hover-border-color,
+    var(--theme-page-text)
+  );
+  color: var(
+    --lego-button-secondary-hover-color,
+    var(--lego-button-surface-secondary-hover-color, var(--theme-page-text))
+  );
+}
+
+.introFavoriteAction:focus-visible {
+  outline: var(--lego-focus-ring-width) solid var(--theme-page-text);
+  outline-offset: 0.16rem;
+}
+
+.introFavoriteAction[aria-pressed='true'] {
+  background: var(--theme-page-favorite-fill-background);
+  border-color: var(--theme-page-favorite-fill-background);
+  color: var(--theme-page-favorite-fill-foreground);
+}
+
+.introFavoriteAction[aria-pressed='true']:hover {
+  background: var(--theme-page-favorite-fill-hover-background);
+  border-color: var(--theme-page-favorite-fill-hover-background);
+  color: var(--theme-page-favorite-fill-foreground);
+}
+
+.introFavoriteIcon {
+  display: block;
+  height: 1.12rem;
+  stroke-width: 2.15;
+  width: 1.12rem;
+}
+
+.introFavoriteLabel {
+  display: none;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+@media (min-width: 36rem) {
+  .introActions {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: none;
+  }
+
+  .introPrimaryAction,
+  .introSecondaryAction {
+    width: auto;
+  }
+
   .introPrimaryAction,
   .introSecondaryAction,
-  .introFavoriteAction,
-  .introPrimaryLabel {
+  .introPrimaryLabelDesktop {
     white-space: nowrap;
+  }
+
+  .introPrimaryLabelDesktop {
+    display: inline;
+  }
+
+  .introPrimaryLabelMobile {
+    display: none;
+  }
+}
+
+@media (min-width: 48rem) {
+  .introFavoriteAction {
+    gap: 0.42rem;
+    inline-size: auto;
+    min-block-size: var(--lego-action-min-height);
+    min-inline-size: auto;
+    padding-block: var(--lego-action-padding-block);
+    padding-inline: var(--lego-action-padding-inline);
+  }
+
+  .introFavoriteLabel {
+    display: inline;
   }
 }
 
@@ -236,23 +384,32 @@
 }
 
 .favoriteThemesRailViewport {
+  -webkit-overflow-scrolling: touch;
   margin-inline: calc(
     -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
   );
   overflow-x: auto;
   padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
     var(--lego-space-1);
+  overscroll-behavior-x: contain;
   scroll-padding-inline: var(
     --catalog-section-inline-padding,
     var(--lego-space-4)
   );
+  scrollbar-width: none;
+}
+
+.favoriteThemesRailViewport::-webkit-scrollbar {
+  display: none;
 }
 
 .favoriteThemesRailTrack {
   display: flex;
   gap: var(--lego-space-2);
   margin: 0;
+  scroll-behavior: smooth;
   scroll-snap-type: x proximity;
+  touch-action: pan-x pan-y;
 }
 
 .favoriteThemesRailTrack::after {
@@ -261,9 +418,9 @@
 }
 
 .favoriteThemesRailTrack > * {
-  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
-  inline-size: min(13rem, calc(100% - var(--lego-space-6)));
-  max-inline-size: 13rem;
+  flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));
+  inline-size: min(10rem, calc(100% - var(--lego-space-6)));
+  max-inline-size: 10rem;
   min-width: 0;
   scroll-snap-align: start;
 }
@@ -324,7 +481,7 @@
 
 .favoriteThemesAddTitle {
   font-family: var(--lego-font-family-heading);
-  font-size: var(--lego-font-size-lg);
+  font-size: var(--lego-font-size-base);
   font-weight: var(--lego-font-weight-bold);
   line-height: 1.08;
 }
@@ -339,6 +496,18 @@
   color: var(--lego-negative);
   font-size: var(--lego-text-role-meta-size);
   padding-inline: var(--catalog-section-inline-padding, var(--lego-space-4));
+}
+
+@media (min-width: 48rem) {
+  .favoriteThemesRailTrack > * {
+    flex-basis: min(13rem, calc(100% - var(--lego-space-6)));
+    inline-size: min(13rem, calc(100% - var(--lego-space-6)));
+    max-inline-size: 13rem;
+  }
+
+  .favoriteThemesAddTitle {
+    font-size: var(--lego-font-size-lg);
+  }
 }
 
 @media (min-width: 75rem) {

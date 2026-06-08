@@ -34,7 +34,7 @@ import {
   SelectableItemDialog,
   type SelectableItemDialogItem,
 } from '@lego-platform/shared/ui';
-import { Plus } from 'lucide-react';
+import { Heart, Plus } from 'lucide-react';
 import styles from './catalog-feature-theme-page.module.css';
 
 const themeFavoriteModalCopy = {
@@ -325,9 +325,7 @@ export function CatalogFeatureThemeFavoriteToggle({
     <>
       <Button
         aria-label={
-          favoriteContext.isFavorited
-            ? `${themeName} is opgeslagen`
-            : `${themeName} bewaren`
+          favoriteContext.isFavorited ? 'Thema opgeslagen' : 'Thema bewaren'
         }
         aria-pressed={favoriteContext.isFavorited}
         className={[styles.introFavoriteAction, className]
@@ -336,12 +334,23 @@ export function CatalogFeatureThemeFavoriteToggle({
         disabled={!themeId}
         isLoading={isPending}
         ref={triggerButtonRef}
-        size="hero"
         surface={buttonSurface}
+        title={
+          favoriteContext.isFavorited
+            ? `${themeName} opgeslagen`
+            : `${themeName} bewaren`
+        }
         tone="secondary"
         onClick={handleToggle}
       >
-        {favoriteContext.isFavorited ? 'Opgeslagen' : 'Bewaar thema'}
+        <Heart
+          aria-hidden="true"
+          className={styles.introFavoriteIcon}
+          fill={favoriteContext.isFavorited ? 'currentColor' : 'none'}
+        />
+        <span className={styles.introFavoriteLabel}>
+          {favoriteContext.isFavorited ? 'Volgt' : 'Volg thema'}
+        </span>
       </Button>
       {isModalOpen ? (
         <GatedActionModal

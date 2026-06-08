@@ -270,6 +270,28 @@ function setupHomepageRenderMocks() {
 }
 
 describe('home metadata', () => {
+  it('keeps mobile discovery tiles dense and swipe-friendly', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/page.module.css'),
+      'utf-8',
+    );
+    const viewportRule =
+      css.match(/\.discoveryTileViewport \{[^}]+\}/u)?.[0] ?? '';
+    const trackRule = css.match(/\.discoveryTileTrack \{[^}]+\}/u)?.[0] ?? '';
+    const itemRule =
+      css.match(/\.discoveryTileTrack > \* \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(viewportRule).toContain('-webkit-overflow-scrolling: touch;');
+    expect(viewportRule).toContain('overscroll-behavior-x: contain;');
+    expect(viewportRule).toContain('scrollbar-width: none;');
+    expect(trackRule).toContain('scroll-snap-type: x proximity;');
+    expect(trackRule).toContain('touch-action: pan-x pan-y;');
+    expect(itemRule).toContain(
+      'flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));',
+    );
+    expect(css).toContain('flex-basis: min(13rem');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
@@ -729,6 +751,7 @@ describe('home metadata', () => {
     expect(normalRailSetListProps.map((props) => props.railLayoutMode)).toEqual(
       ['stable-square', 'stable-square'],
     );
+    expect(pageMocks.rankCatalogPartnerOfferSetCards).toHaveBeenCalledTimes(1);
     expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
       expect.objectContaining({
         tone: 'inverse',
@@ -742,6 +765,30 @@ describe('home metadata', () => {
         tags: ['homepage', 'catalog', 'sets', 'themes', 'prices', 'deals'],
       }),
     );
+  });
+
+  it('keeps rendering when cached homepage data predates current-offer snapshot fields', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.getCachedPublicLandingPageData.mockImplementation(
+      async ({ load, ...cacheOptions }) => {
+        const snapshot = JSON.parse(
+          JSON.stringify({
+            ...(await load()),
+            __cacheOptions: cacheOptions,
+          }),
+        );
+        delete snapshot.homepageCurrentOfferCandidateSetCards;
+        delete snapshot.commerceRailRotationSeed;
+
+        return snapshot;
+      },
+    );
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('Ontdek LEGO op jouw manier');
+    expect(markup).toContain('Populair om te volgen');
   });
 
   it('points the hero CTA to the hard deal rail when it is rendered', async () => {

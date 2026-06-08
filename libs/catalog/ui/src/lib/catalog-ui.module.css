@@ -1104,7 +1104,7 @@
 
   .sectionShell {
     display: grid;
-    gap: var(--lego-space-4);
+    gap: var(--lego-space-3);
   }
 
   .sectionShellDefault {
@@ -1157,6 +1157,18 @@
   }
 
   @media (min-width: 48rem) {
+    .sectionShell {
+      gap: var(--lego-space-4);
+    }
+
+    .sectionHeaderTitle {
+      font-size: var(--lego-text-role-section-size);
+    }
+
+    .sectionHeaderHeadingDisplay .sectionHeaderTitle {
+      font-size: var(--lego-text-role-display-size);
+    }
+
     .sectionShellPaddingDefault {
       --catalog-section-padding-block: var(--lego-space-5);
     }
@@ -1193,10 +1205,6 @@
     display: grid;
   }
 
-  .sectionHeaderWithAside {
-    gap: var(--lego-space-3);
-  }
-
   .sectionHeaderMain {
     display: grid;
     gap: var(--lego-space-3);
@@ -1217,7 +1225,7 @@
 
   .sectionHeaderTitle {
     font-family: var(--lego-font-family-heading);
-    font-size: var(--lego-text-role-section-size);
+    font-size: clamp(1.45rem, 1.28rem + 0.7vw, 1.75rem);
     font-weight: var(--lego-text-role-section-weight);
     letter-spacing: -0.03em;
     line-height: var(--lego-text-role-section-line-height);
@@ -1236,7 +1244,7 @@
   }
 
   .sectionHeaderHeadingDisplay .sectionHeaderTitle {
-    font-size: var(--lego-text-role-display-size);
+    font-size: clamp(1.8rem, 1.5rem + 1.2vw, 2.25rem);
     font-weight: var(--lego-text-role-display-weight);
     letter-spacing: -0.04em;
     line-height: var(--lego-text-role-display-line-height);
@@ -3098,7 +3106,7 @@
   }
 
   .setCardRail {
-    --catalog-rail-card-gap: var(--lego-space-3);
+    --catalog-rail-card-gap: var(--lego-space-2);
     --catalog-rail-inline-padding: var(
       --catalog-section-inline-padding,
       var(
@@ -3217,7 +3225,7 @@
     display: grid;
     gap: var(--catalog-rail-card-gap);
     grid-auto-columns: calc(
-      (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5
+      (100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75
     );
     grid-auto-flow: column;
     margin: 0;
@@ -3226,10 +3234,12 @@
     padding-bottom: 0;
     padding-inline: var(--catalog-rail-inline-padding);
     scroll-padding-inline: var(--catalog-rail-inline-padding);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
     scroll-snap-type: x proximity;
     scrollbar-color: auto;
     scrollbar-width: none;
-    touch-action: auto;
+    touch-action: pan-x pan-y;
   }
 
   .setCardRailTrack > .setCard {
@@ -3501,17 +3511,20 @@
     display: grid;
     gap: var(--catalog-rail-card-gap);
     grid-auto-columns: calc(
-      (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5
+      (100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75
     );
     grid-auto-flow: column;
     margin: 0;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     overflow-y: hidden;
     padding-inline: var(--catalog-rail-inline-padding);
     scroll-padding-inline: var(--catalog-rail-inline-padding);
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
-    touch-action: auto;
+    touch-action: pan-x pan-y;
   }
 
   .setCardRailSkeletonCard {
@@ -3849,7 +3862,7 @@
     display: flex;
     height: 100%;
     justify-content: center;
-    min-height: 11.25rem;
+    min-height: 8.75rem;
     overflow: hidden;
     padding: var(--lego-space-4) var(--lego-space-3) 0;
   }
@@ -3857,7 +3870,7 @@
   .themePortraitImage {
     display: block;
     height: auto;
-    max-height: 11rem;
+    max-height: 8.75rem;
     max-width: 100%;
     width: auto;
   }
@@ -3875,7 +3888,7 @@
   .themePortraitTitle {
     color: var(--theme-card-foreground);
     display: -webkit-box;
-    font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+    font-size: clamp(1.02rem, 0.92rem + 0.55vw, 1.28rem);
     font-weight: var(--lego-font-weight-bold);
     letter-spacing: -0.03em;
     line-height: 1.02;
@@ -3906,7 +3919,7 @@
     --theme-muted: var(--theme-card-foreground);
     aspect-ratio: 4 / 3;
     background: var(--theme-surface);
-    min-height: 22.5rem;
+    min-height: 18.5rem;
     overflow: hidden;
     padding: 0;
   }
@@ -3999,7 +4012,7 @@
 
   .themeFeatureTitle {
     display: -webkit-box;
-    font-size: clamp(1.55rem, 2vw, 1.95rem);
+    font-size: clamp(1.28rem, 1.1rem + 1vw, 1.65rem);
     font-weight: var(--lego-text-role-hero-weight);
     letter-spacing: -0.04em;
     line-height: 1;
@@ -4009,6 +4022,7 @@
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 
   .themeFeatureCopy {
@@ -4045,6 +4059,26 @@
   }
 
   @media (min-width: 48rem) {
+    .themePortraitVisual {
+      min-height: 11.25rem;
+    }
+
+    .themePortraitImage {
+      max-height: 11rem;
+    }
+
+    .themePortraitTitle {
+      font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+    }
+
+    .themeCard.themeFeatureCard {
+      min-height: 22.5rem;
+    }
+
+    .themeFeatureTitle {
+      font-size: clamp(1.55rem, 2vw, 1.95rem);
+    }
+
     .setCardMobileLayoutToggle {
       display: none;
     }
@@ -4574,6 +4608,10 @@
     .sectionHeader {
       align-items: end;
       grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .sectionHeaderWithAside {
+      gap: var(--lego-space-3);
     }
 
     .sectionHeaderAside {
