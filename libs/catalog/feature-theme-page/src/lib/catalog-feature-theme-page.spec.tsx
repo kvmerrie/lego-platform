@@ -384,11 +384,17 @@ describe('CatalogFeatureThemePage', () => {
       resolve(process.cwd(), 'src/lib/catalog-feature-theme-page.module.css'),
       'utf-8',
     );
+    const source = readFileSync(
+      resolve(process.cwd(), 'src/lib/catalog-feature-theme-favorites.tsx'),
+      'utf-8',
+    );
     const ctaRule = css.match(/\.introActions \{[^}]+\}/u)?.[0] ?? '';
     const favoriteRule =
       Array.from(css.matchAll(/^\.introFavoriteAction \{[^}]+\}/gmu))
         .map((match) => match[0])
-        .find((rule) => rule.includes('inline-size: 2.75rem;')) ?? '';
+        .find((rule) =>
+          rule.includes('--lego-button-secondary-border-color'),
+        ) ?? '';
     const favoriteLabelRule =
       css.match(/^\.introFavoriteLabel \{[^}]+\}/mu)?.[0] ?? '';
     const desktopFavoriteRule =
@@ -397,7 +403,7 @@ describe('CatalogFeatureThemePage', () => {
       )?.[0] ?? '';
     const activeFavoriteRule =
       css.match(
-        /^\.introFavoriteAction\[aria-pressed='true'\] \{[^}]+\}/mu,
+        /^\.introFavoriteAction\[aria-pressed='true'\],\n\.introFavoriteAction\.introFavoriteActionActive,\n\.introFavoriteAction\.introFavoriteActionActive\[aria-pressed='true'\] \{[^}]+\}/mu,
       )?.[0] ?? '';
     const primaryActionRule =
       css.match(/\.introPrimaryAction \{[^}]+\}/u)?.[0] ?? '';
@@ -410,22 +416,35 @@ describe('CatalogFeatureThemePage', () => {
     expect(ctaRule).toContain('display: grid;');
     expect(ctaRule).toContain('grid-template-columns: minmax(0, 1fr) auto;');
     expect(primaryActionRule).toContain('width: 100%;');
-    expect(favoriteRule).toContain('inline-size: 2.75rem;');
-    expect(favoriteRule).toContain('min-block-size: 2.75rem;');
-    expect(favoriteRule).toContain('min-inline-size: 2.75rem;');
-    expect(favoriteRule).toContain('--lego-button-secondary-background');
-    expect(favoriteRule).toContain('border: var(--lego-action-border-width)');
+    expect(source).toContain(
+      "variant={favoriteContext.isFavorited ? 'icon' : 'icon-secondary'}",
+    );
+    expect(source).toContain('size="lg"');
+    expect(css).not.toContain('inline-size: 2.75rem;');
+    expect(css).not.toContain('min-block-size: 2.75rem;');
+    expect(css).not.toContain('min-inline-size: 2.75rem;');
     expect(favoriteRule).toContain('--lego-button-secondary-border-color');
+    expect(favoriteRule).toContain('--lego-button-secondary-color');
+    expect(favoriteRule).toContain(
+      '--lego-button-secondary-hover-border-color',
+    );
     expect(favoriteLabelRule).toContain('display: none;');
     expect(favoriteLabelRule).toContain('font-size: inherit;');
     expect(favoriteLabelRule).toContain('font-weight: inherit;');
-    expect(ctaSizingRule).toContain('--lego-action-min-height: 2.9rem;');
-    expect(ctaSizingRule).toContain('--lego-action-padding-block: 0.68rem;');
-    expect(ctaSizingRule).toContain('--lego-action-padding-inline: 1.15rem;');
     expect(ctaSizingRule).toContain(
-      '--lego-action-font-size: var(--lego-font-size-base);',
+      '--lego-action-min-height: var(--lego-button-height-lg);',
+    );
+    expect(ctaSizingRule).toContain(
+      '--lego-action-padding-block: var(--lego-button-padding-block-lg);',
+    );
+    expect(ctaSizingRule).toContain(
+      '--lego-action-padding-inline: var(--lego-button-padding-inline-lg);',
+    );
+    expect(ctaSizingRule).toContain(
+      '--lego-action-font-size: var(--lego-button-font-size-lg);',
     );
     expect(desktopFavoriteRule).toContain('@media (min-width: 48rem)');
+    expect(desktopFavoriteRule).toContain('aspect-ratio: auto;');
     expect(desktopFavoriteRule).toContain('inline-size: auto;');
     expect(desktopFavoriteRule).toContain(
       'min-block-size: var(--lego-action-min-height);',
@@ -438,7 +457,13 @@ describe('CatalogFeatureThemePage', () => {
     );
     expect(desktopFavoriteRule).toContain('display: inline;');
     expect(activeFavoriteRule).toContain(
-      'background: var(--theme-page-favorite-fill-background);',
+      '--lego-button-accent-background: var(--theme-page-favorite-fill-background);',
+    );
+    expect(activeFavoriteRule).toContain(
+      '--lego-button-accent-color: var(--theme-page-favorite-fill-foreground);',
+    );
+    expect(activeFavoriteRule).toContain(
+      'background-color: var(--theme-page-favorite-fill-background);',
     );
     expect(activeFavoriteRule).toContain(
       'border-color: var(--theme-page-favorite-fill-background);',
@@ -447,7 +472,13 @@ describe('CatalogFeatureThemePage', () => {
       'color: var(--theme-page-favorite-fill-foreground);',
     );
     expect(css).toContain(
-      '--theme-page-favorite-fill-background: var(\n    --theme-page-button-fill-default-light-surface',
+      ".introFavoriteAction[aria-pressed='true']:hover,\n.introFavoriteAction.introFavoriteActionActive:hover,\n.introFavoriteAction.introFavoriteActionActive[aria-pressed='true']:hover",
+    );
+    expect(css).toContain(
+      '--theme-page-favorite-fill-background: var(--theme-page-text);',
+    );
+    expect(css).toContain(
+      '--theme-page-favorite-fill-foreground: var(--theme-page-surface);',
     );
     expect(css).toContain(
       '--theme-page-favorite-fill-background: var(\n    --theme-page-button-fill-default-dark-surface',
@@ -514,6 +545,16 @@ describe('CatalogFeatureThemeFavoriteToggle', () => {
     expect(container.querySelector('svg')?.getAttribute('fill')).toBe(
       'currentColor',
     );
+    expect(button?.className).toContain('buttonIcon');
+    expect(button?.className).not.toContain('buttonIconSecondary');
+    expect(button?.className).toContain('interactiveSizeHero');
+    expect(button?.className).toContain('introFavoriteActionActive');
+    expect(button?.getAttribute('style')).toContain(
+      '--lego-button-accent-background: var(--theme-page-favorite-fill-background);',
+    );
+    expect(button?.getAttribute('style')).toContain(
+      'background-color: var(--theme-page-favorite-fill-background);',
+    );
 
     await act(async () => {
       root.unmount();
@@ -533,6 +574,10 @@ describe('CatalogFeatureThemeFavoriteToggle', () => {
     expect(button?.getAttribute('aria-label')).toBe('Thema bewaren');
     expect(button?.getAttribute('aria-pressed')).toBe('false');
     expect(button?.textContent).toContain('Volg thema');
+    expect(container.querySelector('svg')?.getAttribute('fill')).toBe('none');
+    expect(button?.className).toContain('buttonIconSecondary');
+    expect(button?.className).not.toContain('introFavoriteActionActive');
+    expect(button?.getAttribute('style')).toBeNull();
 
     await act(async () => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));

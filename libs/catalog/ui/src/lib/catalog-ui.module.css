@@ -1296,6 +1296,10 @@
     color: rgba(255, 255, 255, 0.78);
   }
 
+  .sectionHeaderInverse .sectionHeaderUtility {
+    color: #ffffff;
+  }
+
   .heroPanel {
     display: grid;
     gap: var(--lego-space-3);
@@ -3193,17 +3197,17 @@
 
   .setCardRailHeadingButton {
     --lego-button-secondary-active-background: transparent;
+    --lego-button-secondary-active-border-color: currentColor;
     --lego-button-secondary-active-color: currentColor;
     --lego-button-secondary-background: transparent;
     --lego-button-secondary-border-color: currentColor;
     --lego-button-secondary-color: currentColor;
     --lego-button-secondary-hover-background: transparent;
+    --lego-button-secondary-hover-border-color: currentColor;
     --lego-button-secondary-hover-color: currentColor;
+    --lego-button-focus-ring-color: var(--lego-focus-ring);
     border-radius: var(--lego-radius-pill);
     color: inherit;
-    min-height: 2.4rem;
-    min-width: 2.4rem;
-    padding: 0;
   }
 
   .setCardRailHeadingButton:disabled {
@@ -3212,6 +3216,10 @@
     color: inherit;
     cursor: default;
     opacity: 0.4;
+  }
+
+  .sectionHeaderInverse .setCardRailHeadingButton {
+    --lego-button-focus-ring-color: var(--lego-contrast-white);
   }
 
   .setCardRailHeadingIcon {

@@ -27,7 +27,21 @@ type SurfaceElevation = 'default' | 'floating' | 'rested';
 type SurfaceTone = 'default' | 'muted' | 'accent';
 type SurfacePadding = 'md' | 'lg';
 type ActionTone = 'accent' | 'card' | 'ghost' | 'inline' | 'secondary';
-type ActionSize = 'compact' | 'default' | 'hero';
+type ActionVariant =
+  | 'ghost'
+  | 'icon'
+  | 'icon-secondary'
+  | 'primary'
+  | 'secondary'
+  | 'tertiary';
+type ActionSize =
+  | 'compact'
+  | 'default'
+  | 'hero'
+  | 'icon-md'
+  | 'lg'
+  | 'md'
+  | 'sm';
 type ActionSurface = 'default' | 'light' | 'dark' | 'image';
 type ContainerElement =
   | 'div'
@@ -123,6 +137,15 @@ const buttonToneClasses: Record<Exclude<ActionTone, 'card'>, string> = {
   secondary: styles.buttonSecondary,
 };
 
+const buttonVariantClasses: Record<ActionVariant, string> = {
+  ghost: styles.buttonGhost,
+  icon: styles.buttonIcon,
+  'icon-secondary': styles.buttonIconSecondary,
+  primary: styles.buttonAccent,
+  secondary: styles.buttonSecondary,
+  tertiary: styles.buttonGhost,
+};
+
 const linkToneClasses: Record<ActionTone, string> = {
   accent: styles.linkAccent,
   card: styles.linkCard,
@@ -131,10 +154,23 @@ const linkToneClasses: Record<ActionTone, string> = {
   secondary: styles.linkSecondary,
 };
 
+const linkVariantClasses: Record<ActionVariant, string> = {
+  ghost: styles.linkGhost,
+  icon: styles.linkIcon,
+  'icon-secondary': styles.linkIconSecondary,
+  primary: styles.linkAccent,
+  secondary: styles.linkSecondary,
+  tertiary: styles.linkGhost,
+};
+
 const actionSizeClasses: Record<ActionSize, string | undefined> = {
   compact: styles.interactiveSizeCompact,
   default: styles.interactiveSizeDefault,
   hero: styles.interactiveSizeHero,
+  'icon-md': styles.interactiveSizeIconMd,
+  lg: styles.interactiveSizeHero,
+  md: styles.interactiveSizeDefault,
+  sm: styles.interactiveSizeCompact,
 };
 
 const actionSurfaceClasses: Record<ActionSurface, string | undefined> = {
@@ -297,6 +333,7 @@ export const Button = forwardRef<
     size?: ActionSize;
     surface?: ActionSurface;
     tone?: Exclude<ActionTone, 'card'>;
+    variant?: ActionVariant;
   }
 >(function Button(
   {
@@ -308,11 +345,15 @@ export const Button = forwardRef<
     surface = 'default',
     tone = 'secondary',
     type = 'button',
+    variant,
     ...rest
   },
   ref,
 ) {
   const usesInlineLayout = tone === 'inline';
+  const variantClassName = variant
+    ? buttonVariantClasses[variant]
+    : buttonToneClasses[tone];
 
   return (
     <button
@@ -321,7 +362,7 @@ export const Button = forwardRef<
         styles.interactiveBase,
         usesInlineLayout ? undefined : actionSizeClasses[size],
         actionSurfaceClasses[surface],
-        buttonToneClasses[tone],
+        variantClassName,
         className,
       )}
       data-loading={isLoading || undefined}
@@ -343,6 +384,7 @@ export function ActionLink({
   size = 'default',
   surface = 'default',
   tone = 'secondary',
+  variant,
   ...rest
 }: Omit<ComponentProps<typeof Link>, 'className' | 'children' | 'href'> & {
   children: ReactNode;
@@ -351,16 +393,20 @@ export function ActionLink({
   size?: ActionSize;
   surface?: ActionSurface;
   tone?: ActionTone;
+  variant?: ActionVariant;
 }) {
   const usesCardLayout = tone === 'card';
   const usesInlineLayout = tone === 'inline';
+  const variantClassName = variant
+    ? linkVariantClasses[variant]
+    : linkToneClasses[tone];
 
   if (usesCardLayout) {
     return (
       <Link
         className={joinClasses(
           styles.cardLinkBase,
-          linkToneClasses[tone],
+          variantClassName,
           className,
         )}
         href={href}
@@ -378,7 +424,7 @@ export function ActionLink({
         styles.interactiveBase,
         usesInlineLayout ? undefined : actionSizeClasses[size],
         actionSurfaceClasses[surface],
-        linkToneClasses[tone],
+        variantClassName,
         className,
       )}
       href={href}

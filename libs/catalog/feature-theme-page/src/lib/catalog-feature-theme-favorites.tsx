@@ -2,6 +2,7 @@
 
 import {
   Component,
+  type CSSProperties,
   type ErrorInfo,
   type ReactNode,
   useCallback,
@@ -321,6 +322,24 @@ export function CatalogFeatureThemeFavoriteToggle({
     }
   }, [favoriteContext, isPending, themeId]);
 
+  const favoriteActiveStyle = favoriteContext.isFavorited
+    ? ({
+        '--lego-button-accent-active-background':
+          'var(--theme-page-favorite-fill-background)',
+        '--lego-button-accent-background':
+          'var(--theme-page-favorite-fill-background)',
+        '--lego-button-accent-color':
+          'var(--theme-page-favorite-fill-foreground)',
+        '--lego-button-accent-hover-background':
+          'var(--theme-page-favorite-fill-hover-background)',
+        '--lego-button-accent-hover-color':
+          'var(--theme-page-favorite-fill-foreground)',
+        backgroundColor: 'var(--theme-page-favorite-fill-background)',
+        borderColor: 'var(--theme-page-favorite-fill-background)',
+        color: 'var(--theme-page-favorite-fill-foreground)',
+      } as CSSProperties)
+    : undefined;
+
   return (
     <>
       <Button
@@ -328,12 +347,18 @@ export function CatalogFeatureThemeFavoriteToggle({
           favoriteContext.isFavorited ? 'Thema opgeslagen' : 'Thema bewaren'
         }
         aria-pressed={favoriteContext.isFavorited}
-        className={[styles.introFavoriteAction, className]
+        className={[
+          styles.introFavoriteAction,
+          favoriteContext.isFavorited && styles.introFavoriteActionActive,
+          className,
+        ]
           .filter(Boolean)
           .join(' ')}
         disabled={!themeId}
         isLoading={isPending}
         ref={triggerButtonRef}
+        size="lg"
+        style={favoriteActiveStyle}
         surface={buttonSurface}
         title={
           favoriteContext.isFavorited
@@ -341,6 +366,7 @@ export function CatalogFeatureThemeFavoriteToggle({
             : `${themeName} bewaren`
         }
         tone="secondary"
+        variant={favoriteContext.isFavorited ? 'icon' : 'icon-secondary'}
         onClick={handleToggle}
       >
         <Heart

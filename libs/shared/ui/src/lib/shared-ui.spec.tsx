@@ -404,6 +404,29 @@ describe('ActionLink', () => {
 });
 
 describe('Button', () => {
+  it('supports the consolidated primary, secondary, tertiary, icon, and icon-secondary variants', () => {
+    const markup = renderToStaticMarkup(
+      <>
+        <Button variant="primary">Pak deze</Button>
+        <Button variant="secondary">Vergelijk</Button>
+        <Button variant="tertiary">Meer</Button>
+        <Button aria-label="Bewaar" size="icon-md" variant="icon">
+          <span aria-hidden="true">+</span>
+        </Button>
+        <Button aria-label="Volg" size="icon-md" variant="icon-secondary">
+          <span aria-hidden="true">♥</span>
+        </Button>
+      </>,
+    );
+
+    expect(markup).toContain('buttonAccent');
+    expect(markup).toContain('buttonSecondary');
+    expect(markup).toContain('buttonGhost');
+    expect(markup).toContain('buttonIcon');
+    expect(markup).toContain('buttonIconSecondary');
+    expect(markup).toContain('interactiveSizeIconMd');
+  });
+
   it('supports inline text-action treatment without the default button sizing shell', () => {
     const markup = renderToStaticMarkup(
       <Button tone="inline" type="button">
@@ -414,5 +437,75 @@ describe('Button', () => {
     expect(markup).toContain('Bekijk meer');
     expect(markup).toContain('buttonInline');
     expect(markup).not.toContain('interactiveSizeDefault');
+  });
+
+  it('keeps button sizing, icon geometry, secondary borders, and focus rings in the shared system', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
+      'utf-8',
+    );
+    const baseRule = css.match(/\.interactiveBase \{[^}]+\}/u)?.[0] ?? '';
+    const heroSizeRule =
+      css.match(/\.interactiveSizeHero \{[^}]+\}/u)?.[0] ?? '';
+    const iconRule =
+      css.match(
+        /\.buttonIcon,\n  \.buttonIconSecondary,\n  \.linkIcon,\n  \.linkIconSecondary \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const focusRule =
+      css.match(/\.interactiveBase:focus-visible \{[^}]+\}/u)?.[0] ?? '';
+    const darkSurfaceRule =
+      css.match(/\.interactiveSurfaceDark \{[^}]+\}/u)?.[0] ?? '';
+    const secondaryHoverRule =
+      css.match(
+        /\.buttonSecondary:hover,\n  \.linkSecondary:hover \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const secondaryActiveRule =
+      css.match(
+        /\.buttonSecondary:active,[\s\S]+?\.linkSecondary\[aria-pressed='true'\] \{[\s\S]+?\n  \}/u,
+      )?.[0] ?? '';
+
+    expect(baseRule).toContain(
+      'border-radius: var(--lego-button-border-radius',
+    );
+    expect(baseRule).toContain('appearance: none;');
+    expect(baseRule).toContain(
+      'var(--lego-button-height, var(--lego-button-height-md))',
+    );
+    expect(heroSizeRule).toContain(
+      '--lego-action-min-height: var(--lego-button-height-lg);',
+    );
+    expect(iconRule).toContain(
+      '--lego-button-icon-control-size: var(\n      --lego-action-min-height',
+    );
+    expect(iconRule).toContain(
+      'block-size: var(--lego-button-icon-control-size);',
+    );
+    expect(iconRule).toContain(
+      'inline-size: var(--lego-button-icon-control-size);',
+    );
+    expect(focusRule).toContain(
+      'outline: var(--lego-button-focus-ring-width) solid',
+    );
+    expect(focusRule).toContain(
+      'outline-offset: var(--lego-button-focus-ring-offset);',
+    );
+    expect(darkSurfaceRule).toContain(
+      '--lego-button-focus-ring-color: var(--lego-button-focus-ring-color-inverse);',
+    );
+    expect(secondaryHoverRule).toContain(
+      '--lego-button-secondary-hover-border-color',
+    );
+    expect(secondaryHoverRule).toContain(
+      '--lego-button-surface-secondary-border-color',
+    );
+    expect(secondaryHoverRule).not.toContain(
+      'border-color: var(--lego-button-secondary-hover-border-color, transparent);',
+    );
+    expect(secondaryActiveRule).toContain(
+      '--lego-button-secondary-active-border-color',
+    );
+    expect(secondaryActiveRule).not.toContain(
+      'border-color: var(--lego-button-secondary-active-border-color, transparent);',
+    );
   });
 });

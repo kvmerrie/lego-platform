@@ -216,8 +216,10 @@ function CatalogSetCardRailHeadingControls({
         className={styles.setCardRailHeadingButton}
         disabled={!canScrollPrevious}
         onClick={onPrevious}
+        size="icon-md"
         tone="secondary"
         type="button"
+        variant="icon-secondary"
       >
         <CatalogSetCardRailIcon icon={ChevronLeft} />
       </Button>
@@ -227,8 +229,10 @@ function CatalogSetCardRailHeadingControls({
         className={styles.setCardRailHeadingButton}
         disabled={!canScrollNext}
         onClick={onNext}
+        size="icon-md"
         tone="secondary"
         type="button"
+        variant="icon-secondary"
       >
         <CatalogSetCardRailIcon icon={ChevronRight} />
       </Button>

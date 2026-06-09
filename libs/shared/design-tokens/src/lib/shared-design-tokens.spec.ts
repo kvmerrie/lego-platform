@@ -48,6 +48,16 @@ describe('shared design tokens', () => {
     expect(themeStyles).toContain(
       '--lego-button-surface-image-primary-background: var(--lego-contrast-ink);',
     );
+    expect(themeStyles).toContain('--lego-button-height-lg: 2.9rem;');
+    expect(themeStyles).toContain(
+      '--lego-button-height-icon-md: var(--lego-button-height-md);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-button-focus-ring-color: var(--lego-focus-ring);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-button-focus-ring-color-inverse: var(--lego-contrast-white);',
+    );
     expect(themeStyles).toContain('scroll-behavior: smooth;');
   });
 

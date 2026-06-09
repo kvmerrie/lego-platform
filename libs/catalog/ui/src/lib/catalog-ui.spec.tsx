@@ -1329,6 +1329,48 @@ describe('CatalogSetCard', () => {
     expect(source).toContain('tone="card"');
   });
 
+  it('keeps rail heading buttons square, bordered, focused, and visible on inverse rails', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/ui/src/lib/catalog-set-card-rail.tsx',
+      ),
+      'utf-8',
+    );
+    const headingButtonRule =
+      css.match(/\.setCardRailHeadingButton \{[^}]+\}/u)?.[0] ?? '';
+    const inverseUtilityRule =
+      css.match(
+        /\.sectionHeaderInverse \.sectionHeaderUtility \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const inverseFocusRule =
+      css.match(
+        /\.sectionHeaderInverse \.setCardRailHeadingButton \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(railSource).toContain('variant="icon-secondary"');
+    expect(railSource).toContain('size="icon-md"');
+    expect(headingButtonRule).toContain(
+      '--lego-button-secondary-border-color: currentColor;',
+    );
+    expect(headingButtonRule).toContain(
+      '--lego-button-secondary-hover-border-color: currentColor;',
+    );
+    expect(headingButtonRule).toContain(
+      '--lego-button-secondary-active-border-color: currentColor;',
+    );
+    expect(headingButtonRule).not.toContain('min-height: 2.4rem;');
+    expect(headingButtonRule).not.toContain('min-width: 2.4rem;');
+    expect(inverseUtilityRule).toContain('color: #ffffff;');
+    expect(inverseFocusRule).toContain(
+      '--lego-button-focus-ring-color: var(--lego-contrast-white);',
+    );
+  });
+
   it('keeps offer comparison card hover close to regular set card hover', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
