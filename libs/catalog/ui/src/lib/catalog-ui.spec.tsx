@@ -59,6 +59,68 @@ describe('CatalogSetCard', () => {
     return (lighter + 0.05) / (darker + 0.05);
   }
 
+  it('prefers stored card images before hero and external image URLs', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          cardImageUrl: '/images/sets/10316/card.webp',
+          id: '10316',
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/123.jpg',
+          name: 'Rivendell',
+          pieces: 6167,
+          primaryImage: '/images/sets/10316/hero.webp',
+          releaseYear: 2023,
+          slug: 'rivendell-10316',
+          theme: 'Icons',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('src="/images/sets/10316/card.webp"');
+    expect(markup).not.toContain('src="/images/sets/10316/hero.webp"');
+  });
+
+  it('falls back from hero images to external image URLs for set cards', () => {
+    const heroMarkup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/123.jpg',
+          name: 'Rivendell',
+          pieces: 6167,
+          primaryImage: '/images/sets/10316/hero.webp',
+          releaseYear: 2023,
+          slug: 'rivendell-10316',
+          theme: 'Icons',
+        }}
+        variant="featured"
+      />,
+    );
+    const externalMarkup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/123.jpg',
+          name: 'Rivendell',
+          pieces: 6167,
+          releaseYear: 2023,
+          slug: 'rivendell-10316',
+          theme: 'Icons',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(heroMarkup).toContain('src="/images/sets/10316/hero.webp"');
+    expect(externalMarkup).toContain(
+      'url=https%3A%2F%2Fcdn.rebrickable.com%2Fmedia%2Fsets%2F10316-1%2F123.jpg',
+    );
+  });
+
   function readPaginationBreakpointMarkup(
     markup: string,
     breakpoint: 'desktop' | 'mobile' | 'tablet',
@@ -336,11 +398,15 @@ describe('CatalogSetCard', () => {
     expect(css).toContain(
       ".setCardCompact[data-catalog-set-card-variant='featured'] > .setCardLink {",
     );
-    expect(css).toContain('gap: 0.78rem;');
-    expect(css).toContain('padding-block-start: 0.72rem;');
+    expect(css).toContain('gap: var(--catalog-rail-card-link-gap);');
+    expect(css).toContain(
+      'padding-block-start: var(--catalog-rail-card-link-padding-block-start);',
+    );
     expect(css).toContain('aspect-ratio: 1 / 1.08;');
     expect(css).toContain('min-height: 11.65rem;');
-    expect(css).toContain('padding: 0.78rem 0.45rem 0.92rem;');
+    expect(css).toContain(
+      'padding: var(--catalog-rail-card-media-padding-block-start)',
+    );
     expect(css).toMatch(/\.cardCompactBody \{[\s\S]*gap: 0\.48rem;/u);
     expect(css).toMatch(/\.cardFactItem \{[\s\S]*font-size: 0\.875rem;/u);
     expect(css).toMatch(
@@ -351,6 +417,33 @@ describe('CatalogSetCard', () => {
 
     expect(compactFooterBlock).toContain('justify-content: flex-start;');
     expect(compactFooterBlock).not.toContain('justify-content: flex-end;');
+  });
+
+  it('keeps rail card mobile density and resize-safe square image constraints', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const railTrackBlock =
+      css.match(/\.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
+    const railImageBlock =
+      css.match(
+        /\.setCardCollectionRail > \.setCardCompact > \.setCardLink > \.setVisual \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const stableSquareImageBlock =
+      css.match(
+        /\.setCardRailStableSquare[\s\S]+?> \.setVisual \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(railTrackBlock).toContain(
+      'grid-auto-columns: calc(\n      (100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75\n    );',
+    );
+    expect(railTrackBlock).toContain('scroll-snap-type: x proximity;');
+    expect(railImageBlock).toContain(
+      'aspect-ratio: var(--catalog-rail-card-image-ratio);',
+    );
+    expect(railImageBlock).toContain('inline-size: 100%;');
+    expect(stableSquareImageBlock).toContain('contain: layout paint;');
   });
 
   it('uses compact blue browse CTA styling without changing featured actions', () => {
@@ -435,11 +528,14 @@ describe('CatalogSetCard', () => {
     );
     const compactCardBlock =
       css.match(/\.setCardCompact \{[^}]+\}/u)?.[0] ?? '';
-    const focusWithinBlock =
-      css.match(/\n  \.setCard:focus-within \{[^}]+\}/u)?.[0] ?? '';
-    const clickLayerFocusBlock =
-      css.match(/\.setCardClickLayer:focus-visible::after \{[^}]+\}/u)?.[0] ??
-      '';
+    const cardLinkFocusBlock =
+      css.match(
+        /\.setCard:has\(\.setCardClickLayer:focus-visible\) \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const cardLinkFocusHaloBlock =
+      css.match(
+        /\.setCard:has\(\.setCardClickLayer:focus-visible\)::after \{[^}]+\}/u,
+      )?.[0] ?? '';
     const hoverBlock = css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
 
     expect(compactCardBlock).toContain(
@@ -451,11 +547,21 @@ describe('CatalogSetCard', () => {
     expect(compactCardBlock).toContain(
       '--catalog-card-hover-outline-color: transparent;',
     );
-    expect(focusWithinBlock).toContain(
+    expect(css).not.toContain('\n  .setCard:focus-within {');
+    expect(cardLinkFocusBlock).toContain(
       'border-color: var(--catalog-card-interaction-border-color);',
     );
-    expect(clickLayerFocusBlock).toContain(
-      'box-shadow: 0 0 0 4px var(--lego-focus-ring);',
+    expect(cardLinkFocusBlock).toContain(
+      'outline: var(--catalog-card-focus-ring-width) solid',
+    );
+    expect(cardLinkFocusBlock).toContain(
+      'var(--catalog-card-focus-ring-color);',
+    );
+    expect(cardLinkFocusBlock).toContain(
+      'outline-offset: var(--catalog-card-focus-ring-offset);',
+    );
+    expect(cardLinkFocusHaloBlock).toContain(
+      'box-shadow: 0 0 0 var(--catalog-card-focus-ring-offset)',
     );
     expect(hoverBlock).toContain(
       'border-color: var(--catalog-card-hover-border-color);',
@@ -522,7 +628,13 @@ describe('CatalogSetCard', () => {
     );
 
     expect(themedRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(themedRailCardRule).toContain(
+      '--catalog-card-focus-ring-color: var(',
+    );
     expect(inverseRailCardRule).toContain('--rail-card-border: transparent;');
+    expect(inverseRailCardRule).toContain(
+      '--catalog-card-focus-ring-color: var(--lego-contrast-white);',
+    );
     expect(dealRailSource).toContain('className={styles.dealSection}');
     expect(dealRailSource).toContain('tone="inverse"');
     expect(dealRailSource).not.toContain('tone="default"');
@@ -905,8 +1017,7 @@ describe('CatalogSetCard', () => {
 
   it('keeps theme badge and muted tile text above AA contrast on medium theme colors', () => {
     const surfaceColor = '#2f7fc0';
-    const adjustedBadgeSurfaceColor = '#2d7ab8';
-    const accessibleTextColor = '#ffffff';
+    const accessibleTextColor = '#05070d';
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/snackbartruck-60488"
@@ -930,12 +1041,10 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain(`--card-theme-badge-accent:${surfaceColor}`);
-    expect(markup).toContain(
-      `--card-theme-badge-bg:${adjustedBadgeSurfaceColor}`,
-    );
+    expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
     expect(markup).toContain(`--card-theme-badge-text:${accessibleTextColor}`);
     expect(
-      getTestContrastRatio(accessibleTextColor, adjustedBadgeSurfaceColor),
+      getTestContrastRatio(accessibleTextColor, surfaceColor),
     ).toBeGreaterThanOrEqual(4.5);
     expect(markup).toContain('--theme-card-foreground:#05070d');
     expect(markup).toContain('--theme-muted:#05070d');
@@ -944,7 +1053,7 @@ describe('CatalogSetCard', () => {
 
   it('computes an accessible badge text color when theme text color is missing', () => {
     const surfaceColor = '#e0b84f';
-    const accessibleTextColor = '#171a22';
+    const accessibleTextColor = '#05070d';
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/modular-display-10350"
@@ -1220,12 +1329,20 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('position: absolute;');
     expect(css).toContain('inset: 0;');
     expect(css).toContain('z-index: 1;');
-    expect(css).toContain('.setCardClickLayer:focus-visible::after {');
+    expect(css).not.toContain('.setCardClickLayer:focus-visible::after {');
     expect(css).toContain('border-radius: inherit;');
-    expect(css).toContain('box-shadow: 0 0 0 4px var(--lego-focus-ring);');
-    expect(css).toContain('inset: -3px;');
     expect(css).toContain('.setCard:has(.setCardClickLayer:focus-visible)');
+    expect(css).toContain('var(--catalog-card-focus-ring-color);');
     expect(css).toContain('box-shadow: none;');
+    expect(css).toContain(
+      'outline: var(--catalog-card-focus-ring-width) solid',
+    );
+    expect(css).toContain(
+      'outline-offset: var(--catalog-card-focus-ring-offset);',
+    );
+    expect(css).toContain(
+      'box-shadow: 0 0 0 var(--catalog-card-focus-ring-offset)',
+    );
     expect(css).toContain('.cardCompactFooterActions {');
     expect(css).toContain('z-index: 2;');
   });

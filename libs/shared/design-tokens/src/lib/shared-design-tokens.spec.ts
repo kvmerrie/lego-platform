@@ -58,6 +58,9 @@ describe('shared design tokens', () => {
     expect(themeStyles).toContain(
       '--lego-button-focus-ring-color-inverse: var(--lego-contrast-white);',
     );
+    expect(themeStyles).toContain(
+      '--lego-button-focus-ring-gap-color: var(--lego-surface-default);',
+    );
     expect(themeStyles).toContain('scroll-behavior: smooth;');
   });
 

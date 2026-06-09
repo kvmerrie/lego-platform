@@ -81,6 +81,7 @@ const baseTokens: ThemeTokenMap = {
   'lego-button-focus-ring-offset': '2px',
   'lego-button-focus-ring-color': 'var(--lego-focus-ring)',
   'lego-button-focus-ring-color-inverse': 'var(--lego-contrast-white)',
+  'lego-button-focus-ring-gap-color': 'var(--lego-surface-default)',
   'lego-max-width': '1600px',
   'lego-max-width-page': '1600px',
   'lego-max-width-reading': '68ch',

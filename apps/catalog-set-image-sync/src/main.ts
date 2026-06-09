@@ -172,6 +172,27 @@ export function parseRewritePublicUrls(argv: readonly string[]): boolean {
   });
 }
 
+export function parseUploadRetries(
+  argv: readonly string[],
+): number | undefined {
+  const rawValue = getFlagValue({
+    argv,
+    flag: '--upload-retries',
+  });
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+    throw new Error('Use --upload-retries <non-negative-integer>.');
+  }
+
+  return parsedValue;
+}
+
 function describeSupabaseRef(url: string): string {
   try {
     return new URL(url).host;
@@ -293,6 +314,7 @@ export async function main(argv = process.argv.slice(2)) {
   const metadataTarget = parseMetadataTarget(argv);
   const copyMetadata = parseCopyMetadataMode(argv);
   const rewritePublicUrls = parseRewritePublicUrls(argv);
+  const uploadRetryCount = parseUploadRetries(argv);
   const mode = write ? 'write' : 'dry-run';
 
   if (copyMetadata && rewritePublicUrls) {
@@ -317,7 +339,7 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   console.log(
-    `[catalog-set-image-sync] start mode=${mode} metadata_target=${metadataTarget} metadata_url=${describeSupabaseRef(metadataTargetUrl)} storage_url=${rewritePublicUrls ? 'none' : describeSupabaseRef(storageTargetUrl)} bucket=${CATALOG_SET_IMAGES_BUCKET} limit=${limit ?? 0} set_ids=${setIds?.join(',') ?? 'none'} missing_only=${missingOnly} refresh_failed=${refreshFailed} refresh_image_metadata=${refreshImageMetadata} refresh_card=${refreshCard} refresh_social=${refreshSocial} refresh_thumbnails=${refreshThumbnails} debug_dedupe=${debugDedupe} concurrency=${concurrency ?? 0} copy_metadata=${copyMetadata ?? 'none'} rewrite_public_urls=${rewritePublicUrls}`,
+    `[catalog-set-image-sync] start mode=${mode} metadata_target=${metadataTarget} metadata_url=${describeSupabaseRef(metadataTargetUrl)} storage_url=${rewritePublicUrls ? 'none' : describeSupabaseRef(storageTargetUrl)} bucket=${CATALOG_SET_IMAGES_BUCKET} limit=${limit ?? 0} set_ids=${setIds?.join(',') ?? 'none'} missing_only=${missingOnly} refresh_failed=${refreshFailed} refresh_image_metadata=${refreshImageMetadata} refresh_card=${refreshCard} refresh_social=${refreshSocial} refresh_thumbnails=${refreshThumbnails} debug_dedupe=${debugDedupe} concurrency=${concurrency ?? 0} upload_retries=${uploadRetryCount ?? 0} copy_metadata=${copyMetadata ?? 'none'} rewrite_public_urls=${rewritePublicUrls}`,
   );
 
   if (rewritePublicUrls) {
@@ -375,11 +397,27 @@ export async function main(argv = process.argv.slice(2)) {
     refreshThumbnails,
     setIds,
     storageSupabaseClient: createProductionStorageSupabaseClient(),
+    uploadRetryCount,
   });
 
   console.log(
-    `[catalog-set-image-sync] summary dry_run=${result.dryRun} selected_sets=${result.selectedSetCount} processed_sets=${result.processedSetCount} skipped_sets=${result.skippedSetCount} failed_sets=${result.failedSetCount} duplicate_sources=${result.duplicateSourceCount} exact_duplicates=${result.exactDuplicateCount} perceptual_duplicates=${result.perceptualDuplicateCount} failed_sources=${result.failedSourceCount} estimated_upload_bytes=${result.estimatedUploadBytes} uploaded_bytes=${result.uploadedBytes}`,
+    `[catalog-set-image-sync] summary dry_run=${result.dryRun} selected_sets=${result.selectedSetCount} processed_sets=${result.processedSetCount} skipped_sets=${result.skippedSetCount} failed_sets=${result.failedSetCount} duplicate_sources=${result.duplicateSourceCount} exact_duplicates=${result.exactDuplicateCount} perceptual_duplicates=${result.perceptualDuplicateCount} failed_sources=${result.failedSourceCount} failed_variants=${result.failedVariantCount} orphan_thumbnail_rows=${result.orphanThumbnailRowCount} estimated_upload_bytes=${result.estimatedUploadBytes} uploaded_bytes=${result.uploadedBytes}`,
   );
+  if (result.failedSourceSamples.length) {
+    console.log(
+      `[catalog-set-image-sync] failed_source_samples ${JSON.stringify(result.failedSourceSamples)}`,
+    );
+  }
+  if (result.failedVariantSamples.length) {
+    console.log(
+      `[catalog-set-image-sync] failed_variant_samples ${JSON.stringify(result.failedVariantSamples)}`,
+    );
+  }
+  if (result.dryRun && result.orphanThumbnailRows.length) {
+    console.log(
+      `[catalog-set-image-sync] orphan_thumbnail_rows ${JSON.stringify(result.orphanThumbnailRows)}`,
+    );
+  }
   console.log(
     `[catalog-set-image-sync] footprint avg_card_bytes=${result.footprintReport.byType.card.averageBytes} avg_hero_bytes=${result.footprintReport.byType.hero.averageBytes} avg_gallery_bytes=${result.footprintReport.byType.gallery.averageBytes} avg_social_bytes=${result.footprintReport.byType.social.averageBytes} avg_thumbnail_bytes=${result.footprintReport.byType.thumbnail.averageBytes} avg_bytes_per_set=${result.footprintReport.averageBytesPerSet} storage_gb_100=${result.footprintReport.projections.sets100.storageGb} storage_gb_1000=${result.footprintReport.projections.sets1000.storageGb} storage_gb_current_catalog=${result.footprintReport.projections.currentCatalog.storageGb} current_catalog_sets=${result.footprintReport.currentCatalogSetCount}`,
   );
@@ -404,6 +442,8 @@ export async function main(argv = process.argv.slice(2)) {
         footprintReport: result.footprintReport,
         duplicateGroups: result.duplicateGroups,
         heroSimilaritySuppressedCount: result.heroSimilaritySuppressedCount,
+        orphanThumbnailRowCount: result.orphanThumbnailRowCount,
+        orphanThumbnailRows: result.orphanThumbnailRows,
         roleCounts: result.roleCounts,
         samples: result.results.slice(0, 5).map((sample) => {
           const summary = {

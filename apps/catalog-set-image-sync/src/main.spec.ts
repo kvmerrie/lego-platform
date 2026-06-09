@@ -9,6 +9,7 @@ import {
   parseRefreshSocial,
   parseRefreshThumbnails,
   parseRewritePublicUrls,
+  parseUploadRetries,
 } from './main';
 
 describe('catalog set image sync CLI', () => {
@@ -59,6 +60,15 @@ describe('catalog set image sync CLI', () => {
   test('parses public URL rewrite mode', () => {
     expect(parseRewritePublicUrls([])).toBe(false);
     expect(parseRewritePublicUrls(['--rewrite-public-urls'])).toBe(true);
+  });
+
+  test('parses optional upload retry count', () => {
+    expect(parseUploadRetries([])).toBeUndefined();
+    expect(parseUploadRetries(['--upload-retries=2'])).toBe(2);
+    expect(parseUploadRetries(['--upload-retries', '0'])).toBe(0);
+    expect(() => parseUploadRetries(['--upload-retries=-1'])).toThrow(
+      'Use --upload-retries <non-negative-integer>.',
+    );
   });
 
   test('refuses ambiguous staging metadata and production storage targets', () => {

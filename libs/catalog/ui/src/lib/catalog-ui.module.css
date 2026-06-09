@@ -199,6 +199,20 @@
   .setCard {
     --catalog-card-action-height: 2.75rem;
     --catalog-card-action-icon-size: 0.96rem;
+    --catalog-card-focus-ring-color: var(--lego-focus-ring);
+    --catalog-card-focus-ring-offset: var(--lego-button-focus-ring-offset, 2px);
+    --catalog-card-focus-ring-width: var(--lego-button-focus-ring-width, 3px);
+    --catalog-set-card-radius: var(--lego-radius-sm);
+    --catalog-set-card-link-padding: 0.82rem;
+    --catalog-rail-card-image-ratio: 1 / 1;
+    --catalog-rail-card-link-gap: 0.78rem;
+    --catalog-rail-card-link-padding-block-start: 0.72rem;
+    --catalog-rail-card-media-padding-block-end: 0.92rem;
+    --catalog-rail-card-media-padding-block-start: 0.78rem;
+    --catalog-rail-card-media-padding-inline: 0.45rem;
+    --catalog-rail-card-title-font-size: 1rem;
+    --catalog-rail-card-title-font-weight: 500;
+    --catalog-rail-card-title-line-height: 1.16;
     --rail-card-border: var(--lego-border-subtle);
     --rail-card-border-hover: color-mix(
       in srgb,
@@ -225,7 +239,7 @@
     --card-theme-badge-text: var(--lego-text);
     background: var(--lego-surface-default);
     border: var(--lego-border-width-1) solid var(--rail-card-border);
-    border-radius: var(--lego-radius-sm);
+    border-radius: var(--catalog-set-card-radius);
     box-shadow: none;
     display: flex;
     flex-direction: column;
@@ -273,15 +287,6 @@
     outline: none;
   }
 
-  .setCardClickLayer:focus-visible::after {
-    border-radius: inherit;
-    box-shadow: 0 0 0 4px var(--lego-focus-ring);
-    content: '';
-    inset: -3px;
-    pointer-events: none;
-    position: absolute;
-  }
-
   .setCardLink {
     align-items: stretch;
     background: transparent;
@@ -295,7 +300,7 @@
     height: 100%;
     min-height: 0;
     min-width: 0;
-    padding: 0.82rem;
+    padding: var(--catalog-set-card-link-padding);
     position: relative;
     text-align: left;
     width: 100%;
@@ -308,8 +313,8 @@
 
   .setCardCompact[data-catalog-set-card-variant='compact'] > .setCardLink,
   .setCardCompact[data-catalog-set-card-variant='featured'] > .setCardLink {
-    gap: 0.78rem;
-    padding-block-start: 0.72rem;
+    gap: var(--catalog-rail-card-link-gap);
+    padding-block-start: var(--catalog-rail-card-link-padding-block-start);
   }
 
   .setCardCompact[data-catalog-set-card-variant='compact']
@@ -330,17 +335,27 @@
     > .setCardLink
     > .setVisual
     > .visualMedia {
-    padding: 0.78rem 0.45rem 0.92rem;
-  }
-
-  .setCard:focus-within {
-    border-color: var(--catalog-card-interaction-border-color);
-    box-shadow: inset 0 0 0 1px var(--catalog-card-interaction-outline-color);
+    padding: var(--catalog-rail-card-media-padding-block-start)
+      var(--catalog-rail-card-media-padding-inline)
+      var(--catalog-rail-card-media-padding-block-end);
   }
 
   .setCard:has(.setCardClickLayer:focus-visible) {
     border-color: var(--catalog-card-interaction-border-color);
     box-shadow: none;
+    outline: var(--catalog-card-focus-ring-width) solid
+      var(--catalog-card-focus-ring-color);
+    outline-offset: var(--catalog-card-focus-ring-offset);
+  }
+
+  .setCard:has(.setCardClickLayer:focus-visible)::after {
+    border-radius: inherit;
+    box-shadow: 0 0 0 var(--catalog-card-focus-ring-offset)
+      var(--lego-surface-default);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
   }
 
   .setVisual {
@@ -527,8 +542,8 @@
   }
 
   .setCardCompact .cardTitle {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--catalog-rail-card-title-font-size);
+    font-weight: var(--catalog-rail-card-title-font-weight);
     line-height: 1.2;
   }
 
@@ -3111,6 +3126,10 @@
 
   .setCardRail {
     --catalog-rail-card-gap: var(--lego-space-2);
+    --catalog-rail-focus-bleed: calc(
+      var(--lego-button-focus-ring-width, 3px) +
+        var(--lego-button-focus-ring-offset, 2px)
+    );
     --catalog-rail-inline-padding: var(
       --catalog-section-inline-padding,
       var(
@@ -3239,7 +3258,7 @@
     margin: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
-    padding-bottom: 0;
+    padding-block: var(--catalog-rail-focus-bleed);
     padding-inline: var(--catalog-rail-inline-padding);
     scroll-padding-inline: var(--catalog-rail-inline-padding);
     -webkit-overflow-scrolling: touch;
@@ -3256,7 +3275,7 @@
     inline-size: 100%;
     max-inline-size: 100%;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
     scroll-snap-align: start;
   }
 
@@ -3288,7 +3307,7 @@
   }
 
   .setCardCollectionRail > .setCardCompact > .setCardLink > .setVisual {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: var(--catalog-rail-card-image-ratio);
     inline-size: 100%;
     max-block-size: none;
     min-block-size: 0;
@@ -3338,9 +3357,9 @@
 
   .setCardCollectionRail > .setCardCompact .cardTitle {
     align-self: start;
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.16;
+    font-size: var(--catalog-rail-card-title-font-size);
+    font-weight: var(--catalog-rail-card-title-font-weight);
+    line-height: var(--catalog-rail-card-title-line-height);
     min-block-size: var(--catalog-rail-card-title-slot);
   }
 
@@ -3390,19 +3409,19 @@
     box-sizing: border-box;
     inline-size: 100%;
     max-inline-size: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .setCardCollectionRail > .setCardCompact .cardCompactFooterActions {
     inline-size: 100%;
     max-inline-size: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .setCardCollectionRail > .setCardCompact .cardCompactPrimaryAction {
     flex: 0 1 auto;
     min-inline-size: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .setCardCollectionRail > .setCardCompact .cardCompactActionLabel {
@@ -3672,6 +3691,10 @@
   }
 
   .setCardRailSectionThemed .setCard {
+    --catalog-card-focus-ring-color: var(
+      --article-theme-surface-text,
+      var(--lego-contrast-white)
+    );
     --catalog-card-hover-border-color: transparent;
     --catalog-card-hover-outline-color: transparent;
     --catalog-card-interaction-border-color: color-mix(
@@ -3689,6 +3712,7 @@
   }
 
   .sectionShellInverse .setCardRailTrack > .setCard {
+    --catalog-card-focus-ring-color: var(--lego-contrast-white);
     --catalog-card-hover-border-color: transparent;
     --catalog-card-hover-outline-color: transparent;
     --catalog-card-interaction-border-color: color-mix(

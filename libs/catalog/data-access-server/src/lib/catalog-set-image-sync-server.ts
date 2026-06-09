@@ -27,6 +27,8 @@ const MAX_REMOTE_SET_IMAGE_BYTES = 12 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 12_000;
 const DEFAULT_CONCURRENCY = 2;
 const MAX_CONCURRENCY = 3;
+const DEFAULT_UPLOAD_RETRY_COUNT = 0;
+const MAX_UPLOAD_RETRY_COUNT = 3;
 const STORAGE_PROJECTION_SET_COUNTS = [100, 1000] as const;
 const BYTES_PER_GB = 1_000_000_000;
 const SOCIAL_IMAGE_BACKGROUND = { b: 255, g: 255, r: 255 } as const;
@@ -97,6 +99,9 @@ export interface CatalogSetImageSyncItemResult {
   estimatedUploadBytes: number;
   exactDuplicateCount: number;
   failedSourceCount: number;
+  failedSourceSamples: readonly CatalogSetImageFailureSample[];
+  failedVariantCount: number;
+  failedVariantSamples: readonly CatalogSetImageFailureSample[];
   galleryImageCount: number;
   heroImageStored: boolean;
   imageBytesByType: Record<CatalogStoredSetImageType, number>;
@@ -110,6 +115,7 @@ export interface CatalogSetImageSyncItemResult {
   thumbnailImageStored: boolean;
   uploadedBytes: number;
   visibleGalleryOrder: readonly CatalogSetImageVisibleGalleryOrderItem[];
+  orphanThumbnailRows: readonly CatalogSetImageOrphanThumbnailRow[];
   warnings: readonly string[];
 }
 
@@ -178,6 +184,14 @@ export interface CatalogSetImageVisibleGalleryOrderItem {
   sourceUrl: string;
 }
 
+export interface CatalogSetImageOrphanThumbnailRow {
+  publicUrl: string | null;
+  reason: string;
+  setId: string;
+  sortOrder: number;
+  storagePath: string | null;
+}
+
 export interface CatalogSetImageTypeFootprint {
   averageBytes: number;
   imageCount: number;
@@ -222,9 +236,14 @@ export interface CatalogSetImageSyncResult {
   exactDuplicateCount: number;
   failedSetCount: number;
   failedSourceCount: number;
+  failedSourceSamples: readonly CatalogSetImageFailureSample[];
+  failedVariantCount: number;
+  failedVariantSamples: readonly CatalogSetImageFailureSample[];
   footprintReport: CatalogSetImageFootprintReport;
   heroSimilaritySuppressedCount: number;
   missingOnly: boolean;
+  orphanThumbnailRowCount: number;
+  orphanThumbnailRows: readonly CatalogSetImageOrphanThumbnailRow[];
   perceptualDuplicateCount: number;
   processedSetCount: number;
   refreshImageMetadata: boolean;
@@ -238,6 +257,7 @@ export interface CatalogSetImageSyncResult {
   skippedSetCount: number;
   suppressedImages: readonly CatalogSetImageSuppressedImage[];
   uploadedBytes: number;
+  uploadRetryCount: number;
   write: boolean;
   results: readonly CatalogSetImageSyncItemResult[];
 }
@@ -258,6 +278,20 @@ export interface CatalogSetImageSyncOptions {
   setIds?: readonly string[];
   storageSupabaseClient?: CatalogSetImageStorageClient;
   supabaseClient?: CatalogSetImageSyncClient;
+  uploadRetryCount?: number;
+}
+
+export interface CatalogSetImageFailureSample {
+  bucket: string | null;
+  byteSize: number | null;
+  details: string | null;
+  imageType: CatalogStoredSetImageType;
+  message: string;
+  setId: string;
+  sortOrder: number;
+  sourceUrl: string;
+  status: string | null;
+  storagePath: string | null;
 }
 
 export interface CatalogSetImageMetadataCopyResult {
@@ -383,6 +417,36 @@ interface CatalogSetImageProcessContext {
   refreshSocial: boolean;
   refreshThumbnails: boolean;
   storageSupabaseClient: CatalogSetImageStorageClient;
+  uploadRetryCount: number;
+}
+
+interface CatalogSetImageUploadErrorDetails {
+  bucket: string;
+  byteSize: number;
+  details: string | null;
+  imageType: CatalogStoredSetImageType;
+  message: string;
+  rawError: unknown;
+  retryCount: number;
+  setId: string;
+  sortOrder: number;
+  status: string | null;
+  storagePath: string;
+}
+
+class CatalogSetImageUploadError extends Error {
+  readonly uploadDetails: CatalogSetImageUploadErrorDetails;
+
+  constructor(details: CatalogSetImageUploadErrorDetails) {
+    const statusText = details.status ? ` status=${details.status}` : '';
+    const detailText = details.details ? ` details=${details.details}` : '';
+
+    super(
+      `Unable to upload catalog set image variant bucket=${details.bucket} storage_path=${details.storagePath} set_id=${details.setId} image_type=${details.imageType} sort_order=${details.sortOrder} byte_size=${details.byteSize}${statusText} message=${details.message}${detailText}`,
+    );
+    this.name = 'CatalogSetImageUploadError';
+    this.uploadDetails = details;
+  }
 }
 
 function normalizeRemoteImageContentType(contentType: string | null): string {
@@ -566,6 +630,14 @@ function clampConcurrency(concurrency?: number): number {
   }
 
   return Math.min(Math.max(concurrency, 1), MAX_CONCURRENCY);
+}
+
+function clampUploadRetryCount(uploadRetryCount?: number): number {
+  if (!Number.isInteger(uploadRetryCount) || !uploadRetryCount) {
+    return DEFAULT_UPLOAD_RETRY_COUNT;
+  }
+
+  return Math.min(Math.max(uploadRetryCount, 0), MAX_UPLOAD_RETRY_COUNT);
 }
 
 function normalizeSyncSetIds(setIds?: readonly string[]): string[] | undefined {
@@ -1572,21 +1644,48 @@ async function optimizeSetImageVariant({
 
 async function uploadCatalogSetImageVariant({
   bucketName,
+  setId,
   storageSupabaseClient,
+  sortOrder,
+  uploadRetryCount,
   variant,
 }: {
   bucketName: string;
+  setId: string;
   storageSupabaseClient: CatalogSetImageStorageClient;
+  sortOrder: number;
+  uploadRetryCount: number;
   variant: OptimizedSetImageVariant;
 }): Promise<string> {
   const bucket = storageSupabaseClient.storage.from(bucketName);
-  const { error } = await bucket.upload(variant.storagePath, variant.bytes, {
-    contentType: variant.contentType,
-    upsert: true,
-  });
+  let retryCount = 0;
 
-  if (error) {
-    throw new Error(`Unable to upload ${variant.storagePath}.`);
+  for (;;) {
+    const { error } = await bucket.upload(variant.storagePath, variant.bytes, {
+      contentType: variant.contentType,
+      upsert: true,
+    });
+
+    if (!error) {
+      break;
+    }
+
+    if (retryCount < uploadRetryCount && isTransientStorageUploadError(error)) {
+      retryCount += 1;
+      continue;
+    }
+
+    throw new CatalogSetImageUploadError({
+      bucket: bucketName,
+      byteSize: variant.byteSize,
+      imageType: variant.imageType,
+      rawError: error,
+      retryCount,
+      setId,
+      sortOrder,
+      storagePath: variant.storagePath,
+      ...readSupabaseStorageErrorDetails(error),
+    });
   }
 
   const {
@@ -1594,6 +1693,61 @@ async function uploadCatalogSetImageVariant({
   } = bucket.getPublicUrl(variant.storagePath);
 
   return publicUrl;
+}
+
+function readRecordStringValue(value: unknown, key: string): string | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const property = (value as Record<string, unknown>)[key];
+
+  if (typeof property === 'string' && property.length > 0) {
+    return property;
+  }
+
+  if (typeof property === 'number') {
+    return String(property);
+  }
+
+  return null;
+}
+
+function readSupabaseStorageErrorDetails(error: unknown): {
+  details: string | null;
+  message: string;
+  status: string | null;
+} {
+  const message =
+    error instanceof Error
+      ? error.message
+      : (readRecordStringValue(error, 'message') ?? 'Unknown storage error.');
+  const status =
+    readRecordStringValue(error, 'status') ??
+    readRecordStringValue(error, 'statusCode') ??
+    readRecordStringValue(error, 'code');
+  const details =
+    readRecordStringValue(error, 'details') ??
+    readRecordStringValue(error, 'hint') ??
+    readRecordStringValue(error, 'name');
+
+  return {
+    details,
+    message,
+    status,
+  };
+}
+
+function isTransientStorageUploadError(error: unknown): boolean {
+  const { message, status } = readSupabaseStorageErrorDetails(error);
+  const numericStatus = status ? Number(status) : Number.NaN;
+
+  return (
+    numericStatus === 408 ||
+    numericStatus === 429 ||
+    (numericStatus >= 500 && numericStatus <= 599) ||
+    /timeout|temporar|network|fetch failed|econnreset|etimedout/i.test(message)
+  );
 }
 
 async function upsertCatalogSetImageRows({
@@ -1744,6 +1898,46 @@ function buildMetadataRefreshRows({
       });
     })
     .filter((row): row is CatalogSetImageUpsertRow => row != null);
+}
+
+function isStoredGalleryRowSuppressed(row: CatalogSetImageUpsertRow): boolean {
+  return row.metadata_json['gallerySuppressed'] === true;
+}
+
+function getOrphanThumbnailRows(
+  rows: readonly CatalogSetImageUpsertRow[],
+): CatalogSetImageOrphanThumbnailRow[] {
+  const visibleImageSortOrders = new Set<number>();
+
+  for (const row of rows) {
+    if (row.status !== 'active') {
+      continue;
+    }
+
+    if (row.image_type === 'hero' && row.sort_order === 0) {
+      visibleImageSortOrders.add(0);
+    }
+
+    if (row.image_type === 'gallery' && !isStoredGalleryRowSuppressed(row)) {
+      visibleImageSortOrders.add(row.sort_order);
+    }
+  }
+
+  return rows
+    .filter(
+      (row) =>
+        row.status === 'active' &&
+        row.image_type === 'thumbnail' &&
+        !visibleImageSortOrders.has(row.sort_order) &&
+        (row.storage_path || row.public_url),
+    )
+    .map((row) => ({
+      publicUrl: row.public_url,
+      reason: 'no matching active visible hero/gallery image',
+      setId: row.set_id,
+      sortOrder: row.sort_order,
+      storagePath: row.storage_path,
+    }));
 }
 
 function toActiveImageRow({
@@ -1906,48 +2100,128 @@ function toDuplicateImageRow({
 }
 
 function toFailedImageRow({
+  byteSize,
+  contentType,
   error,
+  height,
+  imageRole,
   imageType,
+  perceptualHash,
   setId,
+  sha256,
   sortOrder,
   source,
   sourceUrl,
+  storagePath,
+  width,
 }: {
+  byteSize?: number | null;
+  contentType?: string | null;
   error: unknown;
+  height?: number | null;
+  imageRole?: CatalogSetImageRole;
   imageType: CatalogStoredSetImageType;
+  perceptualHash?: string | null;
   setId: string;
+  sha256?: string | null;
   sortOrder: number;
   source: CatalogSetImageSource;
   sourceUrl: string;
+  storagePath?: string | null;
+  width?: number | null;
 }): CatalogSetImageUpsertRow {
   const errorMessage =
     error instanceof Error ? error.message : 'Unknown image sync failure.';
+  const uploadDetails =
+    error instanceof CatalogSetImageUploadError
+      ? error.uploadDetails
+      : undefined;
 
   return {
-    byte_size: null,
-    content_type: null,
+    byte_size: byteSize ?? uploadDetails?.byteSize ?? null,
+    content_type: contentType ?? null,
     duplicate_distance: null,
     duplicate_of_id: null,
     duplicate_reason: null,
-    height: null,
-    image_role: 'unknown',
+    height: height ?? null,
+    image_role: imageRole ?? 'unknown',
     image_type: imageType,
     metadata_json: {
       errorMessage,
       failedAt: new Date().toISOString(),
+      ...(uploadDetails
+        ? {
+            uploadError: {
+              bucket: uploadDetails.bucket,
+              byteSize: uploadDetails.byteSize,
+              details: uploadDetails.details,
+              message: uploadDetails.message,
+              retryCount: uploadDetails.retryCount,
+              status: uploadDetails.status,
+              storagePath: uploadDetails.storagePath,
+            },
+          }
+        : {}),
     },
-    perceptual_hash: null,
+    perceptual_hash: perceptualHash ?? null,
     public_url: null,
     set_id: setId,
-    sha256: null,
+    sha256: sha256 ?? null,
     sort_order: sortOrder,
     source,
     source_url: sourceUrl,
     status: 'failed',
     storage_bucket: CATALOG_SET_IMAGES_BUCKET,
-    storage_path: null,
-    width: null,
+    storage_path: storagePath ?? uploadDetails?.storagePath ?? null,
+    width: width ?? null,
   };
+}
+
+function toFailureSample({
+  byteSize,
+  error,
+  imageType,
+  setId,
+  sortOrder,
+  sourceUrl,
+  storagePath,
+}: {
+  byteSize?: number | null;
+  error: unknown;
+  imageType: CatalogStoredSetImageType;
+  setId: string;
+  sortOrder: number;
+  sourceUrl: string;
+  storagePath?: string | null;
+}): CatalogSetImageFailureSample {
+  const uploadDetails =
+    error instanceof CatalogSetImageUploadError
+      ? error.uploadDetails
+      : undefined;
+  const storageErrorDetails = readSupabaseStorageErrorDetails(
+    uploadDetails?.rawError ?? error,
+  );
+
+  return {
+    bucket: uploadDetails?.bucket ?? CATALOG_SET_IMAGES_BUCKET,
+    byteSize: byteSize ?? uploadDetails?.byteSize ?? null,
+    details: uploadDetails?.details ?? storageErrorDetails.details,
+    imageType,
+    message:
+      uploadDetails?.message ??
+      (error instanceof Error ? error.message : storageErrorDetails.message),
+    setId,
+    sortOrder,
+    sourceUrl,
+    status: uploadDetails?.status ?? storageErrorDetails.status,
+    storagePath: storagePath ?? uploadDetails?.storagePath ?? null,
+  };
+}
+
+function sampleFailures(
+  samples: readonly CatalogSetImageFailureSample[],
+): readonly CatalogSetImageFailureSample[] {
+  return samples.slice(0, 5);
 }
 
 async function processCatalogSetImageSyncCandidate({
@@ -1962,10 +2236,13 @@ async function processCatalogSetImageSyncCandidate({
   refreshSocial,
   refreshThumbnails,
   storageSupabaseClient,
+  uploadRetryCount,
 }: CatalogSetImageProcessContext & {
   candidate: CatalogSetImageSyncCandidate;
 }): Promise<CatalogSetImageSyncItemResult> {
   const warnings: string[] = [];
+  const failedSourceSamples: CatalogSetImageFailureSample[] = [];
+  const failedVariantSamples: CatalogSetImageFailureSample[] = [];
   const sourceCandidates = buildSourceCandidatesForSet({
     bricksetCandidates:
       bricksetImageCandidatesBySetId.get(candidate.setId) ?? [],
@@ -1980,6 +2257,9 @@ async function processCatalogSetImageSyncCandidate({
       estimatedUploadBytes: 0,
       exactDuplicateCount: 0,
       failedSourceCount: 0,
+      failedSourceSamples,
+      failedVariantCount: 0,
+      failedVariantSamples,
       galleryImageCount: 0,
       heroImageStored: false,
       heroSimilaritySuppressedCount: 0,
@@ -1993,6 +2273,7 @@ async function processCatalogSetImageSyncCandidate({
       thumbnailImageStored: false,
       uploadedBytes: 0,
       visibleGalleryOrder: [],
+      orphanThumbnailRows: [],
       warnings: ['No source images found.'],
     };
   }
@@ -2024,6 +2305,16 @@ async function processCatalogSetImageSyncCandidate({
       });
     } catch (error) {
       failedSourceCount += 1;
+      failedSourceSamples.push(
+        toFailureSample({
+          error,
+          imageType:
+            sourceCandidate.preferredType === 'hero' ? 'hero' : 'gallery',
+          setId: candidate.setId,
+          sortOrder: 9000 + index,
+          sourceUrl: sourceCandidate.imageUrl,
+        }),
+      );
       warnings.push(
         `${sourceCandidate.imageUrl}: ${
           error instanceof Error ? error.message : 'download failed'
@@ -2063,6 +2354,9 @@ async function processCatalogSetImageSyncCandidate({
       estimatedUploadBytes: 0,
       exactDuplicateCount: 0,
       failedSourceCount,
+      failedSourceSamples: sampleFailures(failedSourceSamples),
+      failedVariantCount: 0,
+      failedVariantSamples,
       galleryImageCount: 0,
       heroImageStored: false,
       heroSimilaritySuppressedCount: 0,
@@ -2076,6 +2370,7 @@ async function processCatalogSetImageSyncCandidate({
       thumbnailImageStored: false,
       uploadedBytes: 0,
       visibleGalleryOrder: [],
+      orphanThumbnailRows: [],
       warnings,
     };
   }
@@ -2113,6 +2408,19 @@ async function processCatalogSetImageSyncCandidate({
     curationDecisions,
     duplicateDecisions,
   });
+  const visibleGallerySlotKeys = new Set(
+    visibleGalleryOrder.map((image) => image.slot),
+  );
+  const orphanThumbnailRows = dryRun
+    ? getOrphanThumbnailRows([
+        ...(
+          await readExistingCatalogSetImageRowsForSet({
+            metadataSupabaseClient,
+            setId: candidate.setId,
+          })
+        ).values(),
+      ])
+    : [];
   const dedupeAudit = debugDedupe
     ? buildDedupeAudit({
         analyzedGalleryImages,
@@ -2175,6 +2483,9 @@ async function processCatalogSetImageSyncCandidate({
       estimatedUploadBytes: 0,
       exactDuplicateCount,
       failedSourceCount,
+      failedSourceSamples: sampleFailures(failedSourceSamples),
+      failedVariantCount: 0,
+      failedVariantSamples,
       galleryImageCount: analyzedGalleryImages.filter((image) => {
         const curationDecision = curationDecisions.get(image.slotKey);
 
@@ -2198,6 +2509,7 @@ async function processCatalogSetImageSyncCandidate({
       ),
       uploadedBytes: 0,
       visibleGalleryOrder,
+      orphanThumbnailRows,
       warnings,
     };
   }
@@ -2315,7 +2627,10 @@ async function processCatalogSetImageSyncCandidate({
       });
     }
 
-    if (shouldGenerateThumbnailImages) {
+    if (
+      shouldGenerateThumbnailImages &&
+      visibleGallerySlotKeys.has(galleryImage.slotKey)
+    ) {
       variants.push({
         image: galleryImage,
         originalSha256: galleryImage.downloadedImage.sha256,
@@ -2343,16 +2658,60 @@ async function processCatalogSetImageSyncCandidate({
     imageCountByType[variant.imageType] += 1;
   }
   let uploadedBytes = 0;
+  const activeRows: CatalogSetImageUpsertRow[] = [];
+  const failedVariantRows: CatalogSetImageUpsertRow[] = [];
 
   if (!dryRun) {
-    const activeRows: CatalogSetImageUpsertRow[] = [];
-
     for (const variant of variants) {
-      const storagePublicUrl = await uploadCatalogSetImageVariant({
-        bucketName: CATALOG_SET_IMAGES_BUCKET,
-        storageSupabaseClient,
-        variant: variant.variant,
-      });
+      let storagePublicUrl: string;
+
+      try {
+        storagePublicUrl = await uploadCatalogSetImageVariant({
+          bucketName: CATALOG_SET_IMAGES_BUCKET,
+          setId: candidate.setId,
+          sortOrder: variant.sortOrder,
+          storageSupabaseClient,
+          uploadRetryCount,
+          variant: variant.variant,
+        });
+      } catch (error) {
+        failedVariantSamples.push(
+          toFailureSample({
+            byteSize: variant.variant.byteSize,
+            error,
+            imageType: variant.variant.imageType,
+            setId: candidate.setId,
+            sortOrder: variant.sortOrder,
+            sourceUrl: variant.sourceUrl,
+            storagePath: variant.variant.storagePath,
+          }),
+        );
+        warnings.push(
+          `${variant.variant.storagePath}: ${
+            error instanceof Error ? error.message : 'upload failed'
+          }`,
+        );
+        failedVariantRows.push(
+          toFailedImageRow({
+            byteSize: variant.variant.byteSize,
+            contentType: variant.variant.contentType,
+            error,
+            height: variant.variant.height,
+            imageRole: variant.image.roleClassification.role,
+            imageType: variant.variant.imageType,
+            perceptualHash: variant.image.analysis.perceptualHash,
+            setId: candidate.setId,
+            sha256: variant.variant.sha256,
+            sortOrder: variant.sortOrder,
+            source: variant.source,
+            sourceUrl: variant.sourceUrl,
+            storagePath: variant.variant.storagePath,
+            width: variant.variant.width,
+          }),
+        );
+        continue;
+      }
+
       const publicUrl = toBrickhuntCatalogSetImagePublicUrl(
         variant.variant.storagePath,
       );
@@ -2380,9 +2739,19 @@ async function processCatalogSetImageSyncCandidate({
 
     await upsertCatalogSetImageRows({
       metadataSupabaseClient,
-      rows: [...activeRows, ...duplicateRows, ...failedRows],
+      rows: [
+        ...activeRows,
+        ...duplicateRows,
+        ...failedRows,
+        ...failedVariantRows,
+      ],
     });
   }
+
+  const isImageTypeStored = (imageType: CatalogStoredSetImageType) =>
+    dryRun
+      ? variants.some((variant) => variant.variant.imageType === imageType)
+      : activeRows.some((row) => row.image_type === imageType);
 
   return {
     ...(dedupeAudit ? { dedupeAudit } : {}),
@@ -2391,6 +2760,9 @@ async function processCatalogSetImageSyncCandidate({
     estimatedUploadBytes,
     exactDuplicateCount,
     failedSourceCount,
+    failedSourceSamples: sampleFailures(failedSourceSamples),
+    failedVariantCount: failedVariantRows.length,
+    failedVariantSamples: sampleFailures(failedVariantSamples),
     galleryImageCount: analyzedGalleryImages.filter((image) => {
       const curationDecision = curationDecisions.get(image.slotKey);
 
@@ -2399,25 +2771,20 @@ async function processCatalogSetImageSyncCandidate({
         curationDecision?.suppressed !== true
       );
     }).length,
-    heroImageStored: true,
+    heroImageStored: isImageTypeStored('hero'),
     heroSimilaritySuppressedCount: suppressedImages.length,
     imageBytesByType,
     imageCountByType,
     perceptualDuplicateCount,
     roleCounts,
     setId: candidate.setId,
-    cardImageStored: variants.some(
-      ({ variant }) => variant.imageType === 'card',
-    ),
-    socialImageStored: variants.some(
-      ({ variant }) => variant.imageType === 'social',
-    ),
+    cardImageStored: isImageTypeStored('card'),
+    socialImageStored: isImageTypeStored('social'),
     suppressedImages,
-    thumbnailImageStored: variants.some(
-      ({ variant }) => variant.imageType === 'thumbnail',
-    ),
+    thumbnailImageStored: isImageTypeStored('thumbnail'),
     uploadedBytes,
     visibleGalleryOrder,
+    orphanThumbnailRows,
     warnings,
   };
 }
@@ -2854,6 +3221,35 @@ function buildCatalogSetImageFootprintReport({
   };
 }
 
+function isCatalogSetImageSyncResultFailedForMode({
+  refreshCard,
+  refreshImageMetadata,
+  refreshSocial,
+  refreshThumbnails,
+  result,
+}: {
+  refreshCard: boolean;
+  refreshImageMetadata: boolean;
+  refreshSocial: boolean;
+  refreshThumbnails: boolean;
+  result: CatalogSetImageSyncItemResult;
+}): boolean {
+  if (refreshCard || refreshSocial || refreshThumbnails) {
+    return (
+      result.failedVariantCount > 0 ||
+      (refreshCard && !result.cardImageStored) ||
+      (refreshSocial && !result.socialImageStored) ||
+      (refreshThumbnails && !result.thumbnailImageStored)
+    );
+  }
+
+  if (refreshImageMetadata) {
+    return !result.heroImageStored && !result.imageCountByType.hero;
+  }
+
+  return !result.heroImageStored;
+}
+
 export async function syncCatalogSetImages({
   concurrency,
   debugDedupe = false,
@@ -2870,6 +3266,7 @@ export async function syncCatalogSetImages({
   setIds,
   storageSupabaseClient,
   supabaseClient,
+  uploadRetryCount,
 }: CatalogSetImageSyncOptions): Promise<CatalogSetImageSyncResult> {
   const resolvedMetadataSupabaseClient =
     metadataSupabaseClient ?? supabaseClient;
@@ -2888,6 +3285,7 @@ export async function syncCatalogSetImages({
   }
 
   const normalizedSetIds = normalizeSyncSetIds(setIds);
+  const resolvedUploadRetryCount = clampUploadRetryCount(uploadRetryCount);
   const activeCatalogSetCount = await countActiveCatalogSets({
     supabaseClient: resolvedMetadataSupabaseClient,
   });
@@ -2923,6 +3321,7 @@ export async function syncCatalogSetImages({
         refreshSocial,
         refreshThumbnails,
         storageSupabaseClient: resolvedStorageSupabaseClient,
+        uploadRetryCount: resolvedUploadRetryCount,
       }),
   });
   const footprintReport = buildCatalogSetImageFootprintReport({
@@ -2951,10 +3350,28 @@ export async function syncCatalogSetImages({
       (totalCount, result) => totalCount + result.exactDuplicateCount,
       0,
     ),
-    failedSetCount: results.filter((result) => !result.heroImageStored).length,
+    failedSetCount: results.filter((result) =>
+      isCatalogSetImageSyncResultFailedForMode({
+        refreshCard,
+        refreshImageMetadata,
+        refreshSocial,
+        refreshThumbnails,
+        result,
+      }),
+    ).length,
     failedSourceCount: results.reduce(
       (totalCount, result) => totalCount + result.failedSourceCount,
       0,
+    ),
+    failedSourceSamples: sampleFailures(
+      results.flatMap((result) => result.failedSourceSamples),
+    ),
+    failedVariantCount: results.reduce(
+      (totalCount, result) => totalCount + result.failedVariantCount,
+      0,
+    ),
+    failedVariantSamples: sampleFailures(
+      results.flatMap((result) => result.failedVariantSamples),
     ),
     footprintReport,
     heroSimilaritySuppressedCount: results.reduce(
@@ -2962,6 +3379,13 @@ export async function syncCatalogSetImages({
       0,
     ),
     missingOnly,
+    orphanThumbnailRowCount: results.reduce(
+      (totalCount, result) => totalCount + result.orphanThumbnailRows.length,
+      0,
+    ),
+    orphanThumbnailRows: results
+      .flatMap((result) => result.orphanThumbnailRows)
+      .slice(0, 20),
     perceptualDuplicateCount: results.reduce(
       (totalCount, result) => totalCount + result.perceptualDuplicateCount,
       0,
@@ -2992,6 +3416,7 @@ export async function syncCatalogSetImages({
       (totalBytes, result) => totalBytes + result.uploadedBytes,
       0,
     ),
+    uploadRetryCount: resolvedUploadRetryCount,
     write: !dryRun,
   };
 }

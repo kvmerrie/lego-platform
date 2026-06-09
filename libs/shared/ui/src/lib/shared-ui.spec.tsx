@@ -484,6 +484,12 @@ describe('Button', () => {
       'inline-size: var(--lego-button-icon-control-size);',
     );
     expect(focusRule).toContain(
+      'box-shadow: 0 0 0 var(--lego-button-focus-ring-offset)',
+    );
+    expect(focusRule).toContain(
+      'var(--lego-button-focus-ring-gap-color, var(--lego-surface-default))',
+    );
+    expect(focusRule).toContain(
       'outline: var(--lego-button-focus-ring-width) solid',
     );
     expect(focusRule).toContain(

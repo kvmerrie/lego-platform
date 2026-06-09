@@ -1050,7 +1050,9 @@ describe('CatalogSetCardRail', () => {
     const railHoverRule =
       css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
     const focusRule =
-      css.match(/\n  \.setCard:focus-within \{[^}]+\}/u)?.[0] ?? '';
+      css.match(
+        /\.setCard:has\(\.setCardClickLayer:focus-visible\) \{[^}]+\}/u,
+      )?.[0] ?? '';
 
     expect(railCardRule).not.toContain('--rail-card-border: transparent;');
     expect(railCardRule).not.toContain(
@@ -1088,6 +1090,7 @@ describe('CatalogSetCardRail', () => {
     expect(focusRule).toContain(
       'border-color: var(--catalog-card-interaction-border-color);',
     );
+    expect(css).not.toContain('\n  .setCard:focus-within {');
     expect(themePageCss).toContain('.dealSection');
     expect(themePageSource).toContain('className={styles.dealSection}');
     expect(themePageSource).not.toContain('surfaceVariant="themed"');
@@ -1172,7 +1175,7 @@ describe('CatalogSetCardRail', () => {
 
     expect(railCardRule).toContain('inline-size: 100%;');
     expect(railCardRule).toContain('max-inline-size: 100%;');
-    expect(railCardRule).toContain('overflow: hidden;');
+    expect(railCardRule).toContain('overflow: visible;');
     expect(railCardRule).toContain('align-self: stretch;');
     expect(railCardRule).toContain('block-size: 100%;');
     expect(railCardShellRule).toContain('--catalog-rail-card-facts-slot');
@@ -1188,11 +1191,11 @@ describe('CatalogSetCardRail', () => {
     expect(railLinkRule).toContain('align-content: start;');
     expect(railDecisionRule).toContain('inline-size: 100%;');
     expect(railDecisionRule).toContain('align-self: end;');
-    expect(railDecisionRule).toContain('overflow: hidden;');
+    expect(railDecisionRule).toContain('overflow: visible;');
     expect(railFooterRule).toContain('inline-size: 100%;');
-    expect(railFooterRule).toContain('overflow: hidden;');
+    expect(railFooterRule).toContain('overflow: visible;');
     expect(railPrimaryActionRule).toContain('flex: 0 1 auto;');
-    expect(railPrimaryActionRule).toContain('overflow: hidden;');
+    expect(railPrimaryActionRule).toContain('overflow: visible;');
     expect(railSecondaryActionRule).toContain(
       'flex: 0 0 var(--catalog-card-action-height);',
     );
@@ -1244,6 +1247,10 @@ describe('CatalogSetCardRail', () => {
     );
     expect(railTrackRule).toContain('grid-auto-columns: calc(');
     expect(railTrackRule).toContain('100% -');
+    expect(css).toContain('--catalog-rail-focus-bleed: calc(');
+    expect(railTrackRule).toContain(
+      'padding-block: var(--catalog-rail-focus-bleed);',
+    );
     expect(skeletonTrackRule).toContain('grid-auto-columns: calc(');
     expect(skeletonTrackRule).toContain(
       '(100% - (var(--catalog-rail-card-gap) * 0.75)) / 1.75',
@@ -1258,7 +1265,9 @@ describe('CatalogSetCardRail', () => {
     expect(css).toContain(
       'grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 4)) / 5);',
     );
-    expect(railVisualRule).toContain('aspect-ratio: 1 / 1;');
+    expect(railVisualRule).toContain(
+      'aspect-ratio: var(--catalog-rail-card-image-ratio);',
+    );
     expect(railVisualRule).not.toContain('contain: layout paint;');
     expect(railVisualRule).toContain('inline-size: 100%;');
     expect(railVisualRule).toContain('max-block-size: none;');
@@ -1349,8 +1358,12 @@ describe('CatalogSetCardRail', () => {
       css.indexOf('.themeCard', subgridStart),
     );
 
-    expect(railTitleRule).toContain('font-size: 1rem;');
-    expect(railTitleRule).toContain('line-height: 1.16;');
+    expect(railTitleRule).toContain(
+      'font-size: var(--catalog-rail-card-title-font-size);',
+    );
+    expect(railTitleRule).toContain(
+      'line-height: var(--catalog-rail-card-title-line-height);',
+    );
     expect(railPriceRule).toContain('font-size: 1.5rem;');
     expect(railPriceRule).toContain('line-height: 1.08;');
     expect(browsePriceRule).toContain('font-size: 1.04rem;');

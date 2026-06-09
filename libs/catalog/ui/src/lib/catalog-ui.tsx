@@ -73,7 +73,9 @@ export {
 } from './catalog-composite-ui';
 
 type CatalogSetCardSummary = CatalogSetSummary &
-  Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>>;
+  Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>> & {
+    cardImageUrl?: string;
+  };
 
 type CatalogSetCardPriceContextTone =
   | 'accent'
@@ -118,7 +120,6 @@ type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
 const CATALOG_A11Y_TEXT_DARK = '#05070d';
-const CATALOG_A11Y_BADGE_TEXT_DARK = '#171a22';
 const CATALOG_A11Y_TEXT_LIGHT = '#ffffff';
 const CATALOG_A11Y_CONTRAST_AA = 4.5;
 
@@ -474,6 +475,14 @@ function shouldOptimizeCatalogSetVisualImage(imageUrl: string): boolean {
   } catch {
     return false;
   }
+}
+
+function getCatalogSetCardImageUrl(
+  setSummary: CatalogSetCardSummary,
+): string | undefined {
+  return (
+    setSummary.cardImageUrl ?? setSummary.primaryImage ?? setSummary.imageUrl
+  );
 }
 
 function CatalogSetVisual({
@@ -1028,19 +1037,13 @@ function getCatalogThemeStyleVariables({
     resolvedVisual.backgroundColor,
     resolvedVisual.textColor,
   );
-  const themeBadgeSurface = getAccessibleCatalogCardSurface(
-    resolvedVisual.backgroundColor,
-    themeBadgeText,
-  );
 
   return {
     ...(resolvedVisual.backgroundColor
       ? ({
           '--card-theme-badge-accent': resolvedVisual.backgroundColor,
-          '--catalog-theme-badge-surface':
-            themeBadgeSurface ?? resolvedVisual.backgroundColor,
-          '--card-theme-badge-bg':
-            themeBadgeSurface ?? resolvedVisual.backgroundColor,
+          '--catalog-theme-badge-surface': resolvedVisual.backgroundColor,
+          '--card-theme-badge-bg': resolvedVisual.backgroundColor,
           '--theme-surface': themeCardSurface ?? resolvedVisual.backgroundColor,
         } as CSSProperties)
       : {}),
@@ -1163,7 +1166,7 @@ function getAccessibleCatalogTextColor(
   }
 
   const darkContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_BADGE_TEXT_DARK,
+    CATALOG_A11Y_TEXT_DARK,
     backgroundColor,
   );
   const lightContrast = getCatalogColorContrastRatio(
@@ -1176,7 +1179,7 @@ function getAccessibleCatalogTextColor(
   }
 
   return darkContrast >= lightContrast
-    ? CATALOG_A11Y_BADGE_TEXT_DARK
+    ? CATALOG_A11Y_TEXT_DARK
     : CATALOG_A11Y_TEXT_LIGHT;
 }
 
@@ -1336,6 +1339,7 @@ export function CatalogSetCard({
   const setThemeStyle = getCatalogThemeStyleVariables({
     visual: getCatalogPublicThemeVisual(setSummary.publicTheme),
   });
+  const cardImageUrl = getCatalogSetCardImageUrl(setSummary);
   const hasSupportingContext = Boolean(
     (priceContext && priceDisplay === 'subtle') || supportingNote,
   );
@@ -1355,7 +1359,7 @@ export function CatalogSetCard({
         <CatalogSetVisual
           imageFetchPriority={imageFetchPriority}
           imageLoading={imageLoading}
-          imageUrl={setSummary.imageUrl}
+          imageUrl={cardImageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
           overlayControls={visualActions}
@@ -1483,7 +1487,7 @@ export function CatalogSetCard({
         <CatalogSetVisual
           imageFetchPriority={imageFetchPriority}
           imageLoading={imageLoading}
-          imageUrl={setSummary.imageUrl}
+          imageUrl={cardImageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
           overlayControls={visualActions}
@@ -1594,7 +1598,7 @@ export function CatalogSetCard({
       <CatalogSetVisual
         imageFetchPriority={imageFetchPriority}
         imageLoading={imageLoading}
-        imageUrl={setSummary.imageUrl}
+        imageUrl={cardImageUrl}
         name={setSummary.name}
         overlayControls={visualActions}
         setId={setSummary.id}

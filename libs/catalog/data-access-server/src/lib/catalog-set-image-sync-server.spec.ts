@@ -16,16 +16,18 @@ function createSetImageSyncSupabaseMock({
   catalogRows,
   imageRows = [],
   sourceMetadataRows = [],
+  uploadErrorsByPath = {},
 }: {
   catalogRows: readonly Record<string, unknown>[];
   imageRows?: readonly Record<string, unknown>[];
   sourceMetadataRows?: readonly Record<string, unknown>[];
+  uploadErrorsByPath?: Readonly<Record<string, unknown>>;
 }) {
   const upsert = vi.fn(async () => ({
     error: null,
   }));
-  const upload = vi.fn(async () => ({
-    error: null,
+  const upload = vi.fn(async (path: string) => ({
+    error: uploadErrorsByPath[path] ?? null,
   }));
   const getPublicUrl = vi.fn((path: string) => ({
     data: {
@@ -778,6 +780,94 @@ describe('catalog set image sync server', () => {
     );
   });
 
+  test('marks a failed thumbnail upload without aborting the remaining variants', async () => {
+    const storageError = {
+      details: 'storage object write failed',
+      message: 'Gateway timeout',
+      statusCode: 504,
+    };
+    const { client, upload, upsert } = createSetImageSyncSupabaseMock({
+      catalogRows: [createCatalogRow()],
+      uploadErrorsByPath: {
+        'sets/10316/thumbs/0.webp': storageError,
+      },
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: false,
+      fetchFn: createImageFetch(),
+      supabaseClient: client,
+    });
+
+    expect(upload).toHaveBeenCalledTimes(4);
+    expect(result.failedSetCount).toBe(0);
+    expect(result.failedSourceCount).toBe(0);
+    expect(result.failedVariantCount).toBe(1);
+    expect(result.failedVariantSamples).toEqual([
+      expect.objectContaining({
+        bucket: 'catalog-set-images',
+        details: 'storage object write failed',
+        imageType: 'thumbnail',
+        message: 'Gateway timeout',
+        setId: '10316',
+        sortOrder: 0,
+        status: '504',
+        storagePath: 'sets/10316/thumbs/0.webp',
+      }),
+    ]);
+    expect(result.results[0]?.heroImageStored).toBe(true);
+    expect(result.results[0]?.cardImageStored).toBe(true);
+    expect(result.results[0]?.socialImageStored).toBe(true);
+    expect(result.results[0]?.thumbnailImageStored).toBe(false);
+    expect(result.uploadedBytes).toBeGreaterThan(0);
+    expect(upsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          image_type: 'hero',
+          public_url: '/images/sets/10316/hero.webp',
+          status: 'active',
+          storage_path: 'sets/10316/hero.webp',
+        }),
+        expect.objectContaining({
+          image_type: 'card',
+          public_url: '/images/sets/10316/card.webp',
+          status: 'active',
+          storage_path: 'sets/10316/card.webp',
+        }),
+        expect.objectContaining({
+          image_type: 'social',
+          public_url: '/images/sets/10316/social.jpg',
+          status: 'active',
+          storage_path: 'sets/10316/social.jpg',
+        }),
+        expect.objectContaining({
+          byte_size: expect.any(Number),
+          content_type: 'image/webp',
+          image_type: 'thumbnail',
+          metadata_json: expect.objectContaining({
+            uploadError: expect.objectContaining({
+              bucket: 'catalog-set-images',
+              byteSize: expect.any(Number),
+              details: 'storage object write failed',
+              message: 'Gateway timeout',
+              retryCount: 0,
+              status: '504',
+              storagePath: 'sets/10316/thumbs/0.webp',
+            }),
+          }),
+          public_url: null,
+          set_id: '10316',
+          status: 'failed',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10316/thumbs/0.webp',
+        }),
+      ]),
+      {
+        onConflict: 'set_id,image_type,sort_order',
+      },
+    );
+  });
+
   test('generates social images as 1200x630 JPEGs on a white canvas', async () => {
     const { client, upload, upsert } = createSetImageSyncSupabaseMock({
       catalogRows: [createCatalogRow()],
@@ -1317,6 +1407,12 @@ describe('catalog set image sync server', () => {
       'gallery:9',
       'gallery:11',
     ]);
+    expect(
+      (upsertRows ?? [])
+        .filter((row) => row['image_type'] === 'thumbnail')
+        .map((row) => row['sort_order'])
+        .sort((left, right) => Number(left) - Number(right)),
+    ).toEqual([0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
   test('uses unknown role when classification is not confident', async () => {
@@ -1433,6 +1529,184 @@ describe('catalog set image sync server', () => {
         onConflict: 'set_id,image_type,sort_order',
       },
     );
+  });
+
+  test('refreshes thumbnails for hero and visible gallery images only', async () => {
+    const imageByUrl = new Map([
+      [
+        'https://cdn.example.com/10316.png',
+        {
+          bytes: await createTestImage({
+            background: '#ffffff',
+            box: {
+              color: '#205f3f',
+              height: 80,
+              left: 40,
+              top: 20,
+              width: 80,
+            },
+          }),
+          contentType: 'image/png',
+        },
+      ],
+      [
+        'https://brickset.example.com/10316-box-front.png',
+        {
+          bytes: await createTestImage({
+            background: '#eeeeee',
+            box: {
+              color: '#111111',
+              height: 84,
+              left: 20,
+              top: 18,
+              width: 120,
+            },
+          }),
+          contentType: 'image/png',
+        },
+      ],
+      [
+        'https://brickset.example.com/10316-detail-closeup.png',
+        {
+          bytes: await createTestImage({
+            background: '#f3f3f3',
+            box: {
+              color: '#1658a8',
+              height: 70,
+              left: 35,
+              top: 25,
+              width: 90,
+            },
+          }),
+          contentType: 'image/png',
+        },
+      ],
+    ]);
+    const { client, upload, upsert } = createSetImageSyncSupabaseMock({
+      catalogRows: [createCatalogRow()],
+      sourceMetadataRows: [
+        {
+          catalog_set_id: '10316',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            images: [
+              {
+                imageUrl: 'https://brickset.example.com/10316-box-front.png',
+                sourceField: 'additionalImages',
+                type: 'additional',
+              },
+              {
+                imageUrl:
+                  'https://brickset.example.com/10316-detail-closeup.png',
+                sourceField: 'additionalImages',
+                type: 'additional',
+              },
+            ],
+          },
+          source: 'brickset',
+        },
+      ],
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: false,
+      fetchFn: createImageFetchByUrl(imageByUrl),
+      refreshThumbnails: true,
+      supabaseClient: client,
+    });
+
+    expect(result.failedSetCount).toBe(0);
+    expect(result.results[0]?.imageCountByType.hero).toBe(0);
+    expect(result.results[0]?.imageCountByType.card).toBe(0);
+    expect(result.results[0]?.imageCountByType.social).toBe(0);
+    expect(result.results[0]?.imageCountByType.thumbnail).toBe(3);
+    expect(upload.mock.calls.map(([storagePath]) => storagePath)).toEqual([
+      'sets/10316/thumbs/0.webp',
+      'sets/10316/thumbs/1.webp',
+      'sets/10316/thumbs/2.webp',
+    ]);
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          image_type: 'thumbnail',
+          sort_order: 0,
+          storage_path: 'sets/10316/thumbs/0.webp',
+        }),
+        expect.objectContaining({
+          image_type: 'thumbnail',
+          sort_order: 1,
+          storage_path: 'sets/10316/thumbs/1.webp',
+        }),
+        expect.objectContaining({
+          image_type: 'thumbnail',
+          sort_order: 2,
+          storage_path: 'sets/10316/thumbs/2.webp',
+        }),
+      ],
+      {
+        onConflict: 'set_id,image_type,sort_order',
+      },
+    );
+  });
+
+  test('reports orphan thumbnail rows in dry-run diagnostics', async () => {
+    const { client, upload, upsert } = createSetImageSyncSupabaseMock({
+      catalogRows: [createCatalogRow()],
+      imageRows: [
+        createStoredImageRow(),
+        createStoredImageRow({
+          image_type: 'gallery',
+          metadata_json: {
+            gallerySuppressed: true,
+          },
+          public_url: '/images/sets/10316/gallery/1.webp',
+          sort_order: 1,
+          storage_path: 'sets/10316/gallery/1.webp',
+        }),
+        createStoredImageRow({
+          image_type: 'thumbnail',
+          public_url: '/images/sets/10316/thumbs/1.webp',
+          sort_order: 1,
+          storage_path: 'sets/10316/thumbs/1.webp',
+        }),
+        createStoredImageRow({
+          image_type: 'gallery',
+          metadata_json: {
+            gallerySuppressed: false,
+          },
+          public_url: '/images/sets/10316/gallery/2.webp',
+          sort_order: 2,
+          storage_path: 'sets/10316/gallery/2.webp',
+        }),
+        createStoredImageRow({
+          image_type: 'thumbnail',
+          public_url: '/images/sets/10316/thumbs/2.webp',
+          sort_order: 2,
+          storage_path: 'sets/10316/thumbs/2.webp',
+        }),
+      ],
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: true,
+      fetchFn: createImageFetch(),
+      refreshThumbnails: true,
+      supabaseClient: client,
+    });
+
+    expect(upload).not.toHaveBeenCalled();
+    expect(upsert).not.toHaveBeenCalled();
+    expect(result.orphanThumbnailRowCount).toBe(1);
+    expect(result.orphanThumbnailRows).toEqual([
+      {
+        publicUrl: '/images/sets/10316/thumbs/1.webp',
+        reason: 'no matching active visible hero/gallery image',
+        setId: '10316',
+        sortOrder: 1,
+        storagePath: 'sets/10316/thumbs/1.webp',
+      },
+    ]);
   });
 
   test('refreshes card images without re-uploading other variants', async () => {
