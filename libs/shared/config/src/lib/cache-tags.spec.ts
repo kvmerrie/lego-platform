@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
+  buildCatalogSetDetailCacheTags,
+  buildCatalogSetDetailRevalidationTarget,
   buildCatalogSetRevalidationTags,
   buildMerchantRevalidationTags,
   buildNewsRevalidationTags,
@@ -68,21 +70,44 @@ describe('cache tags', () => {
 
   test('builds catalog mutation tags for affected surfaces only', () => {
     expect(
+      buildCatalogSetDetailCacheTags({
+        setId: '10316',
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toEqual(['sets', 'set:10316', 'set:lord-of-the-rings-rivendell-10316']);
+    expect(
+      buildCatalogSetDetailRevalidationTarget({
+        path: '/sets/lord-of-the-rings-rivendell-10316',
+        setId: '10316',
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toEqual({
+      path: '/sets/lord-of-the-rings-rivendell-10316',
+      tags: ['sets', 'set:10316', 'set:lord-of-the-rings-rivendell-10316'],
+    });
+    expect(
       buildCatalogSetRevalidationTags({
         affectsHomepage: true,
         affectsSearchIndex: true,
         affectsSitemap: true,
         setNumberOrSlug: '10316-1',
+        setSlug: 'lord-of-the-rings-rivendell-10316',
         themeSlug: 'icons',
       }),
     ).toEqual([
       'sets',
       'set:10316-1',
+      'set:lord-of-the-rings-rivendell-10316',
       'theme:icons',
       'homepage',
       'sitemap',
       'search-index',
     ]);
+    expect(
+      buildCatalogSetRevalidationTags({
+        setNumberOrSlug: 'sagrada-familia-21065',
+      }),
+    ).toEqual(['sets', 'set:21065', 'set:sagrada-familia-21065']);
   });
 
   test('builds shared public browse cache tags', () => {

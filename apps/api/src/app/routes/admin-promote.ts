@@ -14,6 +14,7 @@ import {
 } from '@lego-platform/api/data-access-server';
 import {
   apiPaths,
+  buildCatalogSetDetailCacheTags,
   buildSetDetailPath,
   buildThemePath,
   cacheTags,
@@ -432,14 +433,27 @@ export function createAdminPromoteRoutes({
           changedThemeSlugs: result.changedThemeSlugs,
           log: request.log,
         });
-        const promotedMetadataSetSlugs = uniqueSorted([
-          ...(result.promotedMetadataSetSlugs ?? []),
-          ...(result.promotedImageMetadataSetSlugs ?? []),
-        ]);
-        const promotedMetadataSetIds = uniqueSorted([
-          ...(result.promotedMetadataSetIds ?? []),
-          ...(result.promotedImageMetadataSetIds ?? []),
-        ]);
+        const promotedMetadataSetTargets = [
+          ...(result.promotedMetadataSetSlugs ?? []).map((slug, index) => ({
+            setId: result.promotedMetadataSetIds?.[index],
+            slug,
+          })),
+          ...(result.promotedImageMetadataSetSlugs ?? []).map(
+            (slug, index) => ({
+              setId: result.promotedImageMetadataSetIds?.[index],
+              slug,
+            }),
+          ),
+        ]
+          .filter((target) => target.slug)
+          .sort((left, right) => left.slug.localeCompare(right.slug))
+          .filter(
+            (target, index, targets) =>
+              index === 0 || target.slug !== targets[index - 1]?.slug,
+          );
+        const promotedMetadataSetSlugs = promotedMetadataSetTargets.map(
+          (target) => target.slug,
+        );
         const promotedMetadataSetPathFallback =
           promotedMetadataSetSlugs.length >
           MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
@@ -454,16 +468,48 @@ export function createAdminPromoteRoutes({
           ...promotedMetadataSetPaths,
         ];
         const revalidationTags = [
-          cacheTags.homepage(),
-          cacheTags.themes(),
-          cacheTags.collections(),
-          cacheTags.collection('nieuwe-lego-sets'),
-          cacheTags.collection('retiring-lego-sets'),
-          cacheTags.collection('lego-voor-volwassenen'),
-          cacheTags.catalog(),
-          cacheTags.sets(),
-          ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
+          ...new Set([
+            cacheTags.homepage(),
+            cacheTags.themes(),
+            cacheTags.collections(),
+            cacheTags.collection('nieuwe-lego-sets'),
+            cacheTags.collection('retiring-lego-sets'),
+            cacheTags.collection('lego-voor-volwassenen'),
+            cacheTags.catalog(),
+            cacheTags.sets(),
+            ...promotedMetadataSetTargets.flatMap((target) =>
+              buildCatalogSetDetailCacheTags({
+                setId: target.setId,
+                slug: target.slug,
+              }),
+            ),
+          ]),
         ];
+        const setDetailRevalidationSamples = promotedMetadataSetSlugs
+          .slice(0, LOGGED_CHANGED_THEME_SLUG_LIMIT)
+          .map((slug) => {
+            const target = promotedMetadataSetTargets.find(
+              (candidate) => candidate.slug === slug,
+            );
+
+            return {
+              path: buildSetDetailPath(slug),
+              setId: target?.setId ?? null,
+              tags: buildCatalogSetDetailCacheTags({
+                setId: target?.setId,
+                slug,
+              }),
+            };
+          });
+
+        request.log.info(
+          {
+            reason: 'catalog_promote',
+            route: apiPaths.adminCatalogPromotion,
+            setDetailRevalidationSamples,
+          },
+          'Catalog promote set detail revalidation targets prepared.',
+        );
 
         if (promotedMetadataSetPathFallback) {
           request.log.warn(

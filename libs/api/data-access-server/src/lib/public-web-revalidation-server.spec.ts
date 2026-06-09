@@ -42,6 +42,13 @@ describe('public web revalidation server', () => {
     });
 
     expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] set detail targets',
+      expect.objectContaining({
+        reason: 'observability_test',
+        setDetailTargetCount: 14,
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
       '[public-web-revalidation] request diagnostics',
       expect.objectContaining({
         broad_tag_count: 1,
@@ -103,6 +110,7 @@ describe('public web revalidation server', () => {
       'homepage',
       'prices',
       'catalog',
+      'sets',
       'themes',
       'deals',
       'set:10316',
@@ -158,6 +166,7 @@ describe('public web revalidation server', () => {
     ).toEqual([
       'prices',
       'catalog',
+      'sets',
       'collections',
       'collection:lego-sets-onder-50-euro',
     ]);
@@ -190,11 +199,12 @@ describe('public web revalidation server', () => {
         '/themes/icons',
       ],
       skipped: true,
-      tagCount: 8,
+      tagCount: 9,
       tags: [
         'homepage',
         'prices',
         'catalog',
+        'sets',
         'themes',
         'deals',
         'set:10316',
@@ -386,6 +396,7 @@ describe('public web revalidation server', () => {
             'homepage',
             'prices',
             'catalog',
+            'sets',
             'themes',
             'deals',
             'set:10316',
@@ -406,11 +417,12 @@ describe('public web revalidation server', () => {
         '/themes/icons',
       ],
       skipped: false,
-      tagCount: 8,
+      tagCount: 9,
       tags: [
         'homepage',
         'prices',
         'catalog',
+        'sets',
         'themes',
         'deals',
         'set:10316',
@@ -461,7 +473,7 @@ describe('public web revalidation server', () => {
       attempted: true,
       pathCount: 32,
       skipped: false,
-      tagCount: 64,
+      tagCount: 65,
     });
   });
 
@@ -499,12 +511,18 @@ describe('public web revalidation server', () => {
       '/deals',
       ...changedSetSlugs.slice(0, 23).map((slug) => `/sets/${slug}`),
     ]);
-    expect(request.tags).toEqual(['homepage', 'deals', 'prices', 'catalog']);
+    expect(request.tags).toEqual([
+      'homepage',
+      'deals',
+      'prices',
+      'catalog',
+      'sets',
+    ]);
     expect(result).toMatchObject({
       attempted: true,
       pathCount: 25,
       skipped: false,
-      tagCount: 4,
+      tagCount: 5,
     });
   });
 });

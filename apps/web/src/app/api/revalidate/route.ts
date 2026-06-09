@@ -1,6 +1,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import {
+  buildCatalogSetDetailCacheTags,
   getPublicWebRevalidationConfig,
   hasPublicWebRevalidationConfig,
   normalizeCacheTags,
@@ -66,6 +67,12 @@ function summarizeValues(values: readonly string[]): {
   };
 }
 
+function readSetSlugFromPath(pathname: string): string | undefined {
+  const match = pathname.match(/^\/sets\/([^/?#]+)$/u);
+
+  return match?.[1];
+}
+
 export async function POST(request: Request) {
   if (!hasPublicWebRevalidationConfig()) {
     return NextResponse.json(
@@ -119,11 +126,19 @@ export async function POST(request: Request) {
         ),
       ]
     : [];
-  const tags = Array.isArray(body.tags)
+  const inputTags = Array.isArray(body.tags)
     ? normalizeCacheTags(
         body.tags.filter((tag): tag is string => typeof tag === 'string'),
       )
     : [];
+  const tags = normalizeCacheTags([
+    ...inputTags,
+    ...paths.flatMap((path) => {
+      const slug = readSetSlugFromPath(path);
+
+      return slug ? buildCatalogSetDetailCacheTags({ slug }) : [];
+    }),
+  ]);
 
   if (paths.length > MAX_REVALIDATION_PATHS) {
     return NextResponse.json(
@@ -167,6 +182,18 @@ export async function POST(request: Request) {
   }
 
   const broadTags = tags.filter((tag) => BROAD_REVALIDATION_TAGS.has(tag));
+  const setDetailTargets = paths.flatMap((path) => {
+    const slug = readSetSlugFromPath(path);
+
+    return slug
+      ? [
+          {
+            path,
+            tags: buildCatalogSetDetailCacheTags({ slug }),
+          },
+        ]
+      : [];
+  });
   const pathSummary = summarizeValues(paths);
   const tagSummary = summarizeValues(tags);
 
@@ -179,6 +206,7 @@ export async function POST(request: Request) {
     tagCount: tags.length,
     tagSample: tagSummary.sample,
     tagSampleOmittedCount: tagSummary.omittedCount,
+    setDetailTargets: setDetailTargets.slice(0, LOGGED_VALUE_LIMIT),
   });
 
   if (broadTags.length > 0) {

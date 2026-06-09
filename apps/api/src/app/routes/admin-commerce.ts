@@ -464,6 +464,7 @@ async function revalidateCommerceOfferSeedSurfaces({
         ...buildCatalogSetRevalidationTags({
           affectsHomepage: true,
           setNumberOrSlug: catalogSet.id,
+          setSlug: catalogSet.slug,
           themeSlug,
         }),
         cacheTags.deals(),

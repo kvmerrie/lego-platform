@@ -74,18 +74,54 @@ describe('web revalidation route', () => {
     expect(revalidatePath).toHaveBeenNthCalledWith(1, '/sets/rivendell-10316');
     expect(revalidatePath).toHaveBeenNthCalledWith(2, '/themes/icons');
     expect(revalidatePath).toHaveBeenNthCalledWith(3, '/themes');
-    expect(revalidateTag).toHaveBeenCalledTimes(2);
+    expect(revalidateTag).toHaveBeenCalledTimes(4);
     expect(revalidateTag).toHaveBeenNthCalledWith(
       1,
       'set:rivendell-10316',
       'max',
     );
     expect(revalidateTag).toHaveBeenNthCalledWith(2, 'prices:coolblue', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(3, 'sets', 'max');
+    expect(revalidateTag).toHaveBeenNthCalledWith(4, 'set:10316', 'max');
     await expect(response.json()).resolves.toMatchObject({
       pathCount: 3,
       paths: ['/sets/rivendell-10316', '/themes/icons', '/themes'],
-      tagCount: 2,
-      tags: ['set:rivendell-10316', 'prices:coolblue'],
+      tagCount: 4,
+      tags: ['set:rivendell-10316', 'prices:coolblue', 'sets', 'set:10316'],
+    });
+  });
+
+  test('derives canonical set detail tags from manual set paths', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'expected-secret';
+    const { POST } = await import('./route');
+
+    const response = await POST(
+      new Request('http://localhost:3000/api/revalidate', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-revalidate-secret': 'expected-secret',
+        },
+        body: JSON.stringify({
+          paths: ['/sets/sagrada-familia-21065'],
+          reason: 'manual_set_detail_debug',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(revalidatePath).toHaveBeenCalledWith('/sets/sagrada-familia-21065');
+    expect(revalidateTag).toHaveBeenCalledWith('sets', 'max');
+    expect(revalidateTag).toHaveBeenCalledWith('set:21065', 'max');
+    expect(revalidateTag).toHaveBeenCalledWith(
+      'set:sagrada-familia-21065',
+      'max',
+    );
+    await expect(response.json()).resolves.toMatchObject({
+      pathCount: 1,
+      paths: ['/sets/sagrada-familia-21065'],
+      tagCount: 3,
+      tags: ['sets', 'set:21065', 'set:sagrada-familia-21065'],
     });
   });
 
@@ -144,18 +180,32 @@ describe('web revalidation route', () => {
     expect(infoSpy).toHaveBeenCalledWith(
       'Public web revalidation requested.',
       expect.objectContaining({
-        broadTagCount: 1,
+        broadTagCount: 2,
         pathCount: 14,
         pathSampleOmittedCount: 2,
         reason: 'observability_test',
-        tagCount: 2,
-        tagSample: ['homepage', 'set:10316'],
+        tagCount: 17,
+        tagSample: [
+          'homepage',
+          'set:10316',
+          'sets',
+          'set:rivendell-0',
+          'set:rivendell-1',
+          'set:rivendell-2',
+          'set:rivendell-3',
+          'set:rivendell-4',
+          'set:rivendell-5',
+          'set:rivendell-6',
+          'set:rivendell-7',
+          'set:rivendell-8',
+        ],
+        tagSampleOmittedCount: 5,
       }),
     );
     expect(warnSpy).toHaveBeenCalledWith(
       'Public web revalidation received broad tags.',
       {
-        broadTags: ['homepage'],
+        broadTags: ['homepage', 'sets'],
         reason: 'observability_test',
       },
     );

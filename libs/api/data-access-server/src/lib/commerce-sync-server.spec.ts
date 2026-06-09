@@ -979,6 +979,7 @@ describe('commerce sync server', () => {
       paths: [],
       reason: 'commerce_sync_set_detail_related_theme_snapshots',
       tags: [
+        'sets',
         'set:10316',
         'set:rivendell-10316',
         'set:75355',
@@ -1011,8 +1012,8 @@ describe('commerce sync server', () => {
       pathCount: 0,
       paths: [],
       skipped: false,
-      tagCount: 2,
-      tags: ['set:10316', 'set:rivendell-10316'],
+      tagCount: 3,
+      tags: ['sets', 'set:10316', 'set:rivendell-10316'],
     });
     const syncSetDetailRelatedThemeSnapshotsFn = vi.fn().mockResolvedValue({
       dryRun: false,
@@ -1097,7 +1098,7 @@ describe('commerce sync server', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: [],
       reason: 'commerce_sync_set_detail_related_theme_snapshots',
-      tags: ['set:10316', 'set:rivendell-10316'],
+      tags: ['sets', 'set:10316', 'set:rivendell-10316'],
     });
   });
 

@@ -13,6 +13,7 @@ import {
   type CatalogSet,
 } from '@lego-platform/catalog/util';
 import {
+  buildCatalogSetDetailCacheTags,
   cacheTags,
   getProductionSupabaseConfig,
   getStagingSupabaseConfig,
@@ -298,8 +299,25 @@ async function revalidateCatalogPromotionResult({
   revalidation?: PublicWebRevalidationResult;
   revalidationWarning?: string;
 }> {
-  const promotedMetadataSetSlugs = result.promotedMetadataSetSlugs ?? [];
-  const promotedMetadataSetIds = result.promotedMetadataSetIds ?? [];
+  const promotedMetadataSetTargets = [
+    ...(result.promotedMetadataSetSlugs ?? []).map((slug, index) => ({
+      setId: result.promotedMetadataSetIds?.[index],
+      slug,
+    })),
+    ...(result.promotedImageMetadataSetSlugs ?? []).map((slug, index) => ({
+      setId: result.promotedImageMetadataSetIds?.[index],
+      slug,
+    })),
+  ]
+    .filter((target) => target.slug)
+    .sort((left, right) => left.slug.localeCompare(right.slug))
+    .filter(
+      (target, index, targets) =>
+        index === 0 || target.slug !== targets[index - 1]?.slug,
+    );
+  const promotedMetadataSetSlugs = promotedMetadataSetTargets.map(
+    (target) => target.slug,
+  );
   const promotedMetadataSetPathFallback =
     promotedMetadataSetSlugs.length >
     MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
@@ -314,15 +332,22 @@ async function revalidateCatalogPromotionResult({
     ...promotedMetadataSetPaths,
   ];
   const revalidationTags = [
-    cacheTags.homepage(),
-    cacheTags.themes(),
-    cacheTags.collections(),
-    cacheTags.collection('nieuwe-lego-sets'),
-    cacheTags.collection('retiring-lego-sets'),
-    cacheTags.collection('lego-voor-volwassenen'),
-    cacheTags.catalog(),
-    cacheTags.sets(),
-    ...promotedMetadataSetIds.map((setId) => cacheTags.set(setId)),
+    ...new Set([
+      cacheTags.homepage(),
+      cacheTags.themes(),
+      cacheTags.collections(),
+      cacheTags.collection('nieuwe-lego-sets'),
+      cacheTags.collection('retiring-lego-sets'),
+      cacheTags.collection('lego-voor-volwassenen'),
+      cacheTags.catalog(),
+      cacheTags.sets(),
+      ...promotedMetadataSetTargets.flatMap((target) =>
+        buildCatalogSetDetailCacheTags({
+          setId: target.setId,
+          slug: target.slug,
+        }),
+      ),
+    ]),
   ];
 
   try {

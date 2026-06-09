@@ -25,7 +25,10 @@ import {
   type CommerceSeedGenerationSummary,
   type CommerceSeedValidationSummary,
 } from '@lego-platform/commerce/data-access-server';
-import { cacheTags } from '@lego-platform/shared/config';
+import {
+  buildCatalogSetDetailCacheTags,
+  cacheTags,
+} from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import {
   syncBricksetEnrichmentMetadata,
@@ -821,7 +824,10 @@ export async function backfillBricksetPublicThemeMappings({
             cacheTags.sets(),
             cacheTags.themes(),
             ...remapDetails.flatMap((detail) => [
-              cacheTags.set(detail.setId),
+              ...buildCatalogSetDetailCacheTags({
+                setId: detail.setId,
+                slug: detail.setSlug,
+              }),
               ...(detail.beforeThemeSlug
                 ? [cacheTags.theme(detail.beforeThemeSlug)]
                 : []),

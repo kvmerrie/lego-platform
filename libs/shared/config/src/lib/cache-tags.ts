@@ -59,6 +59,46 @@ export const cacheTags = {
   searchIndex: () => 'search-index',
 } as const;
 
+function readCatalogSetIdFromSlug(slug: string): string | undefined {
+  return slug.trim().match(/-(\d{3,})$/u)?.[1];
+}
+
+export function buildCatalogSetDetailCacheTags({
+  setId,
+  slug,
+}: {
+  setId?: string | null;
+  slug: string;
+}): string[] {
+  const resolvedSetId = setId ?? readCatalogSetIdFromSlug(slug);
+
+  return normalizeCacheTags([
+    cacheTags.sets(),
+    ...(resolvedSetId ? [cacheTags.set(resolvedSetId)] : []),
+    cacheTags.set(slug),
+  ]);
+}
+
+export interface CatalogSetDetailRevalidationTarget {
+  path: string;
+  tags: readonly string[];
+}
+
+export function buildCatalogSetDetailRevalidationTarget({
+  path,
+  setId,
+  slug,
+}: {
+  path: string;
+  setId?: string | null;
+  slug: string;
+}): CatalogSetDetailRevalidationTarget {
+  return {
+    path,
+    tags: buildCatalogSetDetailCacheTags({ setId, slug }),
+  };
+}
+
 export function buildPublicBrowseThemeCacheTags({
   themeSlug,
 }: {
@@ -127,18 +167,24 @@ export function buildCatalogSetRevalidationTags({
   affectsHomepage = false,
   affectsSearchIndex = false,
   affectsSitemap = false,
+  setSlug,
   setNumberOrSlug,
   themeSlug,
 }: {
   affectsHomepage?: boolean;
   affectsSearchIndex?: boolean;
   affectsSitemap?: boolean;
+  setSlug?: string;
   setNumberOrSlug: string;
   themeSlug?: string;
 }): string[] {
+  const resolvedSetSlug = setSlug ?? setNumberOrSlug;
+
   return normalizeCacheTags([
-    cacheTags.sets(),
-    cacheTags.set(setNumberOrSlug),
+    ...buildCatalogSetDetailCacheTags({
+      setId: setSlug ? setNumberOrSlug : undefined,
+      slug: resolvedSetSlug,
+    }),
     ...(themeSlug ? [cacheTags.theme(themeSlug)] : []),
     ...(affectsHomepage ? [cacheTags.homepage()] : []),
     ...(affectsSitemap ? [cacheTags.sitemap()] : []),

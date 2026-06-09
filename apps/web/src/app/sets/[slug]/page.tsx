@@ -59,6 +59,7 @@ import {
   buildThemePath,
   buildWebPath,
   buildArticlePath,
+  buildCatalogSetDetailCacheTags,
   buildCanonicalUrl,
   buildSetDetailPath,
   cacheTags,
@@ -363,7 +364,7 @@ async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
     ],
     {
       revalidate,
-      tags: [cacheTags.sets(), cacheTags.set(slug)],
+      tags: buildCatalogSetDetailCacheTags({ slug }),
     },
   )();
 }

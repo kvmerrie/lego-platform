@@ -558,7 +558,7 @@ describe('set detail static generation', () => {
         'attribution_required',
       ],
       expect.objectContaining({
-        tags: ['sets', 'set:eiffel-tower-10307'],
+        tags: ['sets', 'set:10307', 'set:eiffel-tower-10307'],
       }),
     );
   });

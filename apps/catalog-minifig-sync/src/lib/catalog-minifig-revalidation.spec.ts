@@ -27,7 +27,7 @@ describe('catalog minifig sync revalidation', () => {
       {
         paths: ['/sets/rivendell-10316'],
         reason: 'catalog_minifig_sync',
-        tags: ['set:10316', 'set:rivendell-10316'],
+        tags: ['sets', 'set:10316', 'set:rivendell-10316'],
       },
     ]);
   });
@@ -42,6 +42,7 @@ describe('catalog minifig sync revalidation', () => {
     expect(batches).toHaveLength(1);
     expect(batches[0]?.paths).toEqual(['/sets/x-wing-starfighter-75355']);
     expect(batches[0]?.tags).toEqual([
+      'sets',
       'set:75355',
       'set:x-wing-starfighter-75355',
     ]);
@@ -87,8 +88,8 @@ describe('catalog minifig sync revalidation', () => {
         pathCount: 1,
         pathSample: ['/sets/rivendell-10316'],
         status: 400,
-        tagCount: 2,
-        tagSample: ['set:10316', 'set:rivendell-10316'],
+        tagCount: 3,
+        tagSample: ['sets', 'set:10316', 'set:rivendell-10316'],
       },
     ]);
   });

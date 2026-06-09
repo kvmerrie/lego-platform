@@ -729,6 +729,7 @@ async function revalidateCatalogSetSurfaces(
         affectsSearchIndex: true,
         affectsSitemap: true,
         setNumberOrSlug: catalogSet.setId,
+        setSlug: catalogSet.slug,
         themeSlug,
       }),
     });

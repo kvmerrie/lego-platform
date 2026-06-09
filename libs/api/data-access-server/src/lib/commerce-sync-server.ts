@@ -23,6 +23,7 @@ import {
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
 import {
+  buildCatalogSetDetailCacheTags,
   cacheTags,
   classifyCommerceCommercialUnitType,
   getCommerceMerchantReliabilityTier,
@@ -238,12 +239,13 @@ function buildSetDetailRelatedThemeSnapshotRevalidationTags({
   const tags = new Set<string>();
 
   for (const setId of snapshotSetIds) {
-    tags.add(cacheTags.set(setId));
-
     const catalogSetSummary = catalogSetSummaryById.get(setId);
 
-    if (catalogSetSummary?.slug) {
-      tags.add(cacheTags.set(catalogSetSummary.slug));
+    for (const tag of buildCatalogSetDetailCacheTags({
+      setId,
+      slug: catalogSetSummary?.slug ?? setId,
+    })) {
+      tags.add(tag);
     }
   }
 

@@ -1,6 +1,7 @@
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import {
   batchRevalidationPayloads,
+  buildCatalogSetDetailCacheTags,
   buildSetDetailPath,
   buildThemePath,
   cacheTags,
@@ -129,6 +130,10 @@ function normalizeRevalidationPath(pathname: string): string | undefined {
   return trimmedPathname === '/'
     ? trimmedPathname
     : trimmedPathname.replace(/\/+$/, '') || '/';
+}
+
+function readSetSlugFromRevalidationPath(pathname: string): string | undefined {
+  return pathname.match(/^\/sets\/([^/?#]+)$/u)?.[1];
 }
 
 function summarizeValues(values: readonly string[]): {
@@ -573,6 +578,7 @@ export function buildPublicCatalogRevalidationTags({
 
   dedupedTags.add(cacheTags.prices());
   dedupedTags.add(cacheTags.catalog());
+  dedupedTags.add(cacheTags.sets());
 
   if (includeThemeDirectory) {
     dedupedTags.add(cacheTags.themes());
@@ -587,8 +593,12 @@ export function buildPublicCatalogRevalidationTags({
   }
 
   for (const target of targets) {
-    dedupedTags.add(cacheTags.set(target.setId));
-    dedupedTags.add(cacheTags.set(target.slug));
+    for (const tag of buildCatalogSetDetailCacheTags({
+      setId: target.setId,
+      slug: target.slug,
+    })) {
+      dedupedTags.add(tag);
+    }
     dedupedTags.add(cacheTags.theme(buildCatalogThemeSlug(target.theme)));
   }
 
@@ -687,6 +697,28 @@ export async function revalidatePublicWeb({
     ),
   ];
   const normalizedTags = [...new Set(tags)];
+  const setDetailTargets = normalizedPaths.flatMap((path) => {
+    const slug = readSetSlugFromRevalidationPath(path);
+
+    return slug
+      ? [
+          {
+            path,
+            tags: buildCatalogSetDetailCacheTags({ slug }).filter((tag) =>
+              normalizedTags.includes(tag),
+            ),
+          },
+        ]
+      : [];
+  });
+
+  if (setDetailTargets.length > 0) {
+    console.info('[public-web-revalidation] set detail targets', {
+      reason: reason ?? 'manual_revalidation',
+      setDetailTargetCount: setDetailTargets.length,
+      setDetailTargetSample: setDetailTargets.slice(0, loggedValueLimit),
+    });
+  }
 
   const batches = batchRevalidationPayloads({
     paths: normalizedPaths,
@@ -752,14 +784,24 @@ export async function revalidatePublicCatalogPriceChanges({
     cacheTags.deals(),
     cacheTags.prices(),
     cacheTags.catalog(),
+    cacheTags.sets(),
   ];
-  const tags = isLargePriceChangeBatch
-    ? broadTags
-    : [
-        ...broadTags,
-        ...changedSetIds.map((setId) => cacheTags.set(setId)),
-        ...changedSetSlugs.map((slug) => cacheTags.set(slug)),
-      ];
+  const tags = [
+    ...new Set(
+      isLargePriceChangeBatch
+        ? broadTags
+        : [
+            ...broadTags,
+            ...changedSetIds.map((setId) => cacheTags.set(setId)),
+            ...changedSetSlugs.flatMap((slug, index) =>
+              buildCatalogSetDetailCacheTags({
+                setId: changedSetIds[index],
+                slug,
+              }),
+            ),
+          ],
+    ),
+  ];
 
   console.info('[public-web-revalidation] price changes', {
     changed_set_count: changedSetIds.length,

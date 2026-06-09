@@ -592,7 +592,7 @@ describe('admin promote routes', () => {
         '/sets/lord-of-the-rings-rivendell-10316',
       ],
       skipped: false,
-      tagCount: 9,
+      tagCount: 10,
       tags: [
         'homepage',
         'themes',
@@ -603,6 +603,7 @@ describe('admin promote routes', () => {
         'catalog',
         'sets',
         'set:10316',
+        'set:lord-of-the-rings-rivendell-10316',
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
@@ -660,6 +661,7 @@ describe('admin promote routes', () => {
         'catalog',
         'sets',
         'set:10316',
+        'set:lord-of-the-rings-rivendell-10316',
       ],
     });
 
@@ -682,7 +684,7 @@ describe('admin promote routes', () => {
         '/lego-voor-volwassenen',
       ],
       skipped: false,
-      tagCount: 34,
+      tagCount: 60,
       tags: [
         'homepage',
         'themes',
@@ -692,7 +694,10 @@ describe('admin promote routes', () => {
         'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
-        ...setIds.map((setId) => `set:${setId}`),
+        ...setSlugs.flatMap((setSlug, index) => [
+          `set:${setIds[index]}`,
+          `set:${setSlug}`,
+        ]),
       ],
     }));
     const adminPromoteService: AdminPromoteService = {
@@ -738,7 +743,10 @@ describe('admin promote routes', () => {
         'collection:lego-voor-volwassenen',
         'catalog',
         'sets',
-        ...setIds.map((setId) => `set:${setId}`),
+        ...setSlugs.flatMap((setSlug, index) => [
+          `set:${setIds[index]}`,
+          `set:${setSlug}`,
+        ]),
       ],
     });
 

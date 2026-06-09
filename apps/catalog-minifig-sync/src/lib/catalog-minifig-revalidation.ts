@@ -1,6 +1,6 @@
 import {
+  buildCatalogSetDetailCacheTags,
   buildSetDetailPath,
-  cacheTags,
   productEmailEnvKeys,
   publicWebRevalidationEnvKeys,
 } from '@lego-platform/shared/config';
@@ -107,10 +107,10 @@ export function buildCatalogMinifigRevalidationBatches({
 
     const trimmedSlug = slug.trim();
     const setId = changedSetIds[index]?.trim();
-    const tags = dedupe([
-      ...(setId ? [cacheTags.set(setId)] : []),
-      cacheTags.set(trimmedSlug),
-    ]);
+    const tags = buildCatalogSetDetailCacheTags({
+      setId,
+      slug: trimmedSlug,
+    });
 
     return [
       {
