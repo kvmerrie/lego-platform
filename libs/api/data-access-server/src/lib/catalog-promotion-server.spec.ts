@@ -109,11 +109,16 @@ function createCatalogSetImageRows(setId = '10316') {
     {
       byte_size: 104_200,
       content_type: 'image/webp',
+      duplicate_distance: null,
+      duplicate_of_id: null,
+      duplicate_reason: null,
       height: 900,
+      image_role: 'model_primary',
       image_type: 'hero',
       metadata_json: {
         generatedVariant: 'hero.webp',
       },
+      perceptual_hash: 'hero-phash',
       public_url:
         'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/hero.webp',
       set_id: setId,
@@ -129,11 +134,16 @@ function createCatalogSetImageRows(setId = '10316') {
     {
       byte_size: 141_000,
       content_type: 'image/jpeg',
+      duplicate_distance: null,
+      duplicate_of_id: null,
+      duplicate_reason: null,
       height: 630,
+      image_role: 'model_primary',
       image_type: 'social',
       metadata_json: {
         generatedVariant: 'social.jpg',
       },
+      perceptual_hash: 'social-phash',
       public_url:
         'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/social.jpg',
       set_id: setId,
@@ -149,11 +159,16 @@ function createCatalogSetImageRows(setId = '10316') {
     {
       byte_size: 118_500,
       content_type: 'image/webp',
+      duplicate_distance: 0,
+      duplicate_of_id: null,
+      duplicate_reason: 'sha256',
       height: 960,
+      image_role: 'model_secondary',
       image_type: 'gallery',
       metadata_json: {
         generatedVariant: 'gallery.webp',
       },
+      perceptual_hash: 'gallery-phash',
       public_url:
         'https://production-storage.example.test/storage/v1/object/public/catalog-set-images/sets/10316/gallery/1.webp',
       set_id: setId,
@@ -532,6 +547,98 @@ describe('catalog promotion server', () => {
         active_social_count: 1,
         affected_set_count: 1,
         catalog_set_images_upserted_count: 3,
+        table: 'catalog_set_images',
+      }),
+    );
+
+    consoleInfoSpy.mockRestore();
+  });
+
+  test('normalizes catalog set image role before production upsert payload', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
+    const stagingImageRows = [
+      {
+        ...createCatalogSetImageRows()[0],
+        image_role: 'box_front',
+      },
+      {
+        ...createCatalogSetImageRows()[1],
+        image_role: undefined,
+        image_type: 'card',
+      },
+      {
+        ...createCatalogSetImageRows()[2],
+        image_role: null,
+        metadata_json: {
+          generatedVariant: 'gallery.webp',
+          roleClassification: {
+            role: 'detail',
+          },
+        },
+      },
+    ];
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_images: stagingImageRows,
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_set_images: [],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: () => new Date('2026-06-07T12:00:00.000Z'),
+    });
+
+    const payload = productionClient.upsertByTable.get('catalog_set_images')
+      ?.mock.calls[0]?.[0] as Array<{
+      duplicate_distance: unknown;
+      duplicate_of_id: unknown;
+      duplicate_reason: unknown;
+      image_role: unknown;
+      image_type: unknown;
+    }>;
+
+    expect(payload.map((row) => row.image_role)).toEqual([
+      'box_front',
+      'model_primary',
+      'detail',
+    ]);
+    expect(payload.every((row) => row.image_role !== null)).toBe(true);
+    expect(payload.every((row) => row.image_role !== undefined)).toBe(true);
+    expect(payload[0]).toEqual(
+      expect.objectContaining({
+        duplicate_distance: null,
+        duplicate_of_id: null,
+        duplicate_reason: null,
+      }),
+    );
+    expect(payload[2]).toEqual(
+      expect.objectContaining({
+        duplicate_distance: 0,
+        duplicate_of_id: null,
+        duplicate_reason: 'sha256',
+      }),
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] catalog set image role payload normalized',
+      expect.objectContaining({
+        inputRows: 3,
+        mappedNullImageRoleCount: 0,
+        sourceNullImageRoleCount: 2,
+        table: 'catalog_set_images',
+      }),
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] catalog set image upsert payload checked',
+      expect.objectContaining({
+        mappedNullImageRoleCount: 0,
         table: 'catalog_set_images',
       }),
     );

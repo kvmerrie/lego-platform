@@ -141,6 +141,11 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'content_type',
     'byte_size',
     'sha256',
+    'perceptual_hash',
+    'image_role',
+    'duplicate_of_id',
+    'duplicate_reason',
+    'duplicate_distance',
     'status',
     'metadata_json',
   ],
@@ -258,6 +263,11 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
       'content_type',
       'byte_size',
       'sha256',
+      'perceptual_hash',
+      'image_role',
+      'duplicate_of_id',
+      'duplicate_reason',
+      'duplicate_distance',
       'status',
       'metadata_json',
     ],
@@ -398,7 +408,7 @@ interface CatalogSetImageRow {
     | 'model_primary'
     | 'model_secondary'
     | 'unknown';
-  image_type: 'gallery' | 'hero' | 'social' | 'thumbnail';
+  image_type: 'card' | 'gallery' | 'hero' | 'social' | 'thumbnail';
   metadata_json: Record<string, unknown>;
   perceptual_hash: string | null;
   public_url: string | null;
@@ -467,6 +477,22 @@ interface CollectionPageSnapshotRow {
   source_version: string | null;
   total_count: number;
 }
+
+type CatalogSetImageRole = CatalogSetImageRow['image_role'];
+
+const CATALOG_SET_IMAGE_ROLES = new Set<CatalogSetImageRole>([
+  'box_back',
+  'box_front',
+  'build',
+  'detail',
+  'lifestyle_people',
+  'lifestyle_room',
+  'logo',
+  'minifigure',
+  'model_primary',
+  'model_secondary',
+  'unknown',
+]);
 
 export interface CatalogPromotionTableSummary {
   insertedCount: number;
@@ -659,7 +685,7 @@ const CATALOG_PROMOTION_PREVIEW_TABLES = [
   },
   {
     columns:
-      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_of_id, duplicate_reason, duplicate_distance, status, metadata_json',
     onConflict: 'set_id,image_type,sort_order',
     orderBy: 'set_id',
     table: CATALOG_SET_IMAGES_TABLE,
@@ -878,6 +904,15 @@ function readOptionalPromotionRecord(
     : undefined;
 }
 
+function readCatalogSetImageRole(
+  value: unknown,
+): CatalogSetImageRole | undefined {
+  return typeof value === 'string' &&
+    CATALOG_SET_IMAGE_ROLES.has(value as CatalogSetImageRole)
+    ? (value as CatalogSetImageRole)
+    : undefined;
+}
+
 function hasInvalidPromotionTimestamp(value: unknown): boolean {
   return (
     value === null ||
@@ -1051,6 +1086,39 @@ function countRowsWithInvalidPromotionString({
   ).length;
 }
 
+function countCatalogSetImageRowsWithNullRole({
+  rows,
+}: {
+  rows: readonly Readonly<Record<string, unknown>>[];
+}): number {
+  return rows.filter(
+    (row) => readCatalogSetImageRole(row['image_role']) === undefined,
+  ).length;
+}
+
+function sampleCatalogSetImageRowsWithNullRole({
+  rows,
+}: {
+  rows: readonly Readonly<Record<string, unknown>>[];
+}): readonly Record<string, unknown>[] {
+  return rows
+    .filter((row) => readCatalogSetImageRole(row['image_role']) === undefined)
+    .slice(0, 5)
+    .map((row) => ({
+      image_role: row['image_role'] ?? null,
+      image_type: row['image_type'] ?? null,
+      metadataRoleClassification:
+        readOptionalPromotionRecord(
+          readOptionalPromotionRecord(row['metadata_json'])?.[
+            'roleClassification'
+          ],
+        )?.['role'] ?? null,
+      set_id: row['set_id'] ?? null,
+      sort_order: row['sort_order'] ?? null,
+      storage_path: row['storage_path'] ?? null,
+    }));
+}
+
 function sanitizePromotionUpsertTimestamps({
   nowIso,
   rows,
@@ -1177,6 +1245,37 @@ function logCatalogSetStatusNormalization({
     nullOrMissingStatusBeforeNormalize: nullOrMissingBefore,
     table: CATALOG_SETS_TABLE,
   });
+}
+
+function logCatalogSetImageRoleNormalization({
+  rowsAfter,
+  rowsBefore,
+}: {
+  rowsAfter: readonly Readonly<Record<string, unknown>>[];
+  rowsBefore: readonly Readonly<Record<string, unknown>>[];
+}): void {
+  const nullSourceRoleCount = countCatalogSetImageRowsWithNullRole({
+    rows: rowsBefore,
+  });
+  const nullMappedRoleCount = countCatalogSetImageRowsWithNullRole({
+    rows: rowsAfter,
+  });
+
+  console.info(
+    '[catalog-promotion] catalog set image role payload normalized',
+    {
+      inputRows: rowsBefore.length,
+      mappedNullImageRoleCount: nullMappedRoleCount,
+      mappedNullImageRoleSample: sampleCatalogSetImageRowsWithNullRole({
+        rows: rowsAfter,
+      }),
+      sourceNullImageRoleCount: nullSourceRoleCount,
+      sourceNullImageRoleSample: sampleCatalogSetImageRowsWithNullRole({
+        rows: rowsBefore,
+      }),
+      table: CATALOG_SET_IMAGES_TABLE,
+    },
+  );
 }
 
 function logPromotionUpsertTimestampSanitization({
@@ -1338,6 +1437,48 @@ function normalizeCatalogSetMinifigSummaryRow({
       synced_at: readOptionalPromotionString(summary.synced_at) ?? nowIso,
     },
   });
+}
+
+function getCatalogSetImageRoleFallback(
+  imageType: CatalogSetImageRow['image_type'],
+): CatalogSetImageRole {
+  return imageType === 'hero' || imageType === 'card' || imageType === 'social'
+    ? 'model_primary'
+    : 'unknown';
+}
+
+function resolveCatalogSetImageRole(
+  row: CatalogSetImageRow,
+): CatalogSetImageRole {
+  const metadata = readOptionalPromotionRecord(row.metadata_json);
+  const roleClassification = readOptionalPromotionRecord(
+    metadata?.['roleClassification'],
+  );
+
+  return (
+    readCatalogSetImageRole(row.image_role) ??
+    readCatalogSetImageRole(roleClassification?.['role']) ??
+    getCatalogSetImageRoleFallback(row.image_type)
+  );
+}
+
+function normalizeCatalogSetImageRow(
+  row: CatalogSetImageRow,
+): CatalogSetImageRow {
+  return {
+    ...row,
+    duplicate_distance:
+      typeof row.duplicate_distance === 'number' &&
+      Number.isFinite(row.duplicate_distance)
+        ? row.duplicate_distance
+        : null,
+    duplicate_of_id: readOptionalPromotionString(row.duplicate_of_id) ?? null,
+    duplicate_reason:
+      row.duplicate_reason === 'perceptual' || row.duplicate_reason === 'sha256'
+        ? row.duplicate_reason
+        : null,
+    image_role: resolveCatalogSetImageRole(row),
+  };
 }
 
 function validatePromotionRowsRequiredColumns({
@@ -1611,6 +1752,28 @@ function assertCatalogThemeUpsertPayloadHasRequiredIdentity({
 
   throw new Error(
     `Unable to promote ${CATALOG_THEMES_TABLE}. Final upsert payload is missing required display_name/slug for ids: ${invalidIds.join(', ')}`,
+  );
+}
+
+function assertCatalogSetImageUpsertPayloadHasImageRole({
+  rows,
+  table,
+}: {
+  rows: readonly Record<string, unknown>[];
+  table: string;
+}): void {
+  if (table !== CATALOG_SET_IMAGES_TABLE) {
+    return;
+  }
+
+  const invalidSamples = sampleCatalogSetImageRowsWithNullRole({ rows });
+
+  if (invalidSamples.length === 0) {
+    return;
+  }
+
+  throw new Error(
+    `Unable to promote ${CATALOG_SET_IMAGES_TABLE}. Final upsert payload has null image_role for rows: ${JSON.stringify(invalidSamples)}`,
   );
 }
 
@@ -2071,12 +2234,30 @@ async function upsertRows<TRow>({
     rows: rowsForUpsert,
     table,
   });
+  assertCatalogSetImageUpsertPayloadHasImageRole({
+    rows: rowsForUpsert,
+    table,
+  });
 
   logPromotionUpsertTimestampSanitization({
     rowsAfter: rowsForUpsert,
     rowsBefore: projectedRowsForUpsert,
     table,
   });
+  if (table === CATALOG_SET_IMAGES_TABLE) {
+    console.info(
+      '[catalog-promotion] catalog set image upsert payload checked',
+      {
+        mappedNullImageRoleCount: countCatalogSetImageRowsWithNullRole({
+          rows: rowsForUpsert,
+        }),
+        mappedNullImageRoleSample: sampleCatalogSetImageRowsWithNullRole({
+          rows: rowsForUpsert,
+        }),
+        table,
+      },
+    );
+  }
 
   for (const chunk of chunkValues(rowsForUpsert, 100)) {
     const { error } = await supabaseClient.from(table).upsert(chunk, {
@@ -2641,7 +2822,7 @@ export async function promoteCatalogFromStagingToProduction({
       }),
       readOrderedRows<CatalogSetImageRow>({
         columns:
-          'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+          'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_of_id, duplicate_reason, duplicate_distance, status, metadata_json',
         orderBy: 'set_id',
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_SET_IMAGES_TABLE,
@@ -2765,7 +2946,17 @@ export async function promoteCatalogFromStagingToProduction({
           summary,
         }),
     );
-    const normalizedCatalogSetImages = [...catalogSetImages];
+    const normalizedCatalogSetImages = catalogSetImages.map(
+      normalizeCatalogSetImageRow,
+    );
+    logCatalogSetImageRoleNormalization({
+      rowsAfter: normalizedCatalogSetImages as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      rowsBefore: catalogSetImages as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+    });
     const promotedCatalogSetIds = new Set(
       normalizedCatalogSets.map((catalogSet) => catalogSet.set_id),
     );
@@ -2915,7 +3106,14 @@ export async function promoteCatalogFromStagingToProduction({
       table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
     validatePromotionRowsRequiredColumns({
-      columns: ['set_id', 'source', 'source_url', 'image_type', 'status'],
+      columns: [
+        'set_id',
+        'source',
+        'source_url',
+        'image_type',
+        'image_role',
+        'status',
+      ],
       rows: normalizedCatalogSetImages as unknown as Readonly<
         Record<string, unknown>
       >[],
@@ -3355,7 +3553,7 @@ export async function previewCatalogPromotionFromStagingToProduction({
   );
   const catalogSetImageRows = await readOrderedRows<CatalogSetImageRow>({
     columns:
-      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_reason, duplicate_distance, status, metadata_json',
+      'set_id, source, source_url, image_type, sort_order, storage_bucket, storage_path, public_url, width, height, content_type, byte_size, sha256, perceptual_hash, image_role, duplicate_of_id, duplicate_reason, duplicate_distance, status, metadata_json',
     orderBy: 'set_id',
     supabaseClient: stagingSupabaseClient,
     table: CATALOG_SET_IMAGES_TABLE,
