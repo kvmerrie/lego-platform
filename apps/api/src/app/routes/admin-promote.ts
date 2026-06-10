@@ -12,6 +12,7 @@ import {
   type CatalogPromotionResult,
   type PublicWebRevalidationResult,
 } from '@lego-platform/api/data-access-server';
+import { getCatalogCollectionLandingPageConfig } from '@lego-platform/catalog/util';
 import {
   apiPaths,
   buildCatalogSetDetailCacheTags,
@@ -21,14 +22,12 @@ import {
   getAdminPromotionConfig,
   webPathnames,
 } from '@lego-platform/shared/config';
-import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import {
   authorizeAdminRequest,
   createAdminPreHandler,
 } from '../lib/admin-authorization';
 
-const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
-const MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS = 25;
 const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
 const CATALOG_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CATALOG';
 const CMS_PROMOTION_CONFIRMATION_PHRASE = 'PROMOTE CMS';
@@ -112,72 +111,6 @@ function readCatalogPromotionConfirmationPhrase(
     : '';
 }
 
-function buildCatalogPromoteRevalidationPaths({
-  changedThemeSlugs,
-  log,
-}: {
-  changedThemeSlugs: readonly string[];
-  log: FastifyBaseLogger;
-}): {
-  fallbackMode: boolean;
-  paths: string[];
-} {
-  const basePaths = [webPathnames.home, webPathnames.themes];
-  const uniqueChangedThemeSlugs = [...new Set(changedThemeSlugs)].sort(
-    (left, right) => left.localeCompare(right),
-  );
-  const fallbackMode =
-    uniqueChangedThemeSlugs.length > MAX_THEME_DETAIL_REVALIDATION_PATHS;
-
-  if (fallbackMode) {
-    log.warn(
-      {
-        changedThemeSlugCount: uniqueChangedThemeSlugs.length,
-        changedThemeSlugSample: uniqueChangedThemeSlugs.slice(
-          0,
-          LOGGED_CHANGED_THEME_SLUG_LIMIT,
-        ),
-        event: 'broad_theme_revalidation_fallback',
-        finalPathCount: basePaths.length,
-        maxThemeDetailRevalidationPaths: MAX_THEME_DETAIL_REVALIDATION_PATHS,
-        paths: basePaths,
-        route: apiPaths.adminCatalogPromotion,
-      },
-      'Skipping targeted theme detail revalidation after catalog promotion because too many public themes changed.',
-    );
-
-    return {
-      fallbackMode,
-      paths: basePaths,
-    };
-  }
-
-  const themeDetailPaths = uniqueChangedThemeSlugs.map((slug) =>
-    buildThemePath(slug),
-  );
-  const paths = [...basePaths, ...themeDetailPaths];
-
-  log.info(
-    {
-      changedThemeSlugCount: uniqueChangedThemeSlugs.length,
-      changedThemeSlugSample: uniqueChangedThemeSlugs.slice(
-        0,
-        LOGGED_CHANGED_THEME_SLUG_LIMIT,
-      ),
-      fallbackMode,
-      finalPathCount: paths.length,
-      paths,
-      route: apiPaths.adminCatalogPromotion,
-    },
-    'Catalog promotion public web revalidation targets planned.',
-  );
-
-  return {
-    fallbackMode,
-    paths,
-  };
-}
-
 function buildCmsPromoteRevalidationTargets({
   affectedCollectionSlugs,
   affectedThemeSlugs,
@@ -200,12 +133,17 @@ function buildCmsPromoteRevalidationTargets({
       webPathnames.home,
       webPathnames.themes,
       ...uniqueThemeSlugs.map((slug) => buildThemePath(slug)),
-      ...uniqueCollectionSlugs.map((slug) => `/${slug}`),
+      ...uniqueCollectionSlugs.flatMap((slug) =>
+        buildCatalogCollectionRevalidationPaths(slug),
+      ),
     ],
     tags: [
       cacheTags.homepage(),
       cacheTags.themes(),
       cacheTags.collections(),
+      ...(uniqueCollectionSlugs.length > 0
+        ? [cacheTags.catalog(), cacheTags.sets()]
+        : []),
       ...uniqueThemeSlugs.map((slug) => cacheTags.theme(slug)),
       ...uniqueCollectionSlugs.map((slug) => cacheTags.collection(slug)),
     ],
@@ -214,6 +152,118 @@ function buildCmsPromoteRevalidationTargets({
 
 function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values)].sort((left, right) => left.localeCompare(right));
+}
+
+function buildCatalogCollectionRevalidationPaths(slug: string): string[] {
+  const config = getCatalogCollectionLandingPageConfig(slug);
+
+  return uniqueSorted([config?.canonicalPath ?? `/${slug}`, `/${slug}`]);
+}
+
+function buildPromotedSetTargets({
+  promotedImageMetadataSetIds = [],
+  promotedImageMetadataSetSlugs = [],
+  promotedMetadataSetIds = [],
+  promotedMetadataSetSlugs = [],
+}: Pick<
+  CatalogPromotionResult,
+  | 'promotedImageMetadataSetIds'
+  | 'promotedImageMetadataSetSlugs'
+  | 'promotedMetadataSetIds'
+  | 'promotedMetadataSetSlugs'
+>): Array<{ setId?: string; slug: string }> {
+  const bySlug = new Map<string, { setId?: string; slug: string }>();
+  const addTargets = (slugs: readonly string[], setIds: readonly string[]) => {
+    slugs.forEach((slug, index) => {
+      if (!slug) {
+        return;
+      }
+
+      const existingTarget = bySlug.get(slug);
+      const setId = setIds[index];
+
+      bySlug.set(slug, {
+        setId: existingTarget?.setId ?? setId,
+        slug,
+      });
+    });
+  };
+
+  addTargets(promotedMetadataSetSlugs, promotedMetadataSetIds);
+  addTargets(promotedImageMetadataSetSlugs, promotedImageMetadataSetIds);
+
+  return [...bySlug.values()].sort((left, right) =>
+    left.slug.localeCompare(right.slug),
+  );
+}
+
+function buildCatalogPromoteRevalidationTargets({
+  result,
+}: {
+  result: CatalogPromotionResult;
+}): {
+  diagnostics: {
+    affected_collection_slugs: string[];
+    affected_theme_slugs: string[];
+    homepage_affected: boolean;
+    promoted_set_count: number;
+    revalidated_paths_count: number;
+    revalidated_tags_count: number;
+    sample_paths: string[];
+    sample_tags: string[];
+  };
+  paths: string[];
+  promotedSetTargets: Array<{ setId?: string; slug: string }>;
+  tags: string[];
+} {
+  const promotedSetTargets = buildPromotedSetTargets(result);
+  const changedThemeSlugs = uniqueSorted(result.changedThemeSlugs);
+  const changedCollectionSlugs = uniqueSorted(
+    result.changedCollectionPageSnapshotSlugs ?? [],
+  );
+  const homepageAffected = result.homepageAffected === true;
+  const paths = uniqueSorted([
+    ...(homepageAffected ? [webPathnames.home] : []),
+    ...(changedThemeSlugs.length > 0 ? [webPathnames.themes] : []),
+    ...changedThemeSlugs.map((slug) => buildThemePath(slug)),
+    ...changedCollectionSlugs.flatMap((slug) =>
+      buildCatalogCollectionRevalidationPaths(slug),
+    ),
+    ...promotedSetTargets.map((target) => buildSetDetailPath(target.slug)),
+  ]);
+  const tags = uniqueSorted([
+    ...(homepageAffected ? [cacheTags.homepage()] : []),
+    ...(changedThemeSlugs.length > 0 ? [cacheTags.themes()] : []),
+    ...changedThemeSlugs.map((slug) => cacheTags.theme(slug)),
+    ...(changedCollectionSlugs.length > 0 ? [cacheTags.collections()] : []),
+    ...(changedCollectionSlugs.length > 0 ? [cacheTags.catalog()] : []),
+    ...changedCollectionSlugs.map((slug) => cacheTags.collection(slug)),
+    ...(changedCollectionSlugs.length > 0 || promotedSetTargets.length > 0
+      ? [cacheTags.sets()]
+      : []),
+    ...promotedSetTargets.flatMap((target) =>
+      buildCatalogSetDetailCacheTags({
+        setId: target.setId,
+        slug: target.slug,
+      }),
+    ),
+  ]);
+
+  return {
+    diagnostics: {
+      affected_collection_slugs: changedCollectionSlugs,
+      affected_theme_slugs: changedThemeSlugs,
+      homepage_affected: homepageAffected,
+      promoted_set_count: promotedSetTargets.length,
+      revalidated_paths_count: paths.length,
+      revalidated_tags_count: tags.length,
+      sample_paths: paths.slice(0, LOGGED_CHANGED_THEME_SLUG_LIMIT),
+      sample_tags: tags.slice(0, LOGGED_CHANGED_THEME_SLUG_LIMIT),
+    },
+    paths,
+    promotedSetTargets,
+    tags,
+  };
 }
 
 export function createAdminPromoteRoutes({
@@ -429,121 +479,56 @@ export function createAdminPromoteRoutes({
         });
         let revalidation: PublicWebRevalidationResult | undefined;
         let revalidationWarning: string | undefined;
-        const revalidationPlan = buildCatalogPromoteRevalidationPaths({
-          changedThemeSlugs: result.changedThemeSlugs,
-          log: request.log,
+        const revalidationTargets = buildCatalogPromoteRevalidationTargets({
+          result,
         });
-        const promotedMetadataSetTargets = [
-          ...(result.promotedMetadataSetSlugs ?? []).map((slug, index) => ({
-            setId: result.promotedMetadataSetIds?.[index],
-            slug,
-          })),
-          ...(result.promotedImageMetadataSetSlugs ?? []).map(
-            (slug, index) => ({
-              setId: result.promotedImageMetadataSetIds?.[index],
-              slug,
-            }),
-          ),
-        ]
-          .filter((target) => target.slug)
-          .sort((left, right) => left.slug.localeCompare(right.slug))
-          .filter(
-            (target, index, targets) =>
-              index === 0 || target.slug !== targets[index - 1]?.slug,
-          );
-        const promotedMetadataSetSlugs = promotedMetadataSetTargets.map(
-          (target) => target.slug,
-        );
-        const promotedMetadataSetPathFallback =
-          promotedMetadataSetSlugs.length >
-          MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS;
-        const promotedMetadataSetPaths = promotedMetadataSetPathFallback
-          ? []
-          : promotedMetadataSetSlugs.map((slug) => buildSetDetailPath(slug));
-        const revalidationPaths = [
-          ...revalidationPlan.paths,
-          '/nieuwe-lego-sets',
-          '/retiring-lego-sets',
-          '/lego-voor-volwassenen',
-          ...promotedMetadataSetPaths,
-        ];
-        const revalidationTags = [
-          ...new Set([
-            cacheTags.homepage(),
-            cacheTags.themes(),
-            cacheTags.collections(),
-            cacheTags.collection('nieuwe-lego-sets'),
-            cacheTags.collection('retiring-lego-sets'),
-            cacheTags.collection('lego-voor-volwassenen'),
-            cacheTags.catalog(),
-            cacheTags.sets(),
-            ...promotedMetadataSetTargets.flatMap((target) =>
-              buildCatalogSetDetailCacheTags({
+        const revalidationPaths = revalidationTargets.paths;
+        const revalidationTags = revalidationTargets.tags;
+        const setDetailRevalidationSamples =
+          revalidationTargets.promotedSetTargets
+            .slice(0, LOGGED_CHANGED_THEME_SLUG_LIMIT)
+            .map((target) => ({
+              path: buildSetDetailPath(target.slug),
+              setId: target.setId ?? null,
+              tags: buildCatalogSetDetailCacheTags({
                 setId: target.setId,
                 slug: target.slug,
               }),
-            ),
-          ]),
-        ];
-        const setDetailRevalidationSamples = promotedMetadataSetSlugs
-          .slice(0, LOGGED_CHANGED_THEME_SLUG_LIMIT)
-          .map((slug) => {
-            const target = promotedMetadataSetTargets.find(
-              (candidate) => candidate.slug === slug,
-            );
-
-            return {
-              path: buildSetDetailPath(slug),
-              setId: target?.setId ?? null,
-              tags: buildCatalogSetDetailCacheTags({
-                setId: target?.setId,
-                slug,
-              }),
-            };
-          });
+            }));
 
         request.log.info(
           {
             reason: 'catalog_promote',
+            revalidationDiagnostics: revalidationTargets.diagnostics,
             route: apiPaths.adminCatalogPromotion,
             setDetailRevalidationSamples,
           },
-          'Catalog promote set detail revalidation targets prepared.',
+          'Catalog promote revalidation targets planned.',
         );
 
-        if (promotedMetadataSetPathFallback) {
-          request.log.warn(
-            {
-              maxSetDetailRevalidationPaths:
-                MAX_PROMOTED_METADATA_SET_REVALIDATION_PATHS,
-              promotedMetadataSetCount: promotedMetadataSetSlugs.length,
-              route: apiPaths.adminCatalogPromotion,
-            },
-            'Skipping targeted set detail revalidation after metadata promotion because too many set paths changed.',
-          );
-        }
-
-        try {
-          revalidation = await revalidatePublicWebFn({
-            paths: revalidationPaths,
-            reason: 'catalog_promote',
-            tags: revalidationTags,
-          });
-        } catch (error) {
-          revalidationWarning =
-            error instanceof Error
-              ? error.message
-              : 'Public web revalidation failed after catalog promotion.';
-          request.log.warn(
-            {
-              error,
+        if (revalidationPaths.length > 0 || revalidationTags.length > 0) {
+          try {
+            revalidation = await revalidatePublicWebFn({
               paths: revalidationPaths,
               reason: 'catalog_promote',
-              route: apiPaths.adminCatalogPromotion,
               tags: revalidationTags,
-            },
-            'Public web revalidation failed after catalog promotion.',
-          );
+            });
+          } catch (error) {
+            revalidationWarning =
+              error instanceof Error
+                ? error.message
+                : 'Public web revalidation failed after catalog promotion.';
+            request.log.warn(
+              {
+                error,
+                paths: revalidationPaths,
+                reason: 'catalog_promote',
+                route: apiPaths.adminCatalogPromotion,
+                tags: revalidationTags,
+              },
+              'Public web revalidation failed after catalog promotion.',
+            );
+          }
         }
 
         request.log.info(
@@ -589,8 +574,7 @@ export function createAdminPromoteRoutes({
               attempted: revalidation?.attempted ?? false,
               pathCount: revalidation?.pathCount ?? revalidationPaths.length,
               paths: revalidation?.paths ?? revalidationPaths,
-              promotedMetadataSetPathFallback,
-              themeDetailFallback: revalidationPlan.fallbackMode,
+              diagnostics: revalidationTargets.diagnostics,
               skipped: revalidation?.skipped ?? false,
               tagCount: revalidation?.tagCount ?? revalidationTags.length,
               tags: revalidation?.tags ?? revalidationTags,
@@ -615,6 +599,7 @@ export function createAdminPromoteRoutes({
                 revalidationWarning,
               }
             : {}),
+          catalogPromoteRevalidation: revalidationTargets.diagnostics,
         };
       } catch (error) {
         if (error instanceof CatalogPromotionError) {

@@ -327,6 +327,7 @@ async function revalidateCatalogPromotionResult({
   const revalidationPaths = [
     ...buildCatalogPromoteRevalidationPaths(result.changedThemeSlugs),
     '/nieuwe-lego-sets',
+    '/laatste-kans-lego-sets',
     '/retiring-lego-sets',
     '/lego-voor-volwassenen',
     ...promotedMetadataSetPaths,

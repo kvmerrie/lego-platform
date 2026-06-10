@@ -225,7 +225,7 @@ const HOMEPAGE_DEFAULT_DISCOVERY_ROUTE_ITEMS = [
     useCustomImage: true,
   },
   {
-    ctaUrl: '/retiring-lego-sets',
+    ctaUrl: '/laatste-kans-lego-sets',
     enabled: true,
     imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
     metadata: {

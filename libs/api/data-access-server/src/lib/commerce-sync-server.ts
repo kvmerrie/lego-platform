@@ -11,6 +11,7 @@ import {
 import type { CatalogCurrentOfferSummaryRecord } from '@lego-platform/catalog/data-access-server';
 import {
   catalogCollectionPageSnapshotSlugs,
+  getCatalogCollectionLandingPageConfig,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import {
@@ -122,10 +123,18 @@ export interface CommerceSyncDependencies {
 }
 
 const commerceSyncCollectionSnapshotSlugs = catalogCollectionPageSnapshotSlugs;
-const commerceSyncCollectionSnapshotPaths =
-  commerceSyncCollectionSnapshotSlugs.map((collectionSlug) => {
-    return `/${collectionSlug}`;
-  });
+const commerceSyncCollectionSnapshotPaths = [
+  ...new Set(
+    commerceSyncCollectionSnapshotSlugs.flatMap((collectionSlug) => {
+      const config = getCatalogCollectionLandingPageConfig(collectionSlug);
+
+      return [
+        config?.canonicalPath ?? `/${collectionSlug}`,
+        `/${collectionSlug}`,
+      ];
+    }),
+  ),
+].sort((left, right) => left.localeCompare(right));
 const commerceSyncCollectionSnapshotTags =
   commerceSyncCollectionSnapshotSlugs.map((collectionSlug) => {
     return cacheTags.collection(collectionSlug);

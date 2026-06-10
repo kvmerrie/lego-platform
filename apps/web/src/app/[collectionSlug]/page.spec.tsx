@@ -99,7 +99,22 @@ vi.mock('@lego-platform/catalog/util', () => ({
                   options: ['newest', 'recommended', 'pieces-desc'],
                 },
               }
-            : undefined,
+            : slug === 'retiring-lego-sets' || slug === 'laatste-kans-lego-sets'
+              ? {
+                  ...collectionPageMocks.collectionConfig,
+                  canonicalPath: '/laatste-kans-lego-sets',
+                  h1: 'Laatste Kans LEGO Sets',
+                  metaDescription:
+                    'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+                  metaTitle:
+                    'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
+                  slug: 'retiring-lego-sets',
+                  sort: {
+                    default: 'recommended',
+                    options: ['recommended', 'pieces-desc', 'newest'],
+                  },
+                }
+              : undefined,
   isCatalogCollectionPageSnapshotSlug: (slug: string) =>
     [
       'nieuwe-lego-sets',
@@ -110,6 +125,11 @@ vi.mock('@lego-platform/catalog/util', () => ({
     ].includes(slug),
   listCatalogCollectionLandingPageConfigs: () => [
     collectionPageMocks.collectionConfig,
+    {
+      ...collectionPageMocks.collectionConfig,
+      canonicalPath: '/laatste-kans-lego-sets',
+      slug: 'retiring-lego-sets',
+    },
   ],
   normalizeCatalogCollectionLandingPageSortKey: ({
     config,
@@ -391,6 +411,53 @@ describe('collection landing page route', () => {
     });
   });
 
+  it('uses the Dutch last-chance route as the canonical retiring collection URL', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      params: Promise.resolve({
+        collectionSlug: 'laatste-kans-lego-sets',
+      }),
+      searchParams: Promise.resolve({}),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/laatste-kans-lego-sets',
+      },
+      description:
+        'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+      openGraph: {
+        description:
+          'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+        title: 'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
+        url: 'https://www.brickhunt.nl/laatste-kans-lego-sets',
+      },
+      title: 'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
+    });
+  });
+
+  it('redirects the legacy retiring collection route to the Dutch canonical route', async () => {
+    collectionPageMocks.permanentRedirect.mockImplementation(() => {
+      throw new Error('NEXT_REDIRECT');
+    });
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'retiring-lego-sets',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT');
+    expect(collectionPageMocks.permanentRedirect).toHaveBeenCalledWith(
+      '/laatste-kans-lego-sets',
+    );
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
+    ).not.toHaveBeenCalled();
+  });
+
   it('keeps collection cards without snapshot price data on the current fallback state', async () => {
     collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
       {
@@ -514,32 +581,38 @@ describe('collection landing page route', () => {
     );
   });
 
-  it('does not render an indexable empty page when a required snapshot is missing', async () => {
+  it('renders a known collection shell when a required snapshot is missing', async () => {
     collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
       undefined,
     );
 
     const pageModule = await import('./page');
 
-    await expect(
-      pageModule.default({
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
         params: Promise.resolve({
           collectionSlug: 'lego-sets-onder-50-euro',
         }),
         searchParams: Promise.resolve({}),
       }),
-    ).rejects.toThrow('NEXT_NOT_FOUND');
+    );
 
-    expect(collectionPageMocks.notFound).toHaveBeenCalled();
+    expect(markup).toContain('data-testid="collection-page"');
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
     ).not.toHaveBeenCalled();
     expect(
       collectionPageMocks.featureCollectionLandingPage,
-    ).not.toHaveBeenCalled();
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [],
+        totalSetCount: 0,
+      }),
+    );
   });
 
-  it('does not render a normal indexable page when a required snapshot is stale', async () => {
+  it('renders a known collection shell when a required snapshot is stale', async () => {
     collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
       {
         bestPriceMinorBySetId: new Map(),
@@ -561,22 +634,133 @@ describe('collection landing page route', () => {
 
     const pageModule = await import('./page');
 
-    await expect(
-      pageModule.default({
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
         params: Promise.resolve({
           collectionSlug: 'lego-sets-onder-50-euro',
         }),
         searchParams: Promise.resolve({}),
       }),
-    ).rejects.toThrow('NEXT_NOT_FOUND');
+    );
 
-    expect(collectionPageMocks.notFound).toHaveBeenCalled();
+    expect(markup).toContain('data-testid="collection-page"');
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
     expect(
       collectionPageMocks.getCatalogCollectionLandingPage,
     ).not.toHaveBeenCalled();
     expect(
       collectionPageMocks.featureCollectionLandingPage,
-    ).not.toHaveBeenCalled();
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setCards: [],
+        totalSetCount: 0,
+      }),
+    );
+  });
+
+  it('keeps the Dutch last-chance collection route at 200 when snapshot hydration is stale', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      {
+        bestPriceMinorBySetId: new Map(),
+        snapshotGeneratedAt: '2020-01-01T00:00:00.000Z',
+        setCards: [
+          {
+            id: '60430',
+            imageUrl: 'https://cdn.example.com/60430.jpg',
+            name: 'Ruimteschip',
+            pieces: 240,
+            releaseYear: 2026,
+            slug: 'spaceship-60430',
+            theme: 'City',
+          },
+        ],
+        totalSetCount: 1,
+      },
+    );
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'laatste-kans-lego-sets',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(markup).toContain('data-testid="collection-page"');
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCachedPublicBrowsePageData,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: 'retiring-lego-sets',
+        tags: [
+          'catalog',
+          'sets',
+          'collections',
+          'collection:retiring-lego-sets',
+          'prices',
+          'deals',
+        ],
+      }),
+    );
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          canonicalPath: '/laatste-kans-lego-sets',
+          slug: 'retiring-lego-sets',
+        }),
+        setCards: [],
+        totalSetCount: 0,
+      }),
+    );
+  });
+
+  it('keeps the Dutch last-chance collection route at 200 when snapshot hydration is missing', async () => {
+    collectionPageMocks.getCatalogCollectionLandingPageSnapshot.mockResolvedValue(
+      undefined,
+    );
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          collectionSlug: 'laatste-kans-lego-sets',
+        }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+
+    expect(markup).toContain('data-testid="collection-page"');
+    expect(collectionPageMocks.notFound).not.toHaveBeenCalled();
+    expect(
+      collectionPageMocks.getCatalogCollectionLandingPageSnapshot,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          canonicalPath: '/laatste-kans-lego-sets',
+          slug: 'retiring-lego-sets',
+        }),
+        limit: 40,
+        offset: 0,
+        sortKey: 'recommended',
+      }),
+    );
+    expect(
+      collectionPageMocks.featureCollectionLandingPage,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          canonicalPath: '/laatste-kans-lego-sets',
+          slug: 'retiring-lego-sets',
+        }),
+        setCards: [],
+        totalSetCount: 0,
+      }),
+    );
   });
 
   it('reads lego-voor-volwassenen from collection_page_snapshots', async () => {

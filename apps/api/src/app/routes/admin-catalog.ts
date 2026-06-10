@@ -36,6 +36,7 @@ import {
 } from '@lego-platform/api/data-access-server';
 import {
   buildCatalogThemeSlug,
+  getCatalogCollectionLandingPageConfig,
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
   type CatalogSet,
@@ -771,11 +772,19 @@ async function revalidateCollectionPresentationSurfaces(
   slug: string,
   revalidatePublicWebFn = revalidatePublicWeb,
 ): Promise<void> {
+  const collectionPath =
+    getCatalogCollectionLandingPageConfig(slug)?.canonicalPath ?? `/${slug}`;
+  const collectionPaths = [...new Set([collectionPath, `/${slug}`])].sort(
+    (left, right) => left.localeCompare(right),
+  );
+
   await revalidatePublicWebFn({
-    paths: [buildWebPath(webPathnames.home), `/${slug}`],
+    paths: [buildWebPath(webPathnames.home), ...collectionPaths],
     reason: 'admin_collection_presentation_mutation',
     tags: [
       cacheTags.homepage(),
+      cacheTags.catalog(),
+      cacheTags.sets(),
       cacheTags.collections(),
       cacheTags.collection(slug),
     ],

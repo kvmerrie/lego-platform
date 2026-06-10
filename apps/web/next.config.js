@@ -6,7 +6,7 @@ const snapshotBackedCollectionCacheControl =
   'public, s-maxage=21600, stale-while-revalidate=86400';
 const snapshotBackedCollectionHeaderSources = [
   '/nieuwe-lego-sets',
-  '/retiring-lego-sets',
+  '/laatste-kans-lego-sets',
   '/lego-sets-onder-50-euro',
   '/lego-sets-onder-100-euro',
   '/lego-voor-volwassenen',
@@ -43,6 +43,15 @@ const nextConfig = {
       ],
       source,
     }));
+  },
+  async redirects() {
+    return [
+      {
+        source: '/retiring-lego-sets',
+        destination: '/laatste-kans-lego-sets',
+        statusCode: 301,
+      },
+    ];
   },
   async rewrites() {
     const apiProxyTarget =

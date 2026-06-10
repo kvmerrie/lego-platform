@@ -15,6 +15,8 @@ const CATALOG_STORED_SET_IMAGE_TYPES = [
 ] as const;
 const CATALOG_SETS_TABLE = 'catalog_sets';
 const CATALOG_SET_SOURCE_METADATA_TABLE = 'catalog_set_source_metadata';
+const CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE = 1000;
+const CATALOG_SET_IMAGE_STATE_SET_ID_CHUNK_SIZE = 500;
 const BRICKSET_SOURCE = 'brickset';
 const BRICKSET_LOCALE = 'en-US';
 const BRICKSET_MATCH_CONFIDENCE = 'exact_set_number';
@@ -227,6 +229,7 @@ export interface CatalogSetImageFootprintReport {
 export interface CatalogSetImageSyncResult {
   activeCatalogSetCount: number;
   bucket: string;
+  coverageDiagnostics: CatalogSetImageCoverageDiagnostics;
   debugDedupe: boolean;
   dedupeAudits: readonly CatalogSetImageDedupeAudit[];
   dryRun: boolean;
@@ -262,6 +265,21 @@ export interface CatalogSetImageSyncResult {
   results: readonly CatalogSetImageSyncItemResult[];
 }
 
+export interface CatalogSetImageCoverageDiagnostics {
+  candidateSetCount: number;
+  completeImageSetCount: number;
+  missingCardCount: number;
+  missingHeroCount: number;
+  missingSocialCount: number;
+  selectedSetCount: number;
+}
+
+export interface CatalogSetImageSyncProgress {
+  processedSetCount: number;
+  selectedSetCount: number;
+  setId: string;
+}
+
 export interface CatalogSetImageSyncOptions {
   concurrency?: number;
   dryRun?: boolean;
@@ -275,6 +293,8 @@ export interface CatalogSetImageSyncOptions {
   refreshCard?: boolean;
   refreshSocial?: boolean;
   refreshThumbnails?: boolean;
+  onProgress?: (progress: CatalogSetImageSyncProgress) => void;
+  onSelection?: (diagnostics: CatalogSetImageCoverageDiagnostics) => void;
   setIds?: readonly string[];
   storageSupabaseClient?: CatalogSetImageStorageClient;
   supabaseClient?: CatalogSetImageSyncClient;
@@ -432,6 +452,20 @@ interface CatalogSetImageUploadErrorDetails {
   sortOrder: number;
   status: string | null;
   storagePath: string;
+}
+
+interface CatalogSetImageState {
+  activeCardSetIds: Set<string>;
+  activeHeroSetIds: Set<string>;
+  activeSocialSetIds: Set<string>;
+  activeThumbnailSetIds: Set<string>;
+  failedSetIds: Set<string>;
+  imageMetadataIncompleteSetIds: Set<string>;
+}
+
+interface CatalogSetImageCandidateSelection {
+  candidates: CatalogSetImageSyncCandidate[];
+  diagnostics: CatalogSetImageCoverageDiagnostics;
 }
 
 class CatalogSetImageUploadError extends Error {
@@ -2809,43 +2843,41 @@ async function listCatalogSetImageSyncCandidates({
   refreshThumbnails: boolean;
   setIds?: readonly string[];
   supabaseClient: CatalogSetImageMetadataClient;
-}): Promise<CatalogSetImageSyncCandidate[]> {
-  let query = supabaseClient
-    .from(CATALOG_SETS_TABLE)
-    .select('set_id, source_set_number, name, image_url, status')
-    .eq('status', 'active')
-    .order('created_at', {
-      ascending: false,
-    });
-
-  if (setIds?.length) {
-    query = query.in('set_id', setIds);
-  }
-
-  if (limit && limit > 0) {
-    query = query.limit(limit);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error('Unable to list catalog sets for image sync.');
-  }
-
-  const candidates = ((data as CatalogSetImageCandidateRow[] | null) ?? []).map(
-    toCatalogSetImageSyncCandidate,
-  );
-
-  if (!missingOnly && !refreshFailed) {
-    return candidates;
-  }
+}): Promise<CatalogSetImageCandidateSelection> {
+  const requiresImageStateFiltering = missingOnly || refreshFailed;
+  const candidateRows = requiresImageStateFiltering
+    ? await listCatalogSetImageCandidateRowsForFiltering({
+        setIds,
+        supabaseClient,
+      })
+    : await listCatalogSetImageCandidateRows({
+        limit,
+        setIds,
+        supabaseClient,
+      });
+  const candidates = candidateRows.map(toCatalogSetImageSyncCandidate);
 
   const state = await readCatalogSetImageState({
     setIds: candidates.map((candidate) => candidate.setId),
     supabaseClient,
   });
+  const diagnostics = buildCatalogSetImageCoverageDiagnostics({
+    candidates,
+    selectedSetCount: 0,
+    state,
+  });
 
-  return candidates.filter((candidate) => {
+  if (!requiresImageStateFiltering) {
+    return {
+      candidates,
+      diagnostics: {
+        ...diagnostics,
+        selectedSetCount: candidates.length,
+      },
+    };
+  }
+
+  const selectedCandidates = candidates.filter((candidate) => {
     const isMissing = (() => {
       if (refreshImageMetadata) {
         return (
@@ -2908,7 +2940,10 @@ async function listCatalogSetImageSyncCandidates({
         );
       }
 
-      return !state.activeHeroSetIds.has(candidate.setId);
+      return isCatalogSetMissingCoreImageCoverage({
+        setId: candidate.setId,
+        state,
+      });
     })();
     const hasFailed = state.failedSetIds.has(candidate.setId);
 
@@ -2922,6 +2957,189 @@ async function listCatalogSetImageSyncCandidates({
 
     return hasFailed;
   });
+  const prioritizedCandidates = missingOnly
+    ? [...selectedCandidates].sort((left, right) =>
+        compareCatalogSetImageMissingCoveragePriority({
+          left,
+          right,
+          state,
+        }),
+      )
+    : selectedCandidates;
+  const limitedCandidates =
+    limit && limit > 0
+      ? prioritizedCandidates.slice(0, limit)
+      : prioritizedCandidates;
+
+  return {
+    candidates: limitedCandidates,
+    diagnostics: {
+      ...diagnostics,
+      selectedSetCount: limitedCandidates.length,
+    },
+  };
+}
+
+async function listCatalogSetImageCandidateRows({
+  limit,
+  setIds,
+  supabaseClient,
+}: {
+  limit?: number;
+  setIds?: readonly string[];
+  supabaseClient: CatalogSetImageMetadataClient;
+}): Promise<CatalogSetImageCandidateRow[]> {
+  let query = supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .select('set_id, source_set_number, name, image_url, status')
+    .eq('status', 'active')
+    .order('created_at', {
+      ascending: false,
+    });
+
+  if (setIds?.length) {
+    query = query.in('set_id', setIds);
+  }
+
+  if (limit && limit > 0) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error('Unable to list catalog sets for image sync.');
+  }
+
+  return (data as CatalogSetImageCandidateRow[] | null) ?? [];
+}
+
+async function listCatalogSetImageCandidateRowsForFiltering({
+  setIds,
+  supabaseClient,
+}: {
+  setIds?: readonly string[];
+  supabaseClient: CatalogSetImageMetadataClient;
+}): Promise<CatalogSetImageCandidateRow[]> {
+  const rows: CatalogSetImageCandidateRow[] = [];
+
+  for (let offset = 0; ; offset += CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE) {
+    let query = supabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select('set_id, source_set_number, name, image_url, status')
+      .eq('status', 'active')
+      .order('created_at', {
+        ascending: false,
+      })
+      .range(offset, offset + CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE - 1);
+
+    if (setIds?.length) {
+      query = query.in('set_id', setIds);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error('Unable to list catalog sets for image sync.');
+    }
+
+    const pageRows = (data as CatalogSetImageCandidateRow[] | null) ?? [];
+
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE) {
+      return rows;
+    }
+  }
+}
+
+function isCatalogSetMissingCoreImageCoverage({
+  setId,
+  state,
+}: {
+  setId: string;
+  state: CatalogSetImageState;
+}): boolean {
+  return (
+    !state.activeHeroSetIds.has(setId) ||
+    !state.activeCardSetIds.has(setId) ||
+    !state.activeSocialSetIds.has(setId)
+  );
+}
+
+function buildCatalogSetImageCoverageDiagnostics({
+  candidates,
+  selectedSetCount,
+  state,
+}: {
+  candidates: readonly CatalogSetImageSyncCandidate[];
+  selectedSetCount: number;
+  state: CatalogSetImageState;
+}): CatalogSetImageCoverageDiagnostics {
+  let completeImageSetCount = 0;
+  let missingCardCount = 0;
+  let missingHeroCount = 0;
+  let missingSocialCount = 0;
+
+  for (const candidate of candidates) {
+    const hasCard = state.activeCardSetIds.has(candidate.setId);
+    const hasHero = state.activeHeroSetIds.has(candidate.setId);
+    const hasSocial = state.activeSocialSetIds.has(candidate.setId);
+
+    if (hasCard && hasHero && hasSocial) {
+      completeImageSetCount += 1;
+    }
+
+    if (!hasCard) {
+      missingCardCount += 1;
+    }
+
+    if (!hasHero) {
+      missingHeroCount += 1;
+    }
+
+    if (!hasSocial) {
+      missingSocialCount += 1;
+    }
+  }
+
+  return {
+    candidateSetCount: candidates.length,
+    completeImageSetCount,
+    missingCardCount,
+    missingHeroCount,
+    missingSocialCount,
+    selectedSetCount,
+  };
+}
+
+function compareCatalogSetImageMissingCoveragePriority({
+  left,
+  right,
+  state,
+}: {
+  left: CatalogSetImageSyncCandidate;
+  right: CatalogSetImageSyncCandidate;
+  state: CatalogSetImageState;
+}): number {
+  const leftPriority = state.activeHeroSetIds.has(left.setId) ? 1 : 0;
+  const rightPriority = state.activeHeroSetIds.has(right.setId) ? 1 : 0;
+
+  return (
+    leftPriority - rightPriority ||
+    compareCatalogSetIds(left.setId, right.setId)
+  );
+}
+
+function compareCatalogSetIds(left: string, right: string): number {
+  const leftNumber = Number(left);
+  const rightNumber = Number(right);
+
+  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) {
+    return leftNumber - rightNumber;
+  }
+
+  return left.localeCompare(right);
 }
 
 async function readCatalogSetImageState({
@@ -2956,47 +3174,66 @@ async function readCatalogSetImageState({
     };
   }
 
-  const { data, error } = await supabaseClient
-    .from(CATALOG_SET_IMAGES_TABLE)
-    .select('set_id, image_type, perceptual_hash, status')
-    .in('set_id', setIds);
-
-  if (error) {
-    throw new Error('Unable to load catalog set image state.');
-  }
-
-  for (const row of (data as Array<{
-    image_type: string;
-    perceptual_hash: string | null;
-    set_id: string;
-    status: string;
-  }> | null) ?? []) {
-    if (row.image_type === 'card' && row.status === 'active') {
-      activeCardSetIds.add(row.set_id);
-    }
-
-    if (row.image_type === 'hero' && row.status === 'active') {
-      activeHeroSetIds.add(row.set_id);
-    }
-
-    if (row.image_type === 'social' && row.status === 'active') {
-      activeSocialSetIds.add(row.set_id);
-    }
-
-    if (row.image_type === 'thumbnail' && row.status === 'active') {
-      activeThumbnailSetIds.add(row.set_id);
-    }
-
-    if (row.status === 'failed') {
-      failedSetIds.add(row.set_id);
-    }
-
-    if (
-      row.status !== 'failed' &&
-      (typeof row.perceptual_hash !== 'string' ||
-        row.perceptual_hash.length === 0)
+  for (const setIdChunk of chunkValues(
+    setIds,
+    CATALOG_SET_IMAGE_STATE_SET_ID_CHUNK_SIZE,
+  )) {
+    for (
+      let offset = 0;
+      ;
+      offset += CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE
     ) {
-      imageMetadataIncompleteSetIds.add(row.set_id);
+      const { data, error } = await supabaseClient
+        .from(CATALOG_SET_IMAGES_TABLE)
+        .select('set_id, image_type, perceptual_hash, status')
+        .in('set_id', setIdChunk)
+        .range(offset, offset + CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE - 1);
+
+      if (error) {
+        throw new Error('Unable to load catalog set image state.');
+      }
+
+      const rows =
+        (data as Array<{
+          image_type: string;
+          perceptual_hash: string | null;
+          set_id: string;
+          status: string;
+        }> | null) ?? [];
+
+      for (const row of rows) {
+        if (row.image_type === 'card' && row.status === 'active') {
+          activeCardSetIds.add(row.set_id);
+        }
+
+        if (row.image_type === 'hero' && row.status === 'active') {
+          activeHeroSetIds.add(row.set_id);
+        }
+
+        if (row.image_type === 'social' && row.status === 'active') {
+          activeSocialSetIds.add(row.set_id);
+        }
+
+        if (row.image_type === 'thumbnail' && row.status === 'active') {
+          activeThumbnailSetIds.add(row.set_id);
+        }
+
+        if (row.status === 'failed') {
+          failedSetIds.add(row.set_id);
+        }
+
+        if (
+          row.status !== 'failed' &&
+          (typeof row.perceptual_hash !== 'string' ||
+            row.perceptual_hash.length === 0)
+        ) {
+          imageMetadataIncompleteSetIds.add(row.set_id);
+        }
+      }
+
+      if (rows.length < CATALOG_SET_IMAGE_SYNC_CANDIDATE_PAGE_SIZE) {
+        break;
+      }
     }
   }
 
@@ -3008,6 +3245,16 @@ async function readCatalogSetImageState({
     failedSetIds,
     imageMetadataIncompleteSetIds,
   };
+}
+
+function chunkValues<T>(values: readonly T[], size: number): T[][] {
+  const chunks: T[][] = [];
+
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+
+  return chunks;
 }
 
 async function countActiveCatalogSets({
@@ -3071,14 +3318,22 @@ async function listBricksetImageCandidatesBySetId({
 async function runWithConcurrency<T, R>({
   concurrency,
   items,
+  onProgress,
   worker,
 }: {
   concurrency: number;
   items: readonly T[];
+  onProgress?: (progress: {
+    item: T;
+    processedCount: number;
+    result: R;
+    totalCount: number;
+  }) => void;
   worker: (item: T) => Promise<R>;
 }): Promise<R[]> {
   const results: R[] = [];
   let nextIndex = 0;
+  let processedCount = 0;
 
   async function runWorker(): Promise<void> {
     for (;;) {
@@ -3089,7 +3344,17 @@ async function runWithConcurrency<T, R>({
         return;
       }
 
-      results[currentIndex] = await worker(items[currentIndex]);
+      const item = items[currentIndex];
+      const result = await worker(item);
+
+      results[currentIndex] = result;
+      processedCount += 1;
+      onProgress?.({
+        item,
+        processedCount,
+        result,
+        totalCount: items.length,
+      });
     }
   }
 
@@ -3258,6 +3523,8 @@ export async function syncCatalogSetImages({
   limit,
   metadataSupabaseClient,
   missingOnly = false,
+  onProgress,
+  onSelection,
   refreshImageMetadata = false,
   refreshFailed = false,
   refreshCard = false,
@@ -3289,7 +3556,7 @@ export async function syncCatalogSetImages({
   const activeCatalogSetCount = await countActiveCatalogSets({
     supabaseClient: resolvedMetadataSupabaseClient,
   });
-  const candidates = await listCatalogSetImageSyncCandidates({
+  const candidateSelection = await listCatalogSetImageSyncCandidates({
     limit,
     missingOnly,
     refreshImageMetadata,
@@ -3300,14 +3567,27 @@ export async function syncCatalogSetImages({
     setIds: normalizedSetIds,
     supabaseClient: resolvedMetadataSupabaseClient,
   });
+  const { candidates, diagnostics: coverageDiagnostics } = candidateSelection;
+
+  onSelection?.(coverageDiagnostics);
+
   const bricksetImageCandidatesBySetId =
     await listBricksetImageCandidatesBySetId({
       setIds: candidates.map((candidate) => candidate.setId),
       supabaseClient: resolvedMetadataSupabaseClient,
     });
-  const results = await runWithConcurrency({
+  const results = await runWithConcurrency<
+    CatalogSetImageSyncCandidate,
+    CatalogSetImageSyncItemResult
+  >({
     concurrency: clampConcurrency(concurrency),
     items: candidates,
+    onProgress: ({ item, processedCount, totalCount }) =>
+      onProgress?.({
+        processedSetCount: processedCount,
+        selectedSetCount: totalCount,
+        setId: item.setId,
+      }),
     worker: (candidate) =>
       processCatalogSetImageSyncCandidate({
         bricksetImageCandidatesBySetId,
@@ -3332,6 +3612,7 @@ export async function syncCatalogSetImages({
   return {
     activeCatalogSetCount,
     bucket: CATALOG_SET_IMAGES_BUCKET,
+    coverageDiagnostics,
     debugDedupe,
     dedupeAudits: results
       .map((result) => result.dedupeAudit)

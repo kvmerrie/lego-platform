@@ -272,6 +272,7 @@ const nonPublicIndexPathnames = new Set(['/account', '/search', '/volgt']);
 const redirectOnlyIndexPathnames = new Set([
   '/collection',
   '/discover',
+  '/retiring-lego-sets',
   '/wishlist',
 ]);
 const trackedUrlSearchParamPrefixes = ['utm_'];

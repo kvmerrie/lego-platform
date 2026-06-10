@@ -2635,7 +2635,7 @@ describe('catalog effective data access web', () => {
       browseDescription: 'Sets die bijna verdwijnen.',
       browseEyebrow: 'Niet laten liggen',
       browseTitle: 'Sets om nu te checken',
-      canonicalPath: '/retiring-lego-sets',
+      canonicalPath: '/laatste-kans-lego-sets',
       description: 'Retiring LEGO sets.',
       filters: {
         setStatuses: ['retiring_soon'],

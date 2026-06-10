@@ -3326,6 +3326,158 @@ describe('catalog promotion server', () => {
     expect(result.changedThemeSlugs).toEqual([]);
   });
 
+  test('reports homepage affected when changed public theme data appears on the homepage', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Icons',
+            id: 'theme:icons',
+            is_public: true,
+            public_accent_color: '#f0c63b',
+            public_description: 'Displaysets die direct opvallen.',
+            public_display_name: 'LEGO Icons',
+            public_homepage_order: 10,
+            public_image_url: 'https://cdn.example.com/icons.jpg',
+            public_logo_url: null,
+            public_order: 10,
+            slug: 'icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(result.changedThemeSlugs).toEqual(['icons']);
+    expect(result.changedHomepageThemeSlugs).toEqual(['icons']);
+    expect(result.homepageAffected).toBe(true);
+  });
+
+  test('reports only collection snapshots with public payload changes', async () => {
+    const unchangedItems = [
+      {
+        id: '10316',
+        slug: 'lord-of-the-rings-rivendell-10316',
+        title: 'Rivendell',
+      },
+    ];
+    const changedItems = [
+      {
+        id: '21065',
+        slug: 'sagrada-familia-21065',
+        title: 'Sagrada Familia',
+      },
+    ];
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        collection_page_snapshots: [
+          {
+            collection_slug: 'nieuwe-lego-sets',
+            created_at: '2026-05-30T08:00:00.000Z',
+            generated_at: '2026-05-30T08:00:00.000Z',
+            items_json: changedItems,
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-new',
+            total_count: 1,
+            updated_at: '2026-05-30T08:00:00.000Z',
+          },
+          {
+            collection_slug: 'retiring-lego-sets',
+            created_at: '2026-05-30T09:00:00.000Z',
+            generated_at: '2026-05-30T08:05:00.000Z',
+            items_json: unchangedItems,
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-retiring',
+            total_count: 1,
+            updated_at: '2026-05-30T09:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        collection_page_snapshots: [
+          {
+            collection_slug: 'nieuwe-lego-sets',
+            created_at: '2026-05-29T08:00:00.000Z',
+            generated_at: '2026-05-29T08:00:00.000Z',
+            items_json: unchangedItems,
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-old',
+            total_count: 1,
+            updated_at: '2026-05-29T08:00:00.000Z',
+          },
+          {
+            collection_slug: 'retiring-lego-sets',
+            created_at: '2026-05-29T08:05:00.000Z',
+            generated_at: '2026-05-30T08:05:00.000Z',
+            items_json: unchangedItems,
+            page: 1,
+            page_size: 40,
+            snapshot_source: 'collection_snapshot_sync',
+            sort_key: 'default',
+            source_version: 'test-retiring',
+            total_count: 1,
+            updated_at: '2026-05-29T08:05:00.000Z',
+          },
+        ],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      includeCommerceSeeds: true,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(result.changedCollectionPageSnapshotSlugs).toEqual([
+      'nieuwe-lego-sets',
+    ]);
+  });
+
   test('ignores changed private themes for detail revalidation', async () => {
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {

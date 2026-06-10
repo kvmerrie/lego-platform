@@ -36,6 +36,21 @@ function formatRecordedOn(recordedOn: string): string {
   }).format(new Date(`${recordedOn}T00:00:00.000Z`));
 }
 
+function formatCompactChartPriceMinor({
+  currencyCode,
+  minorUnits,
+}: {
+  currencyCode: string;
+  minorUnits: number;
+}): string {
+  return new Intl.NumberFormat(getDefaultFormattingLocale(), {
+    style: 'currency',
+    currency: currencyCode,
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(minorUnits / 100);
+}
+
 const knownPriceHistoryMerchantLabels: ReadonlyMap<string, string> = new Map([
   ['alternate', 'Alternate'],
   ['amazon-nl', 'Amazon'],
@@ -672,16 +687,32 @@ export function PriceHistoryCard({
       <div className={styles.historyChartShell}>
         <div className={styles.historyAxis}>
           <span>
-            {formatPriceMinor({
-              currencyCode: high.currencyCode,
-              minorUnits: high.headlinePriceMinor,
-            })}
+            <span className={styles.historyAxisLabelFull}>
+              {formatPriceMinor({
+                currencyCode: high.currencyCode,
+                minorUnits: high.headlinePriceMinor,
+              })}
+            </span>
+            <span className={styles.historyAxisLabelCompact}>
+              {formatCompactChartPriceMinor({
+                currencyCode: high.currencyCode,
+                minorUnits: high.headlinePriceMinor,
+              })}
+            </span>
           </span>
           <span>
-            {formatPriceMinor({
-              currencyCode: low.currencyCode,
-              minorUnits: low.headlinePriceMinor,
-            })}
+            <span className={styles.historyAxisLabelFull}>
+              {formatPriceMinor({
+                currencyCode: low.currencyCode,
+                minorUnits: low.headlinePriceMinor,
+              })}
+            </span>
+            <span className={styles.historyAxisLabelCompact}>
+              {formatCompactChartPriceMinor({
+                currencyCode: low.currencyCode,
+                minorUnits: low.headlinePriceMinor,
+              })}
+            </span>
           </span>
         </div>
         <PriceHistoryCanvasChart

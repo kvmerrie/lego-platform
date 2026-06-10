@@ -652,7 +652,7 @@ describe('set detail static generation', () => {
       '/lego-sets-onder-100-euro',
       '/themes/star-wars',
       '/lego-voor-volwassenen',
-      '/retiring-lego-sets',
+      '/laatste-kans-lego-sets',
     ]);
   });
 });

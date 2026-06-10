@@ -171,6 +171,30 @@ function createStoredImageRow(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function createStoredCoreImageRows({
+  setId,
+  types = ['hero', 'card', 'social'],
+}: {
+  setId: string;
+  types?: readonly Array<'card' | 'hero' | 'social'>;
+}) {
+  return types.map((type) =>
+    createStoredImageRow({
+      content_type: type === 'social' ? 'image/jpeg' : 'image/webp',
+      image_type: type,
+      public_url:
+        type === 'social'
+          ? `/images/sets/${setId}/social.jpg`
+          : `/images/sets/${setId}/${type}.webp`,
+      set_id: setId,
+      storage_path:
+        type === 'social'
+          ? `sets/${setId}/social.jpg`
+          : `sets/${setId}/${type}.webp`,
+    }),
+  );
+}
+
 function createImageFetch({
   bytes = tinyPng,
   ok = true,
@@ -1865,6 +1889,145 @@ describe('catalog set image sync server', () => {
         onConflict: 'set_id,image_type,sort_order',
       },
     );
+  });
+
+  test('missing-only selects missing core image coverage with no hero first', async () => {
+    const { client } = createSetImageSyncSupabaseMock({
+      catalogRows: [
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10316.png',
+          name: 'Complete set',
+          set_id: '10316',
+          source_set_number: '10316-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10261.png',
+          name: 'Missing card',
+          set_id: '10261',
+          source_set_number: '10261-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10252.png',
+          name: 'No hero',
+          set_id: '10252',
+          source_set_number: '10252-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10255.png',
+          name: 'Missing social',
+          set_id: '10255',
+          source_set_number: '10255-1',
+        }),
+      ],
+      imageRows: [
+        ...createStoredCoreImageRows({ setId: '10316' }),
+        ...createStoredCoreImageRows({
+          setId: '10261',
+          types: ['hero', 'social'],
+        }),
+        ...createStoredCoreImageRows({
+          setId: '10255',
+          types: ['hero', 'card'],
+        }),
+      ],
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: true,
+      fetchFn: createImageFetch(),
+      missingOnly: true,
+      supabaseClient: client,
+    });
+
+    expect(result.results.map((item) => item.setId)).toEqual([
+      '10252',
+      '10255',
+      '10261',
+    ]);
+    expect(result.coverageDiagnostics).toEqual({
+      candidateSetCount: 4,
+      completeImageSetCount: 1,
+      missingCardCount: 2,
+      missingHeroCount: 1,
+      missingSocialCount: 2,
+      selectedSetCount: 3,
+    });
+  });
+
+  test('missing-only applies limit after filtering complete image sets', async () => {
+    const { client } = createSetImageSyncSupabaseMock({
+      catalogRows: [
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10316.png',
+          name: 'Complete set',
+          set_id: '10316',
+          source_set_number: '10316-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10252.png',
+          name: 'No hero',
+          set_id: '10252',
+          source_set_number: '10252-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10255.png',
+          name: 'Missing social',
+          set_id: '10255',
+          source_set_number: '10255-1',
+        }),
+        createCatalogRow({
+          image_url: 'https://cdn.example.com/10261.png',
+          name: 'Missing card',
+          set_id: '10261',
+          source_set_number: '10261-1',
+        }),
+      ],
+      imageRows: [
+        ...createStoredCoreImageRows({ setId: '10316' }),
+        ...createStoredCoreImageRows({
+          setId: '10255',
+          types: ['hero', 'card'],
+        }),
+        ...createStoredCoreImageRows({
+          setId: '10261',
+          types: ['hero', 'social'],
+        }),
+      ],
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: true,
+      fetchFn: createImageFetch(),
+      limit: 2,
+      missingOnly: true,
+      supabaseClient: client,
+    });
+
+    expect(result.results.map((item) => item.setId)).toEqual([
+      '10252',
+      '10255',
+    ]);
+    expect(result.coverageDiagnostics.selectedSetCount).toBe(2);
+    expect(result.coverageDiagnostics.completeImageSetCount).toBe(1);
+  });
+
+  test('refresh flags can still target existing complete image sets', async () => {
+    const { client } = createSetImageSyncSupabaseMock({
+      catalogRows: [createCatalogRow()],
+      imageRows: createStoredCoreImageRows({ setId: '10316' }),
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: true,
+      fetchFn: createImageFetch(),
+      refreshCard: true,
+      supabaseClient: client,
+    });
+
+    expect(result.selectedSetCount).toBe(1);
+    expect(result.results[0]?.setId).toBe('10316');
+    expect(result.results[0]?.imageCountByType.card).toBe(1);
+    expect(result.coverageDiagnostics.completeImageSetCount).toBe(1);
   });
 
   test('refresh thumbnail missing-only mode selects stored-image sets without thumbnails', async () => {

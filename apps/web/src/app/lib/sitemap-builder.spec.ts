@@ -252,7 +252,7 @@ describe('sitemap generation', () => {
       'https://www.brickhunt.nl/lego-sets-onder-100-euro',
       'https://www.brickhunt.nl/nieuwe-lego-sets',
       'https://www.brickhunt.nl/lego-voor-volwassenen',
-      'https://www.brickhunt.nl/retiring-lego-sets',
+      'https://www.brickhunt.nl/laatste-kans-lego-sets',
       'https://www.brickhunt.nl/hoe-werkt-het',
       'https://www.brickhunt.nl/over-brickhunt',
       'https://www.brickhunt.nl/contact',

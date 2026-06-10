@@ -481,7 +481,7 @@ function getCatalogSetCardImageUrl(
   setSummary: CatalogSetCardSummary,
 ): string | undefined {
   return (
-    setSummary.cardImageUrl ?? setSummary.primaryImage ?? setSummary.imageUrl
+    setSummary.cardImageUrl ?? setSummary.imageUrl ?? setSummary.primaryImage
   );
 }
 

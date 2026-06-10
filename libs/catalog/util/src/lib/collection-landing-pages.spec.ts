@@ -20,7 +20,11 @@ describe('collection landing page configs', () => {
       'retiring-lego-sets',
     ]);
     expect(
-      configs.every((config) => config.canonicalPath === `/${config.slug}`),
+      configs.every(
+        (config) =>
+          config.canonicalPath === `/${config.slug}` ||
+          config.canonicalPath === '/laatste-kans-lego-sets',
+      ),
     ).toBe(true);
     expect(
       configs.every((config) => config.h1 && config.metaTitle && config.intro),
@@ -32,6 +36,17 @@ describe('collection landing page configs', () => {
     expect(
       getCatalogCollectionLandingPageConfig('collectible-minifigures'),
     ).toBe(undefined);
+    expect(
+      getCatalogCollectionLandingPageConfig('laatste-kans-lego-sets'),
+    ).toMatchObject({
+      canonicalPath: '/laatste-kans-lego-sets',
+      h1: 'Laatste Kans LEGO Sets',
+      metaDescription:
+        'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+      metaTitle:
+        'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
+      slug: 'retiring-lego-sets',
+    });
   });
 
   it('keeps discovery colors dedicated to homepage tiles instead of collection heroes', () => {

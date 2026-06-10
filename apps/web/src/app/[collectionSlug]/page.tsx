@@ -92,6 +92,14 @@ function toSerializableCollectionLandingPageResult(
   };
 }
 
+function createEmptyCollectionLandingPageResult(): SerializableCollectionLandingPageResult {
+  return {
+    bestPriceMinorBySetId: {},
+    setCards: [],
+    totalSetCount: 0,
+  };
+}
+
 function getCollectionSnapshotMaxAgeMs(
   config: CatalogCollectionLandingPageConfig,
 ): number {
@@ -101,25 +109,49 @@ function getCollectionSnapshotMaxAgeMs(
     : COLLECTION_PAGE_SNAPSHOT_MAX_AGE_MS;
 }
 
-function logUnsafeCollectionSnapshot({
+function logKnownCollectionFallback({
   config,
   generatedAt,
   health,
   limit,
   offset,
+  reason,
   sortKey,
 }: {
   config: CatalogCollectionLandingPageConfig;
   generatedAt?: string | null;
-  health: 'missing' | 'stale';
+  health?: 'missing' | 'stale';
+  limit: number;
+  offset: number;
+  reason: 'missing_snapshot' | 'stale_snapshot' | 'missing_runtime_data';
+  sortKey: CatalogCollectionLandingPageSortKey;
+}): void {
+  console.warn('[collection-page] known collection rendered with fallback', {
+    canonical_path: config.canonicalPath,
+    collection_slug: config.slug,
+    generated_at: generatedAt ?? null,
+    health: health ?? null,
+    limit,
+    offset,
+    reason,
+    sort_key: sortKey,
+  });
+}
+
+function logKnownCollectionZeroProducts({
+  config,
+  limit,
+  offset,
+  sortKey,
+}: {
+  config: CatalogCollectionLandingPageConfig;
   limit: number;
   offset: number;
   sortKey: CatalogCollectionLandingPageSortKey;
 }): void {
-  console.warn('[collection-page-snapshot] unsafe page render blocked', {
+  console.warn('[collection-page] known collection has zero products', {
+    canonical_path: config.canonicalPath,
     collection_slug: config.slug,
-    generated_at: generatedAt ?? null,
-    health,
     limit,
     offset,
     sort_key: sortKey,
@@ -136,54 +168,82 @@ async function getCachedSerializableCollectionLandingPage({
   limit: number;
   offset: number;
   sortKey: CatalogCollectionLandingPageSortKey;
-}): Promise<SerializableCollectionLandingPageResult | null> {
+}): Promise<SerializableCollectionLandingPageResult> {
   const tags = buildPublicBrowseCollectionCacheTags({
     collectionSlug: config.slug,
   });
 
   return getCachedPublicBrowsePageData({
     load: async () => {
-      const collectionPage = isCatalogCollectionPageSnapshotSlug(config.slug)
-        ? await getCatalogCollectionLandingPageSnapshot({
-            config,
-            limit,
-            offset,
-            sortKey,
-          }).then((snapshot) => {
-            const health = getSnapshotPageHealth({
-              generatedAt: snapshot?.snapshotGeneratedAt,
-              maxAgeMs: getCollectionSnapshotMaxAgeMs(config),
-            });
-
-            if (health !== 'fresh') {
-              logUnsafeCollectionSnapshot({
-                config,
+      const collectionPage: CatalogCollectionLandingPageResult | null =
+        isCatalogCollectionPageSnapshotSlug(config.slug)
+          ? await getCatalogCollectionLandingPageSnapshot({
+              config,
+              limit,
+              offset,
+              sortKey,
+            }).then((snapshot) => {
+              const health = getSnapshotPageHealth({
                 generatedAt: snapshot?.snapshotGeneratedAt,
-                health,
-                limit,
-                offset,
-                sortKey,
+                maxAgeMs: getCollectionSnapshotMaxAgeMs(config),
               });
 
-              return null;
-            }
+              if (health !== 'fresh') {
+                logKnownCollectionFallback({
+                  config,
+                  generatedAt: snapshot?.snapshotGeneratedAt,
+                  health,
+                  limit,
+                  offset,
+                  reason:
+                    health === 'missing'
+                      ? 'missing_snapshot'
+                      : 'stale_snapshot',
+                  sortKey,
+                });
 
-            return snapshot;
-          })
-        : await getCatalogCollectionLandingPage({
-            cacheOptions: {
-              revalidateSeconds: revalidate,
-              tags,
-            },
+                return null;
+              }
+
+              return snapshot ?? null;
+            })
+          : await getCatalogCollectionLandingPage({
+              cacheOptions: {
+                revalidateSeconds: revalidate,
+                tags,
+              },
+              config,
+              limit,
+              offset,
+              sortKey,
+            });
+
+      if (!collectionPage) {
+        if (!isCatalogCollectionPageSnapshotSlug(config.slug)) {
+          logKnownCollectionFallback({
             config,
             limit,
             offset,
+            reason: 'missing_runtime_data',
             sortKey,
           });
+        }
 
-      return collectionPage
-        ? toSerializableCollectionLandingPageResult(collectionPage)
-        : null;
+        return createEmptyCollectionLandingPageResult();
+      }
+
+      const result = toSerializableCollectionLandingPageResult(collectionPage);
+
+      if (result.totalSetCount === 0 || result.setCards.length === 0) {
+        logKnownCollectionZeroProducts({
+          config,
+          limit,
+          offset,
+          sortKey,
+        });
+      }
+
+      return result;
     },
     pageType: 'collection',
     params: ['sort', sortKey, 'limit', limit, 'offset', offset],
@@ -211,8 +271,15 @@ function getRelatedCollectionLandingPageLinks(
 }
 
 export function generateStaticParams() {
-  return listCatalogCollectionLandingPageConfigs().map((config) => ({
-    collectionSlug: config.slug,
+  const collectionSlugs = new Set<string>();
+
+  for (const config of listCatalogCollectionLandingPageConfigs()) {
+    collectionSlugs.add(config.slug);
+    collectionSlugs.add(config.canonicalPath.replace(/^\/+|\/+$/gu, ''));
+  }
+
+  return [...collectionSlugs].map((collectionSlug) => ({
+    collectionSlug,
   }));
 }
 
@@ -303,6 +370,10 @@ export default async function CollectionLandingPage({
     permanentRedirect(config.redirectPath);
   }
 
+  if (`/${collectionSlug}` !== config.canonicalPath) {
+    permanentRedirect(config.canonicalPath);
+  }
+
   const resolvedSearchParams = await searchParams;
   const sortKey = normalizeCatalogCollectionLandingPageSortKey({
     config,
@@ -318,17 +389,19 @@ export default async function CollectionLandingPage({
     sortKey,
   });
 
-  if (!collectionPage) {
-    return notFound();
-  }
-
   const pageCount = Math.max(
     1,
     Math.ceil(collectionPage.totalSetCount / COLLECTION_LANDING_PAGE_SIZE),
   );
 
   if (currentPage > pageCount) {
-    return notFound();
+    console.warn('[collection-page] known collection page exceeds page count', {
+      canonical_path: config.canonicalPath,
+      collection_slug: config.slug,
+      current_page: currentPage,
+      page_count: pageCount,
+      total_set_count: collectionPage.totalSetCount,
+    });
   }
 
   const canonicalUrl = buildCanonicalUrl(

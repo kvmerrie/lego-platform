@@ -345,11 +345,13 @@ describe('admin promote routes', () => {
       pathCount: 4,
       paths: ['/', '/themes', '/themes/icons', '/nieuwe-lego-sets'],
       skipped: false,
-      tagCount: 5,
+      tagCount: 7,
       tags: [
         'homepage',
         'themes',
         'collections',
+        'catalog',
+        'sets',
         'theme:icons',
         'collection:nieuwe-lego-sets',
       ],
@@ -379,6 +381,8 @@ describe('admin promote routes', () => {
         'homepage',
         'themes',
         'collections',
+        'catalog',
+        'sets',
         'theme:icons',
         'collection:nieuwe-lego-sets',
       ],
@@ -478,29 +482,7 @@ describe('admin promote routes', () => {
   });
 
   test('returns structured promotion counts on a successful run', async () => {
-    const revalidatePublicWebFn = vi.fn(async () => ({
-      attempted: true,
-      pathCount: 5,
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
-      skipped: false,
-      tagCount: 8,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
-    }));
+    const revalidatePublicWebFn = vi.fn();
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
@@ -516,52 +498,20 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
-    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
-      reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
-    });
+    expect(revalidatePublicWebFn).not.toHaveBeenCalled();
     expect(response.json()).toEqual({
+      catalogPromoteRevalidation: {
+        affected_collection_slugs: [],
+        affected_theme_slugs: [],
+        homepage_affected: false,
+        promoted_set_count: 0,
+        revalidated_paths_count: 0,
+        revalidated_tags_count: 0,
+        sample_paths: [],
+        sample_tags: [],
+      },
       changedThemeSlugs: [],
       durationMs: 421,
-      revalidation: {
-        attempted: true,
-        pathCount: 5,
-        paths: [
-          '/',
-          '/themes',
-          '/nieuwe-lego-sets',
-          '/retiring-lego-sets',
-          '/lego-voor-volwassenen',
-        ],
-        skipped: false,
-        tagCount: 8,
-        tags: [
-          'homepage',
-          'themes',
-          'collections',
-          'collection:nieuwe-lego-sets',
-          'collection:retiring-lego-sets',
-          'collection:lego-voor-volwassenen',
-          'catalog',
-          'sets',
-        ],
-      },
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok',
       tables: expect.objectContaining({
@@ -582,31 +532,13 @@ describe('admin promote routes', () => {
   test('revalidates affected set detail pages after catalog image metadata promotion', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 6,
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-        '/sets/lord-of-the-rings-rivendell-10316',
-      ],
+      pathCount: 1,
+      paths: ['/sets/lord-of-the-rings-rivendell-10316'],
       skipped: false,
-      tagCount: 10,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-        'set:10316',
-        'set:lord-of-the-rings-rivendell-10316',
-      ],
+      tagCount: 3,
+      tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     }));
-    const adminPromoteService: AdminPromoteService = {
+    const service: AdminPromoteService = {
       previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCms: vi.fn(async () => createCmsPromotionResult()),
@@ -627,7 +559,7 @@ describe('admin promote routes', () => {
       })),
     };
     const { server } = await createAdminPromoteServer({
-      adminPromoteService,
+      adminPromoteService: service,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
     });
@@ -642,65 +574,55 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-        '/sets/lord-of-the-rings-rivendell-10316',
-      ],
+      paths: ['/sets/lord-of-the-rings-rivendell-10316'],
       reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-        'set:10316',
-        'set:lord-of-the-rings-rivendell-10316',
-      ],
+      tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        catalogPromoteRevalidation: expect.objectContaining({
+          promoted_set_count: 1,
+          revalidated_paths_count: 1,
+          revalidated_tags_count: 3,
+          sample_paths: ['/sets/lord-of-the-rings-rivendell-10316'],
+          sample_tags: [
+            'set:10316',
+            'set:lord-of-the-rings-rivendell-10316',
+            'sets',
+          ],
+        }),
+      }),
+    );
 
     await server.close();
   });
 
-  test('uses tag-only set revalidation when image metadata affects too many set pages', async () => {
+  test('revalidates every affected set detail path from image metadata promotion', async () => {
     const setIds = Array.from({ length: 26 }, (_, index) =>
       String(30_000 + index),
     );
     const setSlugs = setIds.map((setId) => `catalog-set-${setId}`);
-    const revalidatePublicWebFn = vi.fn(async () => ({
-      attempted: true,
-      pathCount: 5,
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
-      skipped: false,
-      tagCount: 60,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
+    const expectedPaths = setSlugs
+      .map((setSlug) => `/sets/${setSlug}`)
+      .sort((left, right) => left.localeCompare(right));
+    const expectedTags = [
+      ...new Set([
         'sets',
         ...setSlugs.flatMap((setSlug, index) => [
           `set:${setIds[index]}`,
           `set:${setSlug}`,
         ]),
-      ],
+      ]),
+    ].sort((left, right) => left.localeCompare(right));
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: expectedPaths.length,
+      paths: expectedPaths,
+      skipped: false,
+      tagCount: expectedTags.length,
+      tags: expectedTags,
     }));
-    const adminPromoteService: AdminPromoteService = {
+    const service: AdminPromoteService = {
       previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCms: vi.fn(async () => createCmsPromotionResult()),
@@ -711,7 +633,7 @@ describe('admin promote routes', () => {
       })),
     };
     const { server } = await createAdminPromoteServer({
-      adminPromoteService,
+      adminPromoteService: service,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
     });
@@ -726,28 +648,9 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      paths: expectedPaths,
       reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-        ...setSlugs.flatMap((setSlug, index) => [
-          `set:${setIds[index]}`,
-          `set:${setSlug}`,
-        ]),
-      ],
+      tags: expectedTags,
     });
 
     await server.close();
@@ -756,29 +659,13 @@ describe('admin promote routes', () => {
   test('revalidates changed public theme detail paths after promotion', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 6,
-      paths: [
-        '/',
-        '/themes',
-        '/themes/icons',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      pathCount: 2,
+      paths: ['/themes', '/themes/icons'],
       skipped: false,
-      tagCount: 8,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tagCount: 2,
+      tags: ['theme:icons', 'themes'],
     }));
-    const adminPromoteService: AdminPromoteService = {
+    const service: AdminPromoteService = {
       previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCms: vi.fn(async () => createCmsPromotionResult()),
@@ -840,7 +727,7 @@ describe('admin promote routes', () => {
       })),
     };
     const { server } = await createAdminPromoteServer({
-      adminPromoteService,
+      adminPromoteService: service,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
     });
@@ -855,63 +742,134 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/themes/icons',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      paths: ['/themes', '/themes/icons'],
       reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tags: ['theme:icons', 'themes'],
     });
 
     await server.close();
   });
 
-  test('skips targeted theme detail revalidation when too many themes changed', async () => {
+  test('revalidates homepage when changed theme data is visible on the homepage', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: true,
-      pathCount: 5,
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      pathCount: 3,
+      paths: ['/', '/themes', '/themes/icons'],
       skipped: false,
-      tagCount: 8,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tagCount: 3,
+      tags: ['homepage', 'theme:icons', 'themes'],
     }));
     const adminPromoteService: AdminPromoteService = {
       previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
       promoteCms: vi.fn(async () => createCmsPromotionResult()),
       promoteCatalog: vi.fn(async () => ({
-        changedThemeSlugs: Array.from(
-          { length: 51 },
-          (_, index) => `theme-${index}`,
-        ),
+        ...createPromotionResult(),
+        changedHomepageThemeSlugs: ['icons'],
+        changedThemeSlugs: ['icons'],
+        homepageAffected: true,
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes', '/themes/icons'],
+      reason: 'catalog_promote',
+      tags: ['homepage', 'theme:icons', 'themes'],
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        catalogPromoteRevalidation: expect.objectContaining({
+          homepage_affected: true,
+        }),
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('revalidates changed collection snapshot paths after promotion', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 1,
+      paths: ['/laatste-kans-lego-sets', '/retiring-lego-sets'],
+      skipped: false,
+      tagCount: 4,
+      tags: ['catalog', 'collection:retiring-lego-sets', 'collections', 'sets'],
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        changedCollectionPageSnapshotSlugs: ['retiring-lego-sets'],
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/laatste-kans-lego-sets', '/retiring-lego-sets'],
+      reason: 'catalog_promote',
+      tags: ['catalog', 'collection:retiring-lego-sets', 'collections', 'sets'],
+    });
+
+    await server.close();
+  });
+
+  test('revalidates every changed public theme detail path after promotion', async () => {
+    const themeSlugs = Array.from(
+      { length: 51 },
+      (_, index) => `theme-${index}`,
+    );
+    const expectedPaths = [
+      '/themes',
+      ...themeSlugs.map((themeSlug) => `/themes/${themeSlug}`),
+    ].sort((left, right) => left.localeCompare(right));
+    const expectedTags = [
+      'themes',
+      ...themeSlugs.map((themeSlug) => `theme:${themeSlug}`),
+    ].sort((left, right) => left.localeCompare(right));
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: expectedPaths.length,
+      paths: expectedPaths,
+      skipped: false,
+      tagCount: expectedTags.length,
+      tags: expectedTags,
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        changedThemeSlugs: themeSlugs,
         durationMs: 421,
         startedAt: '2026-04-22T09:00:00.000Z',
         status: 'ok' as const,
@@ -983,24 +941,9 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      paths: expectedPaths,
       reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tags: expectedTags,
     });
 
     await server.close();
@@ -1010,7 +953,18 @@ describe('admin promote routes', () => {
     const revalidatePublicWebFn = vi.fn(async () => {
       throw new Error('Public web revalidation failed with status 401.');
     });
+    const service: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        promotedImageMetadataSetIds: ['10316'],
+        promotedImageMetadataSetSlugs: ['lord-of-the-rings-rivendell-10316'],
+      })),
+    };
     const { adminPromoteService, server } = await createAdminPromoteServer({
+      adminPromoteService: service,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
     });
@@ -1026,24 +980,9 @@ describe('admin promote routes', () => {
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      paths: ['/sets/lord-of-the-rings-rivendell-10316'],
       reason: 'catalog_promote',
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     });
     expect(response.json()).toEqual(
       expect.objectContaining({
@@ -1058,28 +997,24 @@ describe('admin promote routes', () => {
   test('keeps successful catalog promotion when revalidation is skipped as unconfigured', async () => {
     const revalidatePublicWebFn = vi.fn(async () => ({
       attempted: false,
-      pathCount: 5,
-      paths: [
-        '/',
-        '/themes',
-        '/nieuwe-lego-sets',
-        '/retiring-lego-sets',
-        '/lego-voor-volwassenen',
-      ],
+      pathCount: 1,
+      paths: ['/sets/lord-of-the-rings-rivendell-10316'],
       skipped: true,
-      tagCount: 8,
-      tags: [
-        'homepage',
-        'themes',
-        'collections',
-        'collection:nieuwe-lego-sets',
-        'collection:retiring-lego-sets',
-        'collection:lego-voor-volwassenen',
-        'catalog',
-        'sets',
-      ],
+      tagCount: 3,
+      tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     }));
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        promotedImageMetadataSetIds: ['10316'],
+        promotedImageMetadataSetSlugs: ['lord-of-the-rings-rivendell-10316'],
+      })),
+    };
     const { server } = await createAdminPromoteServer({
+      adminPromoteService,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
     });
@@ -1097,26 +1032,11 @@ describe('admin promote routes', () => {
       expect.objectContaining({
         revalidation: {
           attempted: false,
-          pathCount: 5,
-          paths: [
-            '/',
-            '/themes',
-            '/nieuwe-lego-sets',
-            '/retiring-lego-sets',
-            '/lego-voor-volwassenen',
-          ],
+          pathCount: 1,
+          paths: ['/sets/lord-of-the-rings-rivendell-10316'],
           skipped: true,
-          tagCount: 8,
-          tags: [
-            'homepage',
-            'themes',
-            'collections',
-            'collection:nieuwe-lego-sets',
-            'collection:retiring-lego-sets',
-            'collection:lego-voor-volwassenen',
-            'catalog',
-            'sets',
-          ],
+          tagCount: 3,
+          tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
         },
         status: 'ok',
       }),

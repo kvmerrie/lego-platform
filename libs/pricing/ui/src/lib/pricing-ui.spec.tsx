@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  getCompactPriceHistoryTooltipLines,
   getPriceHistoryTooltipLines,
   getPriceHistoryTooltipTitle,
 } from './price-history-canvas-chart';
@@ -14,7 +15,7 @@ import {
 } from './pricing-ui';
 
 describe('pricing ui history surfaces', () => {
-  it('uses a fixed-height Chart.js canvas without resize lifecycle work', () => {
+  it('uses a responsive Chart.js canvas with a compact mobile chart variant', () => {
     const css = readFileSync(join(__dirname, 'pricing-ui.module.css'), 'utf8');
     const chartSource = readFileSync(
       join(__dirname, 'price-history-canvas-chart.tsx'),
@@ -27,12 +28,23 @@ describe('pricing ui history surfaces', () => {
 
     expect(css).toMatch(/\.historyChartShell\s*{[^}]*contain:\s*paint;/s);
     expect(css).toMatch(
-      /\.historyCanvas\s*{[^}]*block-size:\s*var\(--pricing-history-chart-height\);/s,
+      /\.historyChartShell\s*{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\);/s,
+    );
+    expect(css).toMatch(
+      /\.historyCanvasFrame\s*{[^}]*block-size:\s*var\(--pricing-history-chart-height\);/s,
     );
     expect(css).toMatch(/\.historyCanvas\s*{[^}]*inline-size:\s*100%;/s);
+    expect(css).toMatch(/\.historyAxis\s*{[^}]*position:\s*absolute;/s);
+    expect(css).toMatch(
+      /@media \(min-width:\s*48rem\)\s*{[\s\S]*\.historyChartShell\s*{[^}]*grid-template-columns:\s*auto minmax\(0,\s*1fr\);/s,
+    );
+    expect(css).toMatch(
+      /@media \(min-width:\s*48rem\)\s*{[\s\S]*\.historyAxis\s*{[^}]*position:\s*static;/s,
+    );
     expect(css).not.toContain('.historyGridLine');
     expect(css).not.toContain('.historyLine');
     expect(css).not.toContain('.historyPoint');
+    expect(css).not.toContain('historyMobilePointSummary');
     expect(css).not.toContain('aspect-ratio: 100 / 48');
     expect(chartSource).toContain("from 'chart.js'");
     expect(chartSource).toContain('new Chart(canvas, config)');
@@ -41,14 +53,26 @@ describe('pricing ui history surfaces', () => {
     expect(chartSource).toContain('y: point.headlinePriceMinor');
     expect(chartSource).toContain('priceHistoryReferenceLines');
     expect(chartSource).toContain('beforeDatasetsDraw(chart)');
-    expect(chartSource).toContain('responsive: false');
+    expect(chartSource).toContain(
+      "const MOBILE_CHART_QUERY = '(max-width: 47.9375rem)'",
+    );
+    expect(chartSource).toContain('matchMedia(MOBILE_CHART_QUERY)');
+    expect(chartSource).toContain('responsive: true');
+    expect(chartSource).toContain('resizeDelay: 80');
     expect(chartSource).toContain('animation: false');
     expect(chartSource).toContain('devicePixelRatio: getDevicePixelRatio()');
+    expect(chartSource).toContain('pointHitRadius: isMobileChart ? 18 : 10');
+    expect(chartSource).toContain('maxTicksLimit: isMobileChart ? 2 : 3');
+    expect(chartSource).toContain("mode: isMobileChart ? 'nearest' : 'index'");
+    expect(chartSource).toContain(
+      "position: isMobileChart ? 'nearest' : 'average'",
+    );
+    expect(chartSource).toContain(
+      'getCompactPriceHistoryTooltipLines(\n                      points[context.dataIndex],',
+    );
+    expect(chartSource).not.toContain('historyMobilePointSummary');
     expect(chartSource).toContain('context.fillStyle = value');
-    expect(chartSource).not.toContain('ResizeObserver');
     expect(chartSource).not.toContain('MutationObserver');
-    expect(chartSource).not.toContain("addEventListener('resize'");
-    expect(chartSource).not.toContain('addEventListener("resize"');
     expect(pricingSource).not.toContain('<svg');
   });
 
@@ -79,6 +103,20 @@ describe('pricing ui history surfaces', () => {
     expect(getPriceHistoryTooltipLines(point)).toEqual([
       '€ 48,99',
       'Laagste prijs op dat moment',
+    ]);
+  });
+
+  it('builds compact mobile tooltip content', () => {
+    const point = {
+      headlinePriceMinor: 4899,
+      label: '3 jun',
+      merchantLabel: 'Goodbricks',
+      valueLabel: '€ 48,99',
+    };
+
+    expect(getCompactPriceHistoryTooltipLines(point)).toEqual([
+      '€ 48,99',
+      'Goodbricks',
     ]);
   });
 
@@ -119,6 +157,7 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('aria-label="Recent Nederlandse prijsverloop"');
     expect(markup).not.toContain('Laagste prijs bij');
     expect(markup).not.toContain('<svg');
+    expect(markup).not.toContain('historyMobilePointSummary');
     expect(markup).toContain('30-daags laag');
     expect(markup).toContain('30-daags hoog');
     expect(markup).toContain('Zo liep de prijs de afgelopen 30 dagen.');

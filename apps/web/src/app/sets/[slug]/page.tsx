@@ -1804,7 +1804,7 @@ function getCollectionDiscoveryLink(slug: string): SetDetailDiscoveryLink {
   const config = getCatalogCollectionLandingPageConfig(slug);
 
   return {
-    href: `/${slug}`,
+    href: config?.canonicalPath ?? `/${slug}`,
     label: config?.h1 ?? slug,
   };
 }
@@ -1850,7 +1850,7 @@ export function buildSetDetailCollectionDiscoveryLinks({
     catalogSetDetail.setStatus === 'retiring_soon' ||
     catalogSetDetail.setStatus === 'retired'
   ) {
-    links.push(getCollectionDiscoveryLink('retiring-lego-sets'));
+    links.push(getCollectionDiscoveryLink('laatste-kans-lego-sets'));
   }
 
   return links.filter(

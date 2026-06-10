@@ -509,8 +509,14 @@ describe('admin catalog routes', () => {
       skipped: false,
       pathCount: 2,
       paths: ['/', '/lego-voor-volwassenen'],
-      tagCount: 3,
-      tags: ['homepage', 'collections', 'collection:lego-voor-volwassenen'],
+      tagCount: 5,
+      tags: [
+        'homepage',
+        'catalog',
+        'sets',
+        'collections',
+        'collection:lego-voor-volwassenen',
+      ],
     }));
     const { catalogService, server } = await createAdminCatalogServer();
 
@@ -546,7 +552,67 @@ describe('admin catalog routes', () => {
     expect(revalidatePublicWebFn).toHaveBeenCalledWith({
       paths: ['/', '/lego-voor-volwassenen'],
       reason: 'admin_collection_presentation_mutation',
-      tags: ['homepage', 'collections', 'collection:lego-voor-volwassenen'],
+      tags: [
+        'homepage',
+        'catalog',
+        'sets',
+        'collections',
+        'collection:lego-voor-volwassenen',
+      ],
+    });
+
+    await nextServer.close();
+  });
+
+  test('revalidates the canonical Dutch path for retiring collection presentation updates', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      skipped: false,
+      pathCount: 2,
+      paths: ['/', '/laatste-kans-lego-sets', '/retiring-lego-sets'],
+      tagCount: 5,
+      tags: [
+        'homepage',
+        'catalog',
+        'sets',
+        'collections',
+        'collection:retiring-lego-sets',
+      ],
+    }));
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    await server.close();
+    const nextServer = Fastify();
+    await nextServer.register(
+      createAdminCatalogRoutes({
+        adminPreHandler: async () => undefined,
+        catalogService,
+        revalidatePublicWebFn,
+      }),
+    );
+
+    const response = await nextServer.inject({
+      method: 'PUT',
+      url: '/api/v1/admin/catalog/collections/retiring-lego-sets',
+      payload: {
+        isPublic: true,
+        publicDisplayName: 'Laatste Kans LEGO Sets',
+        publicTileImageUrl: 'https://example.test/last-chance-tile.jpg',
+        status: 'active',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/laatste-kans-lego-sets', '/retiring-lego-sets'],
+      reason: 'admin_collection_presentation_mutation',
+      tags: [
+        'homepage',
+        'catalog',
+        'sets',
+        'collections',
+        'collection:retiring-lego-sets',
+      ],
     });
 
     await nextServer.close();

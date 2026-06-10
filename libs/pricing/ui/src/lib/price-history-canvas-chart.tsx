@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Chart,
   type ChartConfiguration,
@@ -18,6 +18,7 @@ Chart.register(LinearScale, LineController, LineElement, PointElement, Tooltip);
 
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 260;
+const MOBILE_CHART_QUERY = '(max-width: 47.9375rem)';
 
 interface PriceHistoryChartDatum {
   readonly x: number;
@@ -92,6 +93,39 @@ export function getPriceHistoryTooltipLines(
   ];
 }
 
+export function getCompactPriceHistoryTooltipLines(
+  point: PriceHistoryCanvasChartPoint | undefined,
+): string[] {
+  if (!point) {
+    return [];
+  }
+
+  return [
+    point.valueLabel,
+    ...(point.merchantLabel ? [point.merchantLabel] : []),
+  ];
+}
+
+function useIsMobilePriceHistoryChart(): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_CHART_QUERY);
+    const updateIsMobile = () => {
+      setIsMobile(mediaQuery.matches);
+    };
+
+    updateIsMobile();
+    mediaQuery.addEventListener('change', updateIsMobile);
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateIsMobile);
+    };
+  }, []);
+
+  return isMobile;
+}
+
 export function PriceHistoryCanvasChart({
   ariaLabel,
   highIndex,
@@ -100,6 +134,7 @@ export function PriceHistoryCanvasChart({
   points,
 }: PriceHistoryCanvasChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobileChart = useIsMobilePriceHistoryChart();
   const values = useMemo(
     () => points.map((point) => point.headlinePriceMinor),
     [points],
@@ -142,13 +177,17 @@ export function PriceHistoryCanvasChart({
       '--pricing-history-chart-high',
       '#6b7280',
     );
-    const pointRadii = points.map((_, index) =>
-      index === latestIndex
-        ? 5
-        : index === lowIndex || index === highIndex
-          ? 4
-          : 0,
-    );
+    const pointRadii = points.map((_, index) => {
+      if (index === latestIndex) {
+        return 5;
+      }
+
+      if (index === lowIndex || index === highIndex) {
+        return 4;
+      }
+
+      return 0;
+    });
     const pointBorderColors = points.map((_, index) =>
       index === lowIndex
         ? lowColor
@@ -159,6 +198,7 @@ export function PriceHistoryCanvasChart({
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
     const yPadding = Math.max(Math.round((maxValue - minValue) * 0.12), 100);
+    const xPadding = isMobileChart ? (points.length > 2 ? 0.36 : 0.18) : 0;
     const referenceLinePlugin: Plugin<'line'> = {
       beforeDatasetsDraw(chart) {
         const yScale = chart.scales.y;
@@ -207,8 +247,10 @@ export function PriceHistoryCanvasChart({
       pointBackgroundColor: markerColor,
       pointBorderColor: pointBorderColors,
       pointBorderWidth: 2,
-      pointHitRadius: 10,
-      pointHoverRadius: pointRadii.map((radius) => Math.max(radius + 1, 4)),
+      pointHitRadius: isMobileChart ? 18 : 10,
+      pointHoverRadius: pointRadii.map((radius) =>
+        Math.max(radius + 1, isMobileChart ? 6 : 4),
+      ),
       pointRadius: pointRadii,
       tension: 0.26,
     };
@@ -231,15 +273,15 @@ export function PriceHistoryCanvasChart({
         },
         interaction: {
           intersect: false,
-          mode: 'index',
+          mode: isMobileChart ? 'nearest' : 'index',
         },
         maintainAspectRatio: false,
         layout: {
           padding: {
-            bottom: 8,
-            left: 4,
-            right: 8,
-            top: 8,
+            bottom: isMobileChart ? 6 : 8,
+            left: isMobileChart ? 18 : 4,
+            right: isMobileChart ? 18 : 8,
+            top: isMobileChart ? 14 : 8,
           },
         },
         normalized: true,
@@ -251,12 +293,16 @@ export function PriceHistoryCanvasChart({
           tooltip: {
             backgroundColor: '#111827',
             bodyFont: {
-              size: 12,
+              size: isMobileChart ? 11 : 12,
               weight: 600,
             },
             callbacks: {
               label(context) {
-                return getPriceHistoryTooltipLines(points[context.dataIndex]);
+                return isMobileChart
+                  ? getCompactPriceHistoryTooltipLines(
+                      points[context.dataIndex],
+                    )
+                  : getPriceHistoryTooltipLines(points[context.dataIndex]);
               },
               title(items) {
                 return getPriceHistoryTooltipTitle(
@@ -264,15 +310,20 @@ export function PriceHistoryCanvasChart({
                 );
               },
             },
+            caretPadding: isMobileChart ? 4 : 2,
+            caretSize: isMobileChart ? 4 : 5,
+            cornerRadius: isMobileChart ? 8 : 6,
             displayColors: false,
-            padding: 10,
+            padding: isMobileChart ? 7 : 10,
+            position: isMobileChart ? 'nearest' : 'average',
             titleFont: {
-              size: 11,
+              size: isMobileChart ? 10 : 11,
               weight: 500,
             },
           },
         },
-        responsive: false,
+        resizeDelay: 80,
+        responsive: true,
         scales: {
           x: {
             border: {
@@ -282,8 +333,8 @@ export function PriceHistoryCanvasChart({
             grid: {
               display: false,
             },
-            max: points.length - 1,
-            min: 0,
+            max: points.length - 1 + xPadding,
+            min: -xPadding,
             type: 'linear',
             ticks: {
               autoSkip: true,
@@ -307,7 +358,7 @@ export function PriceHistoryCanvasChart({
             ticks: {
               color: labelColor,
               display: false,
-              maxTicksLimit: 3,
+              maxTicksLimit: isMobileChart ? 2 : 3,
               padding: 8,
             },
           },
@@ -321,18 +372,20 @@ export function PriceHistoryCanvasChart({
     return () => {
       chart.destroy();
     };
-  }, [highIndex, latestIndex, lowIndex, points, values]);
+  }, [highIndex, isMobileChart, latestIndex, lowIndex, points, values]);
 
   return (
-    <canvas
-      aria-label={ariaLabel}
-      className={styles.historyCanvas}
-      height={CANVAS_HEIGHT}
-      ref={canvasRef}
-      role="img"
-      width={CANVAS_WIDTH}
-    >
-      Prijsverloop bouwt nog op
-    </canvas>
+    <div className={styles.historyCanvasFrame}>
+      <canvas
+        aria-label={ariaLabel}
+        className={styles.historyCanvas}
+        height={CANVAS_HEIGHT}
+        ref={canvasRef}
+        role="img"
+        width={CANVAS_WIDTH}
+      >
+        Prijsverloop bouwt nog op
+      </canvas>
+    </div>
   );
 }

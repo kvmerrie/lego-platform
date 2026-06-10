@@ -207,7 +207,7 @@ const defaultHomepageDiscoveryTiles = [
     },
   },
   {
-    href: '/retiring-lego-sets',
+    href: '/laatste-kans-lego-sets',
     id: 'retiring-sets',
     imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
     referenceType: 'collection',
@@ -679,7 +679,7 @@ describe('home metadata', () => {
     expect(markup).toContain('href="/nieuwe-lego-sets"');
     expect(markup).toContain('href="/lego-voor-volwassenen"');
     expect(markup).toContain('href="/lego-sets-onder-50-euro"');
-    expect(markup).toContain('href="/retiring-lego-sets"');
+    expect(markup).toContain('href="/laatste-kans-lego-sets"');
     expect(markup).toContain('href="/themes"');
     expect(markup).not.toContain(
       'Net uit: schepen, auto’s en displaymodellen.',

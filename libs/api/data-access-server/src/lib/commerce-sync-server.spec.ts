@@ -13,9 +13,14 @@ describe('commerce sync server', () => {
     'lego-sets-onder-100-euro',
     'lego-voor-volwassenen',
   ];
-  const expectedCollectionSnapshotPaths = expectedCollectionSnapshotSlugs.map(
-    (collectionSlug) => `/${collectionSlug}`,
-  );
+  const expectedCollectionSnapshotPaths = [
+    '/laatste-kans-lego-sets',
+    '/lego-sets-onder-100-euro',
+    '/lego-sets-onder-50-euro',
+    '/lego-voor-volwassenen',
+    '/nieuwe-lego-sets',
+    '/retiring-lego-sets',
+  ];
   const expectedCollectionSnapshotTags = expectedCollectionSnapshotSlugs.map(
     (collectionSlug) => `collection:${collectionSlug}`,
   );

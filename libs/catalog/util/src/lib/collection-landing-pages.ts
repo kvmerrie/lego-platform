@@ -14,10 +14,15 @@ export type CatalogCollectionLandingPageSortKey =
   (typeof catalogCollectionLandingPageSortKeys)[number];
 
 export const CATALOG_BROWSE_PAGE_SIZE = 40;
+export const CATALOG_RETIRING_LEGO_SETS_COLLECTION_SLUG = 'retiring-lego-sets';
+export const CATALOG_LAST_CHANCE_LEGO_SETS_ROUTE_SLUG =
+  'laatste-kans-lego-sets';
+export const CATALOG_LAST_CHANCE_LEGO_SETS_PATH =
+  `/${CATALOG_LAST_CHANCE_LEGO_SETS_ROUTE_SLUG}` as const;
 
 export const catalogCollectionPageSnapshotSlugs = [
   'nieuwe-lego-sets',
-  'retiring-lego-sets',
+  CATALOG_RETIRING_LEGO_SETS_COLLECTION_SLUG,
   'lego-sets-onder-50-euro',
   'lego-sets-onder-100-euro',
   'lego-voor-volwassenen',
@@ -67,6 +72,7 @@ export interface CatalogCollectionLandingPageConfig {
     relatedPages?: readonly string[];
     themes?: readonly CatalogCollectionLandingPageLinkConfig[];
   };
+  lockPresentationCopy?: boolean;
   metaDescription: string;
   metaTitle: string;
   redirectPath?: string;
@@ -200,7 +206,10 @@ export const catalogCollectionLandingPageConfigs = [
         { href: '/themes/star-wars', label: 'Star Wars' },
         { href: '/themes/technic', label: 'Technic' },
       ],
-      relatedPages: ['lego-sets-onder-100-euro', 'retiring-lego-sets'],
+      relatedPages: [
+        'lego-sets-onder-100-euro',
+        CATALOG_LAST_CHANCE_LEGO_SETS_ROUTE_SLUG,
+      ],
     },
   },
   {
@@ -232,7 +241,10 @@ export const catalogCollectionLandingPageConfigs = [
         { href: '/themes/ideas', label: 'Ideas' },
         { href: '/themes/architecture', label: 'Architecture' },
       ],
-      relatedPages: ['lego-sets-onder-100-euro', 'retiring-lego-sets'],
+      relatedPages: [
+        'lego-sets-onder-100-euro',
+        CATALOG_LAST_CHANCE_LEGO_SETS_ROUTE_SLUG,
+      ],
     },
   },
   {
@@ -261,20 +273,24 @@ export const catalogCollectionLandingPageConfigs = [
     },
     links: {
       themes: [{ href: '/themes/star-wars', label: 'Star Wars thema' }],
-      relatedPages: ['lego-voor-volwassenen', 'retiring-lego-sets'],
+      relatedPages: [
+        'lego-voor-volwassenen',
+        CATALOG_LAST_CHANCE_LEGO_SETS_ROUTE_SLUG,
+      ],
     },
   },
   {
-    slug: 'retiring-lego-sets',
-    canonicalPath: '/retiring-lego-sets',
-    h1: 'LEGO sets die binnenkort verdwijnen',
+    slug: CATALOG_RETIRING_LEGO_SETS_COLLECTION_SLUG,
+    canonicalPath: CATALOG_LAST_CHANCE_LEGO_SETS_PATH,
+    h1: 'Laatste Kans LEGO Sets',
     intro:
-      'Sets die je niet te lang wilt laten liggen. Kijk vooral naar grote displaymodellen, Star Wars-schepen en populaire thema’s voordat prijzen onrustig worden.',
+      'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
     description:
       'LEGO sets die richting uitverkocht of retired gaan, met directe links naar de setpagina’s.',
-    metaTitle: 'LEGO sets die binnenkort verdwijnen | Brickhunt',
+    metaTitle: 'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
     metaDescription:
-      'Bekijk LEGO sets die binnenkort verdwijnen en beslis welke dozen je niet te lang wilt uitstellen.',
+      'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+    lockPresentationCopy: true,
     browseEyebrow: 'Niet laten liggen',
     browseTitle: 'Sets om nu te checken',
     browseDescription:
@@ -317,8 +333,12 @@ export function listIndexableCatalogCollectionLandingPageConfigs(): readonly Cat
 export function getCatalogCollectionLandingPageConfig(
   slug: string,
 ): CatalogCollectionLandingPageConfig | undefined {
+  const normalizedSlug = slug.replace(/^\/+|\/+$/gu, '');
+
   return catalogCollectionLandingPageConfigs.find(
-    (config) => config.slug === slug,
+    (config) =>
+      config.slug === normalizedSlug ||
+      config.canonicalPath.replace(/^\/+|\/+$/gu, '') === normalizedSlug,
   );
 }
 
@@ -359,7 +379,7 @@ export function applyCatalogCollectionPresentation({
 
   return {
     ...config,
-    ...(description
+    ...(description && !config.lockPresentationCopy
       ? {
           browseDescription: description,
           description,
@@ -367,7 +387,7 @@ export function applyCatalogCollectionPresentation({
           metaDescription: description,
         }
       : {}),
-    ...(displayName
+    ...(displayName && !config.lockPresentationCopy
       ? {
           browseTitle: displayName,
           h1: displayName,

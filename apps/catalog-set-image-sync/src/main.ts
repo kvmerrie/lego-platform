@@ -390,6 +390,21 @@ export async function main(argv = process.argv.slice(2)) {
     limit,
     metadataSupabaseClient: createMetadataSupabaseClient(metadataTarget),
     missingOnly,
+    onProgress: (progress) => {
+      if (
+        progress.processedSetCount % 10 === 0 ||
+        progress.processedSetCount === progress.selectedSetCount
+      ) {
+        console.log(
+          `[catalog-set-image-sync] progress processed_sets=${progress.processedSetCount} selected_sets=${progress.selectedSetCount} last_set_id=${progress.setId}`,
+        );
+      }
+    },
+    onSelection: (diagnostics) => {
+      console.log(
+        `[catalog-set-image-sync] selection selected_sets=${diagnostics.selectedSetCount} candidate_sets=${diagnostics.candidateSetCount} missing_hero_count=${diagnostics.missingHeroCount} missing_card_count=${diagnostics.missingCardCount} missing_social_count=${diagnostics.missingSocialCount} complete_image_set_count=${diagnostics.completeImageSetCount}`,
+      );
+    },
     refreshImageMetadata,
     refreshFailed,
     refreshCard,

@@ -82,13 +82,13 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('src="/images/sets/10316/hero.webp"');
   });
 
-  it('falls back from hero images to external image URLs for set cards', () => {
-    const heroMarkup = renderToStaticMarkup(
+  it('uses migrated summary card URLs before stored hero URLs', () => {
+    const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/rivendell-10316"
         setSummary={{
           id: '10316',
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/123.jpg',
+          imageUrl: '/images/sets/10316/card.webp',
           name: 'Rivendell',
           pieces: 6167,
           primaryImage: '/images/sets/10316/hero.webp',
@@ -99,6 +99,12 @@ describe('CatalogSetCard', () => {
         variant="featured"
       />,
     );
+
+    expect(markup).toContain('src="/images/sets/10316/card.webp"');
+    expect(markup).not.toContain('src="/images/sets/10316/hero.webp"');
+  });
+
+  it('falls back from card image URLs to external image URLs for set cards', () => {
     const externalMarkup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/rivendell-10316"
@@ -115,7 +121,6 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(heroMarkup).toContain('src="/images/sets/10316/hero.webp"');
     expect(externalMarkup).toContain(
       'url=https%3A%2F%2Fcdn.rebrickable.com%2Fmedia%2Fsets%2F10316-1%2F123.jpg',
     );
@@ -244,7 +249,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogBrowsePagination
         ariaLabel="Collectiepagina's"
-        basePath="/retiring-lego-sets"
+        basePath="/laatste-kans-lego-sets"
         pageCount={1}
       />,
     );

@@ -552,6 +552,8 @@ export interface CatalogPromotionResult {
   affectedThemeSlugs?: string[];
   brickset_source_metadata_promoted_count?: number;
   bricksetSourceMetadataPromotedCount?: number;
+  changedCollectionPageSnapshotSlugs?: string[];
+  changedHomepageThemeSlugs?: string[];
   changedThemeSlugs: string[];
   collection_page_snapshots_by_slug?: Record<string, number>;
   collection_page_snapshots_read_count?: number;
@@ -567,6 +569,7 @@ export interface CatalogPromotionResult {
   catalog_set_images_upserted_count?: number;
   catalogSetImages?: CatalogSetImagePromotionDiagnostics;
   durationMs: number;
+  homepageAffected?: boolean;
   promotedMetadataSetIds?: string[];
   promotedMetadataSetSlugs?: string[];
   promotedImageMetadataSetIds?: string[];
@@ -1549,6 +1552,19 @@ function valuesArePromotionEqual(left: unknown, right: unknown): boolean {
   return (left ?? null) === (right ?? null);
 }
 
+function valuesArePromotionJsonEqual(left: unknown, right: unknown): boolean {
+  if (
+    left !== null &&
+    right !== null &&
+    typeof left === 'object' &&
+    typeof right === 'object'
+  ) {
+    return JSON.stringify(left) === JSON.stringify(right);
+  }
+
+  return valuesArePromotionEqual(left, right);
+}
+
 function isPublicCatalogThemeForRevalidation(
   row: Readonly<Record<string, unknown>> | undefined,
 ): boolean {
@@ -1562,6 +1578,16 @@ function readCatalogThemeSlugForRevalidation(
   row: Readonly<Record<string, unknown>>,
 ): string | undefined {
   return readOptionalPromotionString(row['slug']);
+}
+
+function isCatalogThemeVisibleOnHomepage(
+  row: Readonly<Record<string, unknown>> | undefined,
+): boolean {
+  return (
+    isPublicCatalogThemeForRevalidation(row) &&
+    typeof row?.['public_homepage_order'] === 'number' &&
+    Number.isFinite(row['public_homepage_order'])
+  );
 }
 
 function incrementPromotionFieldCount({
@@ -2279,7 +2305,7 @@ async function upsertRows<TRow>({
   };
 }
 
-async function listChangedPublicCatalogThemeSlugs({
+async function listChangedPublicCatalogThemeTargets({
   nowIso,
   rows,
   supabaseClient,
@@ -2287,9 +2313,15 @@ async function listChangedPublicCatalogThemeSlugs({
   nowIso: string;
   rows: readonly CatalogThemeRow[];
   supabaseClient: CatalogPromotionSupabaseClient;
-}): Promise<string[]> {
+}): Promise<{
+  changedHomepageThemeSlugs: string[];
+  changedThemeSlugs: string[];
+}> {
   if (rows.length === 0) {
-    return [];
+    return {
+      changedHomepageThemeSlugs: [],
+      changedThemeSlugs: [],
+    };
   }
 
   const conflictColumns = ['id'];
@@ -2299,6 +2331,7 @@ async function listChangedPublicCatalogThemeSlugs({
     table: CATALOG_THEMES_TABLE,
   });
   const changedSlugs = new Set<string>();
+  const changedHomepageSlugs = new Set<string>();
 
   for (const theme of rows) {
     const rowRecord = toRowRecord(theme);
@@ -2347,10 +2380,27 @@ async function listChangedPublicCatalogThemeSlugs({
 
     if (slug) {
       changedSlugs.add(slug);
+
+      if (
+        isCatalogThemeVisibleOnHomepage(existingRow) ||
+        isCatalogThemeVisibleOnHomepage({
+          ...existingRow,
+          ...projectedRow,
+        })
+      ) {
+        changedHomepageSlugs.add(slug);
+      }
     }
   }
 
-  return [...changedSlugs].sort((left, right) => left.localeCompare(right));
+  return {
+    changedHomepageThemeSlugs: [...changedHomepageSlugs].sort((left, right) =>
+      left.localeCompare(right),
+    ),
+    changedThemeSlugs: [...changedSlugs].sort((left, right) =>
+      left.localeCompare(right),
+    ),
+  };
 }
 
 function isActiveCatalogSetForThemeSummary(
@@ -2505,6 +2555,59 @@ async function listChangedCatalogSetThemeSlugs({
 
     if (slug) {
       changedSlugs.add(slug);
+    }
+  }
+
+  return [...changedSlugs].sort((left, right) => left.localeCompare(right));
+}
+
+async function listChangedCollectionPageSnapshotSlugs({
+  rows,
+  supabaseClient,
+}: {
+  rows: readonly CollectionPageSnapshotRow[];
+  supabaseClient: CatalogPromotionSupabaseClient;
+}): Promise<string[]> {
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const conflictColumns = splitConflictColumns(
+    'collection_slug,sort_key,page,page_size',
+  );
+  const existingRowsByConflictKey = await listExistingConflictRows({
+    onConflict: 'collection_slug,sort_key,page,page_size',
+    supabaseClient,
+    table: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+  });
+  const mutableColumns = (
+    CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE[
+      COLLECTION_PAGE_SNAPSHOTS_TABLE
+    ] ?? []
+  ).filter((column) => column !== 'created_at' && column !== 'updated_at');
+  const changedSlugs = new Set<string>();
+
+  for (const snapshot of rows) {
+    const rowRecord = toRowRecord(snapshot);
+    const conflictKey = buildConflictKey({
+      columns: conflictColumns,
+      row: rowRecord,
+    });
+    const existingRow = existingRowsByConflictKey.get(conflictKey);
+
+    if (!existingRow) {
+      changedSlugs.add(snapshot.collection_slug);
+      continue;
+    }
+
+    const changedFields = mutableColumns.filter((column) =>
+      Object.prototype.hasOwnProperty.call(rowRecord, column)
+        ? !valuesArePromotionJsonEqual(rowRecord[column], existingRow[column])
+        : false,
+    );
+
+    if (changedFields.length > 0) {
+      changedSlugs.add(snapshot.collection_slug);
     }
   }
 
@@ -3237,11 +3340,21 @@ export async function promoteCatalogFromStagingToProduction({
       });
     }
 
-    const changedThemeRowSlugs = await listChangedPublicCatalogThemeSlugs({
-      nowIso: startedAtIso,
-      rows: normalizedCatalogThemes,
-      supabaseClient: productionSupabaseClient,
-    });
+    const changedPublicCatalogThemeTargets =
+      await listChangedPublicCatalogThemeTargets({
+        nowIso: startedAtIso,
+        rows: normalizedCatalogThemes,
+        supabaseClient: productionSupabaseClient,
+      });
+    const changedThemeRowSlugs =
+      changedPublicCatalogThemeTargets.changedThemeSlugs;
+    const changedHomepageThemeSlugs =
+      changedPublicCatalogThemeTargets.changedHomepageThemeSlugs;
+    const changedCollectionPageSnapshotSlugs =
+      await listChangedCollectionPageSnapshotSlugs({
+        rows: normalizedCollectionPageSnapshots,
+        supabaseClient: productionSupabaseClient,
+      });
     const changedCatalogSetThemeSlugs = await listChangedCatalogSetThemeSlugs({
       catalogThemes: normalizedCatalogThemes,
       nowIso: startedAtIso,
@@ -3373,6 +3486,8 @@ export async function promoteCatalogFromStagingToProduction({
       table: CATALOG_SET_IMAGES_TABLE,
     });
     console.info('[catalog-promotion] promote_collection_page_snapshots', {
+      changed_collection_page_snapshot_slugs:
+        changedCollectionPageSnapshotSlugs,
       collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
       collection_page_snapshots_read_count: collectionPageSnapshots.length,
       collection_page_snapshots_upserted_count:
@@ -3450,6 +3565,8 @@ export async function promoteCatalogFromStagingToProduction({
       bricksetSourceMetadataPromotedCount,
       affectedThemeCount: changedThemeSlugs.length,
       affectedThemeSlugs: changedThemeSlugs,
+      changedCollectionPageSnapshotSlugs,
+      changedHomepageThemeSlugs,
       changedThemeSlugs,
       collection_page_snapshots_by_slug: collectionPageSnapshotsBySlug,
       collection_page_snapshots_read_count: collectionPageSnapshots.length,
@@ -3472,6 +3589,7 @@ export async function promoteCatalogFromStagingToProduction({
         catalogSetImagesDiagnostics.upsertedCount,
       catalogSetImages: catalogSetImagesDiagnostics,
       durationMs: now().getTime() - startedAt.getTime(),
+      homepageAffected: changedHomepageThemeSlugs.length > 0,
       promotedImageMetadataSetIds,
       promotedImageMetadataSetSlugs,
       promotedMetadataSetIds,
