@@ -4,6 +4,7 @@
 }
 
 .intro {
+  --catalog-hero-surface: var(--collection-page-surface);
   --collection-page-surface: var(--lego-surface-muted);
   --collection-page-text: var(--lego-text);
   --collection-page-muted: var(--lego-text-muted);
@@ -56,18 +57,11 @@
 }
 
 .introVisual {
+  --catalog-hero-media-object-fit: contain;
   align-self: stretch;
   border-radius: var(--lego-radius-md);
   display: none;
   min-height: 18rem;
-  overflow: hidden;
-}
-
-.introImage {
-  display: block;
-  height: 100%;
-  inline-size: 100%;
-  object-fit: cover;
 }
 
 .title,

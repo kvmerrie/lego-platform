@@ -1,0 +1,474 @@
+.productReviewsSection {
+  --reviews-section-padding-inline: var(
+    --lego-section-inline-padding,
+    var(--lego-space-3, 1rem)
+  );
+
+  color: var(--color-text, #172033);
+}
+
+.productReviewsLayout {
+  display: grid;
+  gap: clamp(1.35rem, 3vw, 2.25rem);
+  padding-block: 0 clamp(1.5rem, 4vw, 2.5rem);
+  padding-inline: var(--reviews-section-padding-inline);
+}
+
+.reviewsSummaryLine {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.55rem;
+}
+
+.reviewsNoScoreLabel,
+.reviewsCompactCount {
+  color: var(--color-text-muted, #5d6678);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.reviewSummary {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.reviewSummaryHeader,
+.reviewSectionHeader {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.reviewSummaryTitle,
+.reviewSectionHeader h3,
+.reviewSubheading {
+  color: var(--color-text, #172033);
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.reviewSummaryGrid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.reviewScorePanel {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.reviewScoreBlock {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.reviewScore {
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.reviewSummaryMetrics {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.reviewSummaryMetrics div,
+.reviewSubratingRow,
+.ratingDistributionRow {
+  align-items: center;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reviewSummaryMetrics div {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.reviewSummaryMetrics dt,
+.reviewSummaryMetrics dd {
+  margin: 0;
+}
+
+.reviewSummaryMetrics dt,
+.reviewSubratingRow span:last-child,
+.ratingDistributionRow span:first-child,
+.reviewMeta,
+.reviewDate,
+.reviewMutedText,
+.formHint,
+.pendingNotice,
+.formError,
+.authPromptText {
+  margin: 0;
+}
+
+.reviewSummaryMetrics dt,
+.reviewSubratingRow span:last-child,
+.ratingDistributionRow span:first-child,
+.reviewMeta,
+.reviewDate,
+.reviewMutedText {
+  color: var(--color-text-muted, #5d6678);
+  font-size: 0.92rem;
+}
+
+.reviewSummaryMetrics dd,
+.ratingDistributionRow span:last-child,
+.reviewSubratingRow span:first-child {
+  color: var(--color-text, #172033);
+  font-weight: 800;
+}
+
+.ratingDistribution,
+.reviewSubratings,
+.ownReviewSection,
+.reviewsListSection {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.ratingDistributionRow {
+  grid-template-columns: 5rem minmax(5rem, 1fr) 2.5rem;
+}
+
+.ratingDistributionTrack {
+  background: var(--color-surface-muted, #eef1f6);
+  border-radius: 999px;
+  display: block;
+  height: 0.62rem;
+  overflow: hidden;
+}
+
+.ratingDistributionFill {
+  background: #f5a400;
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  min-inline-size: 0.25rem;
+}
+
+.reviewSubratingRow {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.reviewSubratingScore {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.ratingStars {
+  display: inline-flex;
+  gap: 0.12rem;
+  color: #f5a400;
+}
+
+.ratingStar,
+.ratingInputStar {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2.2;
+}
+
+.ratingStarFilled,
+.ratingInputStarSelected {
+  color: #f5a400;
+  fill: currentColor;
+}
+
+.reviewFormShell {
+  max-inline-size: 48rem;
+}
+
+.reviewAuthLoadingPanel {
+  display: grid;
+  align-items: center;
+  gap: 1rem;
+  max-inline-size: 52rem;
+}
+
+.reviewAuthLoadingPanel p {
+  margin: 0;
+  color: var(--color-text-muted, #5d6678);
+  font-weight: 700;
+}
+
+.reviewForm {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.ratingInputGroup,
+.recommendGroup {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.inputLabel,
+.textareaLabel {
+  color: var(--color-text, #172033);
+  font-weight: 800;
+}
+
+.textareaLabel {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ratingInputOptions,
+.segmentedControl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.ratingInputButton,
+.segmentedButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  border: 1px solid var(--color-border-strong, #b8c2d2);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-text, #172033);
+  cursor: pointer;
+}
+
+.ratingInputButton {
+  width: 2.5rem;
+  padding: 0;
+}
+
+.ratingClearButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-muted, #5d6678);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  min-height: 2.5rem;
+  padding-inline: 0.35rem;
+}
+
+.ratingClearButton:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.segmentedButton {
+  padding: 0 0.9rem;
+  font-weight: 700;
+}
+
+.ratingInputButton:hover,
+.segmentedButton:hover,
+.ratingInputButton[aria-pressed='true'],
+.segmentedButton[aria-pressed='true'] {
+  border-color: var(--color-brand, #1359d8);
+  color: var(--color-brand, #1359d8);
+}
+
+.ratingInputButton:focus-visible,
+.ratingClearButton:focus-visible,
+.segmentedButton:focus-visible,
+.reviewTextarea:focus-visible {
+  outline: 3px solid var(--color-focus-ring, #1d6be3);
+  outline-offset: 3px;
+}
+
+.ratingInputStar {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.reviewTextarea {
+  min-height: 7rem;
+  resize: vertical;
+  border: 1px solid var(--color-border-strong, #b8c2d2);
+  border-radius: 0.55rem;
+  padding: 0.75rem;
+  color: inherit;
+  font: inherit;
+}
+
+.optionalRatingsGroup {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.optionalRatingsGroup h3 {
+  color: var(--color-text, #172033);
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.pendingNotice {
+  color: #8a5a00;
+  font-weight: 700;
+}
+
+.formError {
+  color: #a62626;
+  font-weight: 700;
+}
+
+.ownReviewCard {
+  background: var(--color-surface-muted, #f5f7fb);
+  border-radius: 0.55rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.ownReviewCardHeader {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: space-between;
+}
+
+.statusBadge {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.8rem;
+  font-weight: 800;
+  min-height: 1.8rem;
+  padding-inline: 0.7rem;
+}
+
+.statusBadge-pending {
+  background: #fff4d8;
+  color: #765000;
+}
+
+.statusBadge-approved {
+  background: #e4f7eb;
+  color: #16613a;
+}
+
+.statusBadge-rejected,
+.statusBadge-hidden {
+  background: #fde8e8;
+  color: #962424;
+}
+
+.noReviewsPrompt {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+}
+
+.noReviewsPrompt p {
+  color: var(--color-text-muted, #5d6678);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.reviewList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reviewCard {
+  display: grid;
+  gap: 0.7rem;
+  padding-block: 1rem;
+  border-block-start: 1px solid var(--color-border-subtle, #d8dee8);
+}
+
+.reviewCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.recommendBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #1d6f42;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.recommendBadge svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.reviewText {
+  margin: 0;
+  color: var(--color-text, #172033);
+  line-height: 1.55;
+}
+
+.reviewCardSubratings {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.reviewCardSubratings div {
+  align-items: center;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 10rem) auto;
+  justify-content: start;
+}
+
+.reviewCardSubratings dt,
+.reviewCardSubratings dd {
+  margin: 0;
+}
+
+.reviewCardSubratings dt {
+  color: var(--color-text-muted, #5d6678);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+@media (min-width: 56rem) {
+  .reviewSummaryGrid {
+    grid-template-columns: minmax(14rem, 0.9fr) minmax(16rem, 1.1fr) minmax(
+        14rem,
+        0.85fr
+      );
+  }
+}
+
+@media (max-width: 640px) {
+  .reviewSummaryHeader,
+  .reviewSectionHeader,
+  .reviewCardHeader {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ratingDistributionRow {
+    grid-template-columns: 4.75rem minmax(4rem, 1fr) 2.25rem;
+  }
+
+  .reviewSubratingRow {
+    align-items: start;
+    grid-template-columns: 1fr;
+  }
+}

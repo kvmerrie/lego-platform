@@ -8,10 +8,11 @@ import {
   CatalogSetCardCollection,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
+  getHeroButtonSurface,
+  getHeroButtonTone,
 } from '@lego-platform/catalog/ui';
 import {
   type CatalogHomepageSetCard,
-  type CatalogThemeVisual,
   type CatalogThemeLandingPage,
   getCatalogThemeMutedTextColor,
 } from '@lego-platform/catalog/util';
@@ -47,18 +48,6 @@ type CatalogFeatureThemeFavoriteAction =
   | ReactNode
   | ((context: { buttonSurface: 'dark' | 'light' }) => ReactNode);
 
-function getThemeButtonSurfaceFromVisual(
-  visual?: CatalogThemeVisual,
-): 'dark' | 'light' {
-  const normalizedTextColor = visual?.textColor?.trim().toLowerCase();
-
-  return normalizedTextColor === '#ffffff' ||
-    normalizedTextColor === '#fff' ||
-    normalizedTextColor === 'white'
-    ? 'dark'
-    : 'light';
-}
-
 export function CatalogFeatureThemePage({
   currentPage = 1,
   dealSetCards = [],
@@ -85,7 +74,8 @@ export function CatalogFeatureThemePage({
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
   const themeVisual = themePage.visual;
-  const themeHeroButtonSurface = getThemeButtonSurfaceFromVisual(themeVisual);
+  const themeHeroButtonTone = getHeroButtonTone(themeVisual);
+  const themeHeroButtonSurface = getHeroButtonSurface(themeVisual);
   const renderedThemeFavoriteAction =
     typeof themeFavoriteAction === 'function'
       ? themeFavoriteAction({ buttonSurface: themeHeroButtonSurface })
@@ -153,7 +143,7 @@ export function CatalogFeatureThemePage({
         }}
         className={styles.intro}
         contentClassName={styles.introContent}
-        data-button-surface={themeHeroButtonSurface}
+        heroButtonTone={themeHeroButtonTone}
       >
         <div className={styles.introHeading}>
           <h1 className={styles.introTitle}>

@@ -51,6 +51,9 @@ export const cacheTags = {
   prices: () => 'prices',
   pricesForMerchant: (merchantSlug: string) =>
     buildScopedTag('prices', merchantSlug),
+  reviews: () => 'reviews',
+  setReviews: (setNumberOrSlug: string) =>
+    buildScopedTag('set-reviews', setNumberOrSlug),
   news: () => 'news',
   newsArticle: (articleSlug: string) => buildScopedTag('news', articleSlug),
   homepage: () => 'homepage',

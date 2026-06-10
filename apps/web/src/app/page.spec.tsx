@@ -458,6 +458,42 @@ describe('home metadata', () => {
     expect(markup).toContain('--theme-surface:#123456');
   });
 
+  it('passes resolved homepage theme portrait card images to the theme rail', async () => {
+    setupHomepageRenderMocks();
+    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([
+      {
+        imageUrl: '/images/sets/42172/card.webp',
+        themeSnapshot: {
+          intro: 'Technic voor display en techniek.',
+          momentum: 'Kies deze als de McLaren P1 je plank mag pakken.',
+          name: 'Technic',
+          setCount: 44,
+          signatureSet: 'McLaren P1',
+          slug: 'technic',
+        },
+        visual: {
+          imageUrl: '/images/sets/42172/card.webp',
+        },
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(await pageModule.default());
+
+    expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
+      expect.objectContaining({
+        themeItems: [
+          expect.objectContaining({
+            imageUrl: '/images/sets/42172/card.webp',
+            visual: expect.objectContaining({
+              imageUrl: '/images/sets/42172/card.webp',
+            }),
+          }),
+        ],
+      }),
+    );
+  });
+
   it('passes theme spotlight CMS items to the spotlight renderer', async () => {
     setupHomepageRenderMocks();
     pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([

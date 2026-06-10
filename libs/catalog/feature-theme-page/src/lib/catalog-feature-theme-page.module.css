@@ -7,45 +7,7 @@
 }
 
 .intro {
-  --theme-page-button-foreground-dark-surface: color-mix(
-    in srgb,
-    var(--theme-page-surface) 78%,
-    var(--lego-contrast-ink) 22%
-  );
-  --theme-page-button-foreground-light-surface: color-mix(
-    in srgb,
-    var(--theme-page-surface) 72%,
-    var(--lego-contrast-white) 28%
-  );
-  --theme-page-button-fill-default-light-surface: color-mix(
-    in srgb,
-    var(--lego-contrast-ink) 90%,
-    var(--theme-page-surface) 10%
-  );
-  --theme-page-button-fill-hover-light-surface: color-mix(
-    in srgb,
-    var(--lego-contrast-ink) 95%,
-    var(--theme-page-surface) 5%
-  );
-  --theme-page-button-fill-active-light-surface: var(--lego-contrast-ink);
-  --theme-page-button-fill-default-dark-surface: color-mix(
-    in srgb,
-    var(--lego-contrast-white) 90%,
-    var(--theme-page-surface) 10%
-  );
-  --theme-page-button-fill-hover-dark-surface: color-mix(
-    in srgb,
-    var(--lego-contrast-white) 95%,
-    var(--theme-page-surface) 5%
-  );
-  --theme-page-button-fill-active-dark-surface: var(--lego-contrast-white);
-  --theme-page-favorite-fill-background: var(--theme-page-text);
-  --theme-page-favorite-fill-foreground: var(--theme-page-surface);
-  --theme-page-favorite-fill-hover-background: color-mix(
-    in srgb,
-    var(--theme-page-text) 88%,
-    var(--theme-page-surface) 12%
-  );
+  --catalog-hero-surface: var(--theme-page-surface);
   background:
     linear-gradient(
       180deg,
@@ -150,16 +112,6 @@
 }
 
 .introPrimaryAction {
-  --lego-button-accent-background: var(--theme-page-button-filled-background);
-  --lego-button-accent-hover-background: var(
-    --theme-page-button-filled-hover-background
-  );
-  --lego-button-accent-active-background: var(
-    --theme-page-button-filled-active-background
-  );
-  --lego-button-accent-color: var(--theme-page-button-filled-foreground);
-  --lego-button-accent-hover-color: var(--theme-page-button-filled-foreground);
-  --lego-button-accent-active-color: var(--theme-page-button-filled-foreground);
   min-width: 0;
   width: 100%;
 }
@@ -178,113 +130,32 @@
   display: inline;
 }
 
-.introSecondaryAction {
-  --lego-button-secondary-border-color: var(
-    --theme-page-button-filled-background
-  );
-  --lego-button-secondary-color: var(--theme-page-button-filled-background);
-  --lego-button-secondary-hover-background: var(
-    --theme-page-button-filled-hover-background
-  );
-  --lego-button-secondary-hover-border-color: var(
-    --theme-page-button-filled-hover-background
-  );
-  --lego-button-secondary-active-background: var(
-    --theme-page-button-filled-active-background
-  );
-  --lego-button-secondary-active-border-color: var(
-    --theme-page-button-filled-active-background
-  );
-  --lego-button-secondary-hover-color: var(
-    --theme-page-button-filled-foreground
-  );
-  --lego-button-secondary-active-color: var(
-    --theme-page-button-filled-foreground
-  );
-}
-
-.intro[data-button-surface='light'] .introPrimaryAction,
-.intro[data-button-surface='light'] .introSecondaryAction,
-.intro[data-button-surface='light'] .introFavoriteAction {
-  --theme-page-button-filled-background: var(
-    --theme-page-button-fill-default-light-surface
-  );
-  --theme-page-button-filled-hover-background: var(
-    --theme-page-button-fill-hover-light-surface
-  );
-  --theme-page-button-filled-active-background: var(
-    --theme-page-button-fill-active-light-surface
-  );
-  --theme-page-button-filled-foreground: var(
-    --theme-page-button-foreground-light-surface
-  );
-}
-
-.intro[data-button-surface='dark'] .introPrimaryAction,
-.intro[data-button-surface='dark'] .introSecondaryAction,
-.intro[data-button-surface='dark'] .introFavoriteAction {
-  --theme-page-button-filled-background: var(
-    --theme-page-button-fill-default-dark-surface
-  );
-  --theme-page-button-filled-hover-background: var(
-    --theme-page-button-fill-hover-dark-surface
-  );
-  --theme-page-button-filled-active-background: var(
-    --theme-page-button-fill-active-dark-surface
-  );
-  --theme-page-button-filled-foreground: var(
-    --theme-page-button-foreground-dark-surface
-  );
-}
-
-.intro[data-button-surface='light'] .introFavoriteAction {
-  --theme-page-favorite-fill-background: var(--theme-page-text);
-  --theme-page-favorite-fill-hover-background: color-mix(
-    in srgb,
-    var(--theme-page-text) 88%,
-    var(--theme-page-surface) 12%
-  );
-  --theme-page-favorite-fill-foreground: var(--theme-page-surface);
-}
-
-.intro[data-button-surface='dark'] .introFavoriteAction {
-  --theme-page-favorite-fill-background: var(
-    --theme-page-button-fill-default-dark-surface
-  );
-  --theme-page-favorite-fill-hover-background: var(
-    --theme-page-button-fill-hover-dark-surface
-  );
-  --theme-page-favorite-fill-foreground: var(
-    --theme-page-button-foreground-dark-surface
-  );
-}
-
 .introFavoriteAction {
   --lego-button-secondary-border-color: var(
-    --theme-page-button-filled-background
+    --catalog-hero-button-fill-background
   );
-  --lego-button-secondary-color: var(--theme-page-button-filled-background);
+  --lego-button-secondary-color: var(--catalog-hero-button-fill-background);
   --lego-button-secondary-hover-background: color-mix(
     in srgb,
-    var(--theme-page-button-filled-background) 10%,
+    var(--catalog-hero-button-fill-background) 10%,
     transparent
   );
   --lego-button-secondary-hover-border-color: var(
-    --theme-page-button-filled-hover-background
+    --catalog-hero-button-fill-hover-background
   );
   --lego-button-secondary-hover-color: var(
-    --theme-page-button-filled-hover-background
+    --catalog-hero-button-fill-hover-background
   );
   --lego-button-secondary-active-background: color-mix(
     in srgb,
-    var(--theme-page-button-filled-background) 16%,
+    var(--catalog-hero-button-fill-background) 16%,
     transparent
   );
   --lego-button-secondary-active-border-color: var(
-    --theme-page-button-filled-active-background
+    --catalog-hero-button-fill-active-background
   );
   --lego-button-secondary-active-color: var(
-    --theme-page-button-filled-active-background
+    --catalog-hero-button-fill-active-background
   );
 }
 
@@ -292,48 +163,50 @@
 .introFavoriteAction.introFavoriteActionActive,
 .introFavoriteAction.introFavoriteActionActive[aria-pressed='true'] {
   --lego-button-secondary-active-background: var(
-    --theme-page-favorite-fill-background
+    --catalog-hero-favorite-fill-background
   );
   --lego-button-secondary-active-border-color: var(
-    --theme-page-favorite-fill-background
+    --catalog-hero-favorite-fill-background
   );
   --lego-button-secondary-active-color: var(
-    --theme-page-favorite-fill-foreground
+    --catalog-hero-favorite-fill-foreground
   );
-  --lego-button-accent-background: var(--theme-page-favorite-fill-background);
+  --lego-button-accent-background: var(--catalog-hero-favorite-fill-background);
   --lego-button-accent-active-background: var(
-    --theme-page-favorite-fill-background
+    --catalog-hero-favorite-fill-background
   );
-  --lego-button-accent-color: var(--theme-page-favorite-fill-foreground);
+  --lego-button-accent-color: var(--catalog-hero-favorite-fill-foreground);
   --lego-button-accent-hover-background: var(
-    --theme-page-favorite-fill-hover-background
+    --catalog-hero-favorite-fill-hover-background
   );
-  --lego-button-accent-hover-color: var(--theme-page-favorite-fill-foreground);
-  background-color: var(--theme-page-favorite-fill-background);
-  border-color: var(--theme-page-favorite-fill-background);
-  color: var(--theme-page-favorite-fill-foreground);
+  --lego-button-accent-hover-color: var(
+    --catalog-hero-favorite-fill-foreground
+  );
+  background-color: var(--catalog-hero-favorite-fill-background);
+  border-color: var(--catalog-hero-favorite-fill-background);
+  color: var(--catalog-hero-favorite-fill-foreground);
 }
 
 .introFavoriteAction[aria-pressed='true']:hover,
 .introFavoriteAction.introFavoriteActionActive:hover,
 .introFavoriteAction.introFavoriteActionActive[aria-pressed='true']:hover {
   --lego-button-secondary-active-background: var(
-    --theme-page-favorite-fill-hover-background
+    --catalog-hero-favorite-fill-hover-background
   );
   --lego-button-secondary-active-border-color: var(
-    --theme-page-favorite-fill-hover-background
+    --catalog-hero-favorite-fill-hover-background
   );
   --lego-button-secondary-active-color: var(
-    --theme-page-favorite-fill-foreground
+    --catalog-hero-favorite-fill-foreground
   );
   --lego-button-secondary-hover-background: var(
-    --theme-page-favorite-fill-hover-background
+    --catalog-hero-favorite-fill-hover-background
   );
   --lego-button-secondary-hover-border-color: var(
-    --theme-page-favorite-fill-hover-background
+    --catalog-hero-favorite-fill-hover-background
   );
   --lego-button-secondary-hover-color: var(
-    --theme-page-favorite-fill-foreground
+    --catalog-hero-favorite-fill-foreground
   );
 }
 

@@ -45,6 +45,7 @@ import { CatalogPageIntro, CatalogSetDetailHero } from './catalog-composite-ui';
 import {
   ActionLink,
   Badge,
+  DetailAccordionSection,
   ImageGallery,
   LabelValue,
   LabelValueList,
@@ -65,11 +66,17 @@ import styles from './catalog-ui.module.css';
 export {
   CatalogPageIntro,
   CatalogQuickFilterBar,
+  CatalogHeroMedia,
   CatalogSectionHeader,
   CatalogSectionShell,
   CatalogSetDetailHero,
   CatalogSplitIntroPanel,
+  getHeroButtonSurface,
+  getHeroButtonTone,
   type CatalogIntroPanelSection,
+  type HeroActionVariant,
+  type HeroButtonSurface,
+  type HeroButtonToneInput,
 } from './catalog-composite-ui';
 
 type CatalogSetCardSummary = CatalogSetSummary &
@@ -2022,81 +2029,68 @@ export function CatalogSetProductDescription({
   }
 
   return (
-    <section className={styles.detailProductDescriptionSection}>
-      <details className={styles.productDescriptionDisclosure}>
-        <summary className={styles.productDescriptionSummary}>
-          <span className={styles.productDescriptionHeading}>
-            <h2 className={styles.productDescriptionTitle}>Productgegevens</h2>
-          </span>
-          <span className={styles.productDescriptionIconFrame}>
-            <ChevronRight
-              aria-hidden="true"
-              className={styles.productDescriptionIcon}
-              size={24}
-              strokeWidth={2.3}
-            />
-          </span>
-        </summary>
-        <div className={styles.productDescriptionLayout}>
-          {imageUrl ? (
-            <div className={styles.productDescriptionVisual}>
-              <img
-                alt={imageAlt ?? 'LEGO setbeeld'}
-                className={styles.productDescriptionImage}
-                decoding="async"
-                loading="lazy"
-                src={imageUrl}
-              />
-            </div>
-          ) : null}
-          <div className={styles.productDescriptionBody}>
-            {blocks.map((block, blockIndex) =>
-              block.type === 'list' ? (
-                block.variant === 'ol' ? (
-                  <ol
-                    className={styles.productDescriptionList}
-                    key={`list-${blockIndex}`}
-                  >
-                    {block.items.map((item, itemIndex) => (
-                      <li key={`${blockIndex}-${itemIndex}`}>
-                        {renderCatalogProductDescriptionInlineContent(
-                          item,
-                          `${blockIndex}-${itemIndex}`,
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <ul
-                    className={styles.productDescriptionList}
-                    key={`list-${blockIndex}`}
-                  >
-                    {block.items.map((item, itemIndex) => (
-                      <li key={`${blockIndex}-${itemIndex}`}>
-                        {renderCatalogProductDescriptionInlineContent(
-                          item,
-                          `${blockIndex}-${itemIndex}`,
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )
-              ) : (
-                <p
-                  className={styles.productDescriptionParagraph}
-                  key={`paragraph-${blockIndex}`}
-                >
-                  {renderCatalogProductDescriptionInlineContent(
-                    block.content,
-                    `${blockIndex}`,
-                  )}
-                </p>
-              ),
-            )}
-          </div>
+    <DetailAccordionSection
+      className={styles.detailProductDescriptionSection}
+      contentClassName={styles.productDescriptionLayout}
+      title="Productgegevens"
+    >
+      {imageUrl ? (
+        <div className={styles.productDescriptionVisual}>
+          <img
+            alt={imageAlt ?? 'LEGO setbeeld'}
+            className={styles.productDescriptionImage}
+            decoding="async"
+            loading="lazy"
+            src={imageUrl}
+          />
         </div>
-      </details>
-    </section>
+      ) : null}
+      <div className={styles.productDescriptionBody}>
+        {blocks.map((block, blockIndex) =>
+          block.type === 'list' ? (
+            block.variant === 'ol' ? (
+              <ol
+                className={styles.productDescriptionList}
+                key={`list-${blockIndex}`}
+              >
+                {block.items.map((item, itemIndex) => (
+                  <li key={`${blockIndex}-${itemIndex}`}>
+                    {renderCatalogProductDescriptionInlineContent(
+                      item,
+                      `${blockIndex}-${itemIndex}`,
+                    )}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <ul
+                className={styles.productDescriptionList}
+                key={`list-${blockIndex}`}
+              >
+                {block.items.map((item, itemIndex) => (
+                  <li key={`${blockIndex}-${itemIndex}`}>
+                    {renderCatalogProductDescriptionInlineContent(
+                      item,
+                      `${blockIndex}-${itemIndex}`,
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : (
+            <p
+              className={styles.productDescriptionParagraph}
+              key={`paragraph-${blockIndex}`}
+            >
+              {renderCatalogProductDescriptionInlineContent(
+                block.content,
+                `${blockIndex}`,
+              )}
+            </p>
+          ),
+        )}
+      </div>
+    </DetailAccordionSection>
   );
 }
 
@@ -2113,38 +2107,25 @@ export function CatalogSetProductFeatures({
   }
 
   return (
-    <section className={styles.detailProductDescriptionSection}>
-      <details className={styles.productDescriptionDisclosure}>
-        <summary className={styles.productDescriptionSummary}>
-          <span className={styles.productDescriptionHeading}>
-            <h2 className={styles.productDescriptionTitle}>Productkenmerken</h2>
-          </span>
-          <span className={styles.productDescriptionIconFrame}>
-            <ChevronRight
-              aria-hidden="true"
-              className={styles.productDescriptionIcon}
-              size={24}
-              strokeWidth={2.3}
-            />
-          </span>
-        </summary>
-        <div className={styles.productFeaturesLayout}>
-          <ul className={styles.productFeaturesList}>
-            {safeFeatures.map((feature, index) => (
-              <li className={styles.productFeaturesItem} key={index}>
-                {feature.title ? (
-                  <>
-                    <strong>{feature.title}</strong>
-                    <span aria-hidden="true"> - </span>
-                  </>
-                ) : null}
-                <span>{feature.body}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </details>
-    </section>
+    <DetailAccordionSection
+      className={styles.detailProductDescriptionSection}
+      contentClassName={styles.productFeaturesLayout}
+      title="Productkenmerken"
+    >
+      <ul className={styles.productFeaturesList}>
+        {safeFeatures.map((feature, index) => (
+          <li className={styles.productFeaturesItem} key={index}>
+            {feature.title ? (
+              <>
+                <strong>{feature.title}</strong>
+                <span aria-hidden="true"> - </span>
+              </>
+            ) : null}
+            <span>{feature.body}</span>
+          </li>
+        ))}
+      </ul>
+    </DetailAccordionSection>
   );
 }
 
@@ -2161,6 +2142,7 @@ export function CatalogSetDetailPanel({
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
+  productReviewsSlot,
   recentlyViewedRail,
   setDetailHref,
   similarSetsRail,
@@ -2182,6 +2164,7 @@ export function CatalogSetDetailPanel({
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
+  productReviewsSlot?: ReactNode;
   recentlyViewedRail?: ReactNode;
   setDetailHref?: string;
   similarSetsRail?: ReactNode;
@@ -2322,11 +2305,15 @@ export function CatalogSetDetailPanel({
         </section>
       ) : null}
 
-      <CatalogSetProductDescription
-        description={catalogSetDetail.legoProductDescription}
-        imageAlt={`${visibleTitle} LEGO-set`}
-        imageUrl={catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl}
-      />
+      <div className={styles.detailSectionsList}>
+        <CatalogSetProductDescription
+          description={catalogSetDetail.legoProductDescription}
+          imageAlt={`${visibleTitle} LEGO-set`}
+          imageUrl={catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl}
+        />
+
+        {productReviewsSlot}
+      </div>
 
       <CatalogSetProductFeatures
         features={catalogSetDetail.legoProductFeatures}

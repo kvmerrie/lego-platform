@@ -57,7 +57,13 @@ export class ShellAdminComponent {
       path: '/cms',
     },
   ] as const;
-  readonly secondaryNavigationItems: readonly AdminNavigationItem[] = [];
+  readonly secondaryNavigationItems: readonly AdminNavigationItem[] = [
+    {
+      description: 'Modereer pending productbeoordelingen',
+      label: 'Reviews',
+      path: '/reviews',
+    },
+  ] as const;
 
   get themeToggleLabel(): string {
     return getThemeToggleLabel(this.themeMode());

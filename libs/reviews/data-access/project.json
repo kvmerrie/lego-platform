@@ -1,0 +1,17 @@
+{
+  "name": "reviews-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/reviews/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:reviews", "type:data-access", "platform:web"],
+  "// targets": "to see all targets run: nx show project reviews-data-access --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/reviews/data-access",
+        "command": "vitest run src/lib/*.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

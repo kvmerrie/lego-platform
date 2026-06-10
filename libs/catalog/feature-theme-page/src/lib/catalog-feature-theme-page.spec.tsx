@@ -457,32 +457,25 @@ describe('CatalogFeatureThemePage', () => {
     );
     expect(desktopFavoriteRule).toContain('display: inline;');
     expect(activeFavoriteRule).toContain(
-      '--lego-button-accent-background: var(--theme-page-favorite-fill-background);',
+      '--lego-button-accent-background: var(\n    --catalog-hero-favorite-fill-background',
     );
     expect(activeFavoriteRule).toContain(
-      '--lego-button-accent-color: var(--theme-page-favorite-fill-foreground);',
+      '--lego-button-accent-color: var(--catalog-hero-favorite-fill-foreground);',
     );
     expect(activeFavoriteRule).toContain(
-      'background-color: var(--theme-page-favorite-fill-background);',
+      'background-color: var(--catalog-hero-favorite-fill-background);',
     );
     expect(activeFavoriteRule).toContain(
-      'border-color: var(--theme-page-favorite-fill-background);',
+      'border-color: var(--catalog-hero-favorite-fill-background);',
     );
     expect(activeFavoriteRule).toContain(
-      'color: var(--theme-page-favorite-fill-foreground);',
+      'color: var(--catalog-hero-favorite-fill-foreground);',
     );
     expect(css).toContain(
       ".introFavoriteAction[aria-pressed='true']:hover,\n.introFavoriteAction.introFavoriteActionActive:hover,\n.introFavoriteAction.introFavoriteActionActive[aria-pressed='true']:hover",
     );
-    expect(css).toContain(
-      '--theme-page-favorite-fill-background: var(--theme-page-text);',
-    );
-    expect(css).toContain(
-      '--theme-page-favorite-fill-foreground: var(--theme-page-surface);',
-    );
-    expect(css).toContain(
-      '--theme-page-favorite-fill-background: var(\n    --theme-page-button-fill-default-dark-surface',
-    );
+    expect(css).not.toContain('--theme-page-favorite-fill-background');
+    expect(css).not.toContain('--theme-page-button-fill');
     expect(css).toContain('@media (min-width: 36rem)');
     expect(css).toContain('.introPrimaryLabelMobile');
     expect(css).toContain('display: none;');
@@ -522,7 +515,44 @@ describe('CatalogFeatureThemePage', () => {
 
     expect(markup).toContain('--theme-page-surface:#e0b84f');
     expect(markup).toContain('--theme-page-text:#171a22');
+    expect(markup).toContain('data-hero-button-tone="black"');
     expect(markup).toContain('interactiveSurfaceLight');
+  });
+
+  it('uses white hero buttons on dark public theme visuals', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemePage
+        themePage={{
+          themeSnapshot: {
+            name: 'Minecraft',
+            slug: 'minecraft',
+            setCount: 35,
+            momentum:
+              'Voor biomes, mobs en herkenbare blokkenwereld-scenes op je plank.',
+            signatureSet: 'The Creeper',
+          },
+          visual: {
+            backgroundColor: '#305b23',
+            textColor: '#ffffff',
+          },
+          setCards: [
+            {
+              id: '21276',
+              slug: 'the-creeper-21276',
+              name: 'The Creeper',
+              theme: 'Minecraft',
+              releaseYear: 2025,
+              pieces: 665,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('--theme-page-surface:#305b23');
+    expect(markup).toContain('--theme-page-text:#ffffff');
+    expect(markup).toContain('data-hero-button-tone="white"');
+    expect(markup).toContain('interactiveSurfaceDark');
   });
 });
 
@@ -550,10 +580,10 @@ describe('CatalogFeatureThemeFavoriteToggle', () => {
     expect(button?.className).toContain('interactiveSizeHero');
     expect(button?.className).toContain('introFavoriteActionActive');
     expect(button?.getAttribute('style')).toContain(
-      '--lego-button-accent-background: var(--theme-page-favorite-fill-background);',
+      '--lego-button-accent-background: var(--catalog-hero-favorite-fill-background);',
     );
     expect(button?.getAttribute('style')).toContain(
-      'background-color: var(--theme-page-favorite-fill-background);',
+      'background-color: var(--catalog-hero-favorite-fill-background);',
     );
 
     await act(async () => {

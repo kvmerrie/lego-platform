@@ -23,6 +23,7 @@ export function CatalogFeatureSetDetail({
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
+  productReviewsSlot,
   recentlyViewedRail,
   similarSetsRail,
   setNewsRail,
@@ -42,6 +43,7 @@ export function CatalogFeatureSetDetail({
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
+  productReviewsSlot?: ReactNode;
   recentlyViewedRail?: ReactNode;
   similarSetsRail?: ReactNode;
   setNewsRail?: ReactNode;
@@ -63,6 +65,7 @@ export function CatalogFeatureSetDetail({
       ownershipActions={ownershipActions}
       priceAlertAction={priceAlertAction}
       priceHistoryPanel={priceHistoryPanel}
+      productReviewsSlot={productReviewsSlot}
       recentlyViewedRail={recentlyViewedRail}
       setDetailHref={buildSetDetailPath(catalogSetDetail.slug)}
       similarSetsRail={similarSetsRail}

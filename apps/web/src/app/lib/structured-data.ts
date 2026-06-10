@@ -1,5 +1,9 @@
 import type { CatalogSetDetail } from '@lego-platform/catalog/util';
 import type {
+  CatalogSetReview,
+  CatalogSetReviewSummary,
+} from '@lego-platform/reviews/util';
+import type {
   ContentArticle,
   ContentArticleListItem,
 } from '@lego-platform/content/util';
@@ -128,10 +132,14 @@ export function buildSetProductJsonLd({
   catalogSetDetail,
   canonicalUrl = buildCanonicalUrl(buildSetDetailPath(catalogSetDetail.slug)),
   offers = [],
+  reviews = [],
+  reviewSummary,
 }: {
   canonicalUrl?: string;
   catalogSetDetail: CatalogSetDetail;
   offers?: readonly StructuredDataOffer[];
+  reviews?: readonly CatalogSetReview[];
+  reviewSummary?: CatalogSetReviewSummary;
 }): JsonLdValue | undefined {
   const offerSchemas = offers.flatMap((offer) => {
     const offerSchema = toOfferSchema(offer);
@@ -142,7 +150,12 @@ export function buildSetProductJsonLd({
     .map((offer) => offer.priceCents)
     .filter((priceCents) => priceCents > 0);
 
-  if (!offerSchemas.length) {
+  const hasApprovedReviews =
+    reviewSummary &&
+    reviewSummary.reviewCount > 0 &&
+    typeof reviewSummary.averageRating === 'number';
+
+  if (!offerSchemas.length && !hasApprovedReviews) {
     return undefined;
   }
 
@@ -169,6 +182,38 @@ export function buildSetProductJsonLd({
     image: toAbsoluteImageUrl(
       catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl,
     ),
+    ...(hasApprovedReviews
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            bestRating: 5,
+            ratingValue: reviewSummary.averageRating,
+            reviewCount: reviewSummary.reviewCount,
+            worstRating: 1,
+          },
+          ...(reviews.length > 0
+            ? {
+                review: reviews.map((review) => ({
+                  '@type': 'Review',
+                  author: {
+                    '@type': 'Person',
+                    name: review.authorDisplayName,
+                  },
+                  datePublished: review.createdAt,
+                  ...(review.reviewText
+                    ? { reviewBody: review.reviewText }
+                    : {}),
+                  reviewRating: {
+                    '@type': 'Rating',
+                    bestRating: 5,
+                    ratingValue: review.overallRating,
+                    worstRating: 1,
+                  },
+                })),
+              }
+            : {}),
+        }
+      : {}),
     mpn: catalogSetDetail.id,
     name: getCatalogSetStructuredDataName(catalogSetDetail),
     sku: catalogSetDetail.id,

@@ -56,10 +56,10 @@ describe('structured data helpers', () => {
     ).toEqual(
       expect.objectContaining({
         '@type': 'Product',
-        aggregateOffer: expect.objectContaining({
+        offers: expect.objectContaining({
           '@type': 'AggregateOffer',
-          highPrice: '499.99',
-          lowPrice: '399.99',
+          highPrice: 499.99,
+          lowPrice: 399.99,
           offerCount: 2,
           priceCurrency: 'EUR',
         }),
@@ -79,6 +79,60 @@ describe('structured data helpers', () => {
       expect.not.objectContaining({
         aggregateOffer: expect.anything(),
         offers: expect.anything(),
+      }),
+    );
+  });
+
+  it('adds AggregateRating and Review only for approved Brickhunt reviews', () => {
+    expect(
+      buildSetProductJsonLd({
+        catalogSetDetail: baseSet,
+        reviews: [
+          {
+            authorDisplayName: 'Brickhunt-gebruiker',
+            createdAt: '2026-06-10T10:00:00.000Z',
+            id: 'review-1',
+            moderationStatus: 'approved',
+            overallRating: 5,
+            recommends: true,
+            reviewText: 'Rivendell blijft op de plank meteen hangen.',
+            setId: '10316',
+            updatedAt: '2026-06-10T10:00:00.000Z',
+          },
+        ],
+        reviewSummary: {
+          averageRating: 5,
+          ratingDistribution: {
+            '1': 0,
+            '2': 0,
+            '3': 0,
+            '4': 0,
+            '5': 1,
+          },
+          recommendCount: 1,
+          reviewCount: 1,
+          setId: '10316',
+        },
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          bestRating: 5,
+          ratingValue: 5,
+          reviewCount: 1,
+          worstRating: 1,
+        },
+        review: [
+          expect.objectContaining({
+            '@type': 'Review',
+            author: {
+              '@type': 'Person',
+              name: 'Brickhunt-gebruiker',
+            },
+            reviewBody: 'Rivendell blijft op de plank meteen hangen.',
+          }),
+        ],
       }),
     );
   });

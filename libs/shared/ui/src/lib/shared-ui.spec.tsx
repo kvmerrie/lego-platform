@@ -16,6 +16,7 @@ import {
   MarkerList,
   Panel,
   SectionHeading,
+  DetailAccordionSection,
 } from './shared-ui';
 import { ResponsiveDialog } from './responsive-dialog';
 import { SelectableItemDialog } from './selectable-item-dialog';
@@ -41,6 +42,57 @@ describe('Container', () => {
     expect(markup).toContain('id="homepage-grid"');
     expect(markup).toContain('shared-container');
     expect(markup).toContain('Aligned content');
+  });
+});
+
+describe('DetailAccordionSection', () => {
+  it('renders reusable product-detail accordion summary markup', () => {
+    const markup = renderToStaticMarkup(
+      <DetailAccordionSection
+        className="detail-section"
+        contentClassName="detail-content"
+        defaultOpen
+        summaryMeta={<span>5 sterren</span>}
+        title="Productgegevens"
+        titleId="product-details-title"
+      >
+        <p>Accordion body</p>
+      </DetailAccordionSection>,
+    );
+
+    expect(markup).toContain('<section');
+    expect(markup).toContain('detail-section');
+    expect(markup).toContain('aria-labelledby="product-details-title"');
+    expect(markup).toContain('<details');
+    expect(markup).toContain('open=""');
+    expect(markup).toContain('<summary');
+    expect(markup).toContain('Productgegevens</h2>');
+    expect(markup).toContain('5 sterren');
+    expect(markup).toContain('detail-content');
+    expect(markup).toContain('Accordion body');
+  });
+
+  it('defines shared title, chevron, focus and adjacent border styling', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.detailAccordionDisclosure');
+    expect(css).toContain('border-block: var(--lego-border-width-1) solid');
+    expect(css).toContain(
+      '.detailAccordionSection + .detailAccordionSection .detailAccordionDisclosure',
+    );
+    expect(css).toContain('border-block-start: 0;');
+    expect(css).toContain('.detailAccordionSummary:focus-visible');
+    expect(css).toContain('.detailAccordionTitle');
+    expect(css).toContain('font-size: 20px;');
+    expect(css).toContain('font-weight: var(--lego-text-role-section-weight);');
+    expect(css).toContain('.detailAccordionIconFrame');
+    expect(css).toContain('flex: 0 0 2.75rem;');
+    expect(css).toContain(
+      '.detailAccordionDisclosure[open] .detailAccordionIcon',
+    );
   });
 });
 

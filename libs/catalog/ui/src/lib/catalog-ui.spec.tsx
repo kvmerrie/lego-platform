@@ -162,26 +162,29 @@ describe('CatalogSetCard', () => {
     expect(sharedCss).toContain('@layer shared {');
     expect(catalogCss).toContain('@layer reset, shared, catalog;');
     expect(catalogCss).toContain('@layer catalog {');
-    expect(catalogCss).toContain('background: transparent;');
-    expect(catalogCss).toContain(
-      'border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);',
-    );
+    expect(sharedCss).toContain('.detailAccordionDisclosure');
     expect(catalogCss).toContain('--product-description-padding-inline: var(');
     expect(catalogCss).toContain('--lego-section-inline-padding,');
+    expect(catalogCss).toContain(
+      'padding-inline: var(--product-description-padding-inline);',
+    );
     expect(
       catalogCss.match(
         /padding-inline: var\(--product-description-padding-inline\);/gu,
       )?.length,
-    ).toBeGreaterThanOrEqual(2);
-    expect(catalogCss).toContain('.productDescriptionIconFrame');
-    expect(catalogCss).toContain('flex: 0 0 2.75rem;');
-    expect(catalogCss).toContain('font-size: 20px;');
+    ).toBeGreaterThanOrEqual(1);
+    expect(sharedCss).toContain('.detailAccordionTitle');
+    expect(sharedCss).toContain('font-size: 20px;');
+    expect(sharedCss).toContain('.detailAccordionIconFrame');
+    expect(sharedCss).toContain('flex: 0 0 2.75rem;');
     expect(catalogCss).toContain('max-inline-size: 72ch;');
     expect(catalogCss).toContain('max-height: min(26rem, 62vw);');
-    expect(catalogCss).toContain('transform: rotate(-90deg);');
-    expect(catalogCss).toContain(
-      '.productDescriptionDisclosure[open] .productDescriptionIcon',
+    expect(sharedCss).toContain('transform: rotate(-90deg);');
+    expect(sharedCss).toContain(
+      '.detailAccordionDisclosure[open] .detailAccordionIcon',
     );
+    expect(catalogCss).not.toContain('.productDescriptionTitle');
+    expect(catalogCss).not.toContain('.productDescriptionIconFrame');
     expect(catalogCss).not.toContain('--lego-text-role-section-title-');
   });
 
@@ -2322,6 +2325,11 @@ describe('CatalogSetCard', () => {
             <p>Recent prijsverloop</p>
           </div>
         }
+        productReviewsSlot={
+          <section className="productReviewsSection">
+            Productbeoordelingen
+          </section>
+        }
         themeDirectoryHref="/themes"
         themeHref="/themes/icons"
         trustSignals={[
@@ -2388,6 +2396,15 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Beschrijving van LEGO');
     expect(markup).toContain('<h2');
     expect(markup).toContain('Productgegevens</h2>');
+    expect(markup).toContain('detailAccordionTitle');
+    expect(markup).toContain('Productbeoordelingen');
+    expect(markup).toContain('detailSectionsList');
+    expect(markup.indexOf('detailSectionsList')).toBeLessThan(
+      markup.indexOf('Productgegevens</h2>'),
+    );
+    expect(markup.indexOf('Productgegevens</h2>')).toBeLessThan(
+      markup.indexOf('Productbeoordelingen'),
+    );
     expect(markup).toContain('Bouw de vallei van <strong>Rivendell</strong>');
     expect(markup).toContain('<li>Frodo</li>');
     expect(markup).toContain('<li><em>Elrond</em></li>');
@@ -2436,6 +2453,8 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.alertCard {');
     expect(css).toContain('.detailDecisionSupport {');
     expect(css).toContain('.offerListCard {');
+    expect(css).toContain('.detailSectionsList {');
+    expect(css).toContain('gap: 0;');
   });
 
   it('does not render the LEGO product description section without description', () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import {
   getUserSession,
@@ -25,7 +26,31 @@ import type { UserSession } from '@lego-platform/user/util';
 
 type UserAuthMode = 'magic-link' | 'reset-password' | 'sign-in' | 'sign-up';
 
-export function UserFeatureAuth() {
+const AUTH_CALLBACK_PATH = '/auth/callback';
+
+export function resolveUserAuthPostAuthRedirectPath(
+  value?: string | null,
+): string | undefined {
+  const normalizedValue = value?.trim();
+
+  if (
+    !normalizedValue ||
+    !normalizedValue.startsWith('/') ||
+    normalizedValue.startsWith('//') ||
+    normalizedValue.startsWith(AUTH_CALLBACK_PATH)
+  ) {
+    return undefined;
+  }
+
+  return normalizedValue;
+}
+
+export function UserFeatureAuth({
+  postAuthRedirectPath,
+}: {
+  postAuthRedirectPath?: string;
+} = {}) {
+  const router = useRouter();
   const [userSession, setUserSession] = useState<UserSession>(
     createAnonymousUserSession(),
   );
@@ -42,7 +67,47 @@ export function UserFeatureAuth() {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [isPasswordRecoveryMode, setIsPasswordRecoveryMode] = useState(false);
   const isMountedRef = useRef(true);
+  const hasRedirectedRef = useRef(false);
   const authAvailable = isUserAuthAvailable();
+
+  function getSafePostAuthRedirectPath(): string | undefined {
+    if (postAuthRedirectPath) {
+      return resolveUserAuthPostAuthRedirectPath(postAuthRedirectPath);
+    }
+
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    return resolveUserAuthPostAuthRedirectPath(
+      new URLSearchParams(window.location.search).get('next'),
+    );
+  }
+
+  function redirectAfterAuthIfNeeded(nextUserSession: UserSession): boolean {
+    const safePostAuthRedirectPath = getSafePostAuthRedirectPath();
+
+    if (
+      hasRedirectedRef.current ||
+      !safePostAuthRedirectPath ||
+      !isAuthenticatedSession(nextUserSession)
+    ) {
+      return false;
+    }
+
+    hasRedirectedRef.current = true;
+
+    try {
+      router.replace(safePostAuthRedirectPath);
+      router.refresh();
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.assign(safePostAuthRedirectPath);
+      }
+    }
+
+    return true;
+  }
 
   function resetAuthMessages() {
     setErrorMessage(undefined);
@@ -73,6 +138,8 @@ export function UserFeatureAuth() {
       if (isAuthenticatedSession(nextUserSession)) {
         setAuthEmail(nextUserSession.account?.email ?? '');
       }
+
+      redirectAfterAuthIfNeeded(nextUserSession);
     } catch {
       if (!isMountedRef.current) {
         return;
@@ -121,7 +188,7 @@ export function UserFeatureAuth() {
       unsubscribeAuth();
       unsubscribeAccount();
     };
-  }, [authAvailable]);
+  }, [authAvailable, router]);
 
   async function handlePrimaryAuthAction() {
     const nextEmail = authEmail.trim();
@@ -273,10 +340,8 @@ export function UserFeatureAuth() {
       setAuthStatusMessage(
         'Wachtwoord bijgewerkt. Je kunt dit account blijven gebruiken met je nieuwe wachtwoord.',
       );
-
-      if (typeof window !== 'undefined') {
-        window.history.replaceState({}, '', buildWebPath(webPathnames.account));
-      }
+      router.replace(buildWebPath(webPathnames.account));
+      router.refresh();
     } catch (error) {
       setErrorMessage(
         error instanceof Error

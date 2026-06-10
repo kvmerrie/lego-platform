@@ -2803,6 +2803,11 @@ function toCatalogSummaryFromCanonicalSet(
     releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
+    ...(canonicalCatalogSet.cardImageUrl
+      ? {
+          cardImageUrl: canonicalCatalogSet.cardImageUrl,
+        }
+      : {}),
     imageUrl: canonicalCatalogSet.cardImageUrl ?? canonicalCatalogSet.imageUrl,
     ...(canonicalCatalogSet.imageUrl
       ? {
@@ -3853,6 +3858,11 @@ function toCatalogSetCardFromCanonicalSet(
     releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
     releaseYear: catalogSetDetail.releaseYear,
     pieces: catalogSetDetail.pieces,
+    ...(canonicalCatalogSet.cardImageUrl
+      ? {
+          cardImageUrl: canonicalCatalogSet.cardImageUrl,
+        }
+      : {}),
     imageUrl: canonicalCatalogSet.cardImageUrl ?? catalogSetDetail.imageUrl,
     images: catalogSetDetail.images,
     primaryImage: catalogSetDetail.primaryImage,
@@ -11839,7 +11849,7 @@ function getHomepageDiscoveryVisual(
 function getHomepageSetCardImageUrl(
   setCard?: CatalogHomepageSetCard,
 ): string | undefined {
-  return setCard?.imageUrl ?? setCard?.primaryImage;
+  return setCard?.cardImageUrl ?? setCard?.imageUrl ?? setCard?.primaryImage;
 }
 
 function getHomepageThemePresentationImageUrl(
@@ -11958,6 +11968,15 @@ function resolveHomepageItemImageUrl({
 
   if (item.referenceType === 'set') {
     return getHomepageSetCardImageUrl(setCard);
+  }
+
+  if (item.referenceType === 'theme') {
+    return (
+      customImageUrl ??
+      getHomepageSetCardImageUrl(representativeSetCard) ??
+      getHomepageThemePresentationImageUrl(themeItem) ??
+      getHomepageThemeFallbackImageUrl(themeItem)
+    );
   }
 
   return (
@@ -12210,13 +12229,14 @@ export async function listHomepageThemeDirectoryItems({
     )
       ? curatedThemeRailItem.imageUrl
       : undefined;
-    const representativeImageUrl =
-      representativeSetCard?.imageUrl ?? representativeSetCard?.primaryImage;
+    const representativeImageUrl = getHomepageSetCardImageUrl(
+      representativeSetCard,
+    );
     const imageUrl =
       customImageUrl ??
+      representativeImageUrl ??
       themeDirectoryItem.visual?.tileImageUrl ??
       themeDirectoryItem.visual?.imageUrl ??
-      representativeImageUrl ??
       themeDirectoryItem.imageUrl;
 
     return [

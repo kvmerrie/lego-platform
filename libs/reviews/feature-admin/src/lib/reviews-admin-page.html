@@ -1,0 +1,149 @@
+<section class="admin-section admin-table-page">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Reviews</p>
+      <h2>Productbeoordelingen modereren</h2>
+      <p class="admin-muted">
+        Controleer beoordelingen met tekst voordat ze meetellen in de publieke
+        score en structured data.
+      </p>
+    </div>
+
+    <div class="admin-actions">
+      <span class="admin-count-pill">{{ pendingReviewCount() }} pending</span>
+      <button
+        class="admin-button admin-button--subtle admin-button--small"
+        type="button"
+        [disabled]="isLoading()"
+        (click)="reload()"
+      >
+        Vernieuwen
+      </button>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+  <section
+    class="admin-panel admin-panel--danger admin-stack admin-stack--tight"
+  >
+    <strong>Reviewmoderatie fout</strong>
+    <p class="admin-muted">{{ errorMessage() }}</p>
+  </section>
+  } @if (successMessage()) {
+  <section class="admin-panel admin-stack admin-stack--tight">
+    <strong>Review bijgewerkt</strong>
+    <p class="admin-muted">{{ successMessage() }}</p>
+  </section>
+  } @if (isLoading()) {
+  <section class="admin-panel">
+    <p class="admin-muted">Pending reviews laden...</p>
+  </section>
+  } @else if (pendingReviews().length === 0) {
+  <section class="admin-panel admin-stack admin-stack--tight">
+    <h3>Geen pending reviews</h3>
+    <p class="admin-muted">
+      Alles is verwerkt. Nieuwe tekstreviews verschijnen hier automatisch.
+    </p>
+  </section>
+  } @else {
+  <section class="admin-panel admin-panel--compact admin-table-panel">
+    <div class="admin-data-table-shell admin-table-scroll">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th><span class="admin-table__heading">Set</span></th>
+            <th><span class="admin-table__heading">Rating</span></th>
+            <th><span class="admin-table__heading">Reviewtekst</span></th>
+            <th><span class="admin-table__heading">Gebruiker</span></th>
+            <th><span class="admin-table__heading">Datum</span></th>
+            <th><span class="admin-table__heading">Status</span></th>
+            <th><span class="admin-table__heading">Reason</span></th>
+            <th><span class="admin-table__heading">Acties</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (review of pendingReviews(); track review.id) {
+          <tr>
+            <td>
+              <div class="admin-data-table__cell-stack">
+                <span class="admin-data-table__cell-title">
+                  {{ review.setName }}
+                </span>
+                <span class="admin-data-table__cell-meta">
+                  {{ review.setId }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="admin-data-table__cell-title">
+                {{ review.overallRating }}/5
+              </span>
+              @if (review.recommends !== null && review.recommends !==
+              undefined) {
+              <span class="admin-data-table__cell-meta">
+                {{ review.recommends ? 'Aanbevolen' : 'Niet aanbevolen' }}
+              </span>
+              }
+            </td>
+            <td class="reviews-admin-table__review">{{ review.reviewText }}</td>
+            <td>
+              <div class="admin-data-table__cell-stack">
+                <span class="admin-data-table__cell-title">
+                  {{ review.authorDisplayName }}
+                </span>
+                <span class="admin-data-table__cell-meta">
+                  {{ review.userId }}
+                </span>
+              </div>
+            </td>
+            <td>{{ review.createdAt | date: 'dd-MM-yyyy HH:mm' }}</td>
+            <td>
+              <span class="admin-status-pill admin-status-pill--warning">
+                {{ review.moderationStatus }}
+              </span>
+            </td>
+            <td>
+              <input
+                class="admin-input reviews-admin-table__reason"
+                placeholder="Optionele reden"
+                type="text"
+                [ngModel]="reasonByReviewId()[review.id] ?? ''"
+                (ngModelChange)="updateReason(review.id, $event)"
+              />
+            </td>
+            <td>
+              <div class="admin-actions">
+                <button
+                  class="admin-button admin-button--compact admin-button--primary"
+                  type="button"
+                  [disabled]="actionReviewId() === review.id"
+                  (click)="moderateReview(review, 'approved')"
+                >
+                  Goedkeuren
+                </button>
+                <button
+                  class="admin-button admin-button--compact"
+                  type="button"
+                  [disabled]="actionReviewId() === review.id"
+                  (click)="moderateReview(review, 'rejected')"
+                >
+                  Afwijzen
+                </button>
+                <button
+                  class="admin-button admin-button--compact admin-button--subtle"
+                  type="button"
+                  [disabled]="actionReviewId() === review.id"
+                  (click)="moderateReview(review, 'hidden')"
+                >
+                  Verbergen
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  }
+</section>

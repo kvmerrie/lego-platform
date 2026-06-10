@@ -74,6 +74,86 @@
     text-decoration: none;
   }
 
+  .detailAccordionDisclosure {
+    --lego-detail-accordion-padding-inline: var(
+      --lego-section-inline-padding,
+      var(--lego-space-3)
+    );
+
+    background: transparent;
+    border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  }
+
+  .detailAccordionSection + .detailAccordionSection .detailAccordionDisclosure {
+    border-block-start: 0;
+  }
+
+  .detailAccordionSummary {
+    align-items: center;
+    border-radius: var(--lego-radius-sm);
+    cursor: pointer;
+    display: flex;
+    gap: var(--lego-space-3);
+    justify-content: space-between;
+    list-style: none;
+    min-height: 4.5rem;
+    padding-block: var(--lego-space-4);
+    padding-inline: var(--lego-detail-accordion-padding-inline);
+  }
+
+  .detailAccordionSummary::-webkit-details-marker {
+    display: none;
+  }
+
+  .detailAccordionSummary:focus-visible {
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: 3px;
+  }
+
+  .detailAccordionHeading {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .detailAccordionTitle {
+    color: var(--lego-text);
+    font-size: 20px;
+    font-weight: var(--lego-text-role-section-weight);
+    letter-spacing: 0;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .detailAccordionMeta {
+    min-width: 0;
+  }
+
+  .detailAccordionIconFrame {
+    align-items: center;
+    border-radius: var(--lego-radius-sm);
+    display: inline-flex;
+    flex: 0 0 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+    width: 2.75rem;
+  }
+
+  .detailAccordionIcon {
+    color: var(--lego-text-muted);
+    flex: 0 0 auto;
+    transform: rotate(-90deg);
+    transition: transform var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .detailAccordionDisclosure[open] .detailAccordionIcon {
+    transform: rotate(90deg);
+  }
+
+  .detailAccordionContent {
+    min-width: 0;
+  }
+
   .interactiveBase {
     align-items: center;
     appearance: none;

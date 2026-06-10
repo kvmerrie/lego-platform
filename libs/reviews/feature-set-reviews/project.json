@@ -1,0 +1,17 @@
+{
+  "name": "reviews-feature-set-reviews",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/reviews/feature-set-reviews/src",
+  "projectType": "library",
+  "tags": ["scope:reviews", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project reviews-feature-set-reviews --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/reviews/feature-set-reviews",
+        "command": "vitest run src/lib/*.spec.tsx --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

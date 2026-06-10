@@ -26,6 +26,7 @@ export interface CatalogReleaseMetadata {
 }
 
 export interface CatalogSetSummary {
+  cardImageUrl?: string;
   catalogName?: string;
   createdAt?: string;
   displayTitle?: string;

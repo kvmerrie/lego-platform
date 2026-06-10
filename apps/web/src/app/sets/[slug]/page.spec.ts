@@ -16,6 +16,7 @@ const setPageMocks = vi.hoisted(() => ({
   listCatalogSetLiveOffersBySetId: vi.fn(),
   listCatalogSetSlugs: vi.fn(),
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
+  getCatalogSetReviewsPublicPayload: vi.fn(),
   unstableCache: vi.fn((callback: () => unknown) => callback),
 }));
 
@@ -51,6 +52,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     catalogSetDetail,
     offerList,
     recentlyViewedRail,
+    productReviewsSlot,
     setNewsRail,
     similarSetsRail,
     themeDirectoryHref,
@@ -84,6 +86,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       rankingLabel?: string;
     }[];
     recentlyViewedRail?: unknown;
+    productReviewsSlot?: unknown;
     setNewsRail?: unknown;
     similarSetsRail?: unknown;
     themeDirectoryHref?: string;
@@ -148,6 +151,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             catalogSetDetail.legoProductDescription,
           )
         : null,
+      productReviewsSlot,
       catalogSetDetail?.legoProductFeatures?.length
         ? createElement(
             'details',
@@ -250,6 +254,16 @@ vi.mock('@lego-platform/pricing/feature-price-history', () => ({
     createElement('div', { 'data-testid': 'price-history' }),
 }));
 
+vi.mock('@lego-platform/reviews/data-access-web', () => ({
+  getCatalogSetReviewsPublicPayload:
+    setPageMocks.getCatalogSetReviewsPublicPayload,
+}));
+
+vi.mock('@lego-platform/reviews/feature-set-reviews', () => ({
+  ReviewsFeatureSetReviews: () =>
+    createElement('section', {}, 'Productbeoordelingen'),
+}));
+
 vi.mock('@lego-platform/shell/web', () => ({
   ShellWeb: ({ children }: { children?: unknown }) => children ?? null,
 }));
@@ -271,6 +285,22 @@ beforeEach(() => {
   setPageMocks.getCatalogSetDetailRelatedThemeSnapshot.mockResolvedValue(
     undefined,
   );
+  setPageMocks.getCatalogSetReviewsPublicPayload.mockResolvedValue({
+    reviews: [],
+    summary: {
+      averageRating: undefined,
+      ratingDistribution: {
+        '1': 0,
+        '2': 0,
+        '3': 0,
+        '4': 0,
+        '5': 0,
+      },
+      recommendCount: 0,
+      reviewCount: 0,
+      setId: 'unknown',
+    },
+  });
 });
 
 function createCurrentOfferSummaryMap({

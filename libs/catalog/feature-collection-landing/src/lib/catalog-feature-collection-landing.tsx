@@ -1,11 +1,14 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
   CatalogBrowsePagination,
+  CatalogHeroMedia,
   CatalogPageIntro,
   CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardCollection,
   type CatalogSetCardPriceContext,
+  getHeroButtonSurface,
+  getHeroButtonTone,
 } from '@lego-platform/catalog/ui';
 import {
   type CatalogCollectionLandingPageConfig,
@@ -97,6 +100,8 @@ export function CatalogFeatureCollectionLandingPage({
 }) {
   const browseSectionId = 'sets';
   const hasSortOptions = config.sort.options.length > 1;
+  const heroButtonTone = getHeroButtonTone(config.visual);
+  const heroButtonSurface = getHeroButtonSurface(config.visual);
   const introStyle = {
     ...(config.visual?.backgroundColor
       ? {
@@ -141,6 +146,7 @@ export function CatalogFeatureCollectionLandingPage({
         }}
         className={styles.intro}
         contentClassName={styles.introContent}
+        heroButtonTone={heroButtonTone}
         style={introStyle}
       >
         <div className={styles.introLayout}>
@@ -154,6 +160,7 @@ export function CatalogFeatureCollectionLandingPage({
               <ActionLink
                 href={`#${browseSectionId}`}
                 size="hero"
+                surface={heroButtonSurface}
                 tone="accent"
               >
                 Bekijk de sets
@@ -162,6 +169,7 @@ export function CatalogFeatureCollectionLandingPage({
                 <ActionLink
                   href={themeLinks[0].href}
                   size="hero"
+                  surface={heroButtonSurface}
                   tone="secondary"
                 >
                   Naar {themeLinks[0].label}
@@ -170,17 +178,15 @@ export function CatalogFeatureCollectionLandingPage({
             </div>
           </div>
           {config.visual?.imageUrl ? (
-            <div className={styles.introVisual} aria-hidden="true">
-              <img
-                alt=""
-                className={styles.introImage}
-                decoding="async"
-                height={420}
-                loading="eager"
-                src={config.visual.imageUrl}
-                width={560}
-              />
-            </div>
+            <CatalogHeroMedia
+              alt=""
+              className={styles.introVisual}
+              decoding="async"
+              height={420}
+              loading="eager"
+              src={config.visual.imageUrl}
+              width={560}
+            />
           ) : null}
         </div>
       </CatalogPageIntro>

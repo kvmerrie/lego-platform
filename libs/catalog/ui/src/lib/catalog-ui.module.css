@@ -1092,9 +1092,123 @@
   }
 
   .pageIntro {
+    --catalog-hero-surface: var(--lego-surface-muted);
     --catalog-page-intro-inline-padding: 0px;
     display: grid;
     gap: var(--lego-space-3);
+  }
+
+  .pageIntro[data-hero-button-tone='black'] {
+    --catalog-hero-button-fill-background: var(--lego-contrast-ink);
+    --catalog-hero-button-fill-hover-background: var(
+      --lego-contrast-ink-strong
+    );
+    --catalog-hero-button-fill-active-background: #090c12;
+    --catalog-hero-button-fill-foreground: color-mix(
+      in srgb,
+      var(--catalog-hero-surface) 72%,
+      var(--lego-contrast-white) 28%
+    );
+    --catalog-hero-favorite-fill-background: var(--lego-contrast-ink);
+    --catalog-hero-favorite-fill-hover-background: var(
+      --lego-contrast-ink-strong
+    );
+    --catalog-hero-favorite-fill-foreground: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-accent-background: var(--catalog-hero-button-fill-background);
+    --lego-button-accent-hover-background: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-accent-active-background: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-accent-color: var(--catalog-hero-button-fill-foreground);
+    --lego-button-accent-hover-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-accent-active-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-secondary-border-color: var(
+      --catalog-hero-button-fill-background
+    );
+    --lego-button-secondary-color: var(--catalog-hero-button-fill-background);
+    --lego-button-secondary-hover-background: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-secondary-hover-border-color: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-secondary-hover-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-secondary-active-background: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-secondary-active-border-color: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-secondary-active-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+  }
+
+  .pageIntro[data-hero-button-tone='white'] {
+    --catalog-hero-button-fill-background: var(--lego-contrast-white);
+    --catalog-hero-button-fill-hover-background: var(
+      --lego-contrast-white-muted
+    );
+    --catalog-hero-button-fill-active-background: #dfe6ef;
+    --catalog-hero-button-fill-foreground: color-mix(
+      in srgb,
+      var(--catalog-hero-surface) 78%,
+      var(--lego-contrast-ink) 22%
+    );
+    --catalog-hero-favorite-fill-background: var(--lego-contrast-white);
+    --catalog-hero-favorite-fill-hover-background: var(
+      --lego-contrast-white-muted
+    );
+    --catalog-hero-favorite-fill-foreground: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-focus-ring-color: var(--lego-button-focus-ring-color-inverse);
+    --lego-button-accent-background: var(--catalog-hero-button-fill-background);
+    --lego-button-accent-hover-background: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-accent-active-background: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-accent-color: var(--catalog-hero-button-fill-foreground);
+    --lego-button-accent-hover-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-accent-active-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-secondary-border-color: var(
+      --catalog-hero-button-fill-background
+    );
+    --lego-button-secondary-color: var(--catalog-hero-button-fill-background);
+    --lego-button-secondary-hover-background: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-secondary-hover-border-color: var(
+      --catalog-hero-button-fill-hover-background
+    );
+    --lego-button-secondary-hover-color: var(
+      --catalog-hero-button-fill-foreground
+    );
+    --lego-button-secondary-active-background: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-secondary-active-border-color: var(
+      --catalog-hero-button-fill-active-background
+    );
+    --lego-button-secondary-active-color: var(
+      --catalog-hero-button-fill-foreground
+    );
   }
 
   .pageIntroBreadcrumbs {
@@ -1108,6 +1222,23 @@
     display: grid;
     gap: var(--lego-space-3);
     min-width: 0;
+  }
+
+  .heroMediaFrame {
+    --catalog-hero-media-max-block-size: clamp(18rem, 42vw, 30rem);
+    aspect-ratio: var(--catalog-hero-media-aspect-ratio, 4 / 3);
+    block-size: 100%;
+    inline-size: 100%;
+    max-block-size: var(--catalog-hero-media-max-block-size);
+    overflow: hidden;
+  }
+
+  .heroMediaImage {
+    block-size: 100%;
+    display: block;
+    inline-size: 100%;
+    max-block-size: var(--catalog-hero-media-max-block-size);
+    object-fit: var(--catalog-hero-media-object-fit, cover);
   }
 
   @media (min-width: 64rem) {
@@ -1378,9 +1509,14 @@
   .detailCommerceFlow,
   .detailSimilarRail,
   .detailProductDescriptionSection,
+  .detailSectionsList,
   .detailInfoGrid {
     display: grid;
     gap: var(--lego-space-3);
+  }
+
+  .detailSectionsList {
+    gap: 0;
   }
 
   .detailOfferComparisonSection {
@@ -1660,71 +1796,11 @@
     letter-spacing: -0.04em;
   }
 
-  .productDescriptionDisclosure {
+  .detailProductDescriptionSection {
     --product-description-padding-inline: var(
       --lego-section-inline-padding,
       var(--lego-space-3)
     );
-
-    background: transparent;
-    border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  }
-
-  .productDescriptionSummary {
-    align-items: center;
-    border-radius: var(--lego-radius-sm);
-    cursor: pointer;
-    display: flex;
-    gap: var(--lego-space-3);
-    justify-content: space-between;
-    list-style: none;
-    min-height: 4.5rem;
-    padding-block: var(--lego-space-4);
-    padding-inline: var(--product-description-padding-inline);
-  }
-
-  .productDescriptionSummary::-webkit-details-marker {
-    display: none;
-  }
-
-  .productDescriptionSummary:focus-visible {
-    outline: 3px solid var(--lego-focus-ring);
-    outline-offset: 3px;
-  }
-
-  .productDescriptionHeading {
-    display: grid;
-  }
-
-  .productDescriptionTitle {
-    color: var(--lego-text);
-    font-size: 20px;
-    font-weight: var(--lego-text-role-section-weight);
-    letter-spacing: 0;
-    line-height: 1.25;
-    margin: 0;
-  }
-
-  .productDescriptionIconFrame {
-    align-items: center;
-    border-radius: var(--lego-radius-sm);
-    display: inline-flex;
-    flex: 0 0 2.75rem;
-    height: 2.75rem;
-    justify-content: center;
-    width: 2.75rem;
-  }
-
-  .productDescriptionIcon {
-    color: var(--lego-text-muted);
-    flex: 0 0 auto;
-    transform: rotate(-90deg);
-    transition: transform var(--lego-motion-duration-fast)
-      var(--lego-motion-ease-standard);
-  }
-
-  .productDescriptionDisclosure[open] .productDescriptionIcon {
-    transform: rotate(90deg);
   }
 
   .productDescriptionLayout {

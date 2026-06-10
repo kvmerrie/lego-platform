@@ -69,6 +69,23 @@
       "@lego-platform/pricing/data-access-server": [
         "libs/pricing/data-access-server/src/index.ts"
       ],
+      "@lego-platform/reviews/util": ["libs/reviews/util/src/index.ts"],
+      "@lego-platform/reviews/data-access": [
+        "libs/reviews/data-access/src/index.ts"
+      ],
+      "@lego-platform/reviews/data-access-server": [
+        "libs/reviews/data-access-server/src/index.ts"
+      ],
+      "@lego-platform/reviews/data-access-web": [
+        "libs/reviews/data-access-web/src/index.ts"
+      ],
+      "@lego-platform/reviews/ui": ["libs/reviews/ui/src/index.ts"],
+      "@lego-platform/reviews/feature-admin": [
+        "libs/reviews/feature-admin/src/index.ts"
+      ],
+      "@lego-platform/reviews/feature-set-reviews": [
+        "libs/reviews/feature-set-reviews/src/index.ts"
+      ],
       "@lego-platform/affiliate/util": ["libs/affiliate/util/src/index.ts"],
       "@lego-platform/affiliate/data-access": [
         "libs/affiliate/data-access/src/index.ts"

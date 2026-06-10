@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { getCatalogCollectionLandingPageConfig } from '@lego-platform/catalog/util';
@@ -44,6 +46,8 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('LEGO voor volwassenen');
     expect(markup).not.toContain('--collection-page-surface:');
     expect(markup).not.toContain('--collection-page-text:');
+    expect(markup).toContain('data-hero-button-tone="black"');
+    expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).toContain('X-wing Starfighter');
     expect(markup).toContain('data-catalog-set-card-collection="true"');
     expect(markup).toContain(
@@ -60,7 +64,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('aria-current="page"');
   });
 
-  it('keeps the destination hero on the default Brickhunt styling', () => {
+  it('keeps the destination hero on the shared black button treatment', () => {
     const config = getCatalogCollectionLandingPageConfig('nieuwe-lego-sets');
 
     if (!config) {
@@ -78,7 +82,54 @@ describe('CatalogFeatureCollectionLandingPage', () => {
 
     expect(markup).not.toContain('--collection-page-surface:');
     expect(markup).not.toContain('--collection-page-text:');
+    expect(markup).toContain('data-hero-button-tone="black"');
+    expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).toContain('Nieuwe LEGO sets');
+  });
+
+  it('uses white hero buttons and shared media sizing on dark collection visuals', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-sets-onder-100-euro',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={{
+          ...config,
+          visual: {
+            backgroundColor: '#123047',
+            imageUrl: 'https://images.example/dark-collection.jpg',
+            textColor: '#ffffff',
+          },
+        }}
+        setCards={[]}
+        themeLinks={[{ href: '/themes/icons', label: 'Icons' }]}
+        totalSetCount={0}
+      />,
+    );
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'src/lib/catalog-feature-collection-landing.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(markup).toContain('--collection-page-surface:#123047');
+    expect(markup).toContain('--collection-page-text:#ffffff');
+    expect(markup).toContain('data-hero-button-tone="white"');
+    expect(markup).toContain('interactiveSurfaceDark');
+    expect(markup).toContain('heroMediaFrame');
+    expect(markup).toContain('heroMediaImage');
+    expect(css).not.toContain('.introImage');
+    expect(css).not.toContain('--lego-button-accent-background');
+    expect(css).not.toContain('--lego-button-secondary-border-color');
+    expect(css).toContain('--catalog-hero-media-object-fit: contain;');
   });
 
   it('renders a compact empty state when collection data is missing', () => {

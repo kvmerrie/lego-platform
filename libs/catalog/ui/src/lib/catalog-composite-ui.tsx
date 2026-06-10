@@ -1,4 +1,9 @@
-import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
+import type {
+  ComponentProps,
+  HTMLAttributes,
+  ImgHTMLAttributes,
+  ReactNode,
+} from 'react';
 import {
   ActionLink,
   Breadcrumbs,
@@ -22,6 +27,13 @@ type CatalogSectionShellBodySpacing = 'compact' | 'default' | 'relaxed';
 type CatalogSectionShellPadding = 'default' | 'none' | 'relaxed';
 type CatalogSectionShellTone = 'default' | 'inverse' | 'muted' | 'plain';
 type CatalogSectionShellSpacing = 'compact' | 'default' | 'relaxed';
+export type HeroActionVariant = 'black' | 'white';
+export type HeroButtonSurface = 'dark' | 'light';
+
+export interface HeroButtonToneInput {
+  backgroundColor?: string;
+  textColor?: string;
+}
 
 export interface CatalogIntroPanelSection {
   description?: string;
@@ -68,6 +80,85 @@ const catalogSectionShellBodySpacingClasses: Record<
   default: undefined,
   relaxed: styles.sectionShellBodyRelaxed,
 };
+
+function parseHeroHexColor(
+  color?: string,
+): [red: number, green: number, blue: number] | undefined {
+  const normalizedColor = color?.trim().toLowerCase();
+
+  if (!normalizedColor) {
+    return undefined;
+  }
+
+  const shortHexMatch = normalizedColor.match(
+    /^#([0-9a-f])([0-9a-f])([0-9a-f])$/u,
+  );
+
+  if (shortHexMatch) {
+    return [
+      parseInt(`${shortHexMatch[1]}${shortHexMatch[1]}`, 16),
+      parseInt(`${shortHexMatch[2]}${shortHexMatch[2]}`, 16),
+      parseInt(`${shortHexMatch[3]}${shortHexMatch[3]}`, 16),
+    ];
+  }
+
+  const hexMatch = normalizedColor.match(
+    /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/u,
+  );
+
+  if (!hexMatch) {
+    return undefined;
+  }
+
+  return [
+    parseInt(hexMatch[1], 16),
+    parseInt(hexMatch[2], 16),
+    parseInt(hexMatch[3], 16),
+  ];
+}
+
+function getHeroRelativeLuminance([red, green, blue]: [
+  red: number,
+  green: number,
+  blue: number,
+]): number {
+  const [linearRed, linearGreen, linearBlue] = [red, green, blue].map(
+    (channel) => {
+      const normalizedChannel = channel / 255;
+
+      return normalizedChannel <= 0.03928
+        ? normalizedChannel / 12.92
+        : ((normalizedChannel + 0.055) / 1.055) ** 2.4;
+    },
+  );
+
+  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
+}
+
+export function getHeroButtonTone({
+  backgroundColor,
+  textColor,
+}: HeroButtonToneInput = {}): HeroActionVariant {
+  const foreground = parseHeroHexColor(textColor);
+
+  if (foreground) {
+    return getHeroRelativeLuminance(foreground) > 0.56 ? 'white' : 'black';
+  }
+
+  const background = parseHeroHexColor(backgroundColor);
+
+  if (!background) {
+    return 'black';
+  }
+
+  return getHeroRelativeLuminance(background) < 0.42 ? 'white' : 'black';
+}
+
+export function getHeroButtonSurface(
+  input: HeroButtonToneInput = {},
+): HeroButtonSurface {
+  return getHeroButtonTone(input) === 'white' ? 'dark' : 'light';
+}
 
 export function CatalogSectionHeader({
   action,
@@ -185,6 +276,7 @@ export function CatalogPageIntro({
   children,
   className,
   contentClassName,
+  heroButtonTone,
   ...rest
 }: HTMLAttributes<HTMLElement> & {
   as?: CatalogPageIntroElement;
@@ -196,6 +288,7 @@ export function CatalogPageIntro({
   children?: ReactNode;
   className?: string;
   contentClassName?: string;
+  heroButtonTone?: HeroActionVariant;
 }) {
   const Component = as;
 
@@ -203,6 +296,7 @@ export function CatalogPageIntro({
     <Component
       className={joinClasses(styles.pageIntro, className)}
       data-has-breadcrumbs={breadcrumbs?.items.length ? 'true' : 'false'}
+      data-hero-button-tone={heroButtonTone}
       {...rest}
     >
       {breadcrumbs?.items.length ? (
@@ -221,6 +315,26 @@ export function CatalogPageIntro({
         </div>
       ) : null}
     </Component>
+  );
+}
+
+export function CatalogHeroMedia({
+  alt,
+  className,
+  imageClassName,
+  ...imageProps
+}: Omit<ImgHTMLAttributes<HTMLImageElement>, 'className'> & {
+  className?: string;
+  imageClassName?: string;
+}) {
+  return (
+    <div className={joinClasses(styles.heroMediaFrame, className)}>
+      <img
+        alt={alt}
+        className={joinClasses(styles.heroMediaImage, imageClassName)}
+        {...imageProps}
+      />
+    </div>
   );
 }
 

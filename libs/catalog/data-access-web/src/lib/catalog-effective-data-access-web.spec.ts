@@ -4663,6 +4663,199 @@ describe('catalog effective data access web', () => {
     ).toEqual(['Disney Castle', 'Avengers toren']);
   });
 
+  test('prefers migrated representative card images for homepage theme portrait cards', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-06-01T00:00:00.000Z',
+          image_url:
+            'https://cdn.rebrickable.com/media/sets/42172-1/142568.jpg',
+          name: 'McLaren P1',
+          piece_count: 3893,
+          primary_theme_id: 'theme:technic',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2024,
+          set_id: '42172',
+          slug: 'mclaren-p1-42172',
+          source: 'rebrickable',
+          source_set_number: '42172-1',
+          source_theme_id: null,
+          status: 'active',
+          updated_at: '2026-06-01T00:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+          is_public: true,
+          public_display_name: 'Technic',
+          public_homepage_order: 10,
+          public_order: 10,
+          public_tile_image_url:
+            'https://cdn.rebrickable.com/media/sets/42172-1/stale-theme.jpg',
+          slug: 'technic',
+          status: 'active',
+        },
+      ],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-technic',
+          image_set_id: '42172',
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'technic',
+          reference_type: 'theme',
+          section_id: 'section-theme-rail',
+          sort_order: 10,
+          title_override: 'McLaren P1',
+          use_custom_image: false,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-theme-rail',
+          layout: 'theme_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'theme_rail',
+          sort_order: 20,
+          subtitle: null,
+          title: 'Kies je wereld',
+        },
+      ],
+      setImageRows: [
+        {
+          content_type: 'image/webp',
+          height: 480,
+          image_type: 'card',
+          public_url: '/images/sets/42172/card.webp',
+          set_id: '42172',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/42172/card.webp',
+          width: 640,
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 44,
+          representative_image_url:
+            'https://cdn.rebrickable.com/media/sets/42172-1/stale-summary.jpg',
+          representative_set_id: '42172',
+          theme_id: 'theme:technic',
+        },
+      ],
+    });
+
+    const [homepageItem] = await listHomepageThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(homepageItem?.imageUrl).toBe('/images/sets/42172/card.webp');
+    expect(homepageItem?.visual?.imageUrl).toBe('/images/sets/42172/card.webp');
+  });
+
+  test('keeps Rebrickable representative images as homepage theme portrait fallback', async () => {
+    const rebrickableImageUrl =
+      'https://cdn.rebrickable.com/media/sets/42172-1/142568.jpg';
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-06-01T00:00:00.000Z',
+          image_url: rebrickableImageUrl,
+          name: 'McLaren P1',
+          piece_count: 3893,
+          primary_theme_id: 'theme:technic',
+          release_date: null,
+          release_date_precision: 'year',
+          release_year: 2024,
+          set_id: '42172',
+          slug: 'mclaren-p1-42172',
+          source: 'rebrickable',
+          source_set_number: '42172-1',
+          source_theme_id: null,
+          status: 'active',
+          updated_at: '2026-06-01T00:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+          is_public: true,
+          public_display_name: 'Technic',
+          public_homepage_order: 10,
+          public_order: 10,
+          public_tile_image_url:
+            'https://cdn.rebrickable.com/media/sets/42172-1/stale-theme.jpg',
+          slug: 'technic',
+          status: 'active',
+        },
+      ],
+      publicPageSectionItemRows: [
+        {
+          alt_override: null,
+          cta_label: null,
+          cta_url: null,
+          enabled: true,
+          id: 'item-technic',
+          image_set_id: '42172',
+          image_url: null,
+          metadata_json: {},
+          reference_id: 'technic',
+          reference_type: 'theme',
+          section_id: 'section-theme-rail',
+          sort_order: 10,
+          title_override: 'McLaren P1',
+          use_custom_image: false,
+        },
+      ],
+      publicPageSectionRows: [
+        {
+          enabled: true,
+          id: 'section-theme-rail',
+          layout: 'theme_rail',
+          metadata_json: {},
+          page_key: 'homepage',
+          section_key: 'theme_rail',
+          sort_order: 20,
+          subtitle: null,
+          title: 'Kies je wereld',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 44,
+          representative_image_url:
+            'https://cdn.rebrickable.com/media/sets/42172-1/stale-summary.jpg',
+          representative_set_id: '42172',
+          theme_id: 'theme:technic',
+        },
+      ],
+    });
+
+    const [homepageItem] = await listHomepageThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(homepageItem?.imageUrl).toBe(rebrickableImageUrl);
+    expect(homepageItem?.visual?.imageUrl).toBe(rebrickableImageUrl);
+  });
+
   test('passes migrated Star Wars and Super Mario surface colors from Supabase', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
@@ -6959,6 +7152,20 @@ describe('catalog effective data access web', () => {
           title: 'Meer werelden',
         },
       ],
+      setImageRows: [
+        {
+          content_type: 'image/webp',
+          height: 480,
+          image_type: 'card',
+          public_url: '/images/sets/76419/card.webp',
+          set_id: '76419',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/76419/card.webp',
+          width: 640,
+        },
+      ],
     });
 
     const items = await listHomepageThemeSpotlightItems({ supabaseClient });
@@ -6968,7 +7175,7 @@ describe('catalog effective data access web', () => {
         description: 'Begin bij Hogwarts.',
         href: '/themes/harry-potter',
         id: 'item-theme',
-        imageUrl: 'https://example.test/harry-potter-tile.jpg',
+        imageUrl: '/images/sets/76419/card.webp',
         referenceType: 'theme',
         title: 'Hogwarts en Goudgrijp',
       }),

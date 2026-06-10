@@ -22,6 +22,10 @@ import {
 } from '@lego-platform/user/data-access-server';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
+  createEmptyCatalogSetReviewSummary,
+  toCatalogSetReviewApiPath,
+} from '@lego-platform/reviews/util';
+import {
   createApiV1Routes,
   type ApiV1RouteDependencies,
 } from '../app/routes/api-v1';
@@ -65,6 +69,39 @@ async function createApiServer({
     .mockResolvedValue([]) as NonNullable<
     ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
   >,
+  getCatalogSetReviewsPayload = vi.fn().mockResolvedValue({
+    reviews: [],
+    summary: createEmptyCatalogSetReviewSummary('21066'),
+  }) as NonNullable<ApiV1RouteDependencies['getCatalogSetReviewsPayload']>,
+  upsertCatalogSetReview = vi.fn().mockResolvedValue({
+    payload: {
+      reviews: [],
+      summary: {
+        ...createEmptyCatalogSetReviewSummary('21066'),
+        averageRating: 5,
+        ratingDistribution: {
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 1,
+        },
+        reviewCount: 1,
+      },
+    },
+    publicReviewChanged: true,
+    review: {
+      authorDisplayName: 'Brickhunt-gebruiker',
+      createdAt: '2026-06-10T10:00:00.000Z',
+      id: 'review-1',
+      moderationStatus: 'approved',
+      overallRating: 5,
+      recommends: true,
+      setId: '21066',
+      updatedAt: '2026-06-10T10:00:00.000Z',
+    },
+    setSlug: 'new-york-city-the-big-apple-21066',
+  }) as NonNullable<ApiV1RouteDependencies['upsertCatalogSetReview']>,
   userProfileRepository,
   userSession = createAnonymousUserSession(),
 }: {
@@ -76,6 +113,12 @@ async function createApiServer({
   >;
   listCatalogSetLiveOffersBySetId?: NonNullable<
     ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
+  >;
+  getCatalogSetReviewsPayload?: NonNullable<
+    ApiV1RouteDependencies['getCatalogSetReviewsPayload']
+  >;
+  upsertCatalogSetReview?: NonNullable<
+    ApiV1RouteDependencies['upsertCatalogSetReview']
   >;
   publicRateLimit?: ApiV1RouteDependencies['publicRateLimit'];
   recentlyViewedSetRepository?: RecentlyViewedSetRepository;
@@ -176,6 +219,8 @@ async function createApiServer({
       listCatalogCurrentOfferSummariesBySetIds,
       listCatalogDiscoverySignals,
       listCatalogSetLiveOffersBySetId,
+      getCatalogSetReviewsPayload,
+      upsertCatalogSetReview,
       publicRateLimit,
       recentlyViewedSetRepository: nextRecentlyViewedSetRepository,
       userProfileRepository: nextUserProfileRepository,
@@ -191,6 +236,8 @@ async function createApiServer({
     server,
     resolveRequestPrincipal,
     listCatalogSetLiveOffersBySetId,
+    getCatalogSetReviewsPayload,
+    upsertCatalogSetReview,
     recentlyViewedSetRepository: nextRecentlyViewedSetRepository,
     userProfileRepository: nextUserProfileRepository,
     userSessionService,
@@ -561,6 +608,117 @@ describe('api v1 auth and set-status routes', () => {
     expect(response.statusCode).toBe(200);
     expect(listCatalogSetLiveOffersBySetId).toHaveBeenCalledWith('21061');
     expect(response.json()).toEqual(liveOffers);
+
+    await server.close();
+  });
+
+  test('returns public set reviews on the proxied reviews API route', async () => {
+    const reviewsPayload = {
+      reviews: [],
+      summary: createEmptyCatalogSetReviewSummary('21066'),
+    };
+    const { getCatalogSetReviewsPayload, server } = await createApiServer({
+      getCatalogSetReviewsPayload: vi.fn().mockResolvedValue(reviewsPayload),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: toCatalogSetReviewApiPath('21066'),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['cache-control']).toBe('private, no-store');
+    expect(getCatalogSetReviewsPayload).toHaveBeenCalledWith({
+      setId: '21066',
+      userId: undefined,
+    });
+    expect(response.json()).toEqual(reviewsPayload);
+
+    await server.close();
+  });
+
+  test('upserts authenticated set reviews on the proxied reviews API route', async () => {
+    const approvedPayload = {
+      reviews: [],
+      summary: {
+        ...createEmptyCatalogSetReviewSummary('21066'),
+        averageRating: 5,
+        ratingDistribution: {
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 1,
+        },
+        reviewCount: 1,
+      },
+    };
+    const requestPrincipal: RequestPrincipal = {
+      email: 'alex@example.test',
+      state: 'authenticated',
+      userId: 'user-123',
+    };
+    const { server, upsertCatalogSetReview } = await createApiServer({
+      requestPrincipal,
+      upsertCatalogSetReview: vi.fn().mockResolvedValue({
+        payload: approvedPayload,
+        publicReviewChanged: true,
+        review: {
+          authorDisplayName: 'Brickhunt-gebruiker',
+          createdAt: '2026-06-10T10:00:00.000Z',
+          id: 'review-1',
+          moderationStatus: 'approved',
+          overallRating: 5,
+          recommends: true,
+          setId: '21066',
+          updatedAt: '2026-06-10T10:00:00.000Z',
+        },
+        setSlug: 'new-york-city-the-big-apple-21066',
+      }),
+    });
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: toCatalogSetReviewApiPath('21066'),
+      headers: {
+        authorization: 'Bearer review-session-token',
+      },
+      payload: {
+        overallRating: 5,
+        recommends: true,
+        reviewText: '',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['cache-control']).toBe('private, no-store');
+    expect(upsertCatalogSetReview).toHaveBeenCalledWith({
+      input: {
+        overallRating: 5,
+        recommends: true,
+        reviewText: '',
+      },
+      setId: '21066',
+      userId: 'user-123',
+    });
+    expect(response.json()).toEqual(approvedPayload);
+
+    await server.close();
+  });
+
+  test('rejects anonymous review upserts on the proxied reviews API route', async () => {
+    const { server, upsertCatalogSetReview } = await createApiServer();
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: toCatalogSetReviewApiPath('21066'),
+      payload: {
+        overallRating: 5,
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(upsertCatalogSetReview).not.toHaveBeenCalled();
 
     await server.close();
   });

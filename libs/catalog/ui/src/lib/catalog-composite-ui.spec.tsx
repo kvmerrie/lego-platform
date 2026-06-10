@@ -1,12 +1,17 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  CatalogHeroMedia,
   CatalogPageIntro,
   CatalogQuickFilterBar,
   CatalogSectionHeader,
   CatalogSectionShell,
   CatalogSetDetailHero,
   CatalogSplitIntroPanel,
+  getHeroButtonSurface,
+  getHeroButtonTone,
 } from './catalog-ui';
 import {
   CatalogKeyFacts,
@@ -121,6 +126,73 @@ describe('CatalogPageIntro', () => {
     expect(markup).toContain('Alle thema&#x27;s');
     expect(markup.indexOf('Paginapad')).toBeLessThan(
       markup.indexOf('Alle thema&#x27;s'),
+    );
+  });
+
+  it('resolves reusable black and white hero button tones from visual contrast', () => {
+    expect(getHeroButtonTone({ textColor: '#ffffff' })).toBe('white');
+    expect(getHeroButtonSurface({ textColor: '#ffffff' })).toBe('dark');
+    expect(getHeroButtonTone({ textColor: '#171a22' })).toBe('black');
+    expect(getHeroButtonSurface({ textColor: '#171a22' })).toBe('light');
+    expect(getHeroButtonTone({ backgroundColor: '#0b1020' })).toBe('white');
+    expect(getHeroButtonTone({ backgroundColor: '#f4d35e' })).toBe('black');
+  });
+
+  it('exposes the shared hero button tone and media sizing contract', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPageIntro heroButtonTone="white">
+        <CatalogHeroMedia
+          alt=""
+          decoding="async"
+          height={420}
+          src="https://images.example/hero.jpg"
+          width={560}
+        />
+      </CatalogPageIntro>,
+    );
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const whiteToneRule =
+      css.match(
+        /\.pageIntro\[data-hero-button-tone='white'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const blackToneRule =
+      css.match(
+        /\.pageIntro\[data-hero-button-tone='black'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const mediaFrameRule = css.match(/\.heroMediaFrame \{[^}]+\}/u)?.[0] ?? '';
+    const mediaImageRule = css.match(/\.heroMediaImage \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(markup).toContain('data-hero-button-tone="white"');
+    expect(markup).toContain('heroMediaFrame');
+    expect(markup).toContain('heroMediaImage');
+    expect(whiteToneRule).toContain(
+      '--catalog-hero-button-fill-background: var(--lego-contrast-white);',
+    );
+    expect(whiteToneRule).toContain(
+      '--catalog-hero-button-fill-foreground: color-mix(',
+    );
+    expect(whiteToneRule).toContain('var(--catalog-hero-surface) 78%');
+    expect(blackToneRule).toContain(
+      '--catalog-hero-button-fill-background: var(--lego-contrast-ink);',
+    );
+    expect(blackToneRule).toContain(
+      '--catalog-hero-button-fill-foreground: color-mix(',
+    );
+    expect(blackToneRule).toContain('var(--catalog-hero-surface) 72%');
+    expect(mediaFrameRule).toContain(
+      '--catalog-hero-media-max-block-size: clamp(18rem, 42vw, 30rem);',
+    );
+    expect(mediaFrameRule).toContain(
+      'max-block-size: var(--catalog-hero-media-max-block-size);',
+    );
+    expect(mediaImageRule).toContain(
+      'object-fit: var(--catalog-hero-media-object-fit, cover);',
+    );
+    expect(mediaImageRule).toContain(
+      'max-block-size: var(--catalog-hero-media-max-block-size);',
     );
   });
 });

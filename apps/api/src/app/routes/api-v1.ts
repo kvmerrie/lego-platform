@@ -10,6 +10,16 @@ import {
   listPublishedArticles,
 } from '@lego-platform/content/data-access';
 import {
+  CatalogSetReviewAccessError,
+  getCatalogSetReviewsPayload as getCatalogSetReviewsPayloadServer,
+  upsertCatalogSetReview as upsertCatalogSetReviewServer,
+} from '@lego-platform/reviews/data-access-server';
+import {
+  CatalogSetReviewValidationError,
+  catalogSetReviewsApiPath,
+  type CatalogSetReviewInput,
+} from '@lego-platform/reviews/util';
+import {
   apiPaths,
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
@@ -63,6 +73,12 @@ export interface ApiV1RouteDependencies {
   ) => Promise<
     Awaited<ReturnType<typeof listCatalogSetLiveOffersBySetIdServer>>
   >;
+  getCatalogSetReviewsPayload?: (
+    options: Parameters<typeof getCatalogSetReviewsPayloadServer>[0],
+  ) => Promise<Awaited<ReturnType<typeof getCatalogSetReviewsPayloadServer>>>;
+  upsertCatalogSetReview?: (
+    options: Parameters<typeof upsertCatalogSetReviewServer>[0],
+  ) => Promise<Awaited<ReturnType<typeof upsertCatalogSetReviewServer>>>;
   userProfileRepository?: UserProfileRepository;
   publicRateLimit?: ApiV1PublicRateLimitOptions;
   recentlyViewedSetRepository?: RecentlyViewedSetRepository;
@@ -74,6 +90,36 @@ export interface ApiV1RouteDependencies {
 function createUnauthorizedResponse() {
   return {
     message: 'Authentication required.',
+  };
+}
+
+function createReviewErrorResponse(error: unknown): {
+  body: { message: string };
+  statusCode: number;
+} {
+  if (error instanceof CatalogSetReviewValidationError) {
+    return {
+      body: {
+        message: error.message,
+      },
+      statusCode: 400,
+    };
+  }
+
+  if (error instanceof CatalogSetReviewAccessError) {
+    return {
+      body: {
+        message: error.message,
+      },
+      statusCode: 500,
+    };
+  }
+
+  return {
+    body: {
+      message: 'De beoordeling kon nu niet worden verwerkt.',
+    },
+    statusCode: 500,
   };
 }
 
@@ -132,6 +178,11 @@ export function createApiV1Routes({
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
+  getCatalogSetReviewsPayload: getCatalogSetReviewsPayloadDependency = (
+    options,
+  ) => getCatalogSetReviewsPayloadServer(options),
+  upsertCatalogSetReview: upsertCatalogSetReviewDependency = (options) =>
+    upsertCatalogSetReviewServer(options),
   publicRateLimit,
   recentlyViewedSetRepository = createRecentlyViewedSetRepository(),
   userThemeFavoriteRepository = createUserThemeFavoriteRepository(),
@@ -358,6 +409,61 @@ export function createApiV1Routes({
         return listCatalogSetLiveOffersBySetIdDependency(
           normalizeRouteSetId(request.params.setId),
         );
+      },
+    );
+
+    fastify.get<{ Params: { setId: string } }>(
+      `${catalogSetReviewsApiPath}/:setId`,
+      async function (request, reply) {
+        try {
+          const principal = getRequestPrincipal(request.requestPrincipal);
+          const payload = await getCatalogSetReviewsPayloadDependency({
+            setId: normalizeRouteSetId(request.params.setId),
+            userId:
+              principal.state === 'authenticated'
+                ? principal.userId
+                : undefined,
+          });
+
+          reply.header('cache-control', 'private, no-store');
+
+          return payload;
+        } catch (error) {
+          const errorResponse = createReviewErrorResponse(error);
+
+          return reply
+            .status(errorResponse.statusCode)
+            .send(errorResponse.body);
+        }
+      },
+    );
+
+    fastify.put<{ Body: CatalogSetReviewInput; Params: { setId: string } }>(
+      `${catalogSetReviewsApiPath}/:setId`,
+      async function (request, reply) {
+        const principal = getRequestPrincipal(request.requestPrincipal);
+
+        if (principal.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        try {
+          const result = await upsertCatalogSetReviewDependency({
+            input: request.body,
+            setId: normalizeRouteSetId(request.params.setId),
+            userId: principal.userId,
+          });
+
+          reply.header('cache-control', 'private, no-store');
+
+          return result.payload;
+        } catch (error) {
+          const errorResponse = createReviewErrorResponse(error);
+
+          return reply
+            .status(errorResponse.statusCode)
+            .send(errorResponse.body);
+        }
       },
     );
 

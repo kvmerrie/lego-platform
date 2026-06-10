@@ -451,6 +451,7 @@ export const apiPaths = {
   adminHomepageSections: '/api/v1/admin/cms/homepage/sections',
   adminCmsPromotionPreview: '/api/v1/admin/promote/cms/preview',
   adminOperationsSummary: '/api/v1/admin/operations/summary',
+  adminReviews: '/api/v1/admin/reviews',
   adminCatalogPromotionPreview: '/api/v1/admin/promote/catalog/preview',
   adminRuntimeConfig: '/api/v1/admin/runtime-config',
   adminArticles: '/api/v1/admin/articles',

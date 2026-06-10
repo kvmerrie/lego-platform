@@ -325,18 +325,18 @@ export function CatalogFeatureThemeFavoriteToggle({
   const favoriteActiveStyle = favoriteContext.isFavorited
     ? ({
         '--lego-button-accent-active-background':
-          'var(--theme-page-favorite-fill-background)',
+          'var(--catalog-hero-favorite-fill-background)',
         '--lego-button-accent-background':
-          'var(--theme-page-favorite-fill-background)',
+          'var(--catalog-hero-favorite-fill-background)',
         '--lego-button-accent-color':
-          'var(--theme-page-favorite-fill-foreground)',
+          'var(--catalog-hero-favorite-fill-foreground)',
         '--lego-button-accent-hover-background':
-          'var(--theme-page-favorite-fill-hover-background)',
+          'var(--catalog-hero-favorite-fill-hover-background)',
         '--lego-button-accent-hover-color':
-          'var(--theme-page-favorite-fill-foreground)',
-        backgroundColor: 'var(--theme-page-favorite-fill-background)',
-        borderColor: 'var(--theme-page-favorite-fill-background)',
-        color: 'var(--theme-page-favorite-fill-foreground)',
+          'var(--catalog-hero-favorite-fill-foreground)',
+        backgroundColor: 'var(--catalog-hero-favorite-fill-background)',
+        borderColor: 'var(--catalog-hero-favorite-fill-background)',
+        color: 'var(--catalog-hero-favorite-fill-foreground)',
       } as CSSProperties)
     : undefined;
 

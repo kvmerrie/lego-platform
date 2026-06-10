@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import type {
   ButtonHTMLAttributes,
   ComponentProps,
+  DetailsHTMLAttributes,
   HTMLAttributes,
   ReactNode,
 } from 'react';
@@ -58,6 +59,7 @@ type BadgeTone =
   | 'positive'
   | 'warning';
 type SectionHeadingLevel = 'h1' | 'h2' | 'h3';
+type DetailAccordionHeadingLevel = 'h2' | 'h3';
 type SectionHeadingTone = 'default' | 'display';
 type PanelSpacing = 'compact' | 'default';
 type MetaSignalTone = 'accent' | 'default' | 'info' | 'positive' | 'warning';
@@ -508,6 +510,76 @@ export function Badge({
     >
       {children}
     </span>
+  );
+}
+
+export function DetailAccordionSection({
+  children,
+  className,
+  contentClassName,
+  defaultOpen,
+  detailsClassName,
+  id,
+  summaryMeta,
+  title,
+  titleAs = 'h2',
+  titleId,
+  ...detailsProps
+}: Omit<DetailsHTMLAttributes<HTMLDetailsElement>, 'children' | 'title'> & {
+  children: ReactNode;
+  className?: string;
+  contentClassName?: string;
+  defaultOpen?: boolean;
+  detailsClassName?: string;
+  summaryMeta?: ReactNode;
+  title: ReactNode;
+  titleAs?: DetailAccordionHeadingLevel;
+  titleId?: string;
+}) {
+  const TitleTag = titleAs;
+
+  return (
+    <section
+      aria-labelledby={titleId}
+      className={joinClasses(styles.detailAccordionSection, className)}
+      id={id}
+    >
+      <details
+        className={joinClasses(
+          styles.detailAccordionDisclosure,
+          detailsClassName,
+        )}
+        open={defaultOpen}
+        {...detailsProps}
+      >
+        <summary className={styles.detailAccordionSummary}>
+          <span className={styles.detailAccordionHeading}>
+            <TitleTag className={styles.detailAccordionTitle} id={titleId}>
+              {title}
+            </TitleTag>
+            {summaryMeta ? (
+              <span className={styles.detailAccordionMeta}>{summaryMeta}</span>
+            ) : null}
+          </span>
+          <span className={styles.detailAccordionIconFrame}>
+            <ChevronRight
+              aria-hidden="true"
+              className={styles.detailAccordionIcon}
+              size={24}
+              strokeWidth={2.3}
+            />
+          </span>
+        </summary>
+        <div
+          className={joinClasses(
+            styles.detailAccordionContent,
+            contentClassName,
+          )}
+        >
+          {children}
+        </div>
+      </details>
+    </section>
   );
 }
 

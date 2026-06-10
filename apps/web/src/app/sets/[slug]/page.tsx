@@ -54,6 +54,8 @@ import {
   type PricePanelSnapshot,
 } from '@lego-platform/pricing/util';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
+import { ReviewsFeatureSetReviews } from '@lego-platform/reviews/feature-set-reviews';
+import { getCatalogSetReviewsPublicPayload } from '@lego-platform/reviews/data-access-web';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildThemePath,
@@ -391,6 +393,22 @@ const getRequestCachedSnapshotCurrentOfferSummaryBySetId = cache(
 
     return currentOfferSummaryBySetId.get(setId);
   },
+);
+
+const getRequestCachedCatalogSetReviewsPublicPayload = cache(
+  async ({ setId, slug }: { setId: string; slug: string }) =>
+    unstable_cache(
+      () => getCatalogSetReviewsPublicPayload({ setId }),
+      ['catalog-set-reviews', SET_DETAIL_CACHE_VERSION, setId],
+      {
+        revalidate,
+        tags: [
+          ...buildCatalogSetDetailCacheTags({ setId, slug }),
+          cacheTags.reviews(),
+          cacheTags.setReviews(setId),
+        ],
+      },
+    )(),
 );
 
 async function withSetPageOptionalTimeout<T>({
@@ -2168,6 +2186,15 @@ export default async function SetDetailPage({
       liveOffers: localizedSetDetailOffers,
       setId: catalogSetDetail.id,
     });
+  const reviewPayload = await measureSetPageFetch({
+    label: 'reviews',
+    slug,
+    load: () =>
+      getRequestCachedCatalogSetReviewsPublicPayload({
+        setId: catalogSetDetail.id,
+        slug: catalogSetDetail.slug,
+      }),
+  });
   const bestOffer = currentOfferSummary?.bestOffer;
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
   const hasLiveCurrentOffer =
@@ -2279,6 +2306,8 @@ export default async function SetDetailPage({
           offers: hasTrackedAvailabilityFallback
             ? []
             : localizedSetDetailOffers.map(withCatalogOfferPublicMerchantName),
+          reviewSummary: reviewPayload.summary,
+          reviews: reviewPayload.reviews,
         }),
         buildSetBreadcrumbJsonLd({
           catalogSetDetail,
@@ -2438,6 +2467,13 @@ export default async function SetDetailPage({
             }
             setId={catalogSetDetail.id}
             variant="set-detail"
+          />
+        }
+        productReviewsSlot={
+          <ReviewsFeatureSetReviews
+            initialPayload={reviewPayload}
+            setId={catalogSetDetail.id}
+            setSlug={catalogSetDetail.slug}
           />
         }
         recentlyViewedRail={
