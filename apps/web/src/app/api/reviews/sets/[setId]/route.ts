@@ -1,3 +1,4 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Next route handlers run on the server and use server-only review data access.
 import {
   getCatalogSetReviewsPayload,
   softDeleteCatalogSetReview,
@@ -10,6 +11,7 @@ import {
   buildSetDetailPath,
   cacheTags,
 } from '@lego-platform/shared/config';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Next route handlers run on the server and resolve Supabase auth from request headers.
 import { resolveRequestPrincipalFromAuthHeader } from '@lego-platform/shared/data-access-auth-server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';

@@ -41,6 +41,7 @@ export default [
                 'scope:affiliate',
                 'scope:content',
                 'scope:user',
+                'scope:reviews',
               ],
             },
             {
@@ -50,6 +51,7 @@ export default [
                 'scope:catalog',
                 'scope:shared',
                 'scope:shell',
+                'scope:reviews',
               ],
             },
             {
@@ -121,6 +123,7 @@ export default [
                 'scope:content',
                 'scope:user',
                 'scope:commerce',
+                'scope:reviews',
               ],
             },
             {

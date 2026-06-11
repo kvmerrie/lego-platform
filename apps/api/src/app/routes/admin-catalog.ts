@@ -401,56 +401,6 @@ function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof Error ? error.message : fallbackMessage;
 }
 
-function readCatalogExternalSetFromCandidate(
-  candidate: CatalogDiscoveryCandidate,
-): CatalogExternalSetSearchResult {
-  const payload = candidate.rebrickablePayload;
-
-  if (!payload) {
-    throw new Error(
-      'Deze discovery candidate heeft nog geen cached Rebrickable-verrijking en kan niet zonder live lookup worden geimporteerd.',
-    );
-  }
-
-  const readString = (key: string) => {
-    const value = payload[key];
-
-    if (typeof value !== 'string' || !value.trim()) {
-      throw new Error(`Discovery candidate mist cached ${key}.`);
-    }
-
-    return value.trim();
-  };
-  const readInteger = (key: string, minValue: number) => {
-    const value = payload[key];
-
-    if (
-      typeof value !== 'number' ||
-      !Number.isInteger(value) ||
-      value < minValue
-    ) {
-      throw new Error(`Discovery candidate mist cached ${key}.`);
-    }
-
-    return value;
-  };
-  const imageUrl = payload['imageUrl'];
-
-  return {
-    ...(typeof imageUrl === 'string' && imageUrl.trim()
-      ? { imageUrl: imageUrl.trim() }
-      : {}),
-    name: readString('name'),
-    pieces: readInteger('pieces', 0),
-    releaseYear: readInteger('releaseYear', 1),
-    setId: readString('setId'),
-    slug: readString('slug'),
-    source: 'rebrickable',
-    sourceSetNumber: readString('sourceSetNumber'),
-    theme: readString('theme'),
-  };
-}
-
 function readBulkOnboardingRunIdFromCandidate(
   candidate: CatalogDiscoveryCandidate,
 ): string | null {
