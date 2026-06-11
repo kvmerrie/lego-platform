@@ -2239,6 +2239,7 @@ describe('CatalogSetCard', () => {
           images: [
             {
               height: 900,
+              imageRole: 'model_primary',
               order: 0,
               type: 'hero',
               url: 'https://images.example/rivendell-1.jpg',
@@ -2427,6 +2428,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('<li>Frodo</li>');
     expect(markup).toContain('<li><em>Elrond</em></li>');
     expect(markup).toContain('alt="Rivendell LEGO-set"');
+    expect(markup).toContain('data-image-media-role="model"');
     expect(markup).toContain('data-image-orientation="landscape"');
     expect(markup).toContain('--gallery-image-aspect-ratio:1.3333');
     expect(markup).toContain('Zo lees je dit');

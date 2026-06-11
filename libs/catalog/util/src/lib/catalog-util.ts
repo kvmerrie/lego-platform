@@ -55,10 +55,23 @@ export type CatalogSetImageType =
   | 'minifig'
   | 'social'
   | 'thumbnail';
+export type CatalogSetImageRole =
+  | 'box_back'
+  | 'box_front'
+  | 'build'
+  | 'detail'
+  | 'lifestyle_people'
+  | 'lifestyle_room'
+  | 'logo'
+  | 'minifigure'
+  | 'model_primary'
+  | 'model_secondary'
+  | 'unknown';
 
 export interface CatalogSetImage {
   attributionText?: string;
   height?: number;
+  imageRole?: CatalogSetImageRole;
   order?: number;
   sha256?: string;
   thumbnailUrl?: string;
@@ -1483,6 +1496,11 @@ function toCatalogSetImageSeed(
     ...(typeof image.height === 'number' && Number.isFinite(image.height)
       ? { height: image.height }
       : {}),
+    ...(image.imageRole
+      ? {
+          imageRole: image.imageRole,
+        }
+      : {}),
     ...(typeof image.order === 'number' ? { order: image.order } : {}),
     ...(typeof image.sha256 === 'string' && image.sha256.trim()
       ? {
@@ -1591,6 +1609,9 @@ export function normalizeCatalogSetImages({
           : normalizedCatalogSetImage.order,
       height:
         existingCatalogSetImage.height ?? normalizedCatalogSetImage.height,
+      imageRole:
+        existingCatalogSetImage.imageRole ??
+        normalizedCatalogSetImage.imageRole,
       sha256:
         existingCatalogSetImage.sha256 ?? normalizedCatalogSetImage.sha256,
       thumbnailUrl:
@@ -1624,6 +1645,11 @@ export function normalizeCatalogSetImages({
       ...(typeof catalogSetImage.height === 'number'
         ? {
             height: catalogSetImage.height,
+          }
+        : {}),
+      ...(catalogSetImage.imageRole
+        ? {
+            imageRole: catalogSetImage.imageRole,
           }
         : {}),
       ...(catalogSetImage.thumbnailUrl

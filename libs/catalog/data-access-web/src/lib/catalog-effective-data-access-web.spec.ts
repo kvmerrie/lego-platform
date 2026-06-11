@@ -839,15 +839,19 @@ describe('catalog effective data access web', () => {
     expect(catalogSet?.imageUrl).toBe('/images/sets/10316/hero.webp');
     expect(catalogSet?.images).toEqual([
       {
+        height: 630,
         order: -100,
         sha256: 'abcdef1234567890abcdef1234567890',
         type: 'social',
         url: '/images/sets/10316/social.jpg',
+        width: 1200,
       },
       {
+        height: 900,
         order: 201,
         type: 'detail',
         url: '/images/sets/10316/gallery/1.webp',
+        width: 1200,
       },
     ]);
 
@@ -1084,22 +1088,30 @@ describe('catalog effective data access web', () => {
         url: '/images/sets/10309/hero.webp',
       },
       {
+        height: 630,
         order: -100,
         sha256: '1234567890abcdef1234567890abcdef',
         type: 'social',
         url: '/images/sets/10309/social.jpg',
+        width: 1200,
       },
       {
+        height: 900,
+        imageRole: 'box_front',
         order: 201,
         thumbnailUrl: '/images/sets/10309/thumbs/2.webp',
         type: 'detail',
         url: '/images/sets/10309/gallery/2.webp',
+        width: 1200,
       },
       {
+        height: 900,
+        imageRole: 'model_secondary',
         order: 202,
         thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
         type: 'detail',
         url: '/images/sets/10309/gallery/3.webp',
+        width: 1200,
       },
     ]);
     expect(catalogSet?.images?.[2]?.url).toBe(

@@ -515,6 +515,7 @@ interface CatalogSetSourceMetadataRow {
 interface CatalogStoredSetImageRow {
   content_type: string | null;
   height: number | null;
+  image_role?: CatalogSetImage['imageRole'] | null;
   image_type: 'card' | 'gallery' | 'hero' | 'social' | 'thumbnail';
   metadata_json?: unknown;
   public_url: string | null;
@@ -2450,7 +2451,7 @@ async function listStoredCatalogSetImagesBySetId({
       const { data, error } = await supabaseClient
         .from(CATALOG_SET_IMAGES_TABLE)
         .select(
-          'set_id, image_type, sort_order, public_url, width, height, content_type, storage_bucket, storage_path, sha256, metadata_json',
+          'set_id, image_type, image_role, sort_order, public_url, width, height, content_type, storage_bucket, storage_path, sha256, metadata_json',
         )
         .eq('status', 'active')
         .in('set_id', setIdChunk);
@@ -2614,6 +2615,16 @@ function toStoredCatalogSetImage(
   }
 
   return {
+    ...(typeof row.height === 'number' && Number.isFinite(row.height)
+      ? {
+          height: row.height,
+        }
+      : {}),
+    ...(row.image_role
+      ? {
+          imageRole: row.image_role,
+        }
+      : {}),
     order: row.image_type === 'social' ? -100 : getStoredGalleryImageOrder(row),
     ...(row.sha256
       ? {
@@ -2626,6 +2637,11 @@ function toStoredCatalogSetImage(
     thumbnailUrlBySortOrder.has(row.sort_order)
       ? {
           thumbnailUrl: thumbnailUrlBySortOrder.get(row.sort_order),
+        }
+      : {}),
+    ...(typeof row.width === 'number' && Number.isFinite(row.width)
+      ? {
+          width: row.width,
         }
       : {}),
   };

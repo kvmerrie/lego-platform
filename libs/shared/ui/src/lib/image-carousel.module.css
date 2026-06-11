@@ -516,12 +516,12 @@
 
 .lightboxOverview {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: clamp(var(--lego-space-3), 2.4vw, var(--lego-space-5));
   grid-auto-flow: row;
   grid-auto-rows: auto;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-inline: auto;
-  max-width: 920px;
+  max-width: 980px;
   width: 100%;
 }
 
@@ -545,47 +545,51 @@
   width: 100%;
 }
 
-.lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n) {
-  grid-column: 1 / -1;
-}
-
-.lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n)
-  .lightboxOverviewFrame {
-  aspect-ratio: 16 / 7;
-  min-height: clamp(14rem, 54vw, 20rem);
-}
-
 .lightboxOverviewButton[data-has-image-metadata='true'] .lightboxOverviewFrame {
   aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);
   min-height: clamp(9rem, 36vw, 14rem);
 }
 
-.lightboxOverviewButton[data-lightbox-featured='true'] .lightboxOverviewFrame {
-  min-height: clamp(15rem, 54vw, 22rem);
-}
-
-.lightboxOverviewButton[data-image-orientation='portrait'][data-has-image-metadata='true'] {
-  grid-row: span 2;
-}
-
-.lightboxOverviewButton[data-image-orientation='portrait'][data-has-image-metadata='true']
-  .lightboxOverviewFrame {
-  aspect-ratio: 3 / 4;
-  min-height: clamp(16rem, 58vw, 24rem);
-}
-
-.lightboxOverviewButton[data-image-orientation='landscape'][data-has-image-metadata='true'] {
-  grid-column: span 2;
-}
-
-.lightboxOverviewButton[data-image-orientation='landscape'][data-has-image-metadata='true']
-  .lightboxOverviewFrame {
-  aspect-ratio: var(--gallery-image-aspect-ratio, 16 / 9);
-  min-height: clamp(11rem, 34vw, 16rem);
-}
-
-.lightboxOverviewButton[data-lightbox-featured='true'] {
+.lightboxOverviewButton[data-lightbox-layout-variant='featured'],
+.lightboxOverviewButton[data-lightbox-layout-variant='fullWidth'] {
   grid-column: 1 / -1;
+}
+
+.lightboxOverviewButton[data-lightbox-tile='featured'] .lightboxOverviewFrame {
+  aspect-ratio: var(--gallery-image-aspect-ratio, 16 / 9);
+  min-height: clamp(16rem, 54vw, 28rem);
+}
+
+.lightboxOverviewButton[data-lightbox-tile='lifestyle'] {
+  margin-block: var(--lego-space-1);
+}
+
+.lightboxOverviewButton[data-lightbox-tile='lifestyle'] .lightboxOverviewFrame {
+  aspect-ratio: var(--gallery-image-aspect-ratio, 16 / 9);
+  min-height: clamp(18rem, 58vw, 30rem);
+}
+
+.lightboxOverviewButton[data-lightbox-tile='wide'] .lightboxOverviewFrame {
+  aspect-ratio: var(--gallery-image-aspect-ratio, 16 / 9);
+  min-height: clamp(13rem, 42vw, 20rem);
+}
+
+.lightboxOverviewButton[data-lightbox-layout-variant='fullWidth'][data-lightbox-tile='fallback']
+  .lightboxOverviewFrame {
+  aspect-ratio: 16 / 10;
+  min-height: clamp(14rem, 54vw, 20rem);
+}
+
+.lightboxOverviewButton[data-lightbox-tile='standard'][data-image-orientation='portrait']
+  .lightboxOverviewFrame {
+  aspect-ratio: var(--gallery-image-aspect-ratio, 3 / 4);
+  min-height: clamp(13rem, 48vw, 18rem);
+}
+
+.lightboxOverviewButton[data-image-media-role='box'] .lightboxOverviewFrame,
+.lightboxOverviewButton[data-image-media-role='product']
+  .lightboxOverviewFrame {
+  min-height: clamp(8rem, 30vw, 12rem);
 }
 
 .lightboxCloseButton:hover,
@@ -695,10 +699,24 @@
 }
 
 @media (min-width: 48rem) {
-  .lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n)
+  .lightboxOverviewButton[data-lightbox-layout-variant='fullWidth'][data-lightbox-tile='fallback']
     .lightboxOverviewFrame {
-    aspect-ratio: 16 / 7;
-    min-height: clamp(20rem, 36vw, 32rem);
+    aspect-ratio: 16 / 10;
+    min-height: clamp(18rem, 34vw, 26rem);
+  }
+
+  .lightboxOverviewButton[data-lightbox-tile='featured']
+    .lightboxOverviewFrame {
+    min-height: clamp(24rem, 48vw, 34rem);
+  }
+
+  .lightboxOverviewButton[data-lightbox-tile='lifestyle']
+    .lightboxOverviewFrame {
+    min-height: clamp(24rem, 46vw, 36rem);
+  }
+
+  .lightboxOverviewButton[data-lightbox-tile='wide'] .lightboxOverviewFrame {
+    min-height: clamp(17rem, 30vw, 24rem);
   }
 
   .detailGallery {
@@ -841,19 +859,21 @@
 
 @media (max-width: 22.49rem) {
   .lightboxOverview {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .lightboxOverviewButton:nth-child(3n),
-  .lightboxOverviewButton[data-has-image-metadata='true'] {
-    grid-column: auto;
-    grid-row: auto;
-  }
-
-  .lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n)
+  .lightboxOverviewButton[data-lightbox-layout-variant='fullWidth'][data-lightbox-tile='fallback']
     .lightboxOverviewFrame {
     aspect-ratio: 16 / 10;
     min-height: clamp(10rem, 70vw, 14rem);
+  }
+
+  .lightboxOverviewButton[data-lightbox-tile='featured'] .lightboxOverviewFrame,
+  .lightboxOverviewButton[data-lightbox-tile='lifestyle']
+    .lightboxOverviewFrame,
+  .lightboxOverviewButton[data-lightbox-tile='wide'] .lightboxOverviewFrame {
+    aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);
+    min-height: clamp(14rem, 82vw, 20rem);
   }
 }
 

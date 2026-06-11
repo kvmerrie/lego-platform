@@ -1802,6 +1802,30 @@ function getCatalogSetImageOrientation(
   return 'square';
 }
 
+function getCatalogSetImageMediaRole(
+  catalogSetImage: Pick<CatalogSetImage, 'imageRole' | 'type'>,
+): CarouselImage['mediaRole'] | undefined {
+  switch (catalogSetImage.imageRole) {
+    case 'box_back':
+    case 'box_front':
+      return 'box';
+    case 'lifestyle_people':
+    case 'lifestyle_room':
+      return 'lifestyle';
+    case 'build':
+    case 'detail':
+      return 'detail';
+    case 'model_primary':
+    case 'model_secondary':
+      return 'model';
+    case 'logo':
+    case 'minifigure':
+      return 'product';
+    default:
+      return catalogSetImage.type === 'hero' ? 'model' : undefined;
+  }
+}
+
 function createCatalogGalleryImageItems(
   catalogSetDetail: Pick<
     CatalogSetDetail,
@@ -1811,6 +1835,7 @@ function createCatalogGalleryImageItems(
   return getCatalogGalleryImages(catalogSetDetail).map(
     (catalogSetImage, index) => {
       const aspectRatio = getCatalogSetImageAspectRatio(catalogSetImage);
+      const mediaRole = getCatalogSetImageMediaRole(catalogSetImage);
 
       return {
         alt:
@@ -1823,6 +1848,11 @@ function createCatalogGalleryImageItems(
               height: catalogSetImage.height,
               orientation: getCatalogSetImageOrientation(catalogSetImage),
               width: catalogSetImage.width,
+            }
+          : {}),
+        ...(mediaRole
+          ? {
+              mediaRole,
             }
           : {}),
         ...(catalogSetImage.attributionText

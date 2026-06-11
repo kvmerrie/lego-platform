@@ -1404,6 +1404,36 @@ describe('ImageGallery', () => {
         ?.hasAttribute('data-has-image-metadata'),
     ).toBe(false);
     expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="0"]')
+        ?.getAttribute('data-lightbox-tile'),
+    ).toBe('featured');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="0"]')
+        ?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('featured');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="1"]')
+        ?.getAttribute('data-lightbox-tile'),
+    ).toBe('fallback');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="1"]')
+        ?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="2"]')
+        ?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="3"]')
+        ?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    expect(
       document.body.querySelector('button[aria-label="Bekijk afbeelding 3"]'),
     ).not.toBeNull();
     expect(
@@ -1518,6 +1548,7 @@ describe('ImageGallery', () => {
         alt: 'Botanical Collection rozenboeket op tafel',
         aspectRatio: 1.5,
         height: 900,
+        mediaRole: 'model',
         orientation: 'landscape',
         src: 'https://images.example/roses-lifestyle.jpg',
         width: 1350,
@@ -1525,14 +1556,30 @@ describe('ImageGallery', () => {
       {
         alt: 'Botanical Collection rozenboeket detail',
         height: 1200,
+        mediaRole: 'detail',
         src: 'https://images.example/roses-detail.jpg',
         width: 800,
       },
       {
         alt: 'Botanical Collection rozenboeket doos',
         height: 900,
+        mediaRole: 'box',
         src: 'https://images.example/roses-box.jpg',
         width: 1200,
+      },
+      {
+        alt: 'Botanical Collection rozenboeket in woonkamer',
+        height: 900,
+        mediaRole: 'lifestyle',
+        src: 'https://images.example/roses-room.jpg',
+        width: 1600,
+      },
+      {
+        alt: 'Botanical Collection rozenboeket bloemdetail',
+        height: 900,
+        mediaRole: 'detail',
+        src: 'https://images.example/roses-wide-detail.jpg',
+        width: 1500,
       },
     ] satisfies readonly CarouselImage[];
 
@@ -1566,22 +1613,140 @@ describe('ImageGallery', () => {
       '[data-lightbox-grid-index]',
     );
 
-    expect(overviewButtons).toHaveLength(3);
+    expect(overviewButtons).toHaveLength(5);
     expect(overviewButtons[0]?.getAttribute('data-lightbox-featured')).toBe(
       'true',
     );
+    expect(
+      overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('featured');
     expect(overviewButtons[0]?.getAttribute('data-lightbox-tile')).toBe(
-      'landscape',
+      'featured',
     );
+    expect(
+      overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
     expect(overviewButtons[1]?.getAttribute('data-lightbox-tile')).toBe(
-      'portrait',
+      'standard',
     );
     expect(overviewButtons[1]?.getAttribute('data-image-orientation')).toBe(
       'portrait',
     );
     expect(overviewButtons[2]?.getAttribute('data-lightbox-tile')).toBe(
-      'landscape',
+      'standard',
     );
+    expect(
+      overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(overviewButtons[2]?.getAttribute('data-image-media-role')).toBe(
+      'box',
+    );
+    expect(overviewButtons[3]?.getAttribute('data-lightbox-tile')).toBe(
+      'lifestyle',
+    );
+    expect(overviewButtons[3]?.getAttribute('data-image-media-role')).toBe(
+      'lifestyle',
+    );
+    expect(
+      overviewButtons[3]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    expect(overviewButtons[4]?.getAttribute('data-lightbox-tile')).toBe('wide');
+    expect(
+      overviewButtons[4]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    overviewButtons.forEach((button, index) => {
+      expect(button.tagName).toBe('BUTTON');
+      expect(button.getAttribute('aria-label')).toBe(
+        `Bekijk afbeelding ${index + 1}`,
+      );
+    });
+  });
+
+  it('keeps overview standard tiles paired and promotes lone standard tiles to full width', () => {
+    const images = [
+      {
+        alt: 'Ruimteschip hoofdbeeld',
+        aspectRatio: 1.5,
+        mediaRole: 'model',
+        src: 'https://images.example/spaceship-main.jpg',
+      },
+      {
+        alt: 'Ruimteschip doos',
+        aspectRatio: 1.33,
+        mediaRole: 'box',
+        src: 'https://images.example/spaceship-box.jpg',
+      },
+      {
+        alt: 'Ruimteschip op bureau',
+        aspectRatio: 1.78,
+        mediaRole: 'lifestyle',
+        src: 'https://images.example/spaceship-lifestyle.jpg',
+      },
+      {
+        alt: 'Ruimteschip achterkant',
+        aspectRatio: 1.33,
+        mediaRole: 'product',
+        src: 'https://images.example/spaceship-back.jpg',
+      },
+      {
+        alt: 'Ruimteschip displaystandaard',
+        aspectRatio: 1.33,
+        mediaRole: 'product',
+        src: 'https://images.example/spaceship-stand.jpg',
+      },
+      {
+        alt: 'Ruimteschip minifiguren',
+        aspectRatio: 1,
+        mediaRole: 'product',
+        src: 'https://images.example/spaceship-minifigures.jpg',
+      },
+    ] satisfies readonly CarouselImage[];
+
+    act(() => {
+      root.render(<ImageGallery images={images} variant="detail" />);
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const overviewButtons = document.body.querySelectorAll<HTMLButtonElement>(
+      '[data-lightbox-grid-index]',
+    );
+
+    expect(overviewButtons).toHaveLength(6);
+    expect(
+      overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('featured');
+    expect(
+      overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    expect(overviewButtons[1]?.getAttribute('data-lightbox-tile')).toBe(
+      'standard',
+    );
+    expect(
+      overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    expect(overviewButtons[2]?.getAttribute('data-lightbox-tile')).toBe(
+      'lifestyle',
+    );
+    expect(
+      overviewButtons[3]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      overviewButtons[4]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      overviewButtons[5]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+
     overviewButtons.forEach((button, index) => {
       expect(button.tagName).toBe('BUTTON');
       expect(button.getAttribute('aria-label')).toBe(
@@ -1685,7 +1850,7 @@ describe('ImageGallery', () => {
     expect(css).toContain('.lightboxOverviewBody {');
     expect(css).toContain('overflow-y: auto;');
     expect(css).toContain('.lightboxOverview {');
-    expect(css).toContain('max-width: 920px;');
+    expect(css).toContain('max-width: 980px;');
     expect(css).toContain('margin-inline: auto;');
     expect(css).toContain('grid-auto-rows: auto;');
     expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
@@ -1697,31 +1862,34 @@ describe('ImageGallery', () => {
     expect(css).toContain(
       ".lightboxDialog[data-lightbox-variant='detail'] .lightboxViewport {",
     );
-    expect(css).toContain('align-items: stretch;');
+    expect(css).toContain('align-items: center;');
     expect(css).toContain(
       ".lightboxDialog[data-lightbox-variant='detail'] .lightboxMediaFrame {",
     );
     expect(css).toContain('height: auto;');
     expect(css).toContain('max-height: 100%;');
     expect(css).toContain(
-      ".lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n)",
+      ".lightboxOverviewButton[data-lightbox-layout-variant='featured']",
     );
     expect(css).toContain(
-      ".lightboxOverviewButton[data-image-orientation='portrait'][data-has-image-metadata='true']",
+      ".lightboxOverviewButton[data-lightbox-layout-variant='fullWidth']",
     );
     expect(css).toContain(
-      ".lightboxOverviewButton[data-image-orientation='landscape'][data-has-image-metadata='true']",
+      ".lightboxOverviewButton[data-lightbox-layout-variant='fullWidth'][data-lightbox-tile='fallback']",
     );
     expect(css).toContain(
-      ".lightboxOverviewButton[data-lightbox-featured='true']",
+      ".lightboxOverviewButton[data-lightbox-tile='featured']",
     );
+    expect(css).toContain(
+      ".lightboxOverviewButton[data-lightbox-tile='lifestyle']",
+    );
+    expect(css).toContain(".lightboxOverviewButton[data-lightbox-tile='wide']");
     expect(css).toContain('grid-column: 1 / -1;');
-    expect(css).toContain('grid-row: span 2;');
-    expect(css).toContain('grid-column: span 2;');
-    expect(css).toContain('min-height: clamp(16rem, 58vw, 24rem);');
+    expect(css).not.toContain('grid-column: span 2;');
+    expect(css).not.toContain('nth-child(3n)');
+    expect(css).toContain('min-height: clamp(18rem, 58vw, 30rem);');
     expect(css).toContain('@media (max-width: 22.49rem)');
-    expect(css).toContain('grid-template-columns: minmax(0, 1fr);');
-    expect(css).toContain('grid-column: auto;');
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
     expect(css).toContain('.galleryImageOverview');
     expect(css).toContain(
       '.lightboxMediaFrame {\n  aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);',

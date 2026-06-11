@@ -16,6 +16,19 @@ import { createPortal } from 'react-dom';
 import styles from './image-carousel.module.css';
 
 export type CarouselImageOrientation = 'landscape' | 'portrait' | 'square';
+export type CarouselImageMediaRole =
+  | 'box'
+  | 'detail'
+  | 'lifestyle'
+  | 'model'
+  | 'product';
+type LightboxOverviewTileVariant =
+  | 'fallback'
+  | 'featured'
+  | 'lifestyle'
+  | 'standard'
+  | 'wide';
+type LightboxOverviewLayoutVariant = 'featured' | 'fullWidth' | 'standard';
 
 export interface GalleryImage {
   alt: string;
@@ -24,6 +37,7 @@ export interface GalleryImage {
   ctaHref?: string;
   ctaLabel?: string;
   height?: number;
+  mediaRole?: CarouselImageMediaRole;
   orientation?: CarouselImageOrientation;
   src: string;
   thumbnailSrc?: string;
@@ -148,6 +162,122 @@ function getGalleryImageFrameStyle(
 
 function hasGalleryImageMetadata(image: GalleryImage): boolean {
   return Boolean(getGalleryImageAspectRatio(image));
+}
+
+function isGalleryImageProductLike(image: GalleryImage): boolean {
+  return image.mediaRole === 'box' || image.mediaRole === 'product';
+}
+
+function getLightboxOverviewTileVariant({
+  image,
+  imageIndex,
+}: {
+  image: GalleryImage;
+  imageIndex: number;
+}): LightboxOverviewTileVariant {
+  if (imageIndex === 0) {
+    return 'featured';
+  }
+
+  if (image.mediaRole === 'lifestyle') {
+    return 'lifestyle';
+  }
+
+  if (isGalleryImageProductLike(image)) {
+    return 'standard';
+  }
+
+  const aspectRatio = getGalleryImageAspectRatio(image);
+  const orientation = getGalleryImageOrientation(image);
+
+  if (!aspectRatio) {
+    return 'fallback';
+  }
+
+  if (
+    image.mediaRole === 'detail' &&
+    (orientation === 'landscape' || aspectRatio >= 1.25)
+  ) {
+    return 'wide';
+  }
+
+  if (aspectRatio > 1.4) {
+    return 'wide';
+  }
+
+  return 'standard';
+}
+
+function getPreferredLightboxOverviewLayoutVariant(
+  tileVariant: LightboxOverviewTileVariant,
+): LightboxOverviewLayoutVariant {
+  if (tileVariant === 'featured') {
+    return 'featured';
+  }
+
+  if (tileVariant === 'lifestyle' || tileVariant === 'wide') {
+    return 'fullWidth';
+  }
+
+  return 'standard';
+}
+
+function getLightboxOverviewItems(images: readonly GalleryImage[]): Array<{
+  image: GalleryImage;
+  imageIndex: number;
+  layoutVariant: LightboxOverviewLayoutVariant;
+  tileVariant: LightboxOverviewTileVariant;
+}> {
+  const overviewItems = images.map((image, imageIndex) => {
+    const tileVariant = getLightboxOverviewTileVariant({
+      image,
+      imageIndex,
+    });
+
+    return {
+      image,
+      imageIndex,
+      layoutVariant: getPreferredLightboxOverviewLayoutVariant(tileVariant),
+      tileVariant,
+    };
+  });
+  let pendingStandardItemIndex: number | null = null;
+
+  overviewItems.forEach((overviewItem, overviewItemIndex) => {
+    if (overviewItem.layoutVariant === 'standard') {
+      pendingStandardItemIndex =
+        pendingStandardItemIndex === null ? overviewItemIndex : null;
+      return;
+    }
+
+    if (pendingStandardItemIndex !== null) {
+      const pendingStandardItem = overviewItems[pendingStandardItemIndex];
+
+      if (!pendingStandardItem) {
+        pendingStandardItemIndex = null;
+        return;
+      }
+
+      overviewItems[pendingStandardItemIndex] = {
+        ...pendingStandardItem,
+        layoutVariant: 'fullWidth',
+      };
+      pendingStandardItemIndex = null;
+    }
+  });
+
+  if (pendingStandardItemIndex !== null) {
+    const pendingStandardItem = overviewItems[pendingStandardItemIndex];
+
+    if (pendingStandardItem) {
+      overviewItems[pendingStandardItemIndex] = {
+        ...pendingStandardItem,
+        layoutVariant: 'fullWidth',
+      };
+    }
+  }
+
+  return overviewItems;
 }
 
 function getGalleryImageIntrinsicDimension({
@@ -1090,44 +1220,50 @@ export function ImageGallery({
           {lightboxMode === 'overview' ? (
             <div className={styles.lightboxOverviewBody}>
               <div className={styles.lightboxOverview}>
-                {resolvedImages.map((image, imageIndex) => (
-                  <button
-                    aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
-                    className={styles.lightboxOverviewButton}
-                    data-has-image-metadata={
-                      hasGalleryImageMetadata(image) ? 'true' : undefined
-                    }
-                    data-image-orientation={getGalleryImageOrientation(image)}
-                    data-lightbox-featured={
-                      imageIndex === 0 && hasGalleryImageMetadata(image)
-                        ? 'true'
-                        : undefined
-                    }
-                    data-lightbox-grid-index={imageIndex}
-                    data-lightbox-tile={getGalleryImageOrientation(image)}
-                    key={`${image.src}-lightbox-grid-${imageIndex}`}
-                    onClick={() => goToLightboxImage(imageIndex)}
-                    ref={(element) => {
-                      overviewImageButtonRefs.current[imageIndex] = element;
-                    }}
-                    type="button"
-                  >
-                    <span
-                      className={styles.lightboxOverviewFrame}
-                      style={getGalleryImageFrameStyle(image)}
-                    >
-                      <GalleryImageMedia
-                        image={image}
-                        imageIndex={imageIndex}
-                        kind="overview"
-                        isFallbackVisible={Boolean(
-                          failedImageIndexes[imageIndex],
+                {getLightboxOverviewItems(resolvedImages).map(
+                  ({ image, imageIndex, layoutVariant, tileVariant }) => {
+                    return (
+                      <button
+                        aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
+                        className={styles.lightboxOverviewButton}
+                        data-has-image-metadata={
+                          hasGalleryImageMetadata(image) ? 'true' : undefined
+                        }
+                        data-image-media-role={image.mediaRole}
+                        data-image-orientation={getGalleryImageOrientation(
+                          image,
                         )}
-                        onImageError={handleImageError}
-                      />
-                    </span>
-                  </button>
-                ))}
+                        data-lightbox-featured={
+                          layoutVariant === 'featured' ? 'true' : undefined
+                        }
+                        data-lightbox-grid-index={imageIndex}
+                        data-lightbox-layout-variant={layoutVariant}
+                        data-lightbox-tile={tileVariant}
+                        key={`${image.src}-lightbox-grid-${imageIndex}`}
+                        onClick={() => goToLightboxImage(imageIndex)}
+                        ref={(element) => {
+                          overviewImageButtonRefs.current[imageIndex] = element;
+                        }}
+                        type="button"
+                      >
+                        <span
+                          className={styles.lightboxOverviewFrame}
+                          style={getGalleryImageFrameStyle(image)}
+                        >
+                          <GalleryImageMedia
+                            image={image}
+                            imageIndex={imageIndex}
+                            kind="overview"
+                            isFallbackVisible={Boolean(
+                              failedImageIndexes[imageIndex],
+                            )}
+                            onImageError={handleImageError}
+                          />
+                        </span>
+                      </button>
+                    );
+                  },
+                )}
               </div>
             </div>
           ) : (
@@ -1151,6 +1287,9 @@ export function ImageGallery({
               <div
                 className={styles.lightboxMediaFrame}
                 data-lightbox-media-surface="light"
+                data-image-media-role={
+                  resolvedImages[safeLightboxImageIndex].mediaRole
+                }
                 data-image-orientation={getGalleryImageOrientation(
                   resolvedImages[safeLightboxImageIndex],
                 )}
@@ -1359,6 +1498,9 @@ export function ImageGallery({
               >
                 <div
                   className={styles.detailMainFrame}
+                  data-image-media-role={
+                    resolvedImages[safeDetailImageIndex].mediaRole
+                  }
                   data-image-orientation={getGalleryImageOrientation(
                     resolvedImages[safeDetailImageIndex],
                   )}

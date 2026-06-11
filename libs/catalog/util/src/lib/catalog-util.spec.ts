@@ -470,6 +470,7 @@ describe('catalog snapshot helpers', () => {
         images: [
           {
             height: 1200,
+            imageRole: 'lifestyle_room',
             order: 1,
             thumbnailUrl: 'https://images.example/roses-detail-thumb.jpg',
             type: 'detail',
@@ -489,6 +490,7 @@ describe('catalog snapshot helpers', () => {
         },
         {
           height: 1200,
+          imageRole: 'lifestyle_room',
           order: 1,
           thumbnailUrl: 'https://images.example/roses-detail-thumb.jpg',
           type: 'detail',
