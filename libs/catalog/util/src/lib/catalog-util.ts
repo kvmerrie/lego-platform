@@ -58,11 +58,13 @@ export type CatalogSetImageType =
 
 export interface CatalogSetImage {
   attributionText?: string;
+  height?: number;
   order?: number;
   sha256?: string;
   thumbnailUrl?: string;
   type?: CatalogSetImageType;
   url: string;
+  width?: number;
 }
 
 export type CatalogSetImageSeed = CatalogSetImage | string;
@@ -1478,6 +1480,9 @@ function toCatalogSetImageSeed(
           attributionText: image.attributionText,
         }
       : {}),
+    ...(typeof image.height === 'number' && Number.isFinite(image.height)
+      ? { height: image.height }
+      : {}),
     ...(typeof image.order === 'number' ? { order: image.order } : {}),
     ...(typeof image.sha256 === 'string' && image.sha256.trim()
       ? {
@@ -1495,6 +1500,9 @@ function toCatalogSetImageSeed(
         }
       : {}),
     url: normalizedUrl,
+    ...(typeof image.width === 'number' && Number.isFinite(image.width)
+      ? { width: image.width }
+      : {}),
   };
 }
 
@@ -1581,6 +1589,8 @@ export function normalizeCatalogSetImages({
         typeof existingCatalogSetImage.order === 'number'
           ? existingCatalogSetImage.order
           : normalizedCatalogSetImage.order,
+      height:
+        existingCatalogSetImage.height ?? normalizedCatalogSetImage.height,
       sha256:
         existingCatalogSetImage.sha256 ?? normalizedCatalogSetImage.sha256,
       thumbnailUrl:
@@ -1588,6 +1598,7 @@ export function normalizeCatalogSetImages({
         normalizedCatalogSetImage.thumbnailUrl,
       type: existingCatalogSetImage.type ?? normalizedCatalogSetImage.type,
       url: normalizedCatalogSetImage.url,
+      width: existingCatalogSetImage.width ?? normalizedCatalogSetImage.width,
     });
   });
 
@@ -1610,6 +1621,11 @@ export function normalizeCatalogSetImages({
             attributionText: catalogSetImage.attributionText,
           }
         : {}),
+      ...(typeof catalogSetImage.height === 'number'
+        ? {
+            height: catalogSetImage.height,
+          }
+        : {}),
       ...(catalogSetImage.thumbnailUrl
         ? {
             thumbnailUrl: catalogSetImage.thumbnailUrl,
@@ -1630,6 +1646,11 @@ export function normalizeCatalogSetImages({
             }
           : {}),
       url: catalogSetImage.url,
+      ...(typeof catalogSetImage.width === 'number'
+        ? {
+            width: catalogSetImage.width,
+          }
+        : {}),
     }));
 
   const resolvedPrimaryImage =

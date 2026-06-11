@@ -1314,11 +1314,13 @@
 
   .responsiveDialogLayer {
     align-items: center;
+    --responsive-dialog-sheet-top-offset: 64px;
     display: grid;
     inset: 0;
     justify-items: center;
     padding: var(--lego-space-4);
     position: fixed;
+    overscroll-behavior: contain;
     z-index: 1400;
   }
 
@@ -1329,6 +1331,7 @@
     inset: 0;
     padding: 0;
     position: fixed;
+    touch-action: none;
   }
 
   .responsiveDialogPanel {
@@ -1521,7 +1524,7 @@
   @media (max-width: 47.9375rem) {
     .responsiveDialogLayer {
       align-items: end;
-      padding: 0;
+      padding: var(--responsive-dialog-sheet-top-offset) 0 0;
     }
 
     .responsiveDialogPanel {
@@ -1529,7 +1532,7 @@
       border-end-start-radius: 0;
       border-start-end-radius: var(--lego-radius-lg);
       border-start-start-radius: var(--lego-radius-lg);
-      max-block-size: 88vh;
+      max-block-size: calc(100dvh - var(--responsive-dialog-sheet-top-offset));
       max-inline-size: 100%;
       min-inline-size: 0;
     }
@@ -1539,6 +1542,7 @@
     }
 
     .responsiveDialogBody {
+      overscroll-behavior: contain;
       padding: var(--lego-space-3) var(--lego-space-4) var(--lego-space-4);
     }
   }

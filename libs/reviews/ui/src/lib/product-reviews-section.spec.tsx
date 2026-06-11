@@ -6,6 +6,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { OPEN_PRODUCT_REVIEWS_EVENT } from '@lego-platform/shared/config';
 import type {
   CatalogSetReview,
   CatalogSetReviewSummary,
@@ -92,6 +93,11 @@ const pendingOwnReview: CatalogSetReview = {
   valueForMoneyRating: null,
 };
 
+async function waitForScheduledFocus() {
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
+}
+
 function renderProductReviewsSection({
   canReview = false,
   isAuthPromptOpen = false,
@@ -147,6 +153,7 @@ describe('ProductReviewsSection', () => {
     });
     container.remove();
     document.body.innerHTML = '';
+    window.history.replaceState(null, '', '/');
     vi.clearAllMocks();
   });
 
@@ -178,7 +185,9 @@ describe('ProductReviewsSection', () => {
 
     expect(markup).toContain('<details');
     expect(markup).toContain('<summary');
-    expect(markup).toContain('Productbeoordelingen Recensies');
+    expect(markup).toContain('Productbeoordelingen');
+    expect(markup).not.toContain('Productbeoordelingen Recensies');
+    expect(markup).not.toMatch(/<details[^>]*\sopen(?:=|>|\s)/);
     expect(markup).toContain('detailAccordionTitle');
     expect(markup).toContain('(5)');
     expect(markup).toContain('Bouwervaring');
@@ -188,6 +197,112 @@ describe('ProductReviewsSection', () => {
     expect(markup).toContain('Waar voor je geld');
     expect(markup).toContain('4,3');
     expect(markup).not.toContain('Verzamelaarsstem');
+  });
+
+  it('keeps the accordion collapsed by default', () => {
+    const markup = renderProductReviewsSection({
+      reviews: [approvedReview],
+      summary: reviewedSummary,
+    });
+
+    expect(markup).toContain('<details');
+    expect(markup).not.toMatch(/<details[^>]*\sopen(?:=|>|\s)/);
+  });
+
+  it('opens and focuses the accordion when the product reviews hash is active', async () => {
+    window.history.replaceState(null, '', '/sets/example#productbeoordelingen');
+
+    await renderInteractiveProductReviewsSection({
+      reviews: [approvedReview],
+      summary: reviewedSummary,
+    });
+
+    await act(async () => {
+      await waitForScheduledFocus();
+    });
+
+    const details = container.querySelector<HTMLDetailsElement>('details');
+    const summary = container.querySelector<HTMLElement>('summary');
+
+    expect(container.querySelector('#productbeoordelingen')).not.toBeNull();
+    expect(details?.open).toBe(true);
+    expect(document.activeElement).toBe(summary);
+  });
+
+  it('opens the accordion when navigation changes to the product reviews hash', async () => {
+    window.history.replaceState(null, '', '/sets/example');
+
+    await renderInteractiveProductReviewsSection({
+      reviews: [approvedReview],
+      summary: reviewedSummary,
+    });
+
+    const details = container.querySelector<HTMLDetailsElement>('details');
+
+    expect(details?.open).toBe(false);
+
+    await act(async () => {
+      window.history.pushState(null, '', '/sets/example#productbeoordelingen');
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      await waitForScheduledFocus();
+    });
+
+    expect(details?.open).toBe(true);
+  });
+
+  it('opens the accordion when the product reviews open event is dispatched', async () => {
+    window.history.replaceState(null, '', '/sets/example#productbeoordelingen');
+
+    await renderInteractiveProductReviewsSection({
+      reviews: [approvedReview],
+      summary: reviewedSummary,
+    });
+
+    const details = container.querySelector<HTMLDetailsElement>('details');
+
+    await act(async () => {
+      details?.removeAttribute('open');
+      details?.dispatchEvent(new Event('toggle', { bubbles: true }));
+    });
+
+    expect(details?.open).toBe(false);
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent(OPEN_PRODUCT_REVIEWS_EVENT));
+      await waitForScheduledFocus();
+    });
+
+    expect(details?.open).toBe(true);
+    expect(document.activeElement).toBe(
+      container.querySelector<HTMLElement>('summary'),
+    );
+  });
+
+  it('opens the accordion when a plain product reviews anchor link is clicked', async () => {
+    window.history.replaceState(null, '', '/sets/example');
+    const anchor = document.createElement('a');
+    anchor.href = '#productbeoordelingen';
+    anchor.textContent = 'Ga naar Productbeoordelingen';
+    document.body.prepend(anchor);
+
+    await renderInteractiveProductReviewsSection({
+      reviews: [approvedReview],
+      summary: reviewedSummary,
+    });
+
+    const details = container.querySelector<HTMLDetailsElement>('details');
+
+    expect(details?.open).toBe(false);
+
+    await act(async () => {
+      anchor.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await waitForScheduledFocus();
+    });
+
+    expect(details?.open).toBe(true);
+    expect(document.activeElement).toBe(
+      container.querySelector<HTMLElement>('summary'),
+    );
   });
 
   it('renders a review CTA without placing the form inline', () => {
@@ -236,6 +351,11 @@ describe('ProductReviewsSection', () => {
     expect(document.body.textContent).toContain('Bouwervaring');
     expect(document.body.textContent).toContain('Speelervaring');
     expect(document.body.textContent).toContain('Waar voor je geld');
+    expect(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        'button[aria-label][aria-pressed="true"]',
+      ),
+    ).toHaveLength(0);
   });
 
   it('opens the editor dialog with existing values for editing', async () => {
@@ -283,6 +403,14 @@ describe('ProductReviewsSection', () => {
 
     await act(async () => {
       document.body
+        .querySelectorAll<HTMLButtonElement>(
+          'button[aria-label$="van 5 sterren"]',
+        )[4]
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await act(async () => {
+      document.body
         .querySelector<HTMLFormElement>('#product-review-form')!
         .dispatchEvent(
           new Event('submit', { bubbles: true, cancelable: true }),
@@ -298,6 +426,105 @@ describe('ProductReviewsSection', () => {
       valueForMoneyRating: null,
     });
     expect(document.body.textContent).not.toContain('Schrijf je recensie');
+  });
+
+  it('keeps a new review unrated until the user chooses a score', async () => {
+    await renderInteractiveProductReviewsSection({ canReview: true });
+
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('button')!
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        'button[aria-label][aria-pressed="true"]',
+      ),
+    ).toHaveLength(0);
+  });
+
+  it('requires an overall rating before submitting a new review', async () => {
+    const onReviewSubmit = vi.fn().mockResolvedValue(undefined);
+    await renderInteractiveProductReviewsSection({
+      canReview: true,
+      onReviewSubmit,
+    });
+
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('button')!
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await act(async () => {
+      document.body
+        .querySelector<HTMLFormElement>('#product-review-form')!
+        .dispatchEvent(
+          new Event('submit', { bubbles: true, cancelable: true }),
+        );
+    });
+
+    expect(onReviewSubmit).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain(
+      'Kies een beoordeling van 1 tot en met 5 sterren.',
+    );
+  });
+
+  it('selects the clicked overall rating', async () => {
+    await renderInteractiveProductReviewsSection({ canReview: true });
+
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('button')!
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const ratingButtons = document.body.querySelectorAll<HTMLButtonElement>(
+      'button[aria-label$="van 5 sterren"]',
+    );
+
+    await act(async () => {
+      ratingButtons[2].dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
+    });
+
+    expect(ratingButtons[2].getAttribute('aria-pressed')).toBe('true');
+    expect(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        'button[aria-label][aria-pressed="true"]',
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('does not persist hover preview as a selected rating', async () => {
+    await renderInteractiveProductReviewsSection({ canReview: true });
+
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('button')!
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const ratingButtons = document.body.querySelectorAll<HTMLButtonElement>(
+      'button[aria-label$="van 5 sterren"]',
+    );
+
+    await act(async () => {
+      ratingButtons[3].dispatchEvent(
+        new MouseEvent('mouseover', { bubbles: true }),
+      );
+      ratingButtons[3].dispatchEvent(
+        new MouseEvent('mouseout', { bubbles: true }),
+      );
+    });
+
+    expect(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        'button[aria-label][aria-pressed="true"]',
+      ),
+    ).toHaveLength(0);
   });
 
   it('submits selected optional subratings from the editor dialog', async () => {
@@ -320,6 +547,9 @@ describe('ProductReviewsSection', () => {
     );
 
     await act(async () => {
+      ratingButtons[2].dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      );
       ratingButtons[9].dispatchEvent(
         new MouseEvent('click', { bubbles: true }),
       );

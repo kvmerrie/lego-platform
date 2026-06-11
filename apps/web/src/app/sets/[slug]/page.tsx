@@ -2398,6 +2398,22 @@ export default async function SetDetailPage({
               })
         }
         dealVerdict={dealVerdict}
+        heroCtaSideAction={
+          <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              merchantCount:
+                trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+              pageSurface: 'set_detail',
+              priceVerdict: analyticsPriceVerdict,
+              sectionId: 'set-detail-hero',
+              setId: catalogSetDetail.id,
+              theme: catalogSetDetail.theme,
+            }}
+            productIntent="wishlist"
+            setId={catalogSetDetail.id}
+            variant="inline"
+          />
+        }
         offerList={
           hasTrackedAvailabilityFallback
             ? []
@@ -2479,6 +2495,7 @@ export default async function SetDetailPage({
         recentlyViewedRail={
           <CatalogFeatureRecentlyViewed currentSetNum={catalogSetDetail.id} />
         }
+        reviewSummary={reviewPayload.summary}
         similarSetsRail={similarSetsRail}
         setNewsRail={
           <Suspense fallback={null}>

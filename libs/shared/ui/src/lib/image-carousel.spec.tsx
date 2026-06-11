@@ -5,7 +5,11 @@ import { resolve } from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ImageCarousel, ImageGallery } from './image-carousel';
+import {
+  ImageCarousel,
+  ImageGallery,
+  type CarouselImage,
+} from './image-carousel';
 
 vi.mock('next/image', () => ({
   default: ({
@@ -155,9 +159,7 @@ describe('ImageGallery', () => {
     expect(mobileBleedRule).toContain('width: 100vw;');
     expect(mobileBleedRule).toContain('max-width: none;');
     expect(mobileFrameRule).toContain('border: 0;');
-    expect(mobileFrameRule).toContain(
-      'border-block-end: var(--lego-border-width-1) solid',
-    );
+    expect(mobileFrameRule).toContain('border-block-end: 0;');
     expect(mobileFrameRule).toContain('border-radius: 0;');
     expect(mobileFocusRule).toContain(
       'box-shadow: inset 0 0 0 4px var(--lego-focus-ring);',
@@ -1397,6 +1399,11 @@ describe('ImageGallery', () => {
       document.body.querySelectorAll('[data-lightbox-grid-index]'),
     ).toHaveLength(4);
     expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="0"]')
+        ?.hasAttribute('data-has-image-metadata'),
+    ).toBe(false);
+    expect(
       document.body.querySelector('button[aria-label="Bekijk afbeelding 3"]'),
     ).not.toBeNull();
     expect(
@@ -1505,6 +1512,84 @@ describe('ImageGallery', () => {
     );
   });
 
+  it('uses optional image metadata for detail frames and lightbox overview tiles', () => {
+    const images = [
+      {
+        alt: 'Botanical Collection rozenboeket op tafel',
+        aspectRatio: 1.5,
+        height: 900,
+        orientation: 'landscape',
+        src: 'https://images.example/roses-lifestyle.jpg',
+        width: 1350,
+      },
+      {
+        alt: 'Botanical Collection rozenboeket detail',
+        height: 1200,
+        src: 'https://images.example/roses-detail.jpg',
+        width: 800,
+      },
+      {
+        alt: 'Botanical Collection rozenboeket doos',
+        height: 900,
+        src: 'https://images.example/roses-box.jpg',
+        width: 1200,
+      },
+    ] satisfies readonly CarouselImage[];
+
+    act(() => {
+      root.render(<ImageGallery images={images} variant="detail" />);
+    });
+
+    const detailFrame = container.querySelector<HTMLElement>(
+      '[class*="detailMainFrame"]',
+    );
+
+    expect(detailFrame?.getAttribute('data-image-orientation')).toBe(
+      'landscape',
+    );
+    expect(detailFrame?.getAttribute('style')).toContain(
+      '--gallery-image-aspect-ratio: 1.5000',
+    );
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const overviewButtons = document.body.querySelectorAll<HTMLButtonElement>(
+      '[data-lightbox-grid-index]',
+    );
+
+    expect(overviewButtons).toHaveLength(3);
+    expect(overviewButtons[0]?.getAttribute('data-lightbox-featured')).toBe(
+      'true',
+    );
+    expect(overviewButtons[0]?.getAttribute('data-lightbox-tile')).toBe(
+      'landscape',
+    );
+    expect(overviewButtons[1]?.getAttribute('data-lightbox-tile')).toBe(
+      'portrait',
+    );
+    expect(overviewButtons[1]?.getAttribute('data-image-orientation')).toBe(
+      'portrait',
+    );
+    expect(overviewButtons[2]?.getAttribute('data-lightbox-tile')).toBe(
+      'landscape',
+    );
+    overviewButtons.forEach((button, index) => {
+      expect(button.tagName).toBe('BUTTON');
+      expect(button.getAttribute('aria-label')).toBe(
+        `Bekijk afbeelding ${index + 1}`,
+      );
+    });
+  });
+
   it('keeps set detail gallery images on a white contained product surface', () => {
     const css = readFileSync(
       resolve(
@@ -1514,7 +1599,9 @@ describe('ImageGallery', () => {
       'utf-8',
     );
 
-    expect(css).toContain('.detailMainFrame {\n  aspect-ratio: 1 / 1;');
+    expect(css).toContain(
+      '.detailMainFrame {\n  aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);',
+    );
     expect(css).toContain('.detailMainFrame,\n.detailThumbFrame {');
     expect(css).toContain('background: #ffffff;');
     expect(css).toContain(
@@ -1571,7 +1658,7 @@ describe('ImageGallery', () => {
       ".detailGallery[data-has-multiple-images='true'] .articleZoomOverlay {",
     );
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
-    expect(css).toContain('height: 508px;');
+    expect(css).toContain('height: clamp(28rem, 58vh, 42rem);');
     expect(css).toContain('@media (max-width: 47.99rem)');
     expect(css).toContain(
       '.detailMainButton,\n  .lightboxMediaFrame {\n    touch-action: pan-y;',
@@ -1614,16 +1701,31 @@ describe('ImageGallery', () => {
     expect(css).toContain(
       ".lightboxDialog[data-lightbox-variant='detail'] .lightboxMediaFrame {",
     );
-    expect(css).toContain('height: 100%;');
+    expect(css).toContain('height: auto;');
     expect(css).toContain('max-height: 100%;');
-    expect(css).toContain('.lightboxOverviewButton:nth-child(3n)');
+    expect(css).toContain(
+      ".lightboxOverviewButton:not([data-has-image-metadata='true']):nth-child(3n)",
+    );
+    expect(css).toContain(
+      ".lightboxOverviewButton[data-image-orientation='portrait'][data-has-image-metadata='true']",
+    );
+    expect(css).toContain(
+      ".lightboxOverviewButton[data-image-orientation='landscape'][data-has-image-metadata='true']",
+    );
+    expect(css).toContain(
+      ".lightboxOverviewButton[data-lightbox-featured='true']",
+    );
     expect(css).toContain('grid-column: 1 / -1;');
-    expect(css).toContain('min-height: clamp(14rem, 54vw, 20rem);');
+    expect(css).toContain('grid-row: span 2;');
+    expect(css).toContain('grid-column: span 2;');
+    expect(css).toContain('min-height: clamp(16rem, 58vw, 24rem);');
     expect(css).toContain('@media (max-width: 22.49rem)');
     expect(css).toContain('grid-template-columns: minmax(0, 1fr);');
     expect(css).toContain('grid-column: auto;');
     expect(css).toContain('.galleryImageOverview');
-    expect(css).toContain('.lightboxMediaFrame {\n  aspect-ratio: 16 / 10;');
+    expect(css).toContain(
+      '.lightboxMediaFrame {\n  aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);',
+    );
     expect(css).toContain('border: 0;');
     expect(css).toContain('.lightboxFooter {');
     expect(css).toContain('.lightboxAttribution');

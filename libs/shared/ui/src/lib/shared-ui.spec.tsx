@@ -26,7 +26,20 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 afterEach(() => {
   document.body.innerHTML = '';
   document.body.style.overflow = '';
+  document.body.style.overscrollBehavior = '';
+  document.body.style.paddingRight = '';
+  document.body.style.position = '';
+  document.body.style.scrollBehavior = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
   document.documentElement.style.overflow = '';
+  document.documentElement.style.overscrollBehavior = '';
+  document.documentElement.style.scrollBehavior = '';
+  Object.defineProperty(window, 'scrollY', {
+    configurable: true,
+    value: 0,
+  });
+  vi.restoreAllMocks();
   vi.clearAllMocks();
 });
 
@@ -243,6 +256,85 @@ describe('ResponsiveDialog', () => {
     });
   });
 
+  it('locks document scroll while open and restores the previous scroll position on close', async () => {
+    const container = document.createElement('div');
+    const scrollTo = vi.fn();
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      value: scrollTo,
+    });
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      value: 128,
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(document.documentElement, 'clientWidth', {
+      configurable: true,
+      value: 980,
+    });
+    document.documentElement.style.scrollBehavior = 'smooth';
+    document.body.style.scrollBehavior = 'smooth';
+
+    await act(async () => {
+      root.render(
+        <ResponsiveDialog
+          isOpen={true}
+          title="Recensie schrijven"
+          onClose={() => undefined}
+        >
+          <p>Dialog body</p>
+        </ResponsiveDialog>,
+      );
+    });
+
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overscrollBehavior).toBe('none');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.style.overscrollBehavior).toBe('none');
+    expect(document.body.style.position).toBe('fixed');
+    expect(document.body.style.top).toBe('-128px');
+    expect(document.body.style.width).toBe('100%');
+    expect(document.body.style.paddingRight).toBe('20px');
+
+    await act(async () => {
+      root.render(
+        <ResponsiveDialog
+          isOpen={false}
+          title="Recensie schrijven"
+          onClose={() => undefined}
+        >
+          <p>Dialog body</p>
+        </ResponsiveDialog>,
+      );
+    });
+
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.documentElement.style.overscrollBehavior).toBe('');
+    expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.overscrollBehavior).toBe('');
+    expect(document.body.style.position).toBe('');
+    expect(document.body.style.top).toBe('');
+    expect(document.body.style.width).toBe('');
+    expect(document.body.style.paddingRight).toBe('');
+    expect(document.documentElement.style.scrollBehavior).toBe('smooth');
+    expect(document.body.style.scrollBehavior).toBe('smooth');
+    expect(scrollTo).toHaveBeenCalledWith({
+      behavior: 'instant',
+      left: 0,
+      top: 128,
+    });
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
   it('defines a mobile bottom-sheet presentation', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
@@ -253,9 +345,17 @@ describe('ResponsiveDialog', () => {
 
     expect(mobileCss).toContain('.responsiveDialogLayer');
     expect(mobileCss).toContain('align-items: end;');
+    expect(mobileCss).toContain(
+      'padding: var(--responsive-dialog-sheet-top-offset) 0 0;',
+    );
     expect(mobileCss).toContain('.responsiveDialogPanel');
     expect(mobileCss).toContain('border-end-end-radius: 0;');
-    expect(mobileCss).toContain('max-block-size: 88vh;');
+    expect(mobileCss).toContain(
+      '100dvh - var(--responsive-dialog-sheet-top-offset)',
+    );
+    expect(css).toContain('--responsive-dialog-sheet-top-offset: 64px;');
+    expect(css).toContain('overscroll-behavior: contain;');
+    expect(css).toContain('touch-action: none;');
   });
 });
 

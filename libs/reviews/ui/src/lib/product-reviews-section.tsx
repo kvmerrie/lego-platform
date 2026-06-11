@@ -8,6 +8,10 @@ import {
   DetailAccordionSection,
   ResponsiveDialog,
 } from '@lego-platform/shared/ui';
+import {
+  OPEN_PRODUCT_REVIEWS_EVENT,
+  PRODUCT_REVIEWS_SECTION_ID,
+} from '@lego-platform/shared/config';
 import type {
   CatalogSetReview,
   CatalogSetReviewInput,
@@ -463,7 +467,7 @@ function ReviewsList({
   return (
     <section className={styles.reviewsListSection}>
       <div className={styles.reviewSectionHeader}>
-        <h3>Recensies</h3>
+        <h3>Beoordelingen</h3>
       </div>
       {reviews.length > 0 ? (
         <div className={styles.reviewList}>
@@ -474,7 +478,7 @@ function ReviewsList({
       ) : (
         <div className={styles.noReviewsPrompt}>
           <p>
-            <strong>Nog geen recensies.</strong>
+            <strong>Nog geen beoordelingen.</strong>
             <br />
             Help andere verzamelaars door als eerste een beoordeling te
             plaatsen.
@@ -499,8 +503,8 @@ function ReviewForm({
   onSubmit: (input: CatalogSetReviewInput) => Promise<void>;
   ownReview?: CatalogSetReview;
 }) {
-  const [overallRating, setOverallRating] = useState(
-    ownReview?.overallRating ?? 5,
+  const [overallRating, setOverallRating] = useState<number | null>(
+    ownReview?.overallRating ?? null,
   );
   const [buildExperienceRating, setBuildExperienceRating] = useState<
     number | null
@@ -515,18 +519,27 @@ function ReviewForm({
     ownReview?.recommends ?? null,
   );
   const [reviewText, setReviewText] = useState(ownReview?.reviewText ?? '');
+  const [validationError, setValidationError] = useState<string | undefined>();
 
   useEffect(() => {
-    setOverallRating(ownReview?.overallRating ?? 5);
+    setOverallRating(ownReview?.overallRating ?? null);
     setBuildExperienceRating(ownReview?.buildExperienceRating ?? null);
     setPlayExperienceRating(ownReview?.playExperienceRating ?? null);
     setValueForMoneyRating(ownReview?.valueForMoneyRating ?? null);
     setRecommends(ownReview?.recommends ?? null);
     setReviewText(ownReview?.reviewText ?? '');
+    setValidationError(undefined);
   }, [ownReview]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (overallRating === null) {
+      setValidationError('Kies een beoordeling van 1 tot en met 5 sterren.');
+      return;
+    }
+
+    setValidationError(undefined);
     await onSubmit({
       buildExperienceRating,
       overallRating,
@@ -629,7 +642,11 @@ function ReviewForm({
           Je beoordeling staat klaar voor controle.
         </p>
       ) : null}
-      {error ? <p className={styles.formError}>{error}</p> : null}
+      {validationError || error ? (
+        <p className={styles.formError} role="alert">
+          {validationError ?? error}
+        </p>
+      ) : null}
       <Button isLoading={isSubmitting} type="submit" variant="primary">
         {ownReview ? 'Recensie opslaan' : 'Recensie verzenden'}
       </Button>
@@ -697,6 +714,7 @@ export function ProductReviewsSection({
   summary: CatalogSetReviewSummary;
 }) {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const publicReviews = useMemo(
     () =>
       ownReview
@@ -704,6 +722,93 @@ export function ProductReviewsSection({
         : reviews,
     [ownReview, reviews],
   );
+
+  useEffect(() => {
+    function getProductReviewsSummary() {
+      return document
+        .getElementById(PRODUCT_REVIEWS_SECTION_ID)
+        ?.querySelector<HTMLElement>('summary');
+    }
+
+    function getProductReviewsDetails() {
+      return document
+        .getElementById(PRODUCT_REVIEWS_SECTION_ID)
+        ?.querySelector<HTMLDetailsElement>('details');
+    }
+
+    function focusSummary() {
+      const summaryElement = getProductReviewsSummary();
+
+      if (summaryElement && summaryElement.tabIndex < 0) {
+        summaryElement.tabIndex = 0;
+      }
+
+      summaryElement?.focus();
+    }
+
+    function scheduleSummaryFocus() {
+      if (window.requestAnimationFrame) {
+        window.requestAnimationFrame(() => focusSummary());
+      }
+
+      window.setTimeout(focusSummary, 0);
+    }
+
+    function openProductReviews() {
+      const detailsElement = getProductReviewsDetails();
+
+      if (detailsElement) {
+        detailsElement.open = true;
+      }
+
+      setIsAccordionOpen(true);
+      scheduleSummaryFocus();
+    }
+
+    function openForReviewsHash() {
+      if (window.location.hash !== `#${PRODUCT_REVIEWS_SECTION_ID}`) {
+        return;
+      }
+
+      openProductReviews();
+    }
+
+    function handleProductReviewsAnchorClick(event: MouseEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      const anchor = target.closest<HTMLAnchorElement>(
+        `a[href="#${PRODUCT_REVIEWS_SECTION_ID}"]`,
+      );
+
+      if (!anchor) {
+        return;
+      }
+
+      openProductReviews();
+    }
+
+    openForReviewsHash();
+    document.addEventListener('click', handleProductReviewsAnchorClick, true);
+    window.addEventListener('hashchange', openForReviewsHash);
+    window.addEventListener(OPEN_PRODUCT_REVIEWS_EVENT, openProductReviews);
+
+    return () => {
+      document.removeEventListener(
+        'click',
+        handleProductReviewsAnchorClick,
+        true,
+      );
+      window.removeEventListener('hashchange', openForReviewsHash);
+      window.removeEventListener(
+        OPEN_PRODUCT_REVIEWS_EVENT,
+        openProductReviews,
+      );
+    };
+  }, []);
 
   function handleReviewAction() {
     if (!canReview) {
@@ -723,10 +828,13 @@ export function ProductReviewsSection({
     <DetailAccordionSection
       className={styles.productReviewsSection}
       contentClassName={styles.productReviewsLayout}
-      defaultOpen
-      id="productbeoordelingen"
+      id={PRODUCT_REVIEWS_SECTION_ID}
+      onToggle={(event) => {
+        setIsAccordionOpen(event.currentTarget.open);
+      }}
+      open={isAccordionOpen}
       summaryMeta={<ProductReviewsSummaryLine summary={summary} />}
-      title="Productbeoordelingen Recensies"
+      title="Productbeoordelingen"
       titleId="product-reviews-title"
     >
       <ReviewSummary

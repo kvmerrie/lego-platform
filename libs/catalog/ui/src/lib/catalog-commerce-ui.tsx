@@ -83,6 +83,7 @@ interface CatalogPriceDecisionPanelProps {
   followCopy?: string;
   followEyebrow?: string;
   followTitle?: string;
+  heroSideAction?: ReactNode;
   compact?: boolean;
   leadWithFollow?: boolean;
   primaryOffer?: CatalogDecisionOffer;
@@ -93,9 +94,11 @@ interface CatalogPriceDecisionPanelProps {
 
 function CatalogDecisionOfferCard({
   followAction,
+  heroSideAction,
   offer,
 }: {
   followAction?: ReactNode;
+  heroSideAction?: ReactNode;
   offer?: CatalogDecisionOffer;
 }) {
   if (!offer) {
@@ -111,6 +114,19 @@ function CatalogDecisionOfferCard({
   }
 
   const hasCommerceAction = Boolean(offer.ctaHref && offer.ctaLabel);
+  const commerceAction =
+    hasCommerceAction && offer.ctaHref && offer.ctaLabel ? (
+      <ActionLink
+        className={styles.bestDealAction}
+        href={offer.ctaHref}
+        rel="noopener noreferrer sponsored"
+        target="_blank"
+        tone={offer.ctaTone ?? 'accent'}
+        {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
+      >
+        {offer.ctaLabel}
+      </ActionLink>
+    ) : null;
 
   return (
     <section
@@ -152,17 +168,15 @@ function CatalogDecisionOfferCard({
           {offer.checkedLabel}
         </MetaSignal>
       </div>
-      {hasCommerceAction && offer.ctaHref && offer.ctaLabel ? (
-        <ActionLink
-          className={styles.bestDealAction}
-          href={offer.ctaHref}
-          rel="noopener noreferrer sponsored"
-          target="_blank"
-          tone={offer.ctaTone ?? 'accent'}
-          {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
-        >
-          {offer.ctaLabel}
-        </ActionLink>
+      {commerceAction ? (
+        heroSideAction ? (
+          <div className={styles.bestDealActionRow}>
+            {commerceAction}
+            <div className={styles.bestDealSideAction}>{heroSideAction}</div>
+          </div>
+        ) : (
+          commerceAction
+        )
       ) : followAction ? (
         <div className={styles.bestDealFollowAction}>{followAction}</div>
       ) : null}
@@ -175,11 +189,16 @@ function CatalogDecisionOfferCard({
 
 export function CatalogPriceDecisionPrimary({
   followAction,
+  heroSideAction,
   primaryOffer,
-}: Pick<CatalogPriceDecisionPanelProps, 'followAction' | 'primaryOffer'>) {
+}: Pick<
+  CatalogPriceDecisionPanelProps,
+  'followAction' | 'heroSideAction' | 'primaryOffer'
+>) {
   return (
     <CatalogDecisionOfferCard
       followAction={followAction}
+      heroSideAction={heroSideAction}
       offer={primaryOffer}
     />
   );
@@ -365,6 +384,7 @@ export function CatalogPriceDecisionPanel({
   followAction,
   followCopy,
   followTitle,
+  heroSideAction,
   leadWithFollow = false,
   primaryOffer,
   supportItems = [],
@@ -374,6 +394,7 @@ export function CatalogPriceDecisionPanel({
   const primaryDecision = (
     <CatalogPriceDecisionPrimary
       followAction={followAction}
+      heroSideAction={heroSideAction}
       primaryOffer={primaryOffer}
     />
   );

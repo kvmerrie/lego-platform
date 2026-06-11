@@ -1621,7 +1621,7 @@
   }
 
   .galleryMainVisual {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     border: var(--lego-border-width-1) solid
       color-mix(in srgb, var(--lego-border-subtle) 88%, white 12%);
     box-shadow: none;
@@ -1791,6 +1791,65 @@
     margin: 0;
   }
 
+  .detailHeroRatingLink {
+    align-items: center;
+    border-radius: var(--lego-radius-pill);
+    color: var(--lego-text);
+    display: inline-flex;
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-semibold);
+    gap: var(--lego-space-1);
+    justify-self: start;
+    line-height: 1;
+    margin-block-start: calc(var(--lego-space-1) * -0.25);
+    min-height: 1.75rem;
+    padding: 0.18rem 0.25rem;
+    text-decoration: none;
+  }
+
+  .detailHeroRatingLink:hover {
+    color: var(--lego-link);
+  }
+
+  .detailHeroRatingLink:focus-visible {
+    box-shadow:
+      0 0 0 var(--lego-focus-ring-gap, 2px) var(--lego-surface),
+      0 0 0
+        calc(
+          var(--lego-focus-ring-gap, 2px) + var(--lego-focus-ring-width, 2px)
+        )
+        var(--lego-focus-ring);
+    outline: none;
+  }
+
+  .detailHeroRatingStars {
+    display: inline-flex;
+    gap: 0.08rem;
+  }
+
+  .detailHeroRatingStar {
+    color: color-mix(in srgb, var(--lego-text-muted) 34%, white 66%);
+    fill: currentColor;
+    height: 1rem;
+    stroke-width: 0;
+    width: 1rem;
+  }
+
+  .detailHeroRatingStarFilled {
+    color: #f5a400;
+  }
+
+  .detailHeroRatingCount {
+    color: var(--lego-text);
+    white-space: nowrap;
+  }
+
+  .detailHeroRatingNoScore {
+    color: var(--lego-text-muted);
+    font-weight: var(--lego-font-weight-medium);
+    line-height: 1.2;
+  }
+
   .detailHero .bestDealPrice,
   .detailHero .bestDealFallbackValue {
     letter-spacing: -0.04em;
@@ -1816,7 +1875,7 @@
     gap: var(--lego-space-3);
     line-height: 1.68;
     max-inline-size: 72ch;
-    order: 1;
+    order: 2;
   }
 
   .productDescriptionVisual {
@@ -1825,7 +1884,7 @@
     display: flex;
     justify-content: center;
     min-height: 12rem;
-    order: 2;
+    order: 1;
   }
 
   .productDescriptionImage {
@@ -2205,8 +2264,34 @@
     --lego-action-min-height: 3.35rem;
     --lego-action-padding-block: 0.86rem;
     --lego-action-padding-inline: 1.26rem;
+    flex: 1 1 auto;
     justify-content: center;
+    min-inline-size: 0;
     width: 100%;
+  }
+
+  .bestDealActionRow {
+    --catalog-card-action-height: 3.35rem;
+    --catalog-card-action-icon-size: 1.08rem;
+    align-items: stretch;
+    display: flex;
+    gap: var(--lego-space-2);
+    inline-size: 100%;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    overflow: visible;
+  }
+
+  .bestDealSideAction {
+    display: grid;
+    flex: 0 0 var(--catalog-card-action-height);
+    min-inline-size: var(--catalog-card-action-height);
+    overflow: visible;
+  }
+
+  .bestDealSideAction > * {
+    block-size: 100%;
+    inline-size: 100%;
   }
 
   .bestDealFollowAction {
@@ -4381,8 +4466,8 @@
 
     .galleryMainVisual {
       aspect-ratio: auto;
-      height: 32rem;
-      min-height: 32rem;
+      height: clamp(28rem, 58vh, 42rem);
+      min-height: 0;
     }
 
     .galleryThumbRail {
@@ -4857,6 +4942,14 @@
       align-items: start;
       grid-template-columns: minmax(0, 72ch) minmax(18rem, 28rem);
       justify-content: space-between;
+    }
+
+    .productDescriptionBody {
+      order: 1;
+    }
+
+    .productDescriptionVisual {
+      order: 2;
     }
 
     .detailHeroRailInner {

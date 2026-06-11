@@ -283,9 +283,13 @@ describe('CatalogSetCard', () => {
     );
     expect(css).toContain('border-radius: 0;');
     expect(css).toMatch(/\.galleryMainVisual \{\s+border: 0;/u);
+    expect(galleryVisualRule).toContain('aspect-ratio: 4 / 3;');
     expect(galleryVisualRule).toContain('contain: paint;');
     expect(galleryVisualRule).toContain('transition: border-color');
     expect(galleryVisualRule).not.toContain('box-shadow var(');
+    expect(css).toContain('height: clamp(28rem, 58vh, 42rem);');
+    expect(css).not.toContain('height: 32rem;');
+    expect(css).not.toContain('min-height: 32rem;');
     expect(galleryImageLayerRule).toContain('contain: paint;');
     expect(galleryThumbRule).toContain('transition: border-color');
     expect(galleryThumbRule).not.toContain('box-shadow var(');
@@ -2234,9 +2238,11 @@ describe('CatalogSetCard', () => {
           imageUrl: 'https://images.example/rivendell-1.jpg',
           images: [
             {
+              height: 900,
               order: 0,
               type: 'hero',
               url: 'https://images.example/rivendell-1.jpg',
+              width: 1200,
             },
             {
               order: -100,
@@ -2330,6 +2336,10 @@ describe('CatalogSetCard', () => {
             Productbeoordelingen
           </section>
         }
+        reviewSummary={{
+          averageRating: 4.8,
+          reviewCount: 19,
+        }}
         themeDirectoryHref="/themes"
         themeHref="/themes/icons"
         trustSignals={[
@@ -2341,6 +2351,14 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Goede deal');
     expect(markup).toContain('The Lord of the Rings');
+    expect(markup).toContain('href="#productbeoordelingen"');
+    expect(markup).toContain('(19)');
+    expect(markup).toContain(
+      '4,8 van 5 sterren, 19 beoordelingen. Ga naar Productbeoordelingen.',
+    );
+    expect(markup.indexOf('Rivendell')).toBeLessThan(
+      markup.indexOf('href="#productbeoordelingen"'),
+    );
     expect(markup).not.toContain('detailHeroIdentifier');
     expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
     expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
@@ -2403,12 +2421,14 @@ describe('CatalogSetCard', () => {
       markup.indexOf('Productgegevens</h2>'),
     );
     expect(markup.indexOf('Productgegevens</h2>')).toBeLessThan(
-      markup.indexOf('Productbeoordelingen'),
+      markup.indexOf('<section class="productReviewsSection">'),
     );
     expect(markup).toContain('Bouw de vallei van <strong>Rivendell</strong>');
     expect(markup).toContain('<li>Frodo</li>');
     expect(markup).toContain('<li><em>Elrond</em></li>');
     expect(markup).toContain('alt="Rivendell LEGO-set"');
+    expect(markup).toContain('data-image-orientation="landscape"');
+    expect(markup).toContain('--gallery-image-aspect-ratio:1.3333');
     expect(markup).toContain('Zo lees je dit');
     expect(markup).toContain('Je ziet meteen of deze prijs echt opvalt.');
     expect(markup).toContain('Wat Brickhunt nu ziet');
@@ -2450,6 +2470,10 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.bestDealAffiliateNote {');
     expect(css).toContain('.bestDealCard {');
     expect(css).toContain('border-radius: var(--lego-radius-md);');
+    expect(css).toContain('.bestDealActionRow {');
+    expect(css).toContain('--catalog-card-action-height: 3.35rem;');
+    expect(css).toContain('flex: 1 1 auto;');
+    expect(css).toContain('flex: 0 0 var(--catalog-card-action-height);');
     expect(css).toContain('.alertCard {');
     expect(css).toContain('.detailDecisionSupport {');
     expect(css).toContain('.offerListCard {');
@@ -2483,6 +2507,19 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('<li>Eerste stap</li>');
     expect(markup).toContain('<li><em>Tweede stap</em></li>');
     expect(markup).toContain('src="https://images.example/10280.jpg"');
+  });
+
+  it('stacks the product description image above text on mobile while keeping desktop text left', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toMatch(/\.productDescriptionVisual\s*\{[\s\S]*?order:\s*1;/u);
+    expect(css).toMatch(/\.productDescriptionBody\s*\{[\s\S]*?order:\s*2;/u);
+    expect(css).toMatch(
+      /@media \(min-width:\s*72rem\)\s*\{[\s\S]*?\.productDescriptionBody\s*\{[\s\S]*?order:\s*1;[\s\S]*?\.productDescriptionVisual\s*\{[\s\S]*?order:\s*2;/u,
+    );
   });
 
   it('converts bullet-like description lines into semantic list items', () => {

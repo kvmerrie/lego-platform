@@ -20,11 +20,13 @@ import {
   type CatalogSetImage,
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
+import { PRODUCT_REVIEWS_SECTION_ID } from '@lego-platform/shared/config';
 import {
   CalendarDays,
   ChevronRight,
   Clock3,
   Eye,
+  Star,
   ToyBrick,
 } from 'lucide-react';
 import {
@@ -61,7 +63,16 @@ import {
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
 import { CatalogSetCardCollectionBrowseMobileLayout } from './catalog-set-card-mobile-layout';
+import { CatalogSetDetailReviewLink } from './catalog-set-detail-review-link';
 import styles from './catalog-ui.module.css';
+
+function joinClassNames(
+  ...classNames: Array<string | false | null | undefined>
+): string | undefined {
+  const className = classNames.filter(Boolean).join(' ');
+
+  return className || undefined;
+}
 
 export {
   CatalogPageIntro,
@@ -78,6 +89,11 @@ export {
   type HeroButtonSurface,
   type HeroButtonToneInput,
 } from './catalog-composite-ui';
+
+export interface CatalogSetDetailReviewSummary {
+  averageRating?: number;
+  reviewCount: number;
+}
 
 type CatalogSetCardSummary = CatalogSetSummary &
   Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>> & {
@@ -1749,6 +1765,43 @@ function getCatalogGalleryImages(
   );
 }
 
+function getCatalogSetImageAspectRatio(
+  catalogSetImage: Pick<CatalogSetImage, 'height' | 'width'>,
+): number | undefined {
+  if (
+    typeof catalogSetImage.width !== 'number' ||
+    !Number.isFinite(catalogSetImage.width) ||
+    catalogSetImage.width <= 0 ||
+    typeof catalogSetImage.height !== 'number' ||
+    !Number.isFinite(catalogSetImage.height) ||
+    catalogSetImage.height <= 0
+  ) {
+    return undefined;
+  }
+
+  return catalogSetImage.width / catalogSetImage.height;
+}
+
+function getCatalogSetImageOrientation(
+  catalogSetImage: Pick<CatalogSetImage, 'height' | 'width'>,
+): CarouselImage['orientation'] | undefined {
+  const aspectRatio = getCatalogSetImageAspectRatio(catalogSetImage);
+
+  if (!aspectRatio) {
+    return undefined;
+  }
+
+  if (aspectRatio > 1.08) {
+    return 'landscape';
+  }
+
+  if (aspectRatio < 0.92) {
+    return 'portrait';
+  }
+
+  return 'square';
+}
+
 function createCatalogGalleryImageItems(
   catalogSetDetail: Pick<
     CatalogSetDetail,
@@ -1756,23 +1809,35 @@ function createCatalogGalleryImageItems(
   >,
 ): readonly CarouselImage[] {
   return getCatalogGalleryImages(catalogSetDetail).map(
-    (catalogSetImage, index) => ({
-      alt:
-        index === 0
-          ? `${catalogSetDetail.name} LEGO-set`
-          : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`,
-      ...(catalogSetImage.attributionText
-        ? {
-            caption: catalogSetImage.attributionText,
-          }
-        : {}),
-      src: catalogSetImage.url,
-      ...(catalogSetImage.thumbnailUrl
-        ? {
-            thumbnailSrc: catalogSetImage.thumbnailUrl,
-          }
-        : {}),
-    }),
+    (catalogSetImage, index) => {
+      const aspectRatio = getCatalogSetImageAspectRatio(catalogSetImage);
+
+      return {
+        alt:
+          index === 0
+            ? `${catalogSetDetail.name} LEGO-set`
+            : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`,
+        ...(aspectRatio
+          ? {
+              aspectRatio,
+              height: catalogSetImage.height,
+              orientation: getCatalogSetImageOrientation(catalogSetImage),
+              width: catalogSetImage.width,
+            }
+          : {}),
+        ...(catalogSetImage.attributionText
+          ? {
+              caption: catalogSetImage.attributionText,
+            }
+          : {}),
+        src: catalogSetImage.url,
+        ...(catalogSetImage.thumbnailUrl
+          ? {
+              thumbnailSrc: catalogSetImage.thumbnailUrl,
+            }
+          : {}),
+      };
+    },
   );
 }
 
@@ -1817,6 +1882,60 @@ function CatalogSetImageGallery({
         </p>
       ) : null}
     </div>
+  );
+}
+
+function formatCatalogSetDetailReviewCount(reviewCount: number): string {
+  return `(${reviewCount.toLocaleString('nl-NL')})`;
+}
+
+function CatalogSetDetailHeroRating({
+  summary,
+}: {
+  summary: CatalogSetDetailReviewSummary;
+}) {
+  const averageRating =
+    typeof summary.averageRating === 'number' &&
+    Number.isFinite(summary.averageRating)
+      ? summary.averageRating
+      : 0;
+  const roundedRating = Math.round(averageRating);
+  const label =
+    summary.reviewCount > 0
+      ? `${averageRating.toLocaleString('nl-NL', {
+          maximumFractionDigits: 1,
+          minimumFractionDigits: 1,
+        })} van 5 sterren, ${summary.reviewCount.toLocaleString(
+          'nl-NL',
+        )} beoordelingen`
+      : 'Nog geen score, 0 beoordelingen';
+
+  return (
+    <CatalogSetDetailReviewLink
+      aria-label={`${label}. Ga naar Productbeoordelingen.`}
+      className={styles.detailHeroRatingLink}
+      href={`#${PRODUCT_REVIEWS_SECTION_ID}`}
+    >
+      <span aria-hidden="true" className={styles.detailHeroRatingStars}>
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <Star
+            className={joinClassNames(
+              styles.detailHeroRatingStar,
+              rating <= roundedRating && styles.detailHeroRatingStarFilled,
+            )}
+            key={rating}
+          />
+        ))}
+      </span>
+      <span className={styles.detailHeroRatingCount}>
+        {formatCatalogSetDetailReviewCount(summary.reviewCount)}
+      </span>
+      {summary.reviewCount === 0 ? (
+        <span className={styles.detailHeroRatingNoScore}>
+          Nog geen beoordelingen
+        </span>
+      ) : null}
+    </CatalogSetDetailReviewLink>
   );
 }
 
@@ -2139,11 +2258,13 @@ export function CatalogSetDetailPanel({
   followTitle,
   offerList = [],
   offerSummaryLabel,
+  heroCtaSideAction,
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
   productReviewsSlot,
   recentlyViewedRail,
+  reviewSummary,
   setDetailHref,
   similarSetsRail,
   setNewsRail,
@@ -2159,6 +2280,7 @@ export function CatalogSetDetailPanel({
   followCopy?: string;
   followEyebrow?: string;
   followTitle?: string;
+  heroCtaSideAction?: ReactNode;
   offerList?: readonly CatalogSetDetailOfferItem[];
   offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
@@ -2166,6 +2288,7 @@ export function CatalogSetDetailPanel({
   priceHistoryPanel?: ReactNode;
   productReviewsSlot?: ReactNode;
   recentlyViewedRail?: ReactNode;
+  reviewSummary?: CatalogSetDetailReviewSummary;
   setDetailHref?: string;
   similarSetsRail?: ReactNode;
   setNewsRail?: ReactNode;
@@ -2265,6 +2388,7 @@ export function CatalogSetDetailPanel({
               followAction={
                 shouldLeadHeroWithFollowAction ? priceAlertAction : undefined
               }
+              heroSideAction={heroCtaSideAction}
               primaryOffer={bestDeal}
             />
           }
@@ -2273,6 +2397,11 @@ export function CatalogSetDetailPanel({
           }
           keyFacts={<CatalogKeyFacts items={heroSpecs} />}
           title={<CatalogCanonicalText>{visibleTitle}</CatalogCanonicalText>}
+          titleSupplement={
+            reviewSummary ? (
+              <CatalogSetDetailHeroRating summary={reviewSummary} />
+            ) : undefined
+          }
         />
       </CatalogPageIntro>
 

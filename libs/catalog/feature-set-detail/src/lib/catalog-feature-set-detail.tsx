@@ -3,6 +3,7 @@ import {
   CatalogSetDetailPanel,
   type CatalogSetDetailBestDeal,
   type CatalogSetDetailOfferItem,
+  type CatalogSetDetailReviewSummary,
   type CatalogSetDetailSupportItem,
   type CatalogSetDetailTrustSignal,
   type CatalogSetDetailVerdict,
@@ -18,6 +19,7 @@ export function CatalogFeatureSetDetail({
   dealVerdict,
   followCopy,
   followTitle,
+  heroCtaSideAction,
   offerList = [],
   offerSummaryLabel,
   ownershipActions,
@@ -25,6 +27,7 @@ export function CatalogFeatureSetDetail({
   priceHistoryPanel,
   productReviewsSlot,
   recentlyViewedRail,
+  reviewSummary,
   similarSetsRail,
   setNewsRail,
   themeDirectoryHref,
@@ -38,6 +41,7 @@ export function CatalogFeatureSetDetail({
   dealVerdict: CatalogSetDetailVerdict;
   followCopy?: string;
   followTitle?: string;
+  heroCtaSideAction?: ReactNode;
   offerList?: readonly CatalogSetDetailOfferItem[];
   offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
@@ -45,6 +49,7 @@ export function CatalogFeatureSetDetail({
   priceHistoryPanel?: ReactNode;
   productReviewsSlot?: ReactNode;
   recentlyViewedRail?: ReactNode;
+  reviewSummary?: CatalogSetDetailReviewSummary;
   similarSetsRail?: ReactNode;
   setNewsRail?: ReactNode;
   themeDirectoryHref?: string;
@@ -60,6 +65,7 @@ export function CatalogFeatureSetDetail({
       dealVerdict={dealVerdict}
       followCopy={followCopy}
       followTitle={followTitle}
+      heroCtaSideAction={heroCtaSideAction}
       offerList={[...offerList]}
       offerSummaryLabel={offerSummaryLabel}
       ownershipActions={ownershipActions}
@@ -67,6 +73,7 @@ export function CatalogFeatureSetDetail({
       priceHistoryPanel={priceHistoryPanel}
       productReviewsSlot={productReviewsSlot}
       recentlyViewedRail={recentlyViewedRail}
+      reviewSummary={reviewSummary}
       setDetailHref={buildSetDetailPath(catalogSetDetail.slug)}
       similarSetsRail={similarSetsRail}
       setNewsRail={setNewsRail}

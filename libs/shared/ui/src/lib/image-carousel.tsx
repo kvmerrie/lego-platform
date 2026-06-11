@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Images, X, ZoomIn } from 'lucide-react';
 import {
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
@@ -14,13 +15,19 @@ import {
 import { createPortal } from 'react-dom';
 import styles from './image-carousel.module.css';
 
+export type CarouselImageOrientation = 'landscape' | 'portrait' | 'square';
+
 export interface GalleryImage {
   alt: string;
+  aspectRatio?: number;
   caption?: string;
   ctaHref?: string;
   ctaLabel?: string;
+  height?: number;
+  orientation?: CarouselImageOrientation;
   src: string;
   thumbnailSrc?: string;
+  width?: number;
 }
 
 export type CarouselImage = GalleryImage;
@@ -76,6 +83,83 @@ function getGalleryImageKey(image: GalleryImage, imageIndex: number): string {
 
 function getGalleryImageLabel(image: GalleryImage, imageIndex: number): string {
   return image.alt.trim() || `Afbeelding ${imageIndex + 1}`;
+}
+
+function getGalleryImageAspectRatio(image: GalleryImage): number | undefined {
+  if (
+    typeof image.aspectRatio === 'number' &&
+    Number.isFinite(image.aspectRatio) &&
+    image.aspectRatio > 0
+  ) {
+    return image.aspectRatio;
+  }
+
+  if (
+    typeof image.width === 'number' &&
+    Number.isFinite(image.width) &&
+    image.width > 0 &&
+    typeof image.height === 'number' &&
+    Number.isFinite(image.height) &&
+    image.height > 0
+  ) {
+    return image.width / image.height;
+  }
+
+  return undefined;
+}
+
+function getGalleryImageOrientation(
+  image: GalleryImage,
+): CarouselImageOrientation | undefined {
+  if (image.orientation) {
+    return image.orientation;
+  }
+
+  const aspectRatio = getGalleryImageAspectRatio(image);
+
+  if (!aspectRatio) {
+    return undefined;
+  }
+
+  if (aspectRatio > 1.08) {
+    return 'landscape';
+  }
+
+  if (aspectRatio < 0.92) {
+    return 'portrait';
+  }
+
+  return 'square';
+}
+
+function getGalleryImageFrameStyle(
+  image: GalleryImage,
+): CSSProperties | undefined {
+  const aspectRatio = getGalleryImageAspectRatio(image);
+
+  if (!aspectRatio) {
+    return undefined;
+  }
+
+  return {
+    '--gallery-image-aspect-ratio': aspectRatio.toFixed(4),
+  } as CSSProperties;
+}
+
+function hasGalleryImageMetadata(image: GalleryImage): boolean {
+  return Boolean(getGalleryImageAspectRatio(image));
+}
+
+function getGalleryImageIntrinsicDimension({
+  fallback,
+  value,
+}: {
+  fallback: number;
+  value?: number;
+}): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0
+    ? Math.round(value)
+    : fallback;
 }
 
 function GalleryImageMedia({
@@ -157,7 +241,10 @@ function GalleryImageMedia({
       )}
       decoding="async"
       fetchPriority={kind === 'detail' && imageIndex === 0 ? 'high' : 'auto'}
-      height={kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1000}
+      height={getGalleryImageIntrinsicDimension({
+        fallback: kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1000,
+        value: image.height,
+      })}
       loading={
         kind === 'overview'
           ? imageIndex < 3
@@ -169,7 +256,10 @@ function GalleryImageMedia({
       }
       onError={() => onImageError(imageIndex)}
       src={imageSource}
-      width={kind === 'thumbnail' ? 224 : kind === 'detail' ? 900 : 1600}
+      width={getGalleryImageIntrinsicDimension({
+        fallback: kind === 'thumbnail' ? 224 : kind === 'detail' ? 900 : 1600,
+        value: image.width,
+      })}
     />
   );
 }
@@ -1004,7 +1094,17 @@ export function ImageGallery({
                   <button
                     aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
                     className={styles.lightboxOverviewButton}
+                    data-has-image-metadata={
+                      hasGalleryImageMetadata(image) ? 'true' : undefined
+                    }
+                    data-image-orientation={getGalleryImageOrientation(image)}
+                    data-lightbox-featured={
+                      imageIndex === 0 && hasGalleryImageMetadata(image)
+                        ? 'true'
+                        : undefined
+                    }
                     data-lightbox-grid-index={imageIndex}
+                    data-lightbox-tile={getGalleryImageOrientation(image)}
                     key={`${image.src}-lightbox-grid-${imageIndex}`}
                     onClick={() => goToLightboxImage(imageIndex)}
                     ref={(element) => {
@@ -1012,7 +1112,10 @@ export function ImageGallery({
                     }}
                     type="button"
                   >
-                    <span className={styles.lightboxOverviewFrame}>
+                    <span
+                      className={styles.lightboxOverviewFrame}
+                      style={getGalleryImageFrameStyle(image)}
+                    >
                       <GalleryImageMedia
                         image={image}
                         imageIndex={imageIndex}
@@ -1048,6 +1151,9 @@ export function ImageGallery({
               <div
                 className={styles.lightboxMediaFrame}
                 data-lightbox-media-surface="light"
+                data-image-orientation={getGalleryImageOrientation(
+                  resolvedImages[safeLightboxImageIndex],
+                )}
                 data-swipe-target="lightbox"
                 onPointerCancel={handleSwipePointerCancel}
                 onPointerDown={(event) =>
@@ -1058,6 +1164,9 @@ export function ImageGallery({
                 }
                 onPointerMove={handleSwipePointerMove}
                 onPointerUp={handleSwipePointerEnd}
+                style={getGalleryImageFrameStyle(
+                  resolvedImages[safeLightboxImageIndex],
+                )}
               >
                 {renderSwipeableMedia({
                   currentIndex: safeLightboxImageIndex,
@@ -1250,7 +1359,13 @@ export function ImageGallery({
               >
                 <div
                   className={styles.detailMainFrame}
+                  data-image-orientation={getGalleryImageOrientation(
+                    resolvedImages[safeDetailImageIndex],
+                  )}
                   data-swipe-target="detail"
+                  style={getGalleryImageFrameStyle(
+                    resolvedImages[safeDetailImageIndex],
+                  )}
                 >
                   {renderSwipeableMedia({
                     currentIndex: safeDetailImageIndex,

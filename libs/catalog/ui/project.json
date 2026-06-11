@@ -9,7 +9,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vitest run libs/catalog/ui/src/lib/catalog-ui.spec.tsx libs/catalog/ui/src/lib/catalog-commerce-ui.spec.tsx libs/catalog/ui/src/lib/catalog-composite-ui.spec.tsx libs/catalog/ui/src/lib/catalog-offer-comparison-rail.spec.tsx libs/catalog/ui/src/lib/catalog-set-card-compact.spec.tsx libs/catalog/ui/src/lib/catalog-set-card-rail.spec.tsx --config libs/vitest.config.mts"
+        "command": "vitest run libs/catalog/ui/src/lib/catalog-ui.spec.tsx libs/catalog/ui/src/lib/catalog-commerce-ui.spec.tsx libs/catalog/ui/src/lib/catalog-composite-ui.spec.tsx libs/catalog/ui/src/lib/catalog-offer-comparison-rail.spec.tsx libs/catalog/ui/src/lib/catalog-set-card-compact.spec.tsx libs/catalog/ui/src/lib/catalog-set-card-rail.spec.tsx libs/catalog/ui/src/lib/catalog-set-detail-review-link.spec.tsx --config libs/vitest.config.mts"
       }
     }
   }

@@ -463,6 +463,43 @@ describe('catalog snapshot helpers', () => {
     });
   });
 
+  test('keeps set image dimensions while normalizing gallery images', () => {
+    expect(
+      normalizeCatalogSetImages({
+        imageUrl: 'https://images.example/roses-main.jpg',
+        images: [
+          {
+            height: 1200,
+            order: 1,
+            thumbnailUrl: 'https://images.example/roses-detail-thumb.jpg',
+            type: 'detail',
+            url: 'https://images.example/roses-detail.jpg',
+            width: 800,
+          },
+        ],
+        primaryImage: 'https://images.example/roses-main.jpg',
+      }),
+    ).toEqual({
+      imageUrl: 'https://images.example/roses-main.jpg',
+      images: [
+        {
+          order: 0,
+          type: 'hero',
+          url: 'https://images.example/roses-main.jpg',
+        },
+        {
+          height: 1200,
+          order: 1,
+          thumbnailUrl: 'https://images.example/roses-detail-thumb.jpg',
+          type: 'detail',
+          url: 'https://images.example/roses-detail.jpg',
+          width: 800,
+        },
+      ],
+      primaryImage: 'https://images.example/roses-main.jpg',
+    });
+  });
+
   test('dedupes image URLs and prefers the explicit primary image first', () => {
     expect(
       normalizeCatalogSetImages({

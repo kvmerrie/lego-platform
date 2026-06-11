@@ -125,6 +125,11 @@ describe('Catalog commerce UI', () => {
     const markup = renderToStaticMarkup(
       <CatalogPriceDecisionPanel
         followAction={<button type="button">Volg prijs</button>}
+        heroSideAction={
+          <button aria-label="Aan verlanglijst toevoegen" type="button">
+            ♥
+          </button>
+        }
         primaryOffer={{
           affiliateNote:
             'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
@@ -165,6 +170,9 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('Bij bol');
     expect(markup).toContain('€ 30,00 goedkoper dan de rest');
     expect(markup).toContain('Bekijk deal bij bol');
+    expect(markup).toContain('bestDealActionRow');
+    expect(markup).toContain('bestDealSideAction');
+    expect(markup).toContain('Aan verlanglijst toevoegen');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('data-brickhunt-event="offer_click"');
