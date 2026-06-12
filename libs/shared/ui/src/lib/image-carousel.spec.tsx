@@ -81,6 +81,66 @@ describe('ImageGallery', () => {
     });
   }
 
+  function renderOverviewButtons(images: readonly CarouselImage[]) {
+    act(() => {
+      root.render(<ImageGallery images={images} variant="detail" />);
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    return Array.from(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        '[data-lightbox-grid-index]',
+      ),
+    );
+  }
+
+  function getOverviewLayoutVariants(
+    images: readonly CarouselImage[],
+  ): string[] {
+    return renderOverviewButtons(images).map(
+      (button) => button.getAttribute('data-lightbox-layout-variant') ?? '',
+    );
+  }
+
+  function createOverviewPatternImages(
+    count: number,
+  ): readonly CarouselImage[] {
+    return Array.from({ length: count }, (_, index) => ({
+      alt: `Productbeeld ${index + 1}`,
+      aspectRatio: 1,
+      mediaRole: 'product',
+      src: `https://images.example/product-${index + 1}.jpg`,
+    }));
+  }
+
+  function expectNoSingleStandardBeforeFullWidthOrEnd(
+    layoutVariants: readonly string[],
+  ) {
+    let standardRunLength = 0;
+
+    for (const layoutVariant of layoutVariants) {
+      if (layoutVariant === 'standard') {
+        standardRunLength += 1;
+        continue;
+      }
+
+      expect(standardRunLength).not.toBe(1);
+      standardRunLength = 0;
+    }
+
+    expect(standardRunLength).not.toBe(1);
+  }
+
   it('renders one article image without lightbox navigation until opened', () => {
     act(() => {
       root.render(
@@ -1410,12 +1470,17 @@ describe('ImageGallery', () => {
       document.body
         .querySelector('[data-lightbox-grid-index="0"]')
         ?.getAttribute('data-lightbox-tile'),
-    ).toBe('featured');
+    ).toBe('fallback');
     expect(
       document.body
         .querySelector('[data-lightbox-grid-index="0"]')
         ?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('featured');
+    ).toBe('standard');
+    expect(
+      document.body
+        .querySelector('[data-lightbox-grid-index="0"]')
+        ?.hasAttribute('data-lightbox-featured'),
+    ).toBe(false);
     expect(
       document.body
         .querySelector('[data-lightbox-grid-index="1"]')
@@ -1435,7 +1500,7 @@ describe('ImageGallery', () => {
       document.body
         .querySelector('[data-lightbox-grid-index="3"]')
         ?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
     expect(
       document.body.querySelector('button[aria-label="Bekijk afbeelding 3"]'),
     ).not.toBeNull();
@@ -1618,16 +1683,16 @@ describe('ImageGallery', () => {
 
     expect(overviewButtons).toHaveLength(5);
     expect(overviewButtons[0]?.getAttribute('data-lightbox-featured')).toBe(
-      'true',
+      null,
     );
     expect(
       overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('featured');
+    ).toBe('standard');
     expect(overviewButtons[0]?.getAttribute('data-lightbox-tile')).toBe(
-      'featured',
+      'standard',
     );
     expect(overviewButtons[0]?.getAttribute('data-lightbox-frame')).toBe(
-      'featured',
+      'landscape',
     );
     expect(
       overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
@@ -1638,20 +1703,17 @@ describe('ImageGallery', () => {
     expect(overviewButtons[1]?.getAttribute('data-lightbox-frame')).toBe(
       'portrait',
     );
-    expect(overviewButtons[1]?.getAttribute('data-image-orientation')).toBe(
-      'portrait',
-    );
     expect(overviewButtons[2]?.getAttribute('data-lightbox-tile')).toBe(
       'standard',
     );
     expect(
       overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('standard');
+    ).toBe('fullWidth');
     expect(overviewButtons[2]?.getAttribute('data-image-media-role')).toBe(
       'box',
     );
     expect(overviewButtons[2]?.getAttribute('data-lightbox-frame')).toBe(
-      'square',
+      'fullWidth',
     );
     expect(overviewButtons[3]?.getAttribute('data-lightbox-tile')).toBe(
       'lifestyle',
@@ -1661,16 +1723,16 @@ describe('ImageGallery', () => {
     );
     expect(
       overviewButtons[3]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
     expect(overviewButtons[3]?.getAttribute('data-lightbox-frame')).toBe(
-      'fullWidth',
+      'landscape',
     );
     expect(overviewButtons[4]?.getAttribute('data-lightbox-tile')).toBe('wide');
     expect(
       overviewButtons[4]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
     expect(overviewButtons[4]?.getAttribute('data-lightbox-frame')).toBe(
-      'fullWidth',
+      'landscape',
     );
     overviewButtons.forEach((button, index) => {
       expect(button.tagName).toBe('BUTTON');
@@ -1680,7 +1742,7 @@ describe('ImageGallery', () => {
     });
   });
 
-  it('uses a featured plus 2-1-2-1 overview rhythm without empty right cells', () => {
+  it('starts the overview with two standard tiles and keeps a 2-1-2-1 rhythm', () => {
     const images = [
       {
         alt: 'Ruimteschip hoofdbeeld',
@@ -1748,7 +1810,13 @@ describe('ImageGallery', () => {
     expect(overviewButtons).toHaveLength(7);
     expect(
       overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('featured');
+    ).toBe('standard');
+    expect(overviewButtons[0]?.hasAttribute('data-lightbox-featured')).toBe(
+      false,
+    );
+    expect(overviewButtons[0]?.getAttribute('data-lightbox-tile')).toBe(
+      'standard',
+    );
     expect(
       overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
     ).toBe('standard');
@@ -1760,16 +1828,16 @@ describe('ImageGallery', () => {
     );
     expect(
       overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('standard');
+    ).toBe('fullWidth');
     expect(overviewButtons[2]?.getAttribute('data-lightbox-tile')).toBe(
       'lifestyle',
     );
     expect(overviewButtons[2]?.getAttribute('data-lightbox-frame')).toBe(
-      'landscape',
+      'fullWidth',
     );
     expect(
       overviewButtons[3]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
     expect(
       overviewButtons[4]?.getAttribute('data-lightbox-layout-variant'),
     ).toBe('standard');
@@ -1778,7 +1846,12 @@ describe('ImageGallery', () => {
     ).toBe('standard');
     expect(
       overviewButtons[6]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
+    expect(
+      Array.from(overviewButtons).map((button) =>
+        button.getAttribute('data-lightbox-grid-index'),
+      ),
+    ).toEqual(['0', '1', '2', '3', '4', '5', '6']);
 
     overviewButtons.forEach((button, index) => {
       expect(button.tagName).toBe('BUTTON');
@@ -1788,34 +1861,224 @@ describe('ImageGallery', () => {
     });
   });
 
+  it('renders two overview items as a standard pair', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(2),
+    );
+
+    expect(layoutVariants).toEqual(['standard', 'standard']);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('renders three overview items as a 2-1 rhythm', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(3),
+    );
+
+    expect(layoutVariants).toEqual(['standard', 'standard', 'fullWidth']);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('renders five overview items as a 2-1-2 rhythm', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(5),
+    );
+
+    expect(layoutVariants).toEqual([
+      'standard',
+      'standard',
+      'fullWidth',
+      'standard',
+      'standard',
+    ]);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('renders six overview items as a 2-1-2-1 rhythm', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(6),
+    );
+
+    expect(layoutVariants).toEqual([
+      'standard',
+      'standard',
+      'fullWidth',
+      'standard',
+      'standard',
+      'fullWidth',
+    ]);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('renders seven overview items as 2-1-2-2 instead of over-promoting to full width', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(7),
+    );
+
+    expect(layoutVariants).toEqual([
+      'standard',
+      'standard',
+      'fullWidth',
+      'standard',
+      'standard',
+      'standard',
+      'standard',
+    ]);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('renders nine overview items as a 2-1-2-1-2-1 rhythm', () => {
+    const layoutVariants = getOverviewLayoutVariants(
+      createOverviewPatternImages(9),
+    );
+
+    expect(layoutVariants).toEqual([
+      'standard',
+      'standard',
+      'fullWidth',
+      'standard',
+      'standard',
+      'fullWidth',
+      'standard',
+      'standard',
+      'fullWidth',
+    ]);
+    expectNoSingleStandardBeforeFullWidthOrEnd(layoutVariants);
+  });
+
+  it('preserves detail gallery image order in the lightbox overview regardless of media roles', () => {
+    const images = [
+      {
+        alt: 'Darth Vader verpakking achterkant',
+        aspectRatio: 1.33,
+        imageRole: 'box_back',
+        mediaRole: 'box',
+        src: 'https://images.example/vader-box-back.jpg',
+      },
+      {
+        alt: 'Darth Vader lifestyle op plank',
+        aspectRatio: 1.78,
+        imageRole: 'lifestyle_room',
+        mediaRole: 'lifestyle',
+        src: 'https://images.example/vader-room.jpg',
+      },
+      {
+        alt: 'Darth Vader buste hoofdbeeld',
+        aspectRatio: 1,
+        imageRole: 'model_primary',
+        mediaRole: 'model',
+        src: 'https://images.example/vader-model-primary.jpg',
+      },
+      {
+        alt: 'Darth Vader doos voorkant',
+        aspectRatio: 1.33,
+        imageRole: 'box_front',
+        mediaRole: 'box',
+        src: 'https://images.example/vader-box-front.jpg',
+      },
+      {
+        alt: 'Darth Vader helm detail',
+        aspectRatio: 0.78,
+        imageRole: 'detail',
+        mediaRole: 'detail',
+        src: 'https://images.example/vader-detail.jpg',
+      },
+      {
+        alt: 'Darth Vader tweede productbeeld',
+        aspectRatio: 1,
+        imageRole: 'model_secondary',
+        mediaRole: 'model',
+        src: 'https://images.example/vader-model-secondary-a.jpg',
+      },
+      {
+        alt: 'Darth Vader derde productbeeld',
+        aspectRatio: 1,
+        imageRole: 'model_secondary',
+        mediaRole: 'model',
+        src: 'https://images.example/vader-model-secondary-b.jpg',
+      },
+    ] satisfies readonly CarouselImage[];
+
+    act(() => {
+      root.render(<ImageGallery images={images} variant="detail" />);
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const overviewButtons = document.body.querySelectorAll<HTMLButtonElement>(
+      '[data-lightbox-grid-index]',
+    );
+
+    expect(
+      Array.from(overviewButtons).map((button) =>
+        button.getAttribute('data-image-role'),
+      ),
+    ).toEqual([
+      'box_back',
+      'lifestyle_room',
+      'model_primary',
+      'box_front',
+      'detail',
+      'model_secondary',
+      'model_secondary',
+    ]);
+    expect(
+      Array.from(overviewButtons).map((button) =>
+        button.getAttribute('data-lightbox-grid-index'),
+      ),
+    ).toEqual(['0', '1', '2', '3', '4', '5', '6']);
+    expect(
+      overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(
+      overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('fullWidth');
+    expect(overviewButtons[6]?.getAttribute('data-image-role')).toBe(
+      'model_secondary',
+    );
+
+    act(() => {
+      overviewButtons[4]?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="4"]'),
+    ).not.toBeNull();
+    expect(document.body.textContent).toContain('5/7');
+  });
+
   it('uses compact landscape frames for standard overview tiles', () => {
     const images = [
       {
-        alt: 'Stadsset hoofdbeeld',
-        aspectRatio: 1,
-        mediaRole: 'product',
-        src: 'https://images.example/city-main.jpg',
-      },
-      {
         alt: 'Stadsset straatscene links',
         aspectRatio: 1.78,
-        mediaRole: 'detail',
+        mediaRole: 'model',
         orientation: 'landscape',
         src: 'https://images.example/city-street-left.jpg',
       },
       {
         alt: 'Stadsset straatscene rechts',
-        height: 900,
+        aspectRatio: 1.78,
         mediaRole: 'model',
+        orientation: 'landscape',
         src: 'https://images.example/city-street-right.jpg',
-        width: 1440,
-      },
-      {
-        alt: 'Stadsset winkelpui',
-        aspectRatio: 0.72,
-        mediaRole: 'detail',
-        orientation: 'portrait',
-        src: 'https://images.example/city-shop.jpg',
       },
       {
         alt: 'Stadsset doos',
@@ -1823,6 +2086,13 @@ describe('ImageGallery', () => {
         mediaRole: 'box',
         orientation: 'landscape',
         src: 'https://images.example/city-box.jpg',
+      },
+      {
+        alt: 'Stadsset winkelpui',
+        aspectRatio: 0.72,
+        mediaRole: 'detail',
+        orientation: 'portrait',
+        src: 'https://images.example/city-shop.jpg',
       },
       {
         alt: 'Stadsset woonkamer',
@@ -1852,6 +2122,12 @@ describe('ImageGallery', () => {
     );
 
     expect(
+      overviewButtons[0]?.getAttribute('data-lightbox-layout-variant'),
+    ).toBe('standard');
+    expect(overviewButtons[0]?.getAttribute('data-lightbox-frame')).toBe(
+      'landscape',
+    );
+    expect(
       overviewButtons[1]?.getAttribute('data-lightbox-layout-variant'),
     ).toBe('standard');
     expect(overviewButtons[1]?.getAttribute('data-lightbox-frame')).toBe(
@@ -1859,26 +2135,20 @@ describe('ImageGallery', () => {
     );
     expect(
       overviewButtons[2]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('standard');
+    ).toBe('fullWidth');
     expect(overviewButtons[2]?.getAttribute('data-lightbox-frame')).toBe(
-      'landscape',
+      'fullWidth',
     );
     expect(
       overviewButtons[3]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('fullWidth');
+    ).toBe('standard');
     expect(overviewButtons[3]?.getAttribute('data-lightbox-frame')).toBe(
-      'fullWidth',
+      'portrait',
     );
     expect(
       overviewButtons[4]?.getAttribute('data-lightbox-layout-variant'),
     ).toBe('standard');
     expect(overviewButtons[4]?.getAttribute('data-lightbox-frame')).toBe(
-      'square',
-    );
-    expect(
-      overviewButtons[5]?.getAttribute('data-lightbox-layout-variant'),
-    ).toBe('standard');
-    expect(overviewButtons[5]?.getAttribute('data-lightbox-frame')).toBe(
       'landscape',
     );
   });

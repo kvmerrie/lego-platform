@@ -82,6 +82,56 @@ export interface CatalogSetImage {
 
 export type CatalogSetImageSeed = CatalogSetImage | string;
 
+function getCatalogSetGalleryImageDisplayGroup(
+  image: Pick<CatalogSetImage, 'imageRole' | 'type'>,
+): number {
+  switch (image.imageRole) {
+    case 'model_primary':
+    case 'model_secondary':
+    case 'minifigure':
+    case 'logo':
+      return 0;
+    case 'box_front':
+      return 1;
+    case 'lifestyle_people':
+    case 'lifestyle_room':
+      return 2;
+    case 'build':
+    case 'detail':
+      return 3;
+    case 'box_back':
+      return 4;
+    case 'unknown':
+      return 3;
+  }
+
+  switch (image.type) {
+    case 'hero':
+    case 'minifig':
+      return 0;
+    case 'detail':
+      return 3;
+    default:
+      return 3;
+  }
+}
+
+export function sortCatalogSetGalleryImages<
+  T extends Pick<CatalogSetImage, 'imageRole' | 'type'>,
+>(images: readonly T[]): T[] {
+  return images
+    .map((image, index) => ({
+      image,
+      index,
+      sortGroup: getCatalogSetGalleryImageDisplayGroup(image),
+    }))
+    .sort(
+      (left, right) =>
+        left.sortGroup - right.sortGroup || left.index - right.index,
+    )
+    .map(({ image }) => image);
+}
+
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
   // Transitional legacy copy fields. Card UIs should prefer price context
   // and source metadata over local per-set prose.

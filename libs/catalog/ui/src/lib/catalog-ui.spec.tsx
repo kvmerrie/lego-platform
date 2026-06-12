@@ -2252,13 +2252,30 @@ describe('CatalogSetCard', () => {
             },
             {
               attributionText: 'Image(s) courtesy of Brickset.com',
+              imageRole: 'lifestyle_room',
               order: 1,
               thumbnailUrl: 'https://images.example/rivendell-2-thumb.jpg',
               type: 'detail',
               url: 'https://images.example/rivendell-2.jpg',
             },
             {
+              imageRole: 'model_secondary',
               order: 2,
+              thumbnailUrl:
+                'https://images.example/rivendell-product-thumb.jpg',
+              type: 'detail',
+              url: 'https://images.example/rivendell-product-white.jpg',
+            },
+            {
+              imageRole: 'box_back',
+              order: 3,
+              thumbnailUrl:
+                'https://images.example/rivendell-box-back-thumb.jpg',
+              type: 'detail',
+              url: 'https://images.example/rivendell-box-back.jpg',
+            },
+            {
+              order: 4,
               type: 'thumbnail',
               url: 'https://images.example/rivendell-thumbnail-row.webp',
             },
@@ -2428,8 +2445,19 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('<li>Frodo</li>');
     expect(markup).toContain('<li><em>Elrond</em></li>');
     expect(markup).toContain('alt="Rivendell LEGO-set"');
+    expect(markup).toContain('data-image-role="model_primary"');
     expect(markup).toContain('data-image-media-role="model"');
     expect(markup).toContain('data-image-orientation="landscape"');
+    expect(
+      markup.indexOf('https://images.example/rivendell-product-thumb.jpg'),
+    ).toBeLessThan(
+      markup.indexOf('https://images.example/rivendell-2-thumb.jpg'),
+    );
+    expect(
+      markup.indexOf('https://images.example/rivendell-2-thumb.jpg'),
+    ).toBeLessThan(
+      markup.indexOf('https://images.example/rivendell-box-back-thumb.jpg'),
+    );
     expect(markup).toContain('--gallery-image-aspect-ratio:1.3333');
     expect(markup).toContain('Zo lees je dit');
     expect(markup).toContain('Je ziet meteen of deze prijs echt opvalt.');

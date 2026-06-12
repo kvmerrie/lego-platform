@@ -19,6 +19,7 @@ import {
   buildCatalogThemeSlug,
   type CatalogSetImage,
   normalizeCatalogSetImages,
+  sortCatalogSetGalleryImages,
 } from '@lego-platform/catalog/util';
 import { PRODUCT_REVIEWS_SECTION_ID } from '@lego-platform/shared/config';
 import {
@@ -1754,15 +1755,16 @@ function getCatalogGalleryImages(
     'imageUrl' | 'images' | 'primaryImage'
   >,
 ): readonly CatalogSetImage[] {
-  return (
+  const galleryImages =
     normalizeCatalogSetImages({
       imageUrl: catalogSetDetail.imageUrl,
       images: catalogSetDetail.images,
       primaryImage: catalogSetDetail.primaryImage,
     }).images?.filter(
       (image) => image.type !== 'social' && image.type !== 'thumbnail',
-    ) ?? []
-  );
+    ) ?? [];
+
+  return sortCatalogSetGalleryImages(galleryImages);
 }
 
 function getCatalogSetImageAspectRatio(
@@ -1853,6 +1855,11 @@ function createCatalogGalleryImageItems(
         ...(mediaRole
           ? {
               mediaRole,
+            }
+          : {}),
+        ...(catalogSetImage.imageRole
+          ? {
+              imageRole: catalogSetImage.imageRole,
             }
           : {}),
         ...(catalogSetImage.attributionText

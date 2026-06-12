@@ -23,6 +23,18 @@ export type CarouselImageMediaRole =
   | 'lifestyle'
   | 'model'
   | 'product';
+export type CarouselImageRole =
+  | 'box_back'
+  | 'box_front'
+  | 'build'
+  | 'detail'
+  | 'lifestyle_people'
+  | 'lifestyle_room'
+  | 'logo'
+  | 'minifigure'
+  | 'model_primary'
+  | 'model_secondary'
+  | 'unknown';
 type LightboxOverviewTileVariant =
   | 'fallback'
   | 'featured'
@@ -44,6 +56,7 @@ export interface GalleryImage {
   ctaHref?: string;
   ctaLabel?: string;
   height?: number;
+  imageRole?: CarouselImageRole;
   mediaRole?: CarouselImageMediaRole;
   orientation?: CarouselImageOrientation;
   src: string;
@@ -198,17 +211,15 @@ function isGalleryImageProductLike(image: GalleryImage): boolean {
 
 function getLightboxOverviewTileVariant({
   image,
-  imageIndex,
 }: {
   image: GalleryImage;
-  imageIndex: number;
 }): LightboxOverviewTileVariant {
-  if (imageIndex === 0) {
-    return 'featured';
-  }
-
   if (image.mediaRole === 'lifestyle') {
     return 'lifestyle';
+  }
+
+  if (image.mediaRole === 'model') {
+    return 'standard';
   }
 
   if (isGalleryImageProductLike(image)) {
@@ -268,83 +279,129 @@ function getLightboxOverviewFrameVariant({
   return 'square';
 }
 
-function getLightboxOverviewItems(images: readonly GalleryImage[]): Array<{
-  frameVariant: LightboxOverviewFrameVariant;
+interface LightboxOverviewOrderedItem {
   image: GalleryImage;
   imageIndex: number;
-  layoutVariant: LightboxOverviewLayoutVariant;
   tileVariant: LightboxOverviewTileVariant;
-}> {
-  let hasPendingStandardTile = false;
-  let shouldRenderFullWidthBreak = false;
+}
 
-  return images.map((image, imageIndex) => {
-    const tileVariant = getLightboxOverviewTileVariant({
-      image,
-      imageIndex,
-    });
-    const remainingItemCount = images.length - imageIndex;
+interface LightboxOverviewItem extends LightboxOverviewOrderedItem {
+  frameVariant: LightboxOverviewFrameVariant;
+  layoutVariant: LightboxOverviewLayoutVariant;
+  overviewIndex: number;
+}
 
-    if (imageIndex === 0) {
-      hasPendingStandardTile = false;
-      shouldRenderFullWidthBreak = false;
+function createLightboxOverviewItem({
+  item,
+  layoutVariant,
+  overviewIndex,
+}: {
+  item: LightboxOverviewOrderedItem;
+  layoutVariant: LightboxOverviewLayoutVariant;
+  overviewIndex: number;
+}): LightboxOverviewItem {
+  return {
+    ...item,
+    frameVariant: getLightboxOverviewFrameVariant({
+      image: item.image,
+      layoutVariant,
+    }),
+    layoutVariant,
+    overviewIndex,
+  };
+}
 
-      return {
-        frameVariant: getLightboxOverviewFrameVariant({
-          image,
-          layoutVariant: 'featured',
-        }),
-        image,
-        imageIndex,
-        layoutVariant: 'featured',
-        tileVariant,
-      };
-    }
+function planLightboxOverviewItems(
+  orderedItems: readonly LightboxOverviewOrderedItem[],
+): LightboxOverviewItem[] {
+  const plannedItems: LightboxOverviewItem[] = [];
+  const remainingItems = [...orderedItems];
+  let rowIndex = 0;
 
-    if (hasPendingStandardTile) {
-      hasPendingStandardTile = false;
-      shouldRenderFullWidthBreak = true;
-
-      return {
-        frameVariant: getLightboxOverviewFrameVariant({
-          image,
-          layoutVariant: 'standard',
-        }),
-        image,
-        imageIndex,
-        layoutVariant: 'standard',
-        tileVariant,
-      };
-    }
-
-    if (shouldRenderFullWidthBreak || remainingItemCount === 1) {
-      shouldRenderFullWidthBreak = false;
-
-      return {
-        frameVariant: getLightboxOverviewFrameVariant({
-          image,
-          layoutVariant: 'fullWidth',
-        }),
-        image,
-        imageIndex,
-        layoutVariant: 'fullWidth',
-        tileVariant,
-      };
-    }
-
-    hasPendingStandardTile = true;
-
-    return {
-      frameVariant: getLightboxOverviewFrameVariant({
-        image,
-        layoutVariant: 'standard',
+  function pushPlannedItem({
+    item,
+    layoutVariant,
+  }: {
+    item: LightboxOverviewOrderedItem;
+    layoutVariant: LightboxOverviewLayoutVariant;
+  }) {
+    plannedItems.push(
+      createLightboxOverviewItem({
+        item,
+        layoutVariant,
+        overviewIndex: plannedItems.length,
       }),
-      image,
-      imageIndex,
-      layoutVariant: 'standard',
-      tileVariant,
-    };
-  });
+    );
+  }
+
+  while (remainingItems.length > 0) {
+    const patternRowSize = rowIndex % 2 === 0 ? 2 : 1;
+
+    if (patternRowSize === 2) {
+      if (remainingItems.length === 1) {
+        const item = remainingItems.shift();
+
+        if (item) {
+          pushPlannedItem({
+            item,
+            layoutVariant: 'fullWidth',
+          });
+        }
+
+        break;
+      }
+
+      const rowItems = remainingItems.splice(0, 2);
+
+      for (const item of rowItems) {
+        pushPlannedItem({
+          item,
+          layoutVariant: 'standard',
+        });
+      }
+
+      rowIndex += 1;
+      continue;
+    }
+
+    if (remainingItems.length === 2) {
+      const rowItems = remainingItems.splice(0, 2);
+
+      for (const item of rowItems) {
+        pushPlannedItem({
+          item,
+          layoutVariant: 'standard',
+        });
+      }
+
+      break;
+    }
+
+    const item = remainingItems.shift();
+
+    if (item) {
+      pushPlannedItem({
+        item,
+        layoutVariant: 'fullWidth',
+      });
+    }
+
+    rowIndex += 1;
+  }
+
+  return plannedItems;
+}
+
+function getLightboxOverviewItems(
+  images: readonly GalleryImage[],
+): LightboxOverviewItem[] {
+  const orderedItems = images.map((image, imageIndex) => ({
+    image,
+    imageIndex,
+    tileVariant: getLightboxOverviewTileVariant({ image }),
+  }));
+
+  return planLightboxOverviewItems(orderedItems);
 }
 
 function getGalleryImageIntrinsicDimension({
@@ -1576,15 +1633,17 @@ export function ImageGallery({
                     image,
                     imageIndex,
                     layoutVariant,
+                    overviewIndex,
                     tileVariant,
                   }) => {
                     return (
                       <button
-                        aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
+                        aria-label={`Bekijk afbeelding ${overviewIndex + 1}`}
                         className={styles.lightboxOverviewButton}
                         data-has-image-metadata={
                           hasGalleryImageMetadata(image) ? 'true' : undefined
                         }
+                        data-image-role={image.imageRole}
                         data-image-media-role={image.mediaRole}
                         data-image-orientation={getGalleryImageOrientation(
                           image,
@@ -1647,6 +1706,9 @@ export function ImageGallery({
                   lightboxZoomState.scale > 1.01 ? 'true' : 'false'
                 }
                 data-lightbox-media-surface="light"
+                data-image-role={
+                  resolvedImages[safeLightboxImageIndex].imageRole
+                }
                 data-image-media-role={
                   resolvedImages[safeLightboxImageIndex].mediaRole
                 }
@@ -1894,6 +1956,9 @@ export function ImageGallery({
               >
                 <div
                   className={styles.detailMainFrame}
+                  data-image-role={
+                    resolvedImages[safeDetailImageIndex].imageRole
+                  }
                   data-image-media-role={
                     resolvedImages[safeDetailImageIndex].mediaRole
                   }

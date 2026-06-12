@@ -18,6 +18,7 @@ import {
   resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
+  sortCatalogSetGalleryImages,
 } from './catalog-util';
 
 describe('catalog snapshot helpers', () => {
@@ -500,6 +501,91 @@ describe('catalog snapshot helpers', () => {
       ],
       primaryImage: 'https://images.example/roses-main.jpg',
     });
+  });
+
+  test('sorts gallery display images with product images before lifestyle photography', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'lifestyle_room',
+        order: 10,
+        type: 'detail',
+        url: 'https://images.example/vader-room.jpg',
+      },
+      {
+        imageRole: 'model_secondary',
+        order: 11,
+        type: 'detail',
+        url: 'https://images.example/vader-model-white.jpg',
+      },
+      {
+        imageRole: 'minifigure',
+        order: 12,
+        type: 'detail',
+        url: 'https://images.example/vader-minifigure.jpg',
+      },
+      {
+        imageRole: 'box_front',
+        order: 13,
+        type: 'detail',
+        url: 'https://images.example/vader-box-front.jpg',
+      },
+      {
+        imageRole: 'build',
+        order: 14,
+        type: 'detail',
+        url: 'https://images.example/vader-build.jpg',
+      },
+      {
+        imageRole: 'box_back',
+        order: 15,
+        type: 'detail',
+        url: 'https://images.example/vader-box-back.jpg',
+      },
+      {
+        imageRole: 'model_primary',
+        order: 16,
+        type: 'hero',
+        url: 'https://images.example/vader-main.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/vader-model-white.jpg',
+      'https://images.example/vader-minifigure.jpg',
+      'https://images.example/vader-main.jpg',
+      'https://images.example/vader-box-front.jpg',
+      'https://images.example/vader-room.jpg',
+      'https://images.example/vader-build.jpg',
+      'https://images.example/vader-box-back.jpg',
+    ]);
+  });
+
+  test('keeps original order as the tie-breaker within gallery display groups', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/model-a.jpg',
+      },
+      {
+        imageRole: 'model_primary',
+        url: 'https://images.example/model-b.jpg',
+      },
+      {
+        imageRole: 'lifestyle_people',
+        url: 'https://images.example/lifestyle-a.jpg',
+      },
+      {
+        imageRole: 'lifestyle_room',
+        url: 'https://images.example/lifestyle-b.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/model-a.jpg',
+      'https://images.example/model-b.jpg',
+      'https://images.example/lifestyle-a.jpg',
+      'https://images.example/lifestyle-b.jpg',
+    ]);
   });
 
   test('dedupes image URLs and prefers the explicit primary image first', () => {
