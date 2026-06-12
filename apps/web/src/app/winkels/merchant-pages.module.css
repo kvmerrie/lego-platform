@@ -1,0 +1,200 @@
+.page {
+  display: grid;
+  gap: var(--lego-page-section-gap, var(--lego-space-5));
+}
+
+.hero {
+  background: var(--lego-surface-accent);
+  border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--lego-space-3);
+  padding-block: var(--lego-space-5);
+  padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
+}
+
+.heroCopy {
+  display: grid;
+  gap: var(--lego-space-2);
+  max-width: 46rem;
+}
+
+.eyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  color: var(--lego-text);
+  font-size: clamp(2rem, 1.55rem + 1.6vw, 3.2rem);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.heroDescription {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+  max-width: 40rem;
+}
+
+.stats {
+  border-block-start: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding-block-start: var(--lego-space-3);
+}
+
+.stat {
+  display: grid;
+  gap: var(--lego-space-1);
+  min-width: 0;
+}
+
+.stat dt {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.stat dd {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.merchantGrid {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.merchantCard {
+  background: var(--lego-surface);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-md);
+  color: var(--lego-text);
+  display: grid;
+  gap: var(--lego-space-3);
+  padding: var(--lego-space-3);
+  text-decoration: none;
+}
+
+.merchantCard:hover {
+  text-decoration: none;
+}
+
+.merchantCard:focus-visible {
+  outline: 3px solid var(--lego-focus-ring);
+  outline-offset: 3px;
+}
+
+.merchantCardHeader {
+  display: flex;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
+}
+
+.merchantName {
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.merchantMeta,
+.previewList,
+.emptyState,
+.supportCopy {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+}
+
+.merchantBadge {
+  align-self: start;
+  background: var(--lego-surface-accent);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: 1;
+  padding: 0.45rem 0.65rem;
+  white-space: nowrap;
+}
+
+.previewList {
+  display: grid;
+  gap: var(--lego-space-1);
+  list-style: none;
+  padding: 0;
+}
+
+.previewList li {
+  overflow-wrap: anywhere;
+}
+
+.backLink {
+  color: var(--lego-link);
+  font-size: var(--lego-text-role-support-size);
+  font-weight: var(--lego-font-weight-bold);
+  justify-self: start;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.grid {
+  --catalog-browse-grid-inline-border-size: 0px;
+  display: grid;
+}
+
+.loadingGrid {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.loadingBlock {
+  background: var(--lego-surface-muted);
+  border-radius: var(--lego-radius-md);
+  min-height: 8rem;
+}
+
+@media (min-width: 48rem) {
+  .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .merchantGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid {
+    --catalog-browse-grid-inline-border-size: var(
+      --catalog-browse-grid-divider-size,
+      1px
+    );
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .merchantGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

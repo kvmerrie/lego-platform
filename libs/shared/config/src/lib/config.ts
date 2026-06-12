@@ -391,6 +391,7 @@ export const webPathnames = {
   home: '/',
   articles: '/artikelen',
   deals: '/deals',
+  merchants: '/winkels',
   themes: '/themes',
   search: '/search',
   following: '/volgt',

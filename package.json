@@ -41,6 +41,7 @@
     "sync:collection-page-snapshots": "pnpm nx run collection-page-snapshot-sync:run",
     "sync:set-detail-related-theme-snapshots": "pnpm nx run set-detail-related-theme-snapshot-sync:run",
     "sync:deal-page-snapshots": "pnpm nx run deal-page-snapshot-sync:run",
+    "sync:merchant-page-snapshots": "pnpm nx run merchant-page-snapshot-sync:run",
     "sync:discover:alternate-feed": "pnpm nx run alternate-feed-sync:run -- --discover-missing-sets",
     "sync:discover:lidl-feed": "pnpm nx run lidl-feed-sync:run -- --discover-missing-sets",
     "sync:discover:coolblue-feed": "pnpm nx run coolblue-feed-sync:run -- --discover-missing-sets",

@@ -715,6 +715,7 @@ function buildCompactDealValueLine(
 }
 
 function getCardPrimaryActionConfig({
+  ctaMode,
   href,
   priceContext,
   trackingEvent,
@@ -745,6 +746,19 @@ function getCardPrimaryActionConfig({
       icon: Clock3,
       label: 'Prijs volgt',
       trackingEvent,
+    };
+  }
+
+  if (ctaMode === 'commerce' && priceContext?.primaryActionHref) {
+    return {
+      ariaLabel: 'Naar winkel',
+      className: styles.cardCompactActionBrowse,
+      href: priceContext.primaryActionHref,
+      icon: Eye,
+      label: 'Naar winkel',
+      rel: 'noopener noreferrer sponsored',
+      target: '_blank',
+      trackingEvent: priceContext.primaryActionTrackingEvent,
     };
   }
 

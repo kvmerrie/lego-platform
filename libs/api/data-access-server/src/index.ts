@@ -14,6 +14,7 @@ export * from './lib/cms-promotion-server';
 export * from './lib/catalog-promotion-server';
 export * from './lib/commerce-refresh-server';
 export * from './lib/commerce-current-offer-snapshot-server';
+export * from './lib/commerce-merchant-page-snapshot-server';
 export * from './lib/commerce-sync-server';
 export * from './lib/collection-page-snapshot-server';
 export * from './lib/deal-page-snapshot-server';

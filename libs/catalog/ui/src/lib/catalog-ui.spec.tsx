@@ -1984,7 +1984,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('data-brickhunt-event="catalog_set_click"');
   });
 
-  it('keeps commerce rail cards on the internal set-detail CTA', () => {
+  it('uses the affiliate product URL for commerce card primary CTAs', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         ctaMode="commerce"
@@ -2022,13 +2022,14 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Bekijk set');
-    expect(markup).toContain('aria-label="Bekijk set"');
+    expect(markup).toContain('Naar winkel');
+    expect(markup).toContain('aria-label="Naar winkel"');
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).not.toContain('Koop nu');
-    expect(markup).not.toContain('href="https://merchant.example/rivendell"');
-    expect(markup).not.toContain('target="_blank"');
-    expect(markup).not.toContain('data-brickhunt-event="offer_click"');
+    expect(markup).toContain('href="https://merchant.example/rivendell"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('rel="noopener noreferrer sponsored"');
+    expect(markup).toContain('data-brickhunt-event="offer_click"');
   });
 
   it('can hide a redundant theme badge when the surrounding collection already provides the theme context', () => {

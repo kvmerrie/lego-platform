@@ -143,6 +143,10 @@ async function main() {
     argv,
     flag: '--merchant-slugs',
   });
+  const skipMerchantPageSnapshots = hasBooleanFlag({
+    argv,
+    flag: '--skip-merchant-page-snapshots',
+  });
 
   if (requestedMerchantRefresh && merchantSlugs.length === 0) {
     throw new Error(
@@ -154,13 +158,14 @@ async function main() {
   const scoped = setIds.length > 0 || merchantSlugs.length > 0;
 
   console.log(
-    `[commerce-sync] start mode=${mode} scope=supabase-commerce-aggregate aggregate_mode=${refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${refreshMerchants} scoped=${scoped} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'}`,
+    `[commerce-sync] start mode=${mode} scope=supabase-commerce-aggregate aggregate_mode=${refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${refreshMerchants} scoped=${scoped} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'} skip_merchant_page_snapshots=${skipMerchantPageSnapshots}`,
   );
   const result = await runCommerceSync({
     merchantSlugs,
     mode,
     refreshMerchants,
     setIds,
+    skipMerchantPageSnapshots,
     workspaceRoot,
   });
   const stalePaths = [
@@ -179,13 +184,13 @@ async function main() {
 
     console.log('[commerce-sync] check passed for the Dutch set-detail slice.');
     console.log(
-      `[commerce-sync] end mode=check status=clean aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} current_offer_snapshots=${result.currentOfferSnapshotCount} current_offer_snapshot_mismatches=${result.currentOfferSnapshotBestOfferMismatchCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+      `[commerce-sync] end mode=check status=clean aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} current_offer_snapshots=${result.currentOfferSnapshotCount} current_offer_snapshot_mismatches=${result.currentOfferSnapshotBestOfferMismatchCount} merchant_page_snapshots=${result.merchantPageSnapshotCount} merchant_page_snapshots_skipped=${result.merchantPageSnapshotSkipped} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} phase_timings=${JSON.stringify(result.phaseTimings)} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
   console.log(
-    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} current_offer_snapshots=${result.currentOfferSnapshotCount} current_offer_snapshots_upserted=${result.currentOfferSnapshotsUpsertedCount} current_offer_snapshot_mismatches=${result.currentOfferSnapshotBestOfferMismatchCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} current_offer_snapshots=${result.currentOfferSnapshotCount} current_offer_snapshots_upserted=${result.currentOfferSnapshotsUpsertedCount} current_offer_snapshot_mismatches=${result.currentOfferSnapshotBestOfferMismatchCount} merchant_page_snapshots=${result.merchantPageSnapshotCount} merchant_page_snapshots_upserted=${result.merchantPageSnapshotsUpsertedCount} merchant_page_snapshot_changed_merchants=${result.merchantPageSnapshotChangedMerchantCount} merchant_page_snapshots_skipped=${result.merchantPageSnapshotSkipped} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} phase_timings=${JSON.stringify(result.phaseTimings)} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

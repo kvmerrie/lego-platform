@@ -43,6 +43,7 @@ import {
   type CommerceCurrentOfferSnapshotParitySample,
   upsertCommerceCurrentOfferSnapshots,
 } from './commerce-current-offer-snapshot-server';
+import { buildCommerceMerchantPageSnapshots } from './commerce-merchant-page-snapshot-server';
 import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { syncDealPageSnapshots } from './deal-page-snapshot-server';
 import { syncSetDetailRelatedThemeSnapshots } from './set-detail-related-theme-snapshot-server';
@@ -72,6 +73,10 @@ export interface CommerceSyncRunResult {
   currentOfferSnapshotOfferCount: number;
   currentOfferSnapshotBestOfferMismatchCount: number;
   currentOfferSnapshotsUpsertedCount: number;
+  merchantPageSnapshotChangedMerchantCount: number;
+  merchantPageSnapshotCount: number;
+  merchantPageSnapshotSkipped: boolean;
+  merchantPageSnapshotsUpsertedCount: number;
   dealPageSnapshotCount: number;
   dealPageSnapshotsUpsertedCount: number;
   setDetailRelatedThemeSnapshotCount: number;
@@ -83,6 +88,7 @@ export interface CommerceSyncRunResult {
   enabledSetCount: number;
   merchantCount: number;
   mode: 'check' | 'write';
+  phaseTimings: Record<string, number>;
   pricePanelSnapshotCount: number;
   pricingArtifactCheck: CommerceGeneratedArtifactCheckResult;
   pricingObservationCount: number;
@@ -113,6 +119,7 @@ export interface CommerceSyncDependencies {
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   revalidatePublicWebFn?: typeof revalidatePublicWeb;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
+  buildCommerceMerchantPageSnapshotsFn?: typeof buildCommerceMerchantPageSnapshots;
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
   syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
   syncDealPageSnapshotsFn?: typeof syncDealPageSnapshots;
@@ -549,6 +556,7 @@ export async function runCommerceSync({
   now,
   refreshMerchants = false,
   setIds,
+  skipMerchantPageSnapshots = false,
   workspaceRoot,
 }: {
   dependencies?: CommerceSyncDependencies;
@@ -558,6 +566,7 @@ export async function runCommerceSync({
   now?: Date;
   refreshMerchants?: boolean;
   setIds?: readonly string[];
+  skipMerchantPageSnapshots?: boolean;
   workspaceRoot: string;
 }): Promise<CommerceSyncRunResult> {
   const dependenciesInjected = dependencies !== undefined;
@@ -601,7 +610,18 @@ export async function runCommerceSync({
       },
       upsertedCount: 0,
     });
+  const skipInjectedMerchantPageSnapshotSync: typeof buildCommerceMerchantPageSnapshots =
+    async ({ dryRun = true } = {}) => ({
+      changedMerchantSlugs: [],
+      dryRun,
+      phaseTimings: {},
+      snapshots: [],
+      upsertedCount: 0,
+    });
   const {
+    buildCommerceMerchantPageSnapshotsFn = dependenciesInjected
+      ? skipInjectedMerchantPageSnapshotSync
+      : buildCommerceMerchantPageSnapshots,
     checkAffiliateGeneratedArtifactsFn = checkAffiliateGeneratedArtifacts,
     checkPricingGeneratedArtifactsFn = checkPricingGeneratedArtifacts,
     listCatalogCurrentOfferSummariesBySetIdsFn = listCatalogCurrentOfferSummariesBySetIds,
@@ -625,6 +645,7 @@ export async function runCommerceSync({
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
     writePricingGeneratedArtifactsFn = writePricingGeneratedArtifacts,
   } = dependencies ?? {};
+  const phaseTimings: Record<string, number> = {};
   const scopedSetIds = normalizeRequestedSetIds(setIds);
   const scopedMerchantSlugs = normalizeRequestedMerchantSlugs(merchantSlugs);
   const requestedMerchantSlugs =
@@ -806,6 +827,50 @@ export async function runCommerceSync({
           ),
         })
       : { upsertedCount: 0 };
+  const merchantPageSnapshotStartedAt = Date.now();
+  const merchantPageSnapshotSkipped =
+    mode !== 'write' || skipMerchantPageSnapshots;
+  const merchantPageSnapshotResult = merchantPageSnapshotSkipped
+    ? await skipInjectedMerchantPageSnapshotSync({
+        dryRun: mode !== 'write',
+      })
+    : await buildCommerceMerchantPageSnapshotsFn({
+        dryRun: false,
+        now,
+        revalidate: true,
+      }).catch((error: unknown) => {
+        console.error('[commerce-sync] merchant_page_snapshots_failed', {
+          duration_ms: Date.now() - merchantPageSnapshotStartedAt,
+          event: 'merchant_page_snapshots_failed',
+          error: error instanceof Error ? error.message : 'unknown',
+        });
+
+        throw error;
+      });
+  phaseTimings.merchant_page_snapshots =
+    Date.now() - merchantPageSnapshotStartedAt;
+
+  console.info('[commerce-sync] merchant_page_snapshots', {
+    changed_merchant_count:
+      merchantPageSnapshotResult.changedMerchantSlugs.length,
+    duration_ms: phaseTimings.merchant_page_snapshots,
+    phase_timings: merchantPageSnapshotResult.phaseTimings,
+    revalidation: merchantPageSnapshotResult.revalidation
+      ? {
+          path_count: merchantPageSnapshotResult.revalidation.pathCount,
+          skipped: merchantPageSnapshotResult.revalidation.skipped,
+          tag_count: merchantPageSnapshotResult.revalidation.tagCount,
+        }
+      : undefined,
+    skip_reason: merchantPageSnapshotSkipped
+      ? mode !== 'write'
+        ? 'check_mode'
+        : 'skip_flag'
+      : undefined,
+    skipped: merchantPageSnapshotSkipped,
+    snapshots_built: merchantPageSnapshotResult.snapshots.length,
+    snapshots_upserted: merchantPageSnapshotResult.upsertedCount,
+  });
   const collectionPageSnapshotResult =
     mode === 'write'
       ? await syncCollectionPageSnapshotsFn({
@@ -1126,6 +1191,12 @@ export async function runCommerceSync({
       currentOfferSnapshotResult.summary.snapshotOfferCount,
     currentOfferSnapshotsUpsertedCount:
       currentOfferSnapshotUpsertResult.upsertedCount,
+    merchantPageSnapshotChangedMerchantCount:
+      merchantPageSnapshotResult.changedMerchantSlugs.length,
+    merchantPageSnapshotCount: merchantPageSnapshotResult.snapshots.length,
+    merchantPageSnapshotSkipped,
+    merchantPageSnapshotsUpsertedCount:
+      merchantPageSnapshotResult.upsertedCount,
     dealPageSnapshotCount: dealPageSnapshotResult.snapshots.length,
     dealPageSnapshotsUpsertedCount: dealPageSnapshotResult.upsertedCount,
     setDetailRelatedThemeSnapshotCount:
@@ -1143,6 +1214,7 @@ export async function runCommerceSync({
     enabledSetCount: syncInputs.enabledSetIds.length,
     merchantCount: syncInputs.activeMerchantCount,
     mode,
+    phaseTimings,
     pricePanelSnapshotCount: pricingArtifacts.pricePanelSnapshots.length,
     pricingArtifactCheck,
     pricingObservationCount: pricingArtifacts.pricingObservations.length,

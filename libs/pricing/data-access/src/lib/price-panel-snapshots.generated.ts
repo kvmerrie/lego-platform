@@ -83,7 +83,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -95,7 +95,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 4,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -103,12 +103,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4195,
+    "headlinePriceMinor": 4106,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10291",
@@ -149,16 +149,28 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": 0
   },
   {
+    "setId": "10295",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 14568,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10297",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 24900,
+    "headlinePriceMinor": 22898,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10298",
@@ -177,12 +189,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 16999,
+    "headlinePriceMinor": 14995,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10302",
@@ -193,8 +205,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-05T12:36:33.891Z"
+  },
+  {
+    "setId": "10305",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 48755,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z",
+    "referencePriceMinor": 39999,
+    "deltaMinor": 8756
   },
   {
     "setId": "10307",
@@ -205,7 +231,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -217,7 +243,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -229,7 +255,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-04T00:21:16.397Z"
   },
   {
@@ -265,8 +291,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10316",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 46318,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z",
+    "referencePriceMinor": 49999,
+    "deltaMinor": -3681
   },
   {
     "setId": "10317",
@@ -277,7 +317,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:51:07.495Z",
     "referencePriceMinor": 23999,
     "deltaMinor": 0
@@ -287,12 +327,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18900,
+    "headlinePriceMinor": 18687,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10323",
@@ -311,12 +351,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 29990,
+    "headlinePriceMinor": 28731,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10327",
@@ -327,7 +367,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 16499,
     "deltaMinor": -3509
@@ -341,7 +381,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 5999,
     "deltaMinor": -1400
@@ -355,7 +395,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -367,7 +407,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -387,14 +427,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 45999,
+    "headlinePriceMinor": 43772,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 45999,
-    "deltaMinor": 0
+    "deltaMinor": -2227
   },
   {
     "setId": "10334",
@@ -417,7 +457,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z",
     "referencePriceMinor": 26999,
     "deltaMinor": 0
@@ -427,12 +467,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15900,
+    "headlinePriceMinor": 15336,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10338",
@@ -443,7 +483,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -455,7 +495,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -467,7 +507,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -493,7 +533,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -505,7 +545,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -513,12 +553,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10999,
+    "headlinePriceMinor": 10091,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10347",
@@ -529,7 +569,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -541,7 +581,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -565,7 +605,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -573,24 +613,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11999,
+    "headlinePriceMinor": 11016,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10352",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18900,
+    "headlinePriceMinor": 17817,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10353",
@@ -601,7 +641,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-02T18:21:24.474Z"
   },
   {
@@ -609,26 +649,26 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 25999,
+    "headlinePriceMinor": 26999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "top1toys",
-    "lowestMerchantName": "Top1Toys",
-    "merchantCount": 2,
-    "observedAt": "2026-04-30T06:31:27.054Z",
+    "lowestMerchantId": "rakuten-lego-eu",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-06-07T18:46:06.109Z",
     "referencePriceMinor": 26999,
-    "deltaMinor": -1000
+    "deltaMinor": 0
   },
   {
     "setId": "10356",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 37999,
+    "headlinePriceMinor": 31900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10357",
@@ -639,7 +679,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -663,7 +703,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
@@ -675,7 +715,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -687,7 +727,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -699,7 +739,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -719,36 +759,36 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 34999,
+    "headlinePriceMinor": 33683,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10366",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 44999,
+    "headlinePriceMinor": 41360,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10367",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9499,
+    "headlinePriceMinor": 9088,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 7,
-    "observedAt": "2026-06-05T05:02:55.290Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10368",
@@ -759,7 +799,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -771,7 +811,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -783,7 +823,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -795,7 +835,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -803,24 +843,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5999,
+    "headlinePriceMinor": 4688,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10374",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4490,
+    "headlinePriceMinor": 3890,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10375",
@@ -839,12 +879,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9990,
+    "headlinePriceMinor": 9292,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10411",
@@ -879,7 +919,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -887,12 +927,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2099,
+    "headlinePriceMinor": 1920,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T12:02:33.621Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10415",
@@ -975,7 +1015,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -987,7 +1027,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -999,7 +1039,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -1011,7 +1051,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -1023,7 +1063,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -1071,7 +1111,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1083,7 +1123,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1095,7 +1135,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -1107,7 +1147,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -1119,7 +1159,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1131,7 +1171,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -1143,7 +1183,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -1155,7 +1195,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1167,7 +1207,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1187,12 +1227,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5390,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T12:02:33.621Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10452",
@@ -1215,7 +1255,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1227,7 +1267,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -1251,7 +1291,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1263,7 +1303,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1275,7 +1315,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -1283,12 +1323,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5390,
+    "headlinePriceMinor": 5164,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-06T18:01:39.391Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10460",
@@ -1299,7 +1339,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1307,12 +1347,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7065,
+    "headlinePriceMinor": 6098,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coppenswarenhuis",
-    "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:36:00.897Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10462",
@@ -1323,7 +1363,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1335,7 +1375,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1343,24 +1383,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3995,
+    "headlinePriceMinor": 3913,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10465",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3995,
+    "headlinePriceMinor": 3913,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10466",
@@ -1379,12 +1419,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5895,
+    "headlinePriceMinor": 5164,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10468",
@@ -1395,7 +1435,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1407,7 +1447,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1419,7 +1459,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1431,7 +1471,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -1443,7 +1483,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1455,7 +1495,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1467,7 +1507,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1487,12 +1527,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6990,
+    "headlinePriceMinor": 6693,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10477",
@@ -1503,7 +1543,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1511,12 +1551,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10479",
@@ -1527,7 +1567,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1539,7 +1579,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1587,7 +1627,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-23T06:11:15.679Z"
   },
   {
@@ -1659,7 +1699,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1671,7 +1711,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1719,7 +1759,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1791,7 +1831,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -1815,7 +1855,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-14T12:10:59.276Z"
   },
   {
@@ -1827,7 +1867,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -1875,7 +1915,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-29T18:20:40.701Z"
   },
   {
@@ -1911,7 +1951,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -1923,7 +1963,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -1935,7 +1975,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -1959,7 +1999,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -1967,12 +2007,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5399,
+    "headlinePriceMinor": 5164,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T05:01:21.506Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11204",
@@ -1983,7 +2023,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-23T06:11:15.679Z"
   },
   {
@@ -2007,7 +2047,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-28T18:26:11.385Z"
   },
   {
@@ -2027,12 +2067,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4195,
+    "headlinePriceMinor": 4191,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 7,
-    "observedAt": "2026-05-20T18:10:52.420Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11209",
@@ -2043,7 +2083,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2055,7 +2095,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2079,7 +2119,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T05:01:21.506Z"
   },
   {
@@ -2091,7 +2131,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -2099,12 +2139,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5590,
+    "headlinePriceMinor": 5164,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11221",
@@ -2115,7 +2155,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2123,36 +2163,36 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 27999,
+    "headlinePriceMinor": 21200,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11371",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 24999,
+    "headlinePriceMinor": 23835,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11372",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8899,
+    "headlinePriceMinor": 8469,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11373",
@@ -2183,12 +2223,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10999,
+    "headlinePriceMinor": 9780,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11378",
@@ -2207,48 +2247,48 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9990,
+    "headlinePriceMinor": 9471,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-06T18:01:39.391Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11384",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11999,
+    "headlinePriceMinor": 11995,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11501",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4899,
+    "headlinePriceMinor": 3990,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T00:03:15.239Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11502",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 4852,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11503",
@@ -2271,7 +2311,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2279,12 +2319,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6095,
+    "headlinePriceMinor": 5877,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-05-29T18:26:12.087Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11506",
@@ -2295,7 +2335,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -2307,7 +2347,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2319,7 +2359,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -2331,7 +2371,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2343,7 +2383,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2355,7 +2395,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -2367,7 +2407,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2379,7 +2419,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2387,24 +2427,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10990,
+    "headlinePriceMinor": 10647,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21060",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12300,
+    "headlinePriceMinor": 11837,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
-    "observedAt": "2026-05-14T18:16:00.002Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21061",
@@ -2429,7 +2469,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-20T18:21:09.937Z"
   },
   {
@@ -2449,24 +2489,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6595,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21066",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11495,
+    "headlinePriceMinor": 11099,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21246",
@@ -2513,7 +2553,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2525,7 +2565,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2537,7 +2577,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-18T18:25:59.693Z"
   },
   {
@@ -2549,7 +2589,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -2561,7 +2601,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -2585,7 +2625,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2597,7 +2637,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -2609,7 +2649,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-20T18:21:09.937Z"
   },
   {
@@ -2633,7 +2673,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -2645,7 +2685,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2657,7 +2697,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -2665,24 +2705,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7699,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21282",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 6401,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21316",
@@ -2705,7 +2745,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -2713,12 +2753,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 35500,
+    "headlinePriceMinor": 33949,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21325",
@@ -2777,7 +2817,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 16999,
     "deltaMinor": -1009
@@ -2799,12 +2839,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13999,
+    "headlinePriceMinor": 12712,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21345",
@@ -2815,22 +2855,34 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-04T06:16:17.278Z"
+  },
+  {
+    "setId": "21347",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10684,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21348",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 35999,
+    "headlinePriceMinor": 33349,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z",
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 35999,
-    "deltaMinor": 0
+    "deltaMinor": -2650
   },
   {
     "setId": "21349",
@@ -2855,7 +2907,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 15999,
     "deltaMinor": -3009
@@ -2901,24 +2953,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 21999,
+    "headlinePriceMinor": 21137,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21356",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 32999,
+    "headlinePriceMinor": 26490,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21357",
@@ -2929,7 +2981,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T05:01:21.506Z"
   },
   {
@@ -2949,24 +3001,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 25900,
+    "headlinePriceMinor": 22999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21360",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 20500,
+    "headlinePriceMinor": 15800,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21361",
@@ -2989,7 +3041,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3021,24 +3073,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9190,
+    "headlinePriceMinor": 8469,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21368",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6500,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:15:55.354Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21376",
@@ -3049,7 +3101,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -3061,7 +3113,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3073,7 +3125,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3085,7 +3137,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-18T18:25:59.693Z"
   },
   {
@@ -3109,7 +3161,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T18:25:51.928Z"
   },
   {
@@ -3133,7 +3185,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-08T05:01:30.634Z"
   },
   {
@@ -3141,12 +3193,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 4946,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T06:01:43.305Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21592",
@@ -3157,7 +3209,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3169,7 +3221,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3181,7 +3233,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3193,7 +3245,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3213,12 +3265,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7895,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30416",
@@ -3313,7 +3365,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3325,7 +3377,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3349,7 +3401,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3385,7 +3437,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3421,7 +3473,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3433,7 +3485,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3445,7 +3497,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3457,7 +3509,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3493,7 +3545,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3553,7 +3605,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3565,7 +3617,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3589,7 +3641,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3601,7 +3653,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3625,7 +3677,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -3637,7 +3689,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3649,7 +3701,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3673,7 +3725,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3685,7 +3737,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3697,7 +3749,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3709,7 +3761,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3721,7 +3773,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3757,7 +3809,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3769,7 +3821,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -3781,7 +3833,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3793,7 +3845,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3805,7 +3857,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3817,7 +3869,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3829,7 +3881,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3841,7 +3893,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3865,7 +3917,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3877,7 +3929,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3889,7 +3941,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3901,7 +3953,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -3913,7 +3965,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3925,7 +3977,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3949,7 +4001,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -3961,7 +4013,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -3973,7 +4025,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3985,7 +4037,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -3997,7 +4049,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4009,7 +4061,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4033,7 +4085,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4057,7 +4109,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-06T18:21:05.405Z"
   },
   {
@@ -4069,7 +4121,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T18:25:51.928Z"
   },
   {
@@ -4105,7 +4157,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4117,7 +4169,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4129,7 +4181,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4141,7 +4193,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4153,7 +4205,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4165,7 +4217,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4201,7 +4253,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4213,7 +4265,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4225,7 +4277,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -4237,7 +4289,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4249,7 +4301,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4261,7 +4313,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-20T18:10:52.420Z"
   },
   {
@@ -4285,7 +4337,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4297,7 +4349,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4305,12 +4357,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9900,
+    "headlinePriceMinor": 8733,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 9,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31169",
@@ -4321,7 +4373,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4353,12 +4405,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2999,
+    "headlinePriceMinor": 2799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31173",
@@ -4381,7 +4433,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4405,7 +4457,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -4413,12 +4465,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 22999,
+    "headlinePriceMinor": 19322,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31212",
@@ -4449,24 +4501,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6290,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T06:01:43.305Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31215",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 16195,
+    "headlinePriceMinor": 14345,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-05-20T18:25:51.538Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31216",
@@ -4477,7 +4529,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-05T00:16:04.575Z"
   },
   {
@@ -4489,7 +4541,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-28T18:15:56.983Z"
   },
   {
@@ -4497,24 +4549,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9990,
+    "headlinePriceMinor": 8906,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31220",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 16099,
+    "headlinePriceMinor": 14803,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31376",
@@ -4525,7 +4577,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4537,7 +4589,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4561,7 +4613,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4573,7 +4625,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4585,7 +4637,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-06T18:01:39.391Z"
   },
   {
@@ -4597,7 +4649,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4609,7 +4661,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -4621,7 +4673,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -4633,7 +4685,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
@@ -4641,12 +4693,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 4652,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31387",
@@ -4657,7 +4709,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4677,12 +4729,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6990,
+    "headlinePriceMinor": 6693,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31390",
@@ -4693,7 +4745,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -4717,7 +4769,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -4825,7 +4877,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -4945,7 +4997,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-05-23T06:11:15.679Z"
   },
   {
@@ -5089,7 +5141,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -5137,7 +5189,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -5197,7 +5249,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -5221,7 +5273,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -5365,7 +5417,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -5377,7 +5429,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -5425,7 +5477,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -5461,7 +5513,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -5533,7 +5585,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -5965,7 +6017,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -6069,12 +6121,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 65900,
+    "headlinePriceMinor": 62398,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42151",
@@ -6085,7 +6137,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -6097,7 +6149,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -6129,12 +6181,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7290,
+    "headlinePriceMinor": 7250,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42160",
@@ -6145,7 +6197,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
@@ -6153,12 +6205,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4499,
+    "headlinePriceMinor": 4489,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42163",
@@ -6169,7 +6221,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -6217,7 +6269,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -6225,40 +6277,40 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6399,
+    "headlinePriceMinor": 6198,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
-    "observedAt": "2026-05-12T05:01:26.023Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42171",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17990,
+    "headlinePriceMinor": 15718,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z",
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 21999,
-    "deltaMinor": -4009
+    "deltaMinor": -6281
   },
   {
     "setId": "42172",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 34100,
+    "headlinePriceMinor": 32192,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z",
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 44999,
-    "deltaMinor": -10899
+    "deltaMinor": -12807
   },
   {
     "setId": "42173",
@@ -6269,7 +6321,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -6289,38 +6341,38 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15590,
+    "headlinePriceMinor": 14641,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42176",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13100,
+    "headlinePriceMinor": 12332,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42177",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18900,
+    "headlinePriceMinor": 18006,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 24999,
-    "deltaMinor": -6099
+    "deltaMinor": -6993
   },
   {
     "setId": "42179",
@@ -6339,12 +6391,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17990,
+    "headlinePriceMinor": 17883,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42184",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5571,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42197",
@@ -6355,7 +6419,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -6367,7 +6431,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-30T00:15:52.564Z"
   },
   {
@@ -6391,7 +6455,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -6403,7 +6467,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -6415,7 +6479,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
@@ -6427,7 +6491,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
@@ -6439,7 +6503,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-14T12:21:27.684Z"
   },
   {
@@ -6451,7 +6515,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-20T18:21:09.937Z"
   },
   {
@@ -6459,12 +6523,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17500,
+    "headlinePriceMinor": 16634,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42207",
@@ -6475,7 +6539,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:15:55.354Z"
   },
   {
@@ -6487,7 +6551,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -6499,7 +6563,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
@@ -6519,24 +6583,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7690,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42212",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5099,
+    "headlinePriceMinor": 4580,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42213",
@@ -6547,7 +6611,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
@@ -6555,12 +6619,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13200,
+    "headlinePriceMinor": 12972,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 7,
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42215",
@@ -6583,7 +6647,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -6595,7 +6659,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-04T18:26:19.204Z"
   },
   {
@@ -6607,7 +6671,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:15:55.354Z"
   },
   {
@@ -6619,7 +6683,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -6639,36 +6703,36 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5290,
+    "headlinePriceMinor": 4747,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42223",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6099,
+    "headlinePriceMinor": 5581,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42224",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10900,
+    "headlinePriceMinor": 10656,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42225",
@@ -6699,48 +6763,48 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5190,
+    "headlinePriceMinor": 4747,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42228",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18499,
+    "headlinePriceMinor": 17549,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42229",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5190,
+    "headlinePriceMinor": 4747,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42231",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11895,
+    "headlinePriceMinor": 11530,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42233",
@@ -6819,12 +6883,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11999,
+    "headlinePriceMinor": 9699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42603",
@@ -7039,7 +7103,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7063,7 +7127,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7087,7 +7151,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -7107,12 +7171,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5199,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lidl",
-    "lowestMerchantName": "Lidl",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:21:14.008Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42653",
@@ -7159,7 +7223,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7171,7 +7235,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7195,7 +7259,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-02T18:21:31.337Z"
   },
   {
@@ -7207,7 +7271,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-05-23T06:11:15.679Z"
   },
   {
@@ -7231,7 +7295,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7263,12 +7327,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6790,
+    "headlinePriceMinor": 6693,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42672",
@@ -7287,12 +7351,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10000,
+    "headlinePriceMinor": 9590,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
-    "observedAt": "2026-06-01T00:15:29.184Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42674",
@@ -7303,7 +7367,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -7315,7 +7379,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7327,7 +7391,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7339,7 +7403,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-25T00:25:50.170Z"
   },
   {
@@ -7351,7 +7415,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7363,7 +7427,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7375,7 +7439,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-27T00:25:52.748Z"
   },
   {
@@ -7411,7 +7475,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7423,7 +7487,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7435,7 +7499,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
@@ -7455,24 +7519,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6295,
+    "headlinePriceMinor": 5877,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T00:03:15.239Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42689",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 6693,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T06:01:43.305Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42690",
@@ -7483,7 +7547,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-31T18:26:05.403Z"
   },
   {
@@ -7507,7 +7571,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -7531,7 +7595,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7543,7 +7607,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7555,7 +7619,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7575,24 +7639,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4095,
+    "headlinePriceMinor": 4035,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42700",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4695,
+    "headlinePriceMinor": 4688,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42701",
@@ -7603,7 +7667,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7615,7 +7679,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7627,7 +7691,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -7635,12 +7699,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12290,
+    "headlinePriceMinor": 11304,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42705",
@@ -7651,7 +7715,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7675,7 +7739,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7687,7 +7751,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T05:02:55.290Z"
   },
   {
@@ -7699,7 +7763,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7711,7 +7775,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:11:20.624Z"
   },
   {
@@ -7723,7 +7787,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7735,7 +7799,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -7747,7 +7811,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7779,24 +7843,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 14990,
+    "headlinePriceMinor": 12900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43022",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6995,
+    "headlinePriceMinor": 6833,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43023",
@@ -7807,7 +7871,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -7819,7 +7883,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -8119,7 +8183,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8167,7 +8231,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8235,12 +8299,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5090,
+    "headlinePriceMinor": 4946,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43258",
@@ -8251,7 +8315,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -8263,7 +8327,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8271,24 +8335,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5390,
+    "headlinePriceMinor": 4260,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T12:02:33.621Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43263",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 27999,
+    "headlinePriceMinor": 26843,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43264",
@@ -8299,7 +8363,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8311,7 +8375,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T12:02:33.621Z"
   },
   {
@@ -8319,24 +8383,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3295,
+    "headlinePriceMinor": 3279,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43267",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9590,
+    "headlinePriceMinor": 8906,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43268",
@@ -8347,7 +8411,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -8355,12 +8419,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11190,
+    "headlinePriceMinor": 10656,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43270",
@@ -8371,7 +8435,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-20T18:21:09.937Z"
   },
   {
@@ -8383,7 +8447,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8395,7 +8459,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8419,7 +8483,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-02T06:10:58.953Z"
   },
   {
@@ -8455,7 +8519,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8475,12 +8539,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5899,
+    "headlinePriceMinor": 5468,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43280",
@@ -8491,7 +8555,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8503,7 +8567,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8515,7 +8579,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8527,7 +8591,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8539,7 +8603,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8551,7 +8615,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -8563,7 +8627,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T00:03:15.239Z"
   },
   {
@@ -8575,7 +8639,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -8587,7 +8651,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8595,24 +8659,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3295,
+    "headlinePriceMinor": 3265,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43290",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4899,
+    "headlinePriceMinor": 4780,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43291",
@@ -8623,7 +8687,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8631,12 +8695,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5164,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43293",
@@ -8647,7 +8711,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8659,7 +8723,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8671,7 +8735,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8683,7 +8747,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -8691,24 +8755,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7895,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43299",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5364,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43300",
@@ -8727,12 +8791,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11800,
+    "headlinePriceMinor": 11530,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 5,
-    "observedAt": "2026-05-20T18:16:10.924Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43302",
@@ -8755,7 +8819,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-31T18:26:05.403Z"
   },
   {
@@ -8763,12 +8827,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3695,
+    "headlinePriceMinor": 3607,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-05T12:25:53.134Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43305",
@@ -8887,7 +8951,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8911,7 +8975,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -8923,7 +8987,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -8947,7 +9011,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -8959,7 +9023,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -8991,12 +9055,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4095,
+    "headlinePriceMinor": 3770,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60359",
@@ -9015,12 +9079,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7199,
+    "headlinePriceMinor": 5460,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "conrad",
-    "lowestMerchantName": "Conrad",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:41:21.225Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60367",
@@ -9039,12 +9103,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 14999,
+    "headlinePriceMinor": 12916,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60373",
@@ -9067,7 +9131,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9079,7 +9143,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -9091,7 +9155,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "conrad",
     "lowestMerchantName": "Conrad",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:41:21.225Z"
   },
   {
@@ -9103,7 +9167,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9127,7 +9191,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9139,7 +9203,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-18T18:16:05.115Z"
   },
   {
@@ -9151,7 +9215,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -9163,7 +9227,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-20T18:16:10.924Z"
   },
   {
@@ -9175,7 +9239,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-20T18:21:09.937Z"
   },
   {
@@ -9187,7 +9251,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -9223,7 +9287,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9235,7 +9299,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9247,7 +9311,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -9259,7 +9323,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 11,
+    "merchantCount": 12,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -9283,7 +9347,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9295,7 +9359,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -9319,7 +9383,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-06T18:21:05.405Z"
   },
   {
@@ -9331,7 +9395,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9355,7 +9419,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -9391,7 +9455,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9403,7 +9467,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9415,7 +9479,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9427,7 +9491,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:15:55.354Z"
   },
   {
@@ -9435,12 +9499,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8900,
+    "headlinePriceMinor": 8606,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60469",
@@ -9451,7 +9515,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-18T06:16:13.003Z"
   },
   {
@@ -9459,12 +9523,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 14999,
+    "headlinePriceMinor": 14300,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "joybuy",
-    "lowestMerchantName": "Joybuy",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:10:57.760Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60471",
@@ -9475,7 +9539,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:15:55.354Z"
   },
   {
@@ -9511,7 +9575,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9523,7 +9587,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -9535,7 +9599,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9547,7 +9611,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9559,7 +9623,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9571,7 +9635,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9583,7 +9647,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9595,7 +9659,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9607,7 +9671,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9619,7 +9683,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9631,7 +9695,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
@@ -9643,7 +9707,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9655,7 +9719,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9667,7 +9731,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -9675,24 +9739,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3699,
+    "headlinePriceMinor": 3628,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60494",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9790,
+    "headlinePriceMinor": 9100,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60495",
@@ -9711,12 +9775,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4095,
+    "headlinePriceMinor": 4035,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-05T12:25:53.134Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60497",
@@ -9727,7 +9791,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -9747,12 +9811,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60500",
@@ -9763,7 +9827,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -9783,84 +9847,84 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8299,
+    "headlinePriceMinor": 7663,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60503",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4799,
+    "headlinePriceMinor": 4688,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60504",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8699,
+    "headlinePriceMinor": 8304,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60505",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60506",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5490,
+    "headlinePriceMinor": 5060,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60508",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 16295,
+    "headlinePriceMinor": 14525,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T12:02:33.621Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60511",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6995,
+    "headlinePriceMinor": 6693,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
-    "observedAt": "2026-06-05T12:25:53.134Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71038",
@@ -9891,12 +9955,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 39899,
+    "headlinePriceMinor": 38993,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71045",
@@ -10135,7 +10199,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -10363,7 +10427,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10399,7 +10463,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10423,7 +10487,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -10447,7 +10511,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -10471,7 +10535,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10479,48 +10543,48 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11495,
+    "headlinePriceMinor": 10661,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71508",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6195,
+    "headlinePriceMinor": 5877,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71512",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5799,
+    "headlinePriceMinor": 5162,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71513",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4199,
+    "headlinePriceMinor": 4112,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71514",
@@ -10531,7 +10595,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10539,12 +10603,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11100,
+    "headlinePriceMinor": 10447,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71741",
@@ -10615,7 +10679,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10639,7 +10703,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -10683,12 +10747,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 23900,
+    "headlinePriceMinor": 23548,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71816",
@@ -10735,7 +10799,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10747,7 +10811,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10759,7 +10823,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10771,7 +10835,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -10807,7 +10871,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-01T00:21:36.739Z"
   },
   {
@@ -10819,7 +10883,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -10839,12 +10903,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 24999,
+    "headlinePriceMinor": 23535,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71838",
@@ -10855,7 +10919,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10879,7 +10943,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -10891,7 +10955,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10903,7 +10967,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -10947,24 +11011,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12195,
+    "headlinePriceMinor": 11537,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71848",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15400,
+    "headlinePriceMinor": 14653,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 6,
-    "observedAt": "2026-05-19T05:02:28.466Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71849",
@@ -10975,7 +11039,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10987,7 +11051,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -10999,7 +11063,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -11011,7 +11075,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -11023,7 +11087,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -11055,24 +11119,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6290,
+    "headlinePriceMinor": 5996,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71858",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8099,
+    "headlinePriceMinor": 7510,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71859",
@@ -11095,7 +11159,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-05T09:42:24.897Z"
   },
   {
@@ -11119,7 +11183,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11175,48 +11239,48 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6595,
+    "headlinePriceMinor": 6077,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71868",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7190,
+    "headlinePriceMinor": 6893,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71869",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10400,
+    "headlinePriceMinor": 9992,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 6,
-    "observedAt": "2026-06-05T12:15:56.932Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71870",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11490,
+    "headlinePriceMinor": 10882,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71871",
@@ -11247,12 +11311,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1499,
+    "headlinePriceMinor": 1392,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lidl",
-    "lowestMerchantName": "Lidl",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:21:14.008Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72032",
@@ -11263,7 +11327,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-23T06:11:15.679Z"
   },
   {
@@ -11287,7 +11351,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -11311,7 +11375,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11323,7 +11387,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11335,7 +11399,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -11347,7 +11411,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11359,7 +11423,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11383,7 +11447,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -11415,12 +11479,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 14990,
+    "headlinePriceMinor": 13888,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T12:02:33.621Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72151",
@@ -11431,7 +11495,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -11439,12 +11503,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 16399,
+    "headlinePriceMinor": 14995,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72153",
@@ -11599,7 +11663,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -11675,6 +11739,18 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
+    "setId": "75331",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 65041,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "75332",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11707,7 +11783,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-06T05:01:01.607Z"
   },
   {
@@ -11755,7 +11831,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-05-08T05:01:30.634Z"
   },
   {
@@ -11767,7 +11843,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -11791,7 +11867,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
+    "merchantCount": 1,
     "observedAt": "2026-06-07T18:51:07.495Z",
     "referencePriceMinor": 23999,
     "deltaMinor": 0
@@ -11801,12 +11877,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 6178,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75358",
@@ -11861,14 +11937,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 56900,
+    "headlinePriceMinor": 51990,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 3,
-    "observedAt": "2026-06-07T18:02:11.458Z",
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 64999,
-    "deltaMinor": -8099
+    "deltaMinor": -13009
   },
   {
     "setId": "75371",
@@ -11879,7 +11955,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "brickfever",
     "lowestMerchantName": "Brickfever",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
@@ -11891,7 +11967,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-01T18:21:03.657Z"
   },
   {
@@ -11903,7 +11979,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-05T12:36:33.891Z"
   },
   {
@@ -11915,7 +11991,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-05T12:10:57.851Z"
   },
   {
@@ -11927,7 +12003,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-08T18:21:22.648Z"
   },
   {
@@ -12011,7 +12087,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -12035,8 +12111,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "75397",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 38900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z",
+    "referencePriceMinor": 49999,
+    "deltaMinor": -11099
   },
   {
     "setId": "75398",
@@ -12047,7 +12137,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 13999,
     "deltaMinor": -3009
@@ -12057,12 +12147,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4899,
+    "headlinePriceMinor": 4856,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
-    "observedAt": "2026-05-21T00:16:06.040Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75400",
@@ -12073,7 +12163,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-22T18:21:08.266Z"
   },
   {
@@ -12097,7 +12187,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-26T06:21:31.947Z"
   },
   {
@@ -12121,7 +12211,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-31T06:21:11.311Z"
   },
   {
@@ -12133,7 +12223,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-31T06:21:11.311Z"
   },
   {
@@ -12141,12 +12231,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 6532,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75407",
@@ -12157,7 +12247,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-20T07:17:00.492Z"
   },
   {
@@ -12169,7 +12259,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -12177,12 +12267,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 29999,
+    "headlinePriceMinor": 26219,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75410",
@@ -12193,7 +12283,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -12205,7 +12295,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-31T06:25:52.087Z"
   },
   {
@@ -12217,7 +12307,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T06:25:53.085Z"
   },
   {
@@ -12253,7 +12343,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -12265,7 +12355,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-01T12:16:11.326Z"
   },
   {
@@ -12273,24 +12363,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15200,
+    "headlinePriceMinor": 14345,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 5,
-    "observedAt": "2026-05-12T05:01:26.023Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 6,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75419",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 92900,
+    "headlinePriceMinor": 82900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-20T18:10:52.420Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75421",
@@ -12309,12 +12399,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12999,
+    "headlinePriceMinor": 12300,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75429",
@@ -12325,7 +12415,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -12333,12 +12423,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11999,
+    "headlinePriceMinor": 9499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75431",
@@ -12349,7 +12439,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-05T05:02:55.290Z"
   },
   {
@@ -12373,7 +12463,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-05T05:02:55.290Z"
   },
   {
@@ -12385,7 +12475,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-05T05:02:55.290Z"
   },
   {
@@ -12397,7 +12487,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-25T18:16:17.922Z"
   },
   {
@@ -12429,12 +12519,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3395,
+    "headlinePriceMinor": 3265,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-05-20T18:25:51.538Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75439",
@@ -12445,7 +12535,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-05-20T18:25:51.538Z"
   },
   {
@@ -12457,7 +12547,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-08T05:01:30.634Z"
   },
   {
@@ -12465,12 +12555,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6295,
+    "headlinePriceMinor": 6198,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75443",
@@ -12481,7 +12571,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T06:25:53.085Z"
   },
   {
@@ -12493,7 +12583,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T06:11:01.249Z"
   },
   {
@@ -12505,7 +12595,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-20T18:16:10.924Z"
   },
   {
@@ -12529,7 +12619,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-20T18:16:10.924Z"
   },
   {
@@ -12541,7 +12631,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T06:25:53.085Z"
   },
   {
@@ -12553,7 +12643,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -12573,12 +12663,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7199,
+    "headlinePriceMinor": 6205,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75453",
@@ -12609,24 +12699,36 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 5999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75460",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 5502,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75461",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 8499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75582",
@@ -12673,7 +12775,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -12705,12 +12807,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 23000,
+    "headlinePriceMinor": 21667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T05:01:21.506Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75641",
@@ -12829,7 +12931,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -12853,7 +12955,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -12865,7 +12967,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -12873,12 +12975,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6299,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75690",
@@ -12889,7 +12991,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -12981,12 +13083,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3495,
+    "headlinePriceMinor": 3221,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
-    "observedAt": "2026-06-07T18:10:54.281Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76212",
@@ -13009,7 +13111,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13081,7 +13183,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -13149,26 +13251,38 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 49999,
+    "headlinePriceMinor": 48799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z",
     "referencePriceMinor": 49999,
-    "deltaMinor": 0
+    "deltaMinor": -1200
+  },
+  {
+    "setId": "76271",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 39127,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 1,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76273",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5590,
+    "headlinePriceMinor": 5495,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-25T18:01:32.390Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76276",
@@ -13337,7 +13451,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -13349,7 +13463,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13361,7 +13475,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13373,7 +13487,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -13385,7 +13499,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13397,7 +13511,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -13419,12 +13533,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7196,
+    "headlinePriceMinor": 7092,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "joybuy",
-    "lowestMerchantName": "Joybuy",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:10:57.760Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76315",
@@ -13435,7 +13549,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13459,7 +13573,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -13483,7 +13597,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13507,7 +13621,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13519,7 +13633,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T05:01:21.506Z"
   },
   {
@@ -13527,24 +13641,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10490,
+    "headlinePriceMinor": 10272,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76325",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9696,
+    "headlinePriceMinor": 8906,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "joybuy",
-    "lowestMerchantName": "Joybuy",
-    "merchantCount": 9,
-    "observedAt": "2026-06-04T06:11:00.403Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 10,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76326",
@@ -13555,7 +13669,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13563,12 +13677,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4899,
+    "headlinePriceMinor": 4871,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 7,
-    "observedAt": "2026-06-04T06:16:17.278Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76329",
@@ -13587,12 +13701,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6499,
+    "headlinePriceMinor": 6198,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76331",
@@ -13603,7 +13717,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -13615,7 +13729,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-05T12:25:53.134Z"
   },
   {
@@ -13639,7 +13753,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -13651,7 +13765,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13663,7 +13777,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -13675,7 +13789,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13687,7 +13801,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13707,12 +13821,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4899,
+    "headlinePriceMinor": 4780,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-12T05:01:26.023Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76342",
@@ -13735,7 +13849,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13743,12 +13857,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10999,
+    "headlinePriceMinor": 9780,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 3,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76346",
@@ -13759,7 +13873,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13771,7 +13885,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-02T18:25:50.891Z"
   },
   {
@@ -13779,12 +13893,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7190,
+    "headlinePriceMinor": 7033,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T06:01:43.305Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76354",
@@ -13795,7 +13909,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13839,12 +13953,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13690,
+    "headlinePriceMinor": 12772,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
     "merchantCount": 4,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76424",
@@ -13855,7 +13969,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -13909,30 +14023,16 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -2509
   },
   {
-    "setId": "76435",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 19999,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "top1toys",
-    "lowestMerchantName": "Top1Toys",
-    "merchantCount": 1,
-    "observedAt": "2026-04-30T06:31:27.498Z",
-    "referencePriceMinor": 19999,
-    "deltaMinor": 0
-  },
-  {
     "setId": "76437",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 25999,
+    "headlinePriceMinor": 24951,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76439",
@@ -13967,7 +14067,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -13979,7 +14079,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-27T05:01:00.868Z"
   },
   {
@@ -13991,7 +14091,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-05-11T00:21:09.581Z"
   },
   {
@@ -14003,7 +14103,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-19T12:16:01.069Z"
   },
   {
@@ -14015,7 +14115,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -14023,12 +14123,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7999,
+    "headlinePriceMinor": 7761,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76448",
@@ -14039,7 +14139,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14075,7 +14175,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14087,7 +14187,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-30T18:15:56.227Z"
   },
   {
@@ -14099,7 +14199,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:02:11.458Z",
     "referencePriceMinor": 14999,
     "deltaMinor": -3009
@@ -14109,12 +14209,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17900,
+    "headlinePriceMinor": 17874,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 8,
-    "observedAt": "2026-06-06T12:16:01.987Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76456",
@@ -14137,7 +14237,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
+    "merchantCount": 3,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -14145,12 +14245,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6999,
+    "headlinePriceMinor": 6469,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "rakuten-lego-eu",
-    "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
-    "observedAt": "2026-06-07T18:46:06.109Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 2,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76459",
@@ -14161,7 +14261,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -14173,7 +14273,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -14197,7 +14297,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14205,36 +14305,36 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7899,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76464",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 4986,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 4,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76466",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13399,
+    "headlinePriceMinor": 12056,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76467",
@@ -14245,7 +14345,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
@@ -14257,7 +14357,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14265,12 +14365,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6399,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-12T05:01:26.023Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 5,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76471",
@@ -14281,7 +14381,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14289,24 +14389,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 20000,
+    "headlinePriceMinor": 19212,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
-    "merchantCount": 6,
-    "observedAt": "2026-06-05T12:15:56.932Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76474",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7990,
+    "headlinePriceMinor": 7867,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 9,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76475",
@@ -14317,7 +14417,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14353,7 +14453,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14361,12 +14461,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6290,
+    "headlinePriceMinor": 5998,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:02:11.458Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76786",
@@ -14485,7 +14585,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -14517,12 +14617,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4199,
+    "headlinePriceMinor": 4191,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "brickfever",
-    "lowestMerchantName": "Brickfever",
-    "merchantCount": 7,
-    "observedAt": "2026-06-07T18:51:07.495Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 8,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76934",
@@ -14541,12 +14641,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2695,
+    "headlinePriceMinor": 2165,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 3,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76967",
@@ -14557,7 +14657,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
@@ -14581,7 +14681,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -14593,7 +14693,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -14605,7 +14705,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -14641,7 +14741,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-05-29T06:11:26.813Z"
   },
   {
@@ -14653,7 +14753,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T05:01:21.506Z"
   },
   {
@@ -14713,7 +14813,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -14725,7 +14825,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14737,7 +14837,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14773,7 +14873,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14845,7 +14945,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14893,7 +14993,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -14917,7 +15017,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -14965,7 +15065,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T06:01:43.305Z"
   },
   {
@@ -14977,7 +15077,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "joybuy",
     "lowestMerchantName": "Joybuy",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
@@ -14989,7 +15089,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-04T06:16:17.278Z"
   },
   {
@@ -15001,7 +15101,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -15021,12 +15121,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7895,
+    "headlinePriceMinor": 7667,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
-    "observedAt": "2026-06-07T18:25:54.264Z"
+    "lowestMerchantId": "proshop",
+    "lowestMerchantName": "Proshop",
+    "merchantCount": 7,
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77082",
@@ -15061,7 +15161,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15097,7 +15197,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15109,7 +15209,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15121,7 +15221,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15133,7 +15233,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15145,7 +15245,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -15169,7 +15269,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -15181,7 +15281,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 11,
+    "merchantCount": 12,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15193,7 +15293,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 11,
+    "merchantCount": 12,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -15205,7 +15305,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -15217,7 +15317,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -15229,7 +15329,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
@@ -15241,7 +15341,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 10,
+    "merchantCount": 11,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15253,7 +15353,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:21:14.008Z"
   },
   {
@@ -15265,7 +15365,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "rakuten-lego-eu",
     "lowestMerchantName": "LEGO",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
@@ -15277,7 +15377,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15289,7 +15389,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15301,7 +15401,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15313,7 +15413,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-05-28T18:26:11.385Z"
   },
   {
@@ -15325,7 +15425,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 7,
+    "merchantCount": 8,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15337,7 +15437,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
@@ -15349,7 +15449,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 8,
+    "merchantCount": 9,
     "observedAt": "2026-05-28T18:26:11.385Z"
   },
   {
@@ -15373,7 +15473,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 9,
+    "merchantCount": 10,
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {

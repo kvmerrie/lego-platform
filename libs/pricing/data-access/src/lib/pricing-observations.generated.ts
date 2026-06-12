@@ -113,6 +113,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
+    "setId": "10274",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 38748,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10280",
     "merchantId": "brickfever",
     "regionCode": "NL",
@@ -169,17 +180,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10280",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T18:31:39.593Z"
-  },
-  {
-    "setId": "10280",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -199,6 +199,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10281",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4106,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10281",
@@ -322,6 +333,61 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10295",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10295",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14568,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10295",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "10295",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "unknown",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10297",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22898,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10297",
     "merchantId": "brickfever",
     "regionCode": "NL",
@@ -367,6 +433,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10298",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9998,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10298",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -375,6 +452,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10300",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10300",
@@ -419,6 +507,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:36:33.891Z"
+  },
+  {
+    "setId": "10302",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16921,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10302",
@@ -476,6 +575,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10305",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 45995,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "10305",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 48755,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10307",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -485,6 +606,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10307",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 72909,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10309",
@@ -507,6 +639,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10309",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5231,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10311",
@@ -540,6 +683,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "10311",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4106,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10311",
@@ -708,6 +862,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10315",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8334,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10315",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -751,6 +916,50 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10316",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 46318,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10316",
+    "merchantId": "brickfever",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49899,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10316",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49995,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "10316",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49999,
+    "availability": "unknown",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
     "setId": "10317",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -771,6 +980,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10317",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 25232,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10318",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18687,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10318",
@@ -848,6 +1079,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "10326",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28731,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10326",
@@ -939,17 +1181,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10327",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 14999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.128Z"
-  },
-  {
-    "setId": "10327",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1013,17 +1244,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T05:01:30.634Z"
-  },
-  {
-    "setId": "10328",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.430Z"
   },
   {
     "setId": "10328",
@@ -1104,6 +1324,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10329",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10329",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1167,6 +1398,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "10330",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10330",
@@ -1247,6 +1489,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10331",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4515,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10331",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1269,6 +1522,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10333",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 43772,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10333",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1288,6 +1552,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10334",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8155,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10334",
@@ -1343,6 +1618,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10335",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28082,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10337",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15336,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10337",
@@ -1423,6 +1720,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10338",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8102,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10338",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1453,6 +1761,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10340",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9307,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10340",
@@ -1499,6 +1818,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10341",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26114,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10342",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -1508,6 +1838,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10342",
@@ -1587,17 +1928,6 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
-    "setId": "10342",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.353Z"
-  },
-  {
     "setId": "10343",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -1651,6 +1981,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:41:49.864Z"
+  },
+  {
+    "setId": "10343",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2516,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10343",
@@ -1742,6 +2083,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10344",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2426,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10344",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1808,6 +2160,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10345",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10091,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10345",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1871,6 +2234,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10347",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2426,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10347",
@@ -1959,6 +2333,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:11:20.624Z"
+  },
+  {
+    "setId": "10348",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10348",
@@ -2094,6 +2479,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10349",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10349",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2126,6 +2522,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10350",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26242,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10351",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11016,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10351",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -2146,6 +2564,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10352",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17817,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10352",
@@ -2190,6 +2619,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-02T18:21:24.474Z"
+  },
+  {
+    "setId": "10353",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6003,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10353",
@@ -2270,6 +2710,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10354",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 20900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10354",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2278,17 +2729,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
-  },
-  {
-    "setId": "10354",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 25999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.054Z"
   },
   {
     "setId": "10354",
@@ -2311,6 +2751,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10356",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 31900,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10356",
@@ -2369,6 +2820,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10357",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13920,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10357",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2377,6 +2839,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10358",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13239,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10358",
@@ -2479,6 +2952,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10359",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10359",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2567,6 +3051,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10360",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 20428,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10360",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2611,6 +3106,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10361",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12491,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10361",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2641,6 +3147,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10362",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6120,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10362",
@@ -2718,6 +3235,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:21:22.430Z"
+  },
+  {
+    "setId": "10363",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10363",
@@ -2809,6 +3337,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10365",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33683,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10365",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2831,6 +3370,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10366",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 41360,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10366",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2839,6 +3389,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10367",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9088,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10367",
@@ -2974,6 +3535,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10368",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2576,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10368",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3073,6 +3645,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10369",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10369",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3128,6 +3711,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10370",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4490,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10370",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3160,6 +3754,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10372",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7020,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10373",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10373",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -3169,6 +3785,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10374",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3890,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10374",
@@ -3260,6 +3887,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10375",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5799,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10375",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3279,6 +3917,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10391",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9292,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10391",
@@ -3413,6 +4062,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
+    "setId": "10413",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1172,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10414",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1920,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10414",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -3510,6 +4181,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10416",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4328,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10416",
@@ -3766,6 +4448,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10425",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1746,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10425",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3796,6 +4489,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "10426",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3018,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10426",
@@ -3873,6 +4577,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:57.760Z"
+  },
+  {
+    "setId": "10427",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10427",
@@ -3975,6 +4690,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10428",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10875,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10428",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4071,6 +4797,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10432",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10433",
@@ -4217,6 +4954,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10440",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1746,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10440",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4269,6 +5017,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10441",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10441",
@@ -4370,6 +5129,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10442",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10443",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -4390,6 +5160,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "10443",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10443",
@@ -4492,6 +5273,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10444",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1746,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10444",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4533,6 +5325,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "10445",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3427,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10445",
@@ -4610,6 +5413,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "10446",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10446",
@@ -4723,6 +5537,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10447",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10447",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4753,6 +5578,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10448",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2602,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10448",
@@ -4833,6 +5669,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10450",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3078,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10450",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4896,6 +5743,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10451",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10451",
@@ -5009,6 +5867,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10452",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1822,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10452",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5061,6 +5930,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "10453",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10453",
@@ -5151,6 +6031,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10454",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2436,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10455",
     "merchantId": "joybuy",
     "regionCode": "NL",
@@ -5160,6 +6051,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-04T06:11:00.403Z"
+  },
+  {
+    "setId": "10455",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4672,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10455",
@@ -5284,6 +6186,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10456",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2487,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10456",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5350,6 +6263,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10457",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10457",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5394,6 +6318,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10458",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10458",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5424,6 +6359,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10459",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5164,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10459",
@@ -5526,6 +6472,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10460",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1271,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10460",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5556,6 +6513,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10461",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6098,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10461",
@@ -5600,6 +6568,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "10462",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10462",
@@ -5658,6 +6637,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10463",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10463",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5677,6 +6667,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10464",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3913,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10464",
@@ -5743,6 +6744,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10465",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3913,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10465",
@@ -5834,6 +6846,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10467",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5164,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10467",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5922,6 +6945,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10468",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10468",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -5999,6 +7033,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10469",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3427,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10469",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6018,6 +7063,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "10470",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10470",
@@ -6174,6 +7230,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "10471",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "10472",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -6194,6 +7261,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T00:03:15.239Z"
+  },
+  {
+    "setId": "10472",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4012,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10472",
@@ -6274,6 +7352,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10473",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10473",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6337,6 +7426,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "10474",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1775,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10474",
@@ -6469,6 +7569,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "10476",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10476",
@@ -6637,6 +7748,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10477",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10477",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6645,6 +7767,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "10478",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10478",
@@ -6736,6 +7869,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10479",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1834,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10479",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6755,6 +7899,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "10480",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6133,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10480",
@@ -7011,6 +8166,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10788",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6415,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10788",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -7264,6 +8430,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10941",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2709,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "10941",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -7349,6 +8526,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "10954",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1746,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10954",
@@ -7470,6 +8658,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "10981",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 865,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "10983",
@@ -7725,6 +8924,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "11023",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 962,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "11024",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -7756,6 +8966,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "11024",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11024",
@@ -7824,6 +9045,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "11025",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 974,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "11026",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -7877,6 +9109,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11026",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1032,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11036",
@@ -8100,6 +9343,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11041",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2876,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11041",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8265,6 +9519,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11045",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4012,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11045",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8350,6 +9615,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "11198",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11198",
@@ -8441,6 +9717,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11200",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4617,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11200",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8482,6 +9769,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "11201",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11201",
@@ -8529,6 +9827,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11202",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11202",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8570,6 +9879,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11203",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5164,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11203",
@@ -8661,6 +9981,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11204",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11204",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8702,6 +10033,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-29T05:01:21.607Z"
+  },
+  {
+    "setId": "11205",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11205",
@@ -8825,6 +10167,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "11206",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1054,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "11207",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -8845,6 +10198,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "11207",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2709,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11207",
@@ -8922,6 +10286,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11208",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11208",
@@ -9035,6 +10410,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11209",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11209",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9101,6 +10487,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11211",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11211",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9131,6 +10528,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "11212",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1465,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11212",
@@ -9175,6 +10583,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "11215",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11215",
@@ -9266,6 +10685,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11216",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11216",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9274,6 +10704,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11217",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5164,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11217",
@@ -9376,6 +10817,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11221",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2078,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11221",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9395,6 +10847,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11370",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21200,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11370",
@@ -9420,6 +10883,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11371",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23835,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11371",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9428,6 +10902,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11372",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8469,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11372",
@@ -9618,6 +11103,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11376",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11376",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9692,6 +11188,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11380",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9471,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11380",
@@ -9816,6 +11323,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11384",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11384",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9835,6 +11353,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11501",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3990,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11501",
@@ -9937,6 +11466,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11502",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4852,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11502",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10036,6 +11576,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11504",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4852,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11504",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10110,6 +11661,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "11505",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11505",
@@ -10212,6 +11774,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11506",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11506",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10278,6 +11851,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11508",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11508",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10319,6 +11903,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "11509",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11509",
@@ -10385,6 +11980,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "11510",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4021,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11510",
@@ -10462,6 +12068,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "11511",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3204,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "11511",
@@ -10564,6 +12181,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11514",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1347,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "11514",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10619,6 +12247,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21034",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3757,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21034",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10649,6 +12288,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21042",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7659,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21042",
@@ -10693,6 +12343,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21058",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10647,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21058",
@@ -10748,6 +12409,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21060",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11837,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21060",
@@ -10850,6 +12522,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21061",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17651,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21061",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -10893,17 +12576,6 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
-    "setId": "21061",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 22999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:25.987Z"
-  },
-  {
     "setId": "21062",
     "merchantId": "lidl",
     "regionCode": "NL",
@@ -10935,6 +12607,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T07:17:00.492Z"
+  },
+  {
+    "setId": "21062",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11837,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21062",
@@ -10990,6 +12673,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21063",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19779,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21063",
@@ -11059,6 +12753,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21064",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21064",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11122,6 +12827,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21066",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21066",
@@ -11311,6 +13027,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "21266",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1068,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "21267",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -11342,6 +13069,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21267",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1392,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21267",
@@ -11408,6 +13146,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "21268",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21268",
@@ -11499,6 +13248,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21269",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21269",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11551,6 +13311,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "21270",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21270",
@@ -11653,6 +13424,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21272",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21272",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11749,6 +13531,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "21273",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21273",
@@ -11862,6 +13655,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21274",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21274",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11928,6 +13732,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21275",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2531,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21275",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11969,6 +13784,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21276",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21276",
@@ -12071,6 +13897,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21277",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21277",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12126,6 +13963,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21278",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21278",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12167,6 +14015,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "21279",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21279",
@@ -12247,6 +14106,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21282",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6401,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21282",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12299,6 +14169,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "21318",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26543,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21323",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21323",
@@ -12379,6 +14271,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21330",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21330",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12456,6 +14359,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21333",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16259,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21333",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12486,6 +14400,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21343",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12712,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21343",
@@ -12555,6 +14480,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21345",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6320,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21345",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12598,6 +14534,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "21347",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9990,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21347",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10684,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "21348",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -12618,6 +14576,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33349,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21348",
@@ -12642,15 +14611,15 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
-    "setId": "21348",
-    "merchantId": "top1toys",
+    "setId": "21349",
+    "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 35999,
-    "availability": "in_stock",
+    "totalPriceMinor": 8155,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.271Z"
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21349",
@@ -12687,6 +14656,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21350",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14777,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21350",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12695,6 +14675,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21351",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19229,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21351",
@@ -12753,6 +14744,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21354",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21137,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21354",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12761,6 +14763,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21356",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26490,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21356",
@@ -12794,6 +14807,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T05:01:21.506Z"
+  },
+  {
+    "setId": "21357",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21357",
@@ -12918,6 +14942,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21359",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21359",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12948,6 +14983,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21360",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15800,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21360",
@@ -13003,6 +15049,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21362",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4871,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21362",
@@ -13105,6 +15162,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21366",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8469,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21366",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13157,6 +15225,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21368",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21368",
@@ -13258,6 +15337,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "21376",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10100,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "21583",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -13324,6 +15414,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "21583",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1068,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "21584",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -13355,6 +15456,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:36:28.963Z"
+  },
+  {
+    "setId": "21584",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21584",
@@ -13399,6 +15511,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "21585",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21585",
@@ -13490,6 +15613,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21586",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21586",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13564,6 +15698,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "21587",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2531,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21587",
@@ -13688,6 +15833,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21589",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21589",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13740,6 +15896,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "21590",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4946,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21590",
@@ -13864,6 +16031,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21592",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2078,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "21592",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13918,6 +16096,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
+    "setId": "21593",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "21594",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -13938,6 +16127,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21594",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3697,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21594",
@@ -13982,6 +16182,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "21595",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4986,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21595",
@@ -14070,6 +16281,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "21597",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "21597",
@@ -14226,6 +16448,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "30659",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 554,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30660",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14235,6 +16468,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30660",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30661",
@@ -14279,6 +16523,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30662",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 559,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30663",
@@ -14323,6 +16578,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30665",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30666",
@@ -14380,6 +16646,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30673",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30675",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14400,6 +16677,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30675",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30676",
@@ -14424,6 +16712,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30676",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30677",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -14433,6 +16732,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30677",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30679",
@@ -14490,6 +16800,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30686",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30688",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14545,6 +16866,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30692",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30693",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14565,6 +16897,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30693",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 500,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30694",
@@ -14600,6 +16943,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30695",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 535,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30696",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14620,6 +16974,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30696",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30697",
@@ -14666,6 +17031,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30698",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30699",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14699,6 +17075,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30699",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 500,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30701",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
@@ -14719,6 +17106,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30701",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30702",
@@ -14754,6 +17152,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30703",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30704",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14776,6 +17185,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30704",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30705",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -14798,6 +17218,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30705",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 535,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30706",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14809,6 +17240,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30706",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 535,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30707",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14818,6 +17260,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30707",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 535,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30708",
@@ -14897,6 +17350,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30710",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30711",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -14919,6 +17383,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "30711",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 586,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30712",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14939,6 +17414,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "30712",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30714",
@@ -14963,6 +17449,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "30714",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 559,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30715",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -14983,6 +17480,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "30715",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30716",
@@ -15018,6 +17526,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30716",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 554,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30717",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
@@ -15040,6 +17559,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "30717",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 618,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30718",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
@@ -15060,6 +17590,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "30718",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 618,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30719",
@@ -15082,6 +17623,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "30719",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 559,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30720",
@@ -15095,6 +17647,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30720",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30721",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -15104,6 +17667,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30721",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30722",
@@ -15126,6 +17700,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "30722",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30723",
@@ -15150,6 +17735,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "30723",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30724",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -15159,6 +17755,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30724",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30725",
@@ -15183,6 +17790,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30725",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30726",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -15205,6 +17823,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30726",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 595,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30727",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -15214,6 +17843,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30727",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30728",
@@ -15238,6 +17878,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30728",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 559,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30731",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -15260,6 +17911,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "30731",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30732",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -15280,6 +17942,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30732",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30733",
@@ -15291,6 +17964,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30733",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30734",
@@ -15313,6 +17997,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30734",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "30735",
@@ -15337,6 +18032,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "30735",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 559,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "30736",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -15357,6 +18063,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "30736",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 584,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31134",
@@ -15403,6 +18120,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "31134",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1053,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "31136",
     "merchantId": "lidl",
     "regionCode": "NL",
@@ -15412,6 +18140,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-06T18:21:05.405Z"
+  },
+  {
+    "setId": "31136",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31136",
@@ -15535,6 +18274,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "31140",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "31141",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -15612,6 +18362,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "31145",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1172,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "31146",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -15632,6 +18393,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "31146",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31146",
@@ -15665,6 +18437,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "31147",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31147",
@@ -15731,6 +18514,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "31148",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31148",
@@ -15822,6 +18616,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31149",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2526,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31149",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -15896,6 +18701,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "31150",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5178,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31150",
@@ -16006,6 +18822,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "31151",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4778,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31151",
@@ -16218,6 +19045,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31159",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1271,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31159",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16284,6 +19122,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31160",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31160",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16314,6 +19163,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:57.760Z"
+  },
+  {
+    "setId": "31161",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4778,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31161",
@@ -16460,6 +19320,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31162",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31162",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16537,6 +19408,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31163",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2055,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31163",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16578,6 +19460,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "31164",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31164",
@@ -16633,6 +19526,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "31165",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3219,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31165",
@@ -16710,6 +19614,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "31166",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31166",
@@ -16812,6 +19727,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31167",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6830,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31167",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16875,6 +19801,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31168",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8733,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31168",
@@ -17021,6 +19958,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31169",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2483,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31169",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17109,6 +20057,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31170",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31170",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17161,6 +20120,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31172",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31172",
@@ -17230,6 +20200,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31173",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1347,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31173",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17282,6 +20263,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "31174",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31174",
@@ -17362,14 +20354,14 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31208",
-    "merchantId": "top1toys",
+    "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7999,
-    "availability": "in_stock",
+    "totalPriceMinor": 7815,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-04T10:59:52.993Z"
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31208",
@@ -17414,6 +20406,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "31209",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19322,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31209",
@@ -17582,6 +20585,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31214",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31214",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17645,6 +20659,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31215",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14345,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31215",
@@ -17722,6 +20747,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T00:16:04.575Z"
+  },
+  {
+    "setId": "31216",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9344,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31216",
@@ -17835,6 +20871,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31217",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31217",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17912,6 +20959,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31218",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8906,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31218",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17964,6 +21022,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31220",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14803,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31220",
@@ -18098,6 +21167,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "31376",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "31377",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -18140,6 +21220,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31377",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31377",
@@ -18195,6 +21286,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "31379",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31379",
@@ -18275,6 +21377,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31380",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31380",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -18338,6 +21451,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "31381",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2719,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31381",
@@ -18451,6 +21575,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31382",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31382",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -18550,6 +21685,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31383",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31383",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -18624,6 +21770,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "31384",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31384",
@@ -18726,6 +21883,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31385",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31385",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -18767,6 +21935,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31386",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4652,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31386",
@@ -18858,6 +22037,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31387",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7831,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31387",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -18921,6 +22111,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "31389",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31389",
@@ -19067,6 +22268,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31390",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "31390",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19152,6 +22364,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "31392",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3363,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "31392",
@@ -19350,6 +22573,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "40499",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4205,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40516",
@@ -19570,6 +22804,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-23T06:11:15.679Z"
+  },
+  {
+    "setId": "40573",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4152,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40573",
@@ -19847,6 +23092,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "40709",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "40711",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -19935,6 +23191,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-01T18:41:49.967Z"
   },
   {
+    "setId": "40721",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1387,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "40722",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -20010,6 +23277,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "40725",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40725",
@@ -20123,6 +23401,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40743",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3668,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "40743",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20197,6 +23486,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "40746",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1902,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40746",
@@ -20409,6 +23709,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40807",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "40807",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20428,6 +23739,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "40808",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1271,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40808",
@@ -20549,6 +23871,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "40813",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40813",
@@ -20750,6 +24083,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40816",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "40816",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20857,6 +24201,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "40824",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2657,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "40824",
@@ -21553,6 +24908,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "41838",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13493,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "41838",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21707,6 +25073,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42130",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17902,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42130",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21773,6 +25150,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42141",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17305,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42141",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21817,17 +25205,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42143",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 37999,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T06:31:05.539Z"
-  },
-  {
-    "setId": "42143",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21836,6 +25213,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42146",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 62398,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42146",
@@ -21916,6 +25304,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42151",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4106,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42151",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21990,6 +25389,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.785Z"
+  },
+  {
+    "setId": "42154",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9773,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42154",
@@ -22092,6 +25502,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42158",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7250,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42158",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22180,6 +25601,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42160",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13210,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42160",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22235,6 +25667,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42161",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4489,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42161",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22287,6 +25730,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "42163",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1061,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42164",
@@ -22389,6 +25843,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42167",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3046,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42167",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22444,6 +25909,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42169",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5178,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42169",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22452,6 +25928,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42170",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42170",
@@ -22532,6 +26019,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42171",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15718,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42171",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22565,17 +26063,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42171",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 17999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T18:31:38.366Z"
-  },
-  {
-    "setId": "42171",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22595,6 +26082,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42172",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32192,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42172",
@@ -22653,17 +26151,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42172",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 37999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T18:31:38.247Z"
-  },
-  {
-    "setId": "42172",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22694,6 +26181,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "42173",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4280,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42173",
@@ -22796,6 +26294,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42175",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14641,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42175",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22837,6 +26346,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42176",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12332,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42176",
@@ -22914,6 +26434,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42177",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18006,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42177",
@@ -23016,6 +26547,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42179",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6120,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42179",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23093,6 +26635,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42182",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17883,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42182",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23123,6 +26676,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42184",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4529,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42184",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5571,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42197",
@@ -23191,6 +26766,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42197",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1054,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42198",
     "merchantId": "coolblue",
     "regionCode": "NL",
@@ -23233,6 +26819,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42198",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42198",
@@ -23346,6 +26943,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42199",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42199",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23423,6 +27031,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42200",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42200",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23497,6 +27116,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:21:14.008Z"
+  },
+  {
+    "setId": "42201",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42201",
@@ -23585,6 +27215,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:21:15.352Z"
+  },
+  {
+    "setId": "42202",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14345,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42202",
@@ -23709,6 +27350,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42203",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42203",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23761,6 +27413,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42204",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4580,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42204",
@@ -23852,6 +27515,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42205",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42205",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23904,6 +27578,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42206",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16634,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42206",
@@ -24017,6 +27702,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42207",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16634,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42207",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24091,6 +27787,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42208",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42208",
@@ -24171,6 +27878,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42209",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42209",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24245,6 +27963,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42210",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10874,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42210",
@@ -24325,6 +28054,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42211",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42211",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24402,6 +28142,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42212",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4580,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42212",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24468,6 +28219,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42213",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4580,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42213",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24520,6 +28282,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42214",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12972,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42214",
@@ -24608,6 +28381,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42215",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29589,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42215",
@@ -24709,6 +28493,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42217",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6142,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42218",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -24775,6 +28570,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42218",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1084,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42219",
     "merchantId": "coolblue",
     "regionCode": "NL",
@@ -24828,6 +28634,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42219",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42219",
@@ -24905,6 +28722,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42220",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42220",
@@ -25007,6 +28835,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42222",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4747,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42222",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25059,6 +28898,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42223",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5581,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42223",
@@ -25147,6 +28997,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42224",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10656,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42224",
@@ -25292,6 +29153,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42225",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1068,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42226",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -25356,6 +29228,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T05:01:30.634Z"
+  },
+  {
+    "setId": "42227",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4747,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42227",
@@ -25436,6 +29319,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42228",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42228",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25499,6 +29393,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42229",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4747,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42229",
@@ -25576,6 +29481,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-01T06:15:27.259Z"
+  },
+  {
+    "setId": "42231",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42231",
@@ -25677,6 +29593,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42233",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 713,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42234",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5059,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42234",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -25711,6 +29649,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42235",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5059,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42235",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25741,6 +29690,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42236",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6972,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42236",
@@ -25785,6 +29745,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "preorder",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42239",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15725,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42239",
@@ -25873,6 +29844,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "preorder",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42242",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42242",
@@ -26481,6 +30463,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42642",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42642",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26533,6 +30526,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "42644",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42644",
@@ -26591,6 +30595,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42647",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42647",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26621,6 +30636,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42648",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2483,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42648",
@@ -26698,6 +30724,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42649",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42649",
@@ -26800,6 +30837,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42650",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3219,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42650",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26863,6 +30911,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42652",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42652",
@@ -26954,6 +31013,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42653",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4112,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42653",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27028,6 +31098,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-04T06:11:00.403Z"
+  },
+  {
+    "setId": "42654",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5162,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42654",
@@ -27152,6 +31233,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42658",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42658",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27207,6 +31299,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42659",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1800,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42659",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27237,6 +31340,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42661",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3204,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42661",
@@ -27383,6 +31497,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42663",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4488,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42663",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27479,6 +31604,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-23T06:11:15.679Z"
+  },
+  {
+    "setId": "42664",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42664",
@@ -27625,6 +31761,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42665",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1053,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42665",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27677,6 +31824,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42666",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42666",
@@ -27801,6 +31959,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42671",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42671",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27908,6 +32077,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42673",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42673",
@@ -28020,6 +32200,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42674",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10908,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42675",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -28075,6 +32266,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42675",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42676",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -28117,6 +32319,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42676",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2540,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42676",
@@ -28172,6 +32385,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42677",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42677",
@@ -28263,6 +32487,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42678",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42678",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28329,6 +32564,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42679",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42679",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28392,6 +32638,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "42680",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42680",
@@ -28482,6 +32739,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "42681",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1053,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42682",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -28524,6 +32792,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "42684",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3219,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42684",
@@ -28593,6 +32872,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42685",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42685",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28656,6 +32946,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T05:01:06.969Z"
+  },
+  {
+    "setId": "42686",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42686",
@@ -28791,6 +33092,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42688",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42688",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28865,6 +33177,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42689",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42689",
@@ -28977,6 +33300,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-05T12:10:57.851Z"
   },
   {
+    "setId": "42690",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "42691",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -29041,6 +33375,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42692",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42693",
@@ -29154,6 +33499,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42694",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1419,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42694",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29195,6 +33551,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "42695",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42695",
@@ -29297,6 +33664,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42696",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42696",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29349,6 +33727,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "42697",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4091,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42697",
@@ -29418,6 +33807,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42699",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42699",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29481,6 +33881,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42700",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42700",
@@ -29561,6 +33972,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42701",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5061,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "42701",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29591,6 +34013,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42702",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3278,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42702",
@@ -29635,6 +34068,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42703",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7831,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42703",
@@ -29723,6 +34167,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "42704",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11304,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42704",
@@ -29822,6 +34277,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "42705",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7831,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "42705",
@@ -29946,6 +34412,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43011",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2487,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43011",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30012,6 +34489,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43012",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2531,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43012",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30067,6 +34555,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43013",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2487,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43013",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30108,6 +34607,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T05:02:55.290Z"
+  },
+  {
+    "setId": "43014",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6833,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43014",
@@ -30185,6 +34695,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:25:53.134Z"
+  },
+  {
+    "setId": "43015",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43015",
@@ -30309,6 +34830,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43016",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43016",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30350,6 +34882,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "43017",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7033,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43017",
@@ -30551,6 +35094,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43020",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12900,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43020",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30614,6 +35168,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43022",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6833,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43022",
@@ -30702,6 +35267,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "43023",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7033,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43023",
@@ -30804,6 +35380,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43027",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2487,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43027",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30834,6 +35421,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43032",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43032",
@@ -31309,6 +35907,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:02:11.458Z"
   },
   {
+    "setId": "43231",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5770,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "43232",
     "merchantId": "brickfever",
     "regionCode": "NL",
@@ -31508,6 +36117,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43243",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43243",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -31703,6 +36323,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "43247",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10857,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43247",
@@ -31926,6 +36557,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43257",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4946,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43257",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32047,6 +36689,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43258",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7867,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43258",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32157,6 +36810,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43260",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43260",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32176,6 +36840,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43262",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4260,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43262",
@@ -32267,6 +36942,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43263",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26843,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43263",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32308,6 +36994,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "43264",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43264",
@@ -32432,6 +37129,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43265",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43265",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32451,6 +37159,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43266",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43266",
@@ -32528,6 +37247,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43267",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8906,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43267",
@@ -32641,6 +37371,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43268",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6833,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43268",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32693,6 +37434,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43269",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10656,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43269",
@@ -32770,6 +37522,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "43270",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43270",
@@ -32905,6 +37668,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43271",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2216,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43271",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32924,6 +37698,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "43272",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43272",
@@ -33114,6 +37899,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43274",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3842,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43274",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33279,6 +38075,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43277",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4873,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43277",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33298,6 +38105,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43279",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43279",
@@ -33400,6 +38218,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43280",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43280",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33441,6 +38270,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "43281",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43281",
@@ -33554,6 +38394,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43282",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43282",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33628,6 +38479,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "43283",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2588,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43283",
@@ -33729,6 +38591,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "43284",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1068,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "43285",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -33760,6 +38633,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "43285",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1790,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43285",
@@ -33804,6 +38688,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T00:03:15.239Z"
+  },
+  {
+    "setId": "43286",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43286",
@@ -33906,6 +38801,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43287",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43287",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34005,6 +38911,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43288",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43288",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34046,6 +38963,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43289",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43289",
@@ -34112,6 +39040,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43290",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43290",
@@ -34244,6 +39183,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "43291",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3695,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43292",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5164,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43292",
@@ -34379,6 +39340,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43293",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3412,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43293",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34445,6 +39417,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43294",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43294",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34489,6 +39472,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43295",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43295",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34519,6 +39513,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "43296",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5593,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43296",
@@ -34585,6 +39590,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "43297",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43297",
@@ -34662,6 +39678,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "43299",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43299",
@@ -34808,6 +39835,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43301",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43301",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34915,6 +39953,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "43303",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1054,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "43304",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3607,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "43304",
@@ -35061,6 +40121,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60205",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1655,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60205",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35160,6 +40231,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60238",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1655,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60238",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35248,6 +40330,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60304",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60304",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35311,6 +40404,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60312",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60316",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4644,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60316",
@@ -35413,6 +40528,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60337",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12296,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60337",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35511,6 +40637,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "60339",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60353",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -35556,6 +40693,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60357",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3770,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60357",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35597,6 +40745,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T12:02:33.621Z"
+  },
+  {
+    "setId": "60361",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5460,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60361",
@@ -35652,6 +40811,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "60367",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7919,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60367",
@@ -35721,6 +40891,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60368",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12916,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60368",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35784,6 +40965,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "60373",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60373",
@@ -35885,6 +41077,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60400",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60402",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -35916,6 +41119,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "60402",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60402",
@@ -35982,6 +41196,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "60404",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60404",
@@ -36059,6 +41284,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "60407",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2483,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60407",
@@ -36149,6 +41385,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60411",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60414",
     "merchantId": "coolblue",
     "regionCode": "NL",
@@ -36158,6 +41405,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-18T18:16:05.115Z"
+  },
+  {
+    "setId": "60414",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5996,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60414",
@@ -36293,6 +41551,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60415",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60415",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36334,6 +41603,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "60419",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7663,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60419",
@@ -36425,6 +41705,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60423",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60423",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36488,6 +41779,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "60430",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1790,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60430",
@@ -36634,6 +41936,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60442",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1271,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60442",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36722,6 +42035,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60443",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2441,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60443",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36752,6 +42076,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "60444",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6875,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60444",
@@ -36807,6 +42142,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "60445",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60445",
@@ -36920,6 +42266,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60447",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60447",
     "merchantId": "lidl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36983,6 +42340,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "60451",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60451",
@@ -37063,6 +42431,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60452",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60452",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -37137,6 +42516,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "60454",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2483,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60454",
@@ -37228,6 +42618,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60455",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1053,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60455",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -37269,6 +42670,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "60456",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2483,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60456",
@@ -37315,6 +42727,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60457",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5155,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60458",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -37357,6 +42780,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "60462",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4577,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60462",
@@ -37470,6 +42904,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60463",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60463",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -37525,6 +42970,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60464",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60464",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -37566,6 +43022,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:15:55.354Z"
+  },
+  {
+    "setId": "60465",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60465",
@@ -37632,6 +43099,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "60466",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4577,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60466",
@@ -37723,6 +43201,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60467",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8606,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60467",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -37764,6 +43253,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-19T05:02:28.466Z"
+  },
+  {
+    "setId": "60469",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60469",
@@ -37841,6 +43341,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60470",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14300,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60470",
@@ -37940,6 +43451,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-19T05:02:28.466Z"
+  },
+  {
+    "setId": "60471",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8304,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60471",
@@ -38064,6 +43586,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60478",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3278,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60478",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -38174,6 +43707,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60479",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60479",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -38248,6 +43792,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "60480",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2540,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60480",
@@ -38349,6 +43904,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60481",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60482",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -38413,6 +43979,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60482",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60482",
@@ -38492,6 +44069,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60483",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60484",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -38534,6 +44122,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60484",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60484",
@@ -38624,6 +44223,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "60485",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "60486",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -38688,6 +44298,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60486",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60487",
@@ -38710,6 +44331,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "60487",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1347,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60487",
@@ -38776,6 +44408,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "60488",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60488",
@@ -38867,6 +44510,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60489",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60489",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -38919,6 +44573,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "60490",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2076,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60490",
@@ -38999,6 +44664,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60491",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60491",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39065,6 +44741,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60492",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60492",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39120,6 +44807,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60493",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3628,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60493",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39172,6 +44870,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "display_box",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60494",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9100,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60494",
@@ -39307,6 +45016,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60496",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60496",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39403,6 +45123,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:25:53.134Z"
+  },
+  {
+    "setId": "60497",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4443,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60497",
@@ -39505,6 +45236,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60498",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60498",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39524,6 +45266,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60499",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60499",
@@ -39670,6 +45423,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60500",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60500",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39725,6 +45489,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60502",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7663,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60502",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39777,6 +45552,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60503",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4688,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60503",
@@ -39868,6 +45654,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60504",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8304,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60504",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -39942,6 +45739,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60505",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60505",
@@ -40033,6 +45841,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60506",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5060,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60506",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40110,6 +45929,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60508",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14525,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "60508",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40173,6 +46003,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "60511",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6693,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "60511",
@@ -40294,6 +46135,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "71043",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 38993,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71043",
@@ -40473,6 +46325,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71050",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10868,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71050",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40549,6 +46412,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:25:54.264Z"
   },
   {
+    "setId": "71051",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8900,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71052",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -40594,6 +46468,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71052",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9900,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71052",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40635,6 +46520,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "71390",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6942,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71408",
@@ -40968,6 +46864,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71426",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5383,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71426",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41075,6 +46982,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71438",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11709,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71438",
@@ -41199,6 +47117,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71440",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71440",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41262,6 +47191,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "71441",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71441",
@@ -41694,6 +47634,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71481",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2119,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71481",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41836,6 +47787,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "71485",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12346,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71488",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -41902,6 +47864,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
+    "setId": "71490",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1817,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71491",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -41944,6 +47917,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "71492",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71492",
@@ -42045,6 +48029,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71494",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3069,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71495",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -42076,6 +48071,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "71495",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71495",
@@ -42189,6 +48195,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71499",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71499",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42266,6 +48283,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71500",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10661,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71500",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42332,6 +48360,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71508",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5877,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71508",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42384,6 +48423,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71512",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5162,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71512",
@@ -42464,6 +48514,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71513",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4112,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71513",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42508,6 +48569,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71514",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71514",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42549,6 +48621,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71515",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10447,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71515",
@@ -42749,6 +48832,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71780",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71783",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -42780,6 +48874,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71799",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 43601,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71807",
@@ -42948,6 +49053,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71814",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23548,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71814",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43058,6 +49174,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71826",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71826",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43156,6 +49283,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71827",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71828",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -43187,6 +49325,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71828",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2040,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71828",
@@ -43256,6 +49405,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71829",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1732,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71829",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43308,6 +49468,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71830",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4112,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71830",
@@ -43388,6 +49559,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71831",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3278,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71831",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43465,6 +49647,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71832",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5668,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71832",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43528,6 +49721,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "71834",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71834",
@@ -43619,6 +49823,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71836",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71836",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43696,6 +49911,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71837",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23535,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71837",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43759,6 +49985,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71838",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71838",
@@ -43838,6 +50075,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71840",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2035,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71842",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -43880,6 +50128,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "71842",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3749,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71842",
@@ -43946,6 +50205,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71843",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5898,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71843",
@@ -44034,6 +50304,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "71844",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6830,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71844",
@@ -44133,6 +50414,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "71845",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7663,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71845",
@@ -44323,6 +50615,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71847",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11537,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71847",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -44386,6 +50689,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71848",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14653,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71848",
@@ -44532,6 +50846,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71849",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71849",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -44608,6 +50933,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71850",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71851",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -44652,6 +50988,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71851",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1053,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71853",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -44683,6 +51030,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "71853",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71853",
@@ -44771,6 +51129,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "71854",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2468,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71854",
@@ -44873,6 +51242,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71856",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4112,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71856",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -44936,6 +51316,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71857",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5996,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71857",
@@ -45027,6 +51418,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71858",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7510,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71858",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45104,6 +51506,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71859",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7663,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71859",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45178,6 +51591,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-05T09:42:24.897Z"
+  },
+  {
+    "setId": "71860",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9590,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71860",
@@ -45290,6 +51714,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "71862",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1039,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "71863",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -45321,6 +51756,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "71863",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1761,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71863",
@@ -45467,6 +51913,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71866",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3278,
+    "availability": "out_of_stock",
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71866",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45519,6 +51976,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "display_box",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71867",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6077,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71867",
@@ -45596,6 +52064,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71868",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6893,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71868",
@@ -45687,6 +52166,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71869",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9992,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "71869",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45761,6 +52251,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "71870",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10882,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "71870",
@@ -46050,6 +52551,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72031",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1392,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72031",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46102,6 +52614,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "72032",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72032",
@@ -46160,6 +52683,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72034",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2517,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72034",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46201,6 +52735,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "72035",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72035",
@@ -46303,6 +52848,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72036",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6320,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72036",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46347,6 +52903,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72037",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12585,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72037",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46366,17 +52933,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
-  },
-  {
-    "setId": "72037",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 13999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T18:31:37.066Z"
   },
   {
     "setId": "72037",
@@ -46432,6 +52988,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T05:01:21.506Z"
+  },
+  {
+    "setId": "72038",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72038",
@@ -46498,6 +53065,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-04T06:16:17.278Z"
+  },
+  {
+    "setId": "72039",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72039",
@@ -46610,6 +53188,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-27T18:41:37.942Z"
   },
   {
+    "setId": "72040",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "72041",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -46630,6 +53219,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "72041",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72041",
@@ -46696,6 +53296,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "72042",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8264,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72042",
@@ -46795,6 +53406,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "72043",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4177,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72043",
@@ -46930,6 +53552,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72050",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13888,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72050",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46982,6 +53615,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:25:53.134Z"
+  },
+  {
+    "setId": "72151",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4790,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72151",
@@ -47062,6 +53706,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72152",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "72152",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47103,6 +53758,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "72153",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 66081,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "72153",
@@ -47314,6 +53980,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
+    "setId": "75304",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8166,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "75305",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -47468,6 +54145,39 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:57.760Z"
   },
   {
+    "setId": "75331",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 59995,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "75331",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 59999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75331",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 65041,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "75332",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -47524,6 +54234,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75333",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2958,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75333",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47576,6 +54297,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "75337",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12415,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75337",
@@ -47656,6 +54388,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75345",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75345",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47686,6 +54429,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "75347",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5035,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75347",
@@ -47799,6 +54553,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75349",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6224,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75349",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47840,6 +54605,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "75351",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7427,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75353",
@@ -47886,15 +54662,15 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
-    "setId": "75355",
-    "merchantId": "top1toys",
+    "setId": "75356",
+    "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 23999,
+    "totalPriceMinor": 6178,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-01T18:31:38.453Z"
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75356",
@@ -48041,6 +54817,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75367",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 51990,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75367",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48071,17 +54858,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
-  },
-  {
-    "setId": "75367",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 64999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-04T10:59:52.895Z"
   },
   {
     "setId": "75371",
@@ -48117,6 +54893,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
+    "setId": "75371",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22531,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "75372",
     "merchantId": "lidl",
     "regionCode": "NL",
@@ -48148,6 +54935,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T05:02:55.290Z"
+  },
+  {
+    "setId": "75372",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75372",
@@ -48239,6 +55037,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75373",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1921,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75373",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48327,6 +55136,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75374",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13527,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75374",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48357,6 +55177,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T18:21:22.648Z"
+  },
+  {
+    "setId": "75375",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6415,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75375",
@@ -48503,6 +55334,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75379",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75379",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48635,6 +55477,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75384",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5190,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75384",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48698,6 +55551,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:25:51.538Z"
+  },
+  {
+    "setId": "75388",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75388",
@@ -48822,6 +55686,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75391",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1291,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75391",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48839,6 +55714,50 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 1299,
     "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75397",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 38900,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75397",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 46900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "75397",
+    "merchantId": "brickfever",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "75397",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49999,
+    "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
@@ -48863,6 +55782,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T05:01:30.634Z"
+  },
+  {
+    "setId": "75398",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11093,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75398",
@@ -48896,6 +55826,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75399",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4856,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75399",
@@ -49053,6 +55994,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75400",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75400",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49116,6 +56068,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-22T18:10:29.245Z"
+  },
+  {
+    "setId": "75401",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3751,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75401",
@@ -49193,6 +56156,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "75402",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75402",
@@ -49292,6 +56266,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-31T05:01:18.031Z"
+  },
+  {
+    "setId": "75403",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7823,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75403",
@@ -49405,6 +56390,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75404",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4269,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75404",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49471,6 +56467,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75405",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75405",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49526,6 +56533,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75406",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6532,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75406",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49545,6 +56563,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T07:17:00.492Z"
+  },
+  {
+    "setId": "75407",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75407",
@@ -49636,6 +56665,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75408",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75408",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49688,6 +56728,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75409",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26219,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75409",
@@ -49754,6 +56805,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "75410",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2586,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75410",
@@ -49834,6 +56896,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75411",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75411",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49900,6 +56973,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75412",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75412",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49919,6 +57003,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-25T18:21:26.830Z"
+  },
+  {
+    "setId": "75413",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11767,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75413",
@@ -50065,6 +57160,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75414",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4177,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75414",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50130,6 +57236,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "75415",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7019,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "75416",
     "merchantId": "coolblue",
     "regionCode": "NL",
@@ -50150,6 +57267,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-22T05:01:00.957Z"
+  },
+  {
+    "setId": "75416",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8469,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75416",
@@ -50216,6 +57344,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75417",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14345,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75417",
@@ -50307,6 +57446,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75419",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 82900,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75419",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50351,6 +57501,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75428",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12300,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75428",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50370,6 +57531,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75429",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8514,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75430",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75430",
@@ -50425,6 +57608,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T06:25:53.085Z"
+  },
+  {
+    "setId": "75431",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75431",
@@ -50516,6 +57710,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75432",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5043,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75432",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50601,6 +57806,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-18T12:16:12.779Z"
+  },
+  {
+    "setId": "75433",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5364,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75433",
@@ -50736,6 +57952,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75434",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7033,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75434",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50810,6 +58037,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-25T18:16:17.922Z"
+  },
+  {
+    "setId": "75435",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75435",
@@ -50978,6 +58216,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75437",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2517,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75437",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51030,6 +58279,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75438",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75438",
@@ -51110,6 +58370,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75439",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75439",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51187,6 +58458,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75440",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4946,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75440",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51239,6 +58521,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "75441",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75441",
@@ -51352,6 +58645,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75443",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75443",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51418,6 +58722,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75444",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3682,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75444",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51481,6 +58796,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T07:17:00.492Z"
+  },
+  {
+    "setId": "75445",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5781,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75445",
@@ -51627,6 +58953,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75447",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75447",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51726,6 +59063,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75448",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75448",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51792,6 +59140,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75449",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75449",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51847,6 +59206,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75451",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4360,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75451",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51866,6 +59236,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "75452",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6205,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75452",
@@ -51946,6 +59327,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75453",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15725,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75453",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51987,6 +59379,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "preorder",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75454",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12813,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75454",
@@ -52034,6 +59437,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75458",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75458",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52045,12 +59459,45 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75460",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5502,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75460",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75461",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75461",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
@@ -52199,6 +59646,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75637",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75637",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52262,6 +59720,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "75638",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6120,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75638",
@@ -52342,6 +59811,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75639",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9981,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75639",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52416,6 +59896,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75640",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75640",
@@ -52958,6 +60449,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75682",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4617,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75682",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53032,6 +60534,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T05:01:21.506Z"
+  },
+  {
+    "setId": "75684",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75684",
@@ -53211,6 +60724,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75687",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2078,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "75687",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53252,6 +60776,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "75688",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75688",
@@ -53318,6 +60853,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75689",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75689",
@@ -53417,6 +60963,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "75690",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7544,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "75892",
@@ -53574,6 +61131,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76211",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3221,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76211",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53681,6 +61249,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "76213",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76218",
@@ -53815,6 +61394,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:36:00.897Z"
   },
   {
+    "setId": "76254",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3382,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "76255",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -53868,6 +61458,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "76255",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9325,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76257",
@@ -54025,6 +61626,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76269",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 48799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76269",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54036,17 +61648,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76269",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 49900,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:26.135Z"
-  },
-  {
-    "setId": "76269",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54055,6 +61656,39 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76271",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76271",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 39127,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76273",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76273",
@@ -54146,6 +61780,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76281",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6323,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76281",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54209,6 +61854,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "76284",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2295,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76284",
@@ -54432,6 +62088,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76296",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3364,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76296",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54597,6 +62264,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76303",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76303",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54707,6 +62385,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76304",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7823,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76304",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54784,6 +62473,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76307",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1379,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76307",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54847,6 +62547,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76308",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76308",
@@ -54949,6 +62660,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76309",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76309",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54990,6 +62712,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "76311",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76311",
@@ -55125,6 +62858,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76312",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2517,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76312",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55155,6 +62899,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76313",
@@ -55202,17 +62957,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76313",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8499,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:26.957Z"
-  },
-  {
-    "setId": "76313",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55221,6 +62965,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76314",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7092,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76314",
@@ -55356,6 +63111,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76315",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4516,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76315",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55397,6 +63163,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76316",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4871,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76316",
@@ -55476,6 +63253,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "76317",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5414,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "76319",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -55496,6 +63284,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "76319",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2758,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76319",
@@ -55598,6 +63397,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76320",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76320",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55639,6 +63449,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "76321",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76321",
@@ -55741,6 +63562,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76322",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76322",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55840,6 +63672,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76323",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8024,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76323",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55892,6 +63735,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76324",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10272,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76324",
@@ -55991,6 +63845,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76325",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8906,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76325",
@@ -56104,6 +63969,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76326",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4766,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76326",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56192,6 +64068,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76327",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4871,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76327",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56277,6 +64164,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76330",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6198,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76330",
@@ -56401,6 +64299,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76331",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76331",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56478,6 +64387,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76332",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76332",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56541,6 +64461,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76334",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2114,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76334",
@@ -56665,6 +64596,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76335",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1054,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76335",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56695,6 +64637,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76336",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76336",
@@ -56772,6 +64725,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "76337",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1392,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76337",
@@ -56863,6 +64827,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76338",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76338",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56951,6 +64926,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76341",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76341",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57014,6 +65000,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76342",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8469,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76342",
@@ -57116,6 +65113,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76343",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76343",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57168,6 +65176,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76344",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9780,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76344",
@@ -57256,6 +65275,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T06:01:43.305Z"
+  },
+  {
+    "setId": "76346",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8193,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76346",
@@ -57358,6 +65388,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76349",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4293,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76349",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57388,6 +65429,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76350",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7033,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76350",
@@ -57490,6 +65542,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76354",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28722,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76354",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57578,6 +65641,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76419",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12772,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76419",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57632,17 +65706,6 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
-    "setId": "76419",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 16999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:26.063Z"
-  },
-  {
     "setId": "76424",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -57663,6 +65726,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76424",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1392,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76424",
@@ -57820,6 +65894,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76429",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7867,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76429",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57853,17 +65938,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76429",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8299,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.198Z"
-  },
-  {
-    "setId": "76429",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57872,72 +65946,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "alternate",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 15590,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-06-07T18:02:11.458Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "coolblue",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 15600,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-14T06:27:19.785Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "brickfever",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 16399,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-26T06:50:52.813Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 16900,
-    "availability": "out_of_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-14T06:27:19.247Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "rakuten-lego-eu",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 19999,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-06-07T18:46:06.109Z"
-  },
-  {
-    "setId": "76435",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 19999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.498Z"
   },
   {
     "setId": "76437",
@@ -57949,6 +65957,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "76437",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24951,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76437",
@@ -58040,6 +66059,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76442",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76442",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58106,6 +66136,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76443",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76443",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58158,6 +66199,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T00:21:09.581Z"
+  },
+  {
+    "setId": "76444",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14345,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76444",
@@ -58260,6 +66312,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76445",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4177,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76445",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58348,6 +66411,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76446",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76446",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58414,6 +66488,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76447",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7761,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76447",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58444,6 +66529,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76448",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1833,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76448",
@@ -58645,6 +66741,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76451",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6972,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76451",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58733,6 +66840,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76452",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76452",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58799,6 +66917,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76453",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11767,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76453",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58843,17 +66972,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76453",
-    "merchantId": "top1toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 12999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-04-30T06:31:27.572Z"
-  },
-  {
-    "setId": "76453",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58873,6 +66991,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76454",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17874,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76454",
@@ -59030,6 +67159,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76457",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 36869,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76457",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59049,6 +67189,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76458",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6469,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76458",
@@ -59082,6 +67233,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76459",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1763,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76459",
@@ -59159,6 +67321,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "76460",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76460",
@@ -59261,6 +67434,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76462",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76462",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59302,6 +67486,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-01T06:15:27.259Z"
+  },
+  {
+    "setId": "76463",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76463",
@@ -59415,6 +67610,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76464",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4986,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76464",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59467,6 +67673,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76466",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12056,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76466",
@@ -59558,6 +67775,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76467",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7823,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76467",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59646,6 +67874,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76469",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2834,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76469",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59687,6 +67926,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "76470",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76470",
@@ -59767,6 +68017,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76471",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7993,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76471",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -59830,6 +68091,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76473",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19212,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76473",
@@ -59907,6 +68179,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76474",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7867,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76474",
@@ -60031,6 +68314,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76475",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76475",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60075,6 +68369,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76478",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9699,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76478",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60108,6 +68413,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76784",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2078,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76784",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60127,6 +68443,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76785",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5998,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76785",
@@ -60328,6 +68655,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76917",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2114,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76917",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60405,6 +68743,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76919",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2412,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76919",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60468,6 +68817,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "76924",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4191,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76924",
@@ -60592,6 +68952,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76934",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76934",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60622,6 +68993,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "76935",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2165,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76935",
@@ -60666,6 +69048,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "76967",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2195,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76967",
@@ -60768,6 +69161,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76969",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3697,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76969",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60867,6 +69271,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76970",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2151,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76970",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60908,6 +69323,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "76972",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2758,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76972",
@@ -61010,6 +69436,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76973",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8477,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "76973",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61084,6 +69521,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-29T06:11:26.813Z"
+  },
+  {
+    "setId": "76975",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76975",
@@ -61183,6 +69631,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T18:26:00.775Z"
+  },
+  {
+    "setId": "76976",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11530,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "76976",
@@ -61373,6 +69832,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77001",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1793,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77001",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61436,6 +69906,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77002",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77002",
@@ -61505,6 +69986,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77003",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3697,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77003",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61557,6 +70049,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "77005",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77005",
@@ -61634,6 +70137,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:46:06.109Z"
+  },
+  {
+    "setId": "77006",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5268,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77006",
@@ -61747,6 +70261,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77037",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3766,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77037",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61810,6 +70335,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:36:00.897Z"
+  },
+  {
+    "setId": "77047",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2069,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77048",
@@ -62044,6 +70580,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77054",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2472,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77054",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62154,6 +70701,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77056",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6320,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77056",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62228,6 +70786,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "77057",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6972,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77057",
@@ -62330,6 +70899,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77058",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1744,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77058",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62349,6 +70929,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:25:53.134Z"
+  },
+  {
+    "setId": "77059",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5082,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77059",
@@ -62404,6 +70995,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "77071",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3279,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77071",
@@ -62638,6 +71240,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77076",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4963,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77076",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62679,6 +71292,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-04T06:16:17.278Z"
+  },
+  {
+    "setId": "77077",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77077",
@@ -62759,6 +71383,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77078",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17440,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77078",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62835,6 +71470,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:10:54.281Z"
   },
   {
+    "setId": "77079",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1369,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "77080",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -62877,6 +71523,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77081",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7667,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77081",
@@ -63055,6 +71712,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:41:21.225Z"
   },
   {
+    "setId": "77117",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1068,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "77118",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -63075,6 +71743,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:02:11.458Z"
+  },
+  {
+    "setId": "77118",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3265,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77118",
@@ -63265,6 +71944,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77237",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77237",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -63328,6 +72018,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:57.760Z"
+  },
+  {
+    "setId": "77238",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4113,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77238",
@@ -63463,6 +72164,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77239",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77239",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -63551,6 +72263,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77240",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77240",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -63592,6 +72315,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77241",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3219,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77242",
@@ -63636,6 +72370,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77242",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77242",
@@ -63724,6 +72469,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77243",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77243",
@@ -63834,6 +72590,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "77244",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77244",
@@ -63980,6 +72747,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77245",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2425,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77245",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64054,6 +72832,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77246",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77246",
@@ -64178,6 +72967,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77248",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2409,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77248",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64263,6 +73063,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:41:21.225Z"
+  },
+  {
+    "setId": "77249",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2407,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77249",
@@ -64365,6 +73176,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77250",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2415,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77250",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64453,6 +73275,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77251",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77251",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64518,6 +73351,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:46:06.109Z"
   },
   {
+    "setId": "77252",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3009,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "77253",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -64538,6 +73382,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77253",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77253",
@@ -64618,6 +73473,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77254",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77254",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64692,6 +73558,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77255",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77255",
@@ -64794,6 +73671,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77256",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2356,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77256",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64882,6 +73770,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77257",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77257",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64945,6 +73844,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77258",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77258",
@@ -65022,6 +73932,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77259",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77259",
@@ -65176,6 +74097,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77261",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77261",
@@ -65275,6 +74207,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77262",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2315,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77262",
@@ -65377,6 +74320,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77263",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2467,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77263",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65420,6 +74374,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-07T18:51:07.495Z"
   },
   {
+    "setId": "77264",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4817,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
     "setId": "77977",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -65440,6 +74405,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "77977",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2114,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77977",
@@ -65495,6 +74471,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:51:07.495Z"
+  },
+  {
+    "setId": "77978",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2517,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77978",
@@ -65561,6 +74548,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:25:54.264Z"
+  },
+  {
+    "setId": "77982",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5702,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "77982",
@@ -65674,6 +74672,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77985",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7823,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
+  },
+  {
+    "setId": "77985",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65781,6 +74790,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-07T18:10:54.281Z"
+  },
+  {
+    "setId": "80118",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7214,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-12T10:55:59.750Z"
   },
   {
     "setId": "80118",

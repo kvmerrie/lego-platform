@@ -2,10 +2,19 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   assertCommerceCheckInputSourceReady,
   runCommerceSync,
+  type CommerceSyncDependencies,
 } from './commerce-sync-server';
 import { buildCommerceSyncInputs } from './commerce-refresh-server';
 
 describe('commerce sync server', () => {
+  type MerchantPageSnapshotSyncResult = Awaited<
+    ReturnType<
+      NonNullable<
+        CommerceSyncDependencies['buildCommerceMerchantPageSnapshotsFn']
+      >
+    >
+  >;
+
   const expectedCollectionSnapshotSlugs = [
     'nieuwe-lego-sets',
     'retiring-lego-sets',
@@ -213,6 +222,19 @@ describe('commerce sync server', () => {
           updatedAt: '2026-05-11T10:00:00.000Z',
         },
       },
+    };
+  }
+
+  function buildMerchantPageSnapshotResult(
+    overrides: Partial<MerchantPageSnapshotSyncResult> = {},
+  ): MerchantPageSnapshotSyncResult {
+    return {
+      changedMerchantSlugs: [],
+      dryRun: false,
+      phaseTimings: {},
+      snapshots: [],
+      upsertedCount: 0,
+      ...overrides,
     };
   }
 
@@ -718,6 +740,41 @@ describe('commerce sync server', () => {
     const upsertCommerceCurrentOfferSnapshotsFn = vi
       .fn()
       .mockResolvedValue({ upsertedCount: 1 });
+    const buildCommerceMerchantPageSnapshotsFn = vi.fn().mockResolvedValue(
+      buildMerchantPageSnapshotResult({
+        changedMerchantSlugs: ['goodbricks'],
+        phaseTimings: {
+          total_ms: 7,
+        },
+        snapshots: [
+          {
+            merchantId: 'merchant-goodbricks',
+            merchantName: 'Goodbricks',
+            merchantSlug: 'goodbricks',
+            snapshot: {
+              bestDealCount: 0,
+              bestDeals: [],
+              dealCount: 0,
+              merchant: {
+                createdAt: '2026-05-11T10:00:00.000Z',
+                id: 'merchant-goodbricks',
+                isActive: true,
+                name: 'Goodbricks',
+                notes: '',
+                slug: 'goodbricks',
+                sourceType: 'affiliate',
+                updatedAt: '2026-05-11T10:00:00.000Z',
+              },
+              offerCount: 0,
+              onlyAtMerchantDealCount: 0,
+              onlyAtMerchantDeals: [],
+              version: 1,
+            },
+          },
+        ],
+        upsertedCount: 1,
+      }),
+    );
     const syncCollectionPageSnapshotsFn = vi.fn().mockResolvedValue({
       dryRun: false,
       generatedAt: '2026-05-11T10:00:00.000Z',
@@ -728,6 +785,7 @@ describe('commerce sync server', () => {
 
     const result = await runCommerceSync({
       dependencies: {
+        buildCommerceMerchantPageSnapshotsFn,
         listCatalogCurrentOfferSummariesBySetIdsFn: vi.fn().mockResolvedValue([
           {
             bestOffer: {
@@ -801,12 +859,93 @@ describe('commerce sync server', () => {
       ],
     });
     expect(result.currentOfferSnapshotsUpsertedCount).toBe(1);
+    expect(
+      upsertCommerceCurrentOfferSnapshotsFn.mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      buildCommerceMerchantPageSnapshotsFn.mock.invocationCallOrder[0],
+    );
+    expect(buildCommerceMerchantPageSnapshotsFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dryRun: false,
+        revalidate: true,
+      }),
+    );
+    expect(result.merchantPageSnapshotCount).toBe(1);
+    expect(result.merchantPageSnapshotsUpsertedCount).toBe(1);
+    expect(result.merchantPageSnapshotChangedMerchantCount).toBe(1);
+    expect(result.merchantPageSnapshotSkipped).toBe(false);
+    expect(result.phaseTimings.merchant_page_snapshots).toEqual(
+      expect.any(Number),
+    );
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
       collectionSlugs: expectedCollectionSnapshotSlugs,
       dryRun: false,
       pageSize: 40,
     });
     expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
+  });
+
+  test('skips merchant page snapshot generation when requested', async () => {
+    const buildCommerceMerchantPageSnapshotsFn = vi.fn();
+
+    const result = await runCommerceSync({
+      dependencies: {
+        buildCommerceMerchantPageSnapshotsFn,
+        listCatalogCurrentOfferSummariesBySetIdsFn: vi
+          .fn()
+          .mockResolvedValue([]),
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue(
+          buildCommerceSyncInputMock({
+            refreshSeeds: [],
+            syncSeeds: [buildEligibleCommerceSeed()],
+          }),
+        ),
+        upsertCommerceCurrentOfferSnapshotsFn: vi
+          .fn()
+          .mockResolvedValue({ upsertedCount: 1 }),
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue({
+            points: [],
+            summary: {
+              latestOfferRowsSeen: 1,
+              eligibleLatestOfferRows: 0,
+              dailyHistoryPointsBuilt: 0,
+              maxObservedAgeHours: 48,
+              skipped: {
+                inactiveSeedOrMerchant: 0,
+                invalidSeed: 0,
+                missingLatest: 0,
+                missingOrInvalidPrice: 0,
+                nonEur: 0,
+                staleOrError: 0,
+                untrustedMerchant: 0,
+                unavailableForHeadline: 0,
+              },
+            },
+          }),
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+      },
+      mode: 'write',
+      skipMerchantPageSnapshots: true,
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(buildCommerceMerchantPageSnapshotsFn).not.toHaveBeenCalled();
+    expect(result.merchantPageSnapshotSkipped).toBe(true);
+    expect(result.merchantPageSnapshotCount).toBe(0);
+    expect(result.merchantPageSnapshotsUpsertedCount).toBe(0);
+    expect(result.phaseTimings.merchant_page_snapshots).toEqual(
+      expect.any(Number),
+    );
   });
 
   test('revalidates only affected set-detail tags after related-theme snapshot upserts', async () => {
