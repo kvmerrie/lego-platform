@@ -1485,6 +1485,8 @@
       --lego-surface-padding-md-inline,
       var(--lego-section-inline-padding, var(--lego-space-3))
     );
+    gap: var(--lego-space-2);
+    padding-block-start: var(--lego-space-2);
   }
 
   .detailBreadcrumbs {
@@ -1621,7 +1623,7 @@
   }
 
   .galleryMainVisual {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1 / 1;
     border: var(--lego-border-width-1) solid
       color-mix(in srgb, var(--lego-border-subtle) 88%, white 12%);
     box-shadow: none;
@@ -4844,6 +4846,11 @@
   }
 
   @media (min-width: 64rem) {
+    .detailPageIntro {
+      gap: var(--lego-space-3);
+      padding-block-start: var(--lego-space-3);
+    }
+
     .detailHero {
       align-items: start;
       overflow: visible;

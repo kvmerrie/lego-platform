@@ -13,6 +13,7 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { lockDocumentScroll } from './document-scroll-lock';
 import styles from './image-carousel.module.css';
 
 export type CarouselImageOrientation = 'landscape' | 'portrait' | 'square';
@@ -29,6 +30,12 @@ type LightboxOverviewTileVariant =
   | 'standard'
   | 'wide';
 type LightboxOverviewLayoutVariant = 'featured' | 'fullWidth' | 'standard';
+type LightboxOverviewFrameVariant =
+  | 'featured'
+  | 'fullWidth'
+  | 'landscape'
+  | 'portrait'
+  | 'square';
 
 export interface GalleryImage {
   alt: string;
@@ -62,6 +69,10 @@ const SWIPE_AXIS_LOCK_RATIO = 1.6;
 const SWIPE_DISTANCE_THRESHOLD_PX = 56;
 const SWIPE_VELOCITY_THRESHOLD_PX_PER_MS = 0.42;
 const SWIPE_TRACK_TRANSITION_MS = 240;
+const LIGHTBOX_ZOOM_MIN_SCALE = 1;
+const LIGHTBOX_ZOOM_MAX_SCALE = 3;
+const LIGHTBOX_DOUBLE_TAP_MAX_DELAY_MS = 280;
+const LIGHTBOX_DOUBLE_TAP_MAX_DISTANCE_PX = 26;
 
 const INITIAL_SWIPE_VISUAL_STATE = {
   delta: 0,
@@ -69,10 +80,27 @@ const INITIAL_SWIPE_VISUAL_STATE = {
   phase: 'idle',
 } satisfies SwipeVisualState;
 
+const INITIAL_LIGHTBOX_ZOOM_STATE = {
+  scale: 1,
+  translateX: 0,
+  translateY: 0,
+} satisfies LightboxZoomState;
+
 interface SwipeVisualState {
   delta: number;
   direction: -1 | 0 | 1;
   phase: SwipePhase;
+}
+
+interface LightboxZoomState {
+  scale: number;
+  translateX: number;
+  translateY: number;
+}
+
+interface LightboxZoomPointer {
+  x: number;
+  y: number;
 }
 
 function joinClasses(
@@ -208,76 +236,115 @@ function getLightboxOverviewTileVariant({
   return 'standard';
 }
 
-function getPreferredLightboxOverviewLayoutVariant(
-  tileVariant: LightboxOverviewTileVariant,
-): LightboxOverviewLayoutVariant {
-  if (tileVariant === 'featured') {
+function getLightboxOverviewFrameVariant({
+  image,
+  layoutVariant,
+}: {
+  image: GalleryImage;
+  layoutVariant: LightboxOverviewLayoutVariant;
+}): LightboxOverviewFrameVariant {
+  if (layoutVariant === 'featured') {
     return 'featured';
   }
 
-  if (tileVariant === 'lifestyle' || tileVariant === 'wide') {
+  if (layoutVariant === 'fullWidth') {
     return 'fullWidth';
   }
 
-  return 'standard';
+  if (isGalleryImageProductLike(image)) {
+    return 'square';
+  }
+
+  const orientation = getGalleryImageOrientation(image);
+
+  if (orientation === 'landscape') {
+    return 'landscape';
+  }
+
+  if (orientation === 'portrait') {
+    return 'portrait';
+  }
+
+  return 'square';
 }
 
 function getLightboxOverviewItems(images: readonly GalleryImage[]): Array<{
+  frameVariant: LightboxOverviewFrameVariant;
   image: GalleryImage;
   imageIndex: number;
   layoutVariant: LightboxOverviewLayoutVariant;
   tileVariant: LightboxOverviewTileVariant;
 }> {
-  const overviewItems = images.map((image, imageIndex) => {
+  let hasPendingStandardTile = false;
+  let shouldRenderFullWidthBreak = false;
+
+  return images.map((image, imageIndex) => {
     const tileVariant = getLightboxOverviewTileVariant({
       image,
       imageIndex,
     });
+    const remainingItemCount = images.length - imageIndex;
+
+    if (imageIndex === 0) {
+      hasPendingStandardTile = false;
+      shouldRenderFullWidthBreak = false;
+
+      return {
+        frameVariant: getLightboxOverviewFrameVariant({
+          image,
+          layoutVariant: 'featured',
+        }),
+        image,
+        imageIndex,
+        layoutVariant: 'featured',
+        tileVariant,
+      };
+    }
+
+    if (hasPendingStandardTile) {
+      hasPendingStandardTile = false;
+      shouldRenderFullWidthBreak = true;
+
+      return {
+        frameVariant: getLightboxOverviewFrameVariant({
+          image,
+          layoutVariant: 'standard',
+        }),
+        image,
+        imageIndex,
+        layoutVariant: 'standard',
+        tileVariant,
+      };
+    }
+
+    if (shouldRenderFullWidthBreak || remainingItemCount === 1) {
+      shouldRenderFullWidthBreak = false;
+
+      return {
+        frameVariant: getLightboxOverviewFrameVariant({
+          image,
+          layoutVariant: 'fullWidth',
+        }),
+        image,
+        imageIndex,
+        layoutVariant: 'fullWidth',
+        tileVariant,
+      };
+    }
+
+    hasPendingStandardTile = true;
 
     return {
+      frameVariant: getLightboxOverviewFrameVariant({
+        image,
+        layoutVariant: 'standard',
+      }),
       image,
       imageIndex,
-      layoutVariant: getPreferredLightboxOverviewLayoutVariant(tileVariant),
+      layoutVariant: 'standard',
       tileVariant,
     };
   });
-  let pendingStandardItemIndex: number | null = null;
-
-  overviewItems.forEach((overviewItem, overviewItemIndex) => {
-    if (overviewItem.layoutVariant === 'standard') {
-      pendingStandardItemIndex =
-        pendingStandardItemIndex === null ? overviewItemIndex : null;
-      return;
-    }
-
-    if (pendingStandardItemIndex !== null) {
-      const pendingStandardItem = overviewItems[pendingStandardItemIndex];
-
-      if (!pendingStandardItem) {
-        pendingStandardItemIndex = null;
-        return;
-      }
-
-      overviewItems[pendingStandardItemIndex] = {
-        ...pendingStandardItem,
-        layoutVariant: 'fullWidth',
-      };
-      pendingStandardItemIndex = null;
-    }
-  });
-
-  if (pendingStandardItemIndex !== null) {
-    const pendingStandardItem = overviewItems[pendingStandardItemIndex];
-
-    if (pendingStandardItem) {
-      overviewItems[pendingStandardItemIndex] = {
-        ...pendingStandardItem,
-        layoutVariant: 'fullWidth',
-      };
-    }
-  }
-
-  return overviewItems;
 }
 
 function getGalleryImageIntrinsicDimension({
@@ -445,6 +512,25 @@ export function ImageGallery({
     x: number;
     y: number;
   } | null>(null);
+  const lightboxZoomPointersRef = useRef<Map<number, LightboxZoomPointer>>(
+    new Map(),
+  );
+  const lightboxZoomGestureRef = useRef<{
+    initialDistance: number;
+    initialScale: number;
+  } | null>(null);
+  const lightboxPanGestureRef = useRef<{
+    initialTranslateX: number;
+    initialTranslateY: number;
+    pointerId: number;
+    x: number;
+    y: number;
+  } | null>(null);
+  const lightboxTapRef = useRef<{
+    tappedAt: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const suppressDetailClickRef = useRef(false);
   const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
@@ -463,6 +549,9 @@ export function ImageGallery({
   );
   const [lightboxSwipeState, setLightboxSwipeState] =
     useState<SwipeVisualState>(INITIAL_SWIPE_VISUAL_STATE);
+  const [lightboxZoomState, setLightboxZoomState] = useState<LightboxZoomState>(
+    INITIAL_LIGHTBOX_ZOOM_STATE,
+  );
 
   const clearSwipeSettleTimer = useCallback((target: SwipeTarget) => {
     const activeTimer = swipeSettleTimersRef.current[target];
@@ -502,9 +591,18 @@ export function ImageGallery({
     [],
   );
 
+  const resetLightboxZoom = useCallback(() => {
+    lightboxZoomPointersRef.current.clear();
+    lightboxZoomGestureRef.current = null;
+    lightboxPanGestureRef.current = null;
+    lightboxTapRef.current = null;
+    setLightboxZoomState(INITIAL_LIGHTBOX_ZOOM_STATE);
+  }, []);
+
   const closeLightbox = useCallback(() => {
     clearSwipeSettleTimer('lightbox');
     clearSwipeResetAnimationFrame('lightbox');
+    resetLightboxZoom();
     setLightboxSwipeState(INITIAL_SWIPE_VISUAL_STATE);
     setLightboxImageIndex(null);
     setLightboxMode('viewer');
@@ -512,7 +610,7 @@ export function ImageGallery({
     window.requestAnimationFrame(() => {
       lightboxTriggerRef.current?.focus({ preventScroll: true });
     });
-  }, [clearSwipeResetAnimationFrame, clearSwipeSettleTimer]);
+  }, [clearSwipeResetAnimationFrame, clearSwipeSettleTimer, resetLightboxZoom]);
 
   useEffect(() => {
     if (!resolvedImages.length) {
@@ -537,22 +635,24 @@ export function ImageGallery({
     }
 
     rememberLightboxTrigger();
+    resetLightboxZoom();
     setLightboxMode('viewer');
     setLightboxImageIndex(
       clampIndex(lightboxRequest.index, resolvedImages.length),
     );
-  }, [lightboxRequest, rememberLightboxTrigger, resolvedImages.length]);
+  }, [
+    lightboxRequest,
+    rememberLightboxTrigger,
+    resetLightboxZoom,
+    resolvedImages.length,
+  ]);
 
   useEffect(() => {
     if (lightboxImageIndex === null) {
       return undefined;
     }
 
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousDocumentOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
+    const unlockDocumentScroll = lockDocumentScroll();
 
     window.requestAnimationFrame(() => {
       lightboxPrimaryButtonRef.current?.focus({ preventScroll: true });
@@ -620,6 +720,7 @@ export function ImageGallery({
 
       if (event.key === 'ArrowRight') {
         event.preventDefault();
+        resetLightboxZoom();
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -629,6 +730,7 @@ export function ImageGallery({
 
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
+        resetLightboxZoom();
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -641,10 +743,15 @@ export function ImageGallery({
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousDocumentOverflow;
+      unlockDocumentScroll();
     };
-  }, [closeLightbox, lightboxImageIndex, lightboxMode, resolvedImages.length]);
+  }, [
+    closeLightbox,
+    lightboxImageIndex,
+    lightboxMode,
+    resetLightboxZoom,
+    resolvedImages.length,
+  ]);
 
   useEffect(() => {
     if (lightboxMode !== 'overview') {
@@ -741,6 +848,7 @@ export function ImageGallery({
     }
 
     rememberLightboxTrigger(trigger);
+    resetLightboxZoom();
     setLightboxMode(
       variant === 'detail' && resolvedImages.length > 1 ? 'overview' : 'viewer',
     );
@@ -748,12 +856,14 @@ export function ImageGallery({
   }
 
   function goToLightboxImage(nextIndex: number) {
+    resetLightboxZoom();
     setLightboxMode('viewer');
     setLightboxImageIndex(clampIndex(nextIndex, resolvedImages.length));
   }
 
   function returnToLightboxOverview() {
     pendingOverviewFocusIndexRef.current = safeLightboxImageIndex;
+    resetLightboxZoom();
     setLightboxMode('overview');
   }
 
@@ -854,6 +964,233 @@ export function ImageGallery({
     return `translate3d(calc(-33.333333% + ${swipeState.delta}px), 0, 0)`;
   }
 
+  function clampLightboxZoomScale(scale: number): number {
+    return Math.min(
+      Math.max(scale, LIGHTBOX_ZOOM_MIN_SCALE),
+      LIGHTBOX_ZOOM_MAX_SCALE,
+    );
+  }
+
+  function getPointerDistance(
+    firstPointer: LightboxZoomPointer,
+    secondPointer: LightboxZoomPointer,
+  ): number {
+    return Math.hypot(
+      secondPointer.x - firstPointer.x,
+      secondPointer.y - firstPointer.y,
+    );
+  }
+
+  function getZoomPointers(): LightboxZoomPointer[] {
+    return Array.from(lightboxZoomPointersRef.current.values());
+  }
+
+  function handleLightboxDoubleTap({
+    clientX,
+    clientY,
+  }: {
+    clientX: number;
+    clientY: number;
+  }): boolean {
+    const tappedAt = performance.now();
+    const previousTap = lightboxTapRef.current;
+
+    lightboxTapRef.current = {
+      tappedAt,
+      x: clientX,
+      y: clientY,
+    };
+
+    if (!previousTap) {
+      return false;
+    }
+
+    const tapDelay = tappedAt - previousTap.tappedAt;
+    const tapDistance = Math.hypot(
+      clientX - previousTap.x,
+      clientY - previousTap.y,
+    );
+
+    if (
+      tapDelay > LIGHTBOX_DOUBLE_TAP_MAX_DELAY_MS ||
+      tapDistance > LIGHTBOX_DOUBLE_TAP_MAX_DISTANCE_PX
+    ) {
+      return false;
+    }
+
+    lightboxTapRef.current = null;
+    swipeStateRef.current = null;
+    resetSwipeState('lightbox', { withoutTransition: true });
+
+    setLightboxZoomState((currentState) =>
+      currentState.scale > 1.01
+        ? INITIAL_LIGHTBOX_ZOOM_STATE
+        : {
+            scale: 2,
+            translateX: 0,
+            translateY: 0,
+          },
+    );
+
+    return true;
+  }
+
+  function handleLightboxZoomPointerDown(
+    event: ReactPointerEvent<HTMLElement>,
+  ): boolean {
+    if (lightboxMode !== 'viewer' || event.pointerType === 'mouse') {
+      return false;
+    }
+
+    lightboxZoomPointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const activePointers = getZoomPointers();
+
+    if (activePointers.length >= 2) {
+      const [firstPointer, secondPointer] = activePointers;
+      const initialDistance = getPointerDistance(firstPointer, secondPointer);
+
+      if (initialDistance > 0) {
+        lightboxZoomGestureRef.current = {
+          initialDistance,
+          initialScale: lightboxZoomState.scale,
+        };
+        lightboxPanGestureRef.current = null;
+        swipeStateRef.current = null;
+        resetSwipeState('lightbox', { withoutTransition: true });
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+
+        return true;
+      }
+    }
+
+    if (lightboxZoomState.scale > 1.01) {
+      lightboxPanGestureRef.current = {
+        initialTranslateX: lightboxZoomState.translateX,
+        initialTranslateY: lightboxZoomState.translateY,
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+      };
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  function handleLightboxZoomPointerMove(
+    event: ReactPointerEvent<HTMLElement>,
+  ): boolean {
+    if (!lightboxZoomPointersRef.current.has(event.pointerId)) {
+      return false;
+    }
+
+    lightboxZoomPointersRef.current.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    const activePointers = getZoomPointers();
+
+    if (lightboxZoomGestureRef.current && activePointers.length >= 2) {
+      const [firstPointer, secondPointer] = activePointers;
+      const nextDistance = getPointerDistance(firstPointer, secondPointer);
+
+      event.preventDefault();
+      setLightboxZoomState((currentState) => ({
+        ...currentState,
+        scale: clampLightboxZoomScale(
+          lightboxZoomGestureRef.current
+            ? (nextDistance / lightboxZoomGestureRef.current.initialDistance) *
+                lightboxZoomGestureRef.current.initialScale
+            : currentState.scale,
+        ),
+      }));
+
+      return true;
+    }
+
+    if (
+      lightboxPanGestureRef.current &&
+      lightboxPanGestureRef.current.pointerId === event.pointerId &&
+      lightboxZoomState.scale > 1.01
+    ) {
+      const panGesture = lightboxPanGestureRef.current;
+
+      event.preventDefault();
+      setLightboxZoomState((currentState) => ({
+        ...currentState,
+        translateX: panGesture.initialTranslateX + event.clientX - panGesture.x,
+        translateY: panGesture.initialTranslateY + event.clientY - panGesture.y,
+      }));
+
+      return true;
+    }
+
+    return lightboxZoomState.scale > 1.01;
+  }
+
+  function handleLightboxZoomPointerEnd(
+    event: ReactPointerEvent<HTMLElement>,
+  ): boolean {
+    const wasZoomInteraction =
+      lightboxZoomGestureRef.current !== null ||
+      lightboxPanGestureRef.current !== null ||
+      lightboxZoomState.scale > 1.01 ||
+      lightboxZoomPointersRef.current.size > 1;
+
+    lightboxZoomPointersRef.current.delete(event.pointerId);
+
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (lightboxZoomPointersRef.current.size < 2) {
+      lightboxZoomGestureRef.current = null;
+    }
+
+    if (
+      lightboxPanGestureRef.current?.pointerId === event.pointerId ||
+      lightboxZoomPointersRef.current.size === 0
+    ) {
+      lightboxPanGestureRef.current = null;
+    }
+
+    if (
+      event.pointerType === 'touch' &&
+      !wasZoomInteraction &&
+      handleLightboxDoubleTap({
+        clientX: event.clientX,
+        clientY: event.clientY,
+      })
+    ) {
+      return true;
+    }
+
+    if (lightboxZoomState.scale <= 1.01 && wasZoomInteraction) {
+      setLightboxZoomState(INITIAL_LIGHTBOX_ZOOM_STATE);
+    }
+
+    return wasZoomInteraction;
+  }
+
+  function handleLightboxDoubleClick() {
+    setLightboxZoomState((currentState) =>
+      currentState.scale > 1.01
+        ? INITIAL_LIGHTBOX_ZOOM_STATE
+        : {
+            scale: 2,
+            translateX: 0,
+            translateY: 0,
+          },
+    );
+  }
+
   function settleSwipe({
     direction,
     target,
@@ -880,6 +1217,7 @@ export function ImageGallery({
           clampIndex(currentIndex + direction, resolvedImages.length),
         );
       } else {
+        resetLightboxZoom();
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -942,6 +1280,14 @@ export function ImageGallery({
     target: SwipeTarget;
   }) {
     if (!hasMultipleImages || event.pointerType === 'mouse') {
+      return;
+    }
+
+    if (
+      target === 'lightbox' &&
+      (lightboxZoomState.scale > 1.01 ||
+        lightboxZoomPointersRef.current.size > 1)
+    ) {
       return;
     }
 
@@ -1100,13 +1446,15 @@ export function ImageGallery({
     return (
       <>
         <span className={styles.swipeStaticMedia}>
-          <GalleryImageMedia
-            image={resolvedImages[currentIndex]}
-            imageIndex={currentIndex}
-            kind={kind}
-            isFallbackVisible={Boolean(failedImageIndexes[currentIndex])}
-            onImageError={handleImageError}
-          />
+          <span className={styles.swipeStaticFrame}>
+            <GalleryImageMedia
+              image={resolvedImages[currentIndex]}
+              imageIndex={currentIndex}
+              kind={kind}
+              isFallbackVisible={Boolean(failedImageIndexes[currentIndex])}
+              onImageError={handleImageError}
+            />
+          </span>
         </span>
         <span className={styles.swipeViewport} aria-hidden="true">
           <span
@@ -1138,15 +1486,17 @@ export function ImageGallery({
                   }
                 >
                   {image ? (
-                    <GalleryImageMedia
-                      image={image}
-                      imageIndex={imageIndex}
-                      kind={kind}
-                      isFallbackVisible={Boolean(
-                        failedImageIndexes[imageIndex],
-                      )}
-                      onImageError={handleImageError}
-                    />
+                    <span className={styles.swipeSlideFrame}>
+                      <GalleryImageMedia
+                        image={image}
+                        imageIndex={imageIndex}
+                        kind={kind}
+                        isFallbackVisible={Boolean(
+                          failedImageIndexes[imageIndex],
+                        )}
+                        onImageError={handleImageError}
+                      />
+                    </span>
                   ) : (
                     <span className={styles.swipeSlidePlaceholder} />
                   )}
@@ -1221,7 +1571,13 @@ export function ImageGallery({
             <div className={styles.lightboxOverviewBody}>
               <div className={styles.lightboxOverview}>
                 {getLightboxOverviewItems(resolvedImages).map(
-                  ({ image, imageIndex, layoutVariant, tileVariant }) => {
+                  ({
+                    frameVariant,
+                    image,
+                    imageIndex,
+                    layoutVariant,
+                    tileVariant,
+                  }) => {
                     return (
                       <button
                         aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
@@ -1236,6 +1592,7 @@ export function ImageGallery({
                         data-lightbox-featured={
                           layoutVariant === 'featured' ? 'true' : undefined
                         }
+                        data-lightbox-frame={frameVariant}
                         data-lightbox-grid-index={imageIndex}
                         data-lightbox-layout-variant={layoutVariant}
                         data-lightbox-tile={tileVariant}
@@ -1286,6 +1643,9 @@ export function ImageGallery({
 
               <div
                 className={styles.lightboxMediaFrame}
+                data-lightbox-zoomed={
+                  lightboxZoomState.scale > 1.01 ? 'true' : 'false'
+                }
                 data-lightbox-media-surface="light"
                 data-image-media-role={
                   resolvedImages[safeLightboxImageIndex].mediaRole
@@ -1294,25 +1654,61 @@ export function ImageGallery({
                   resolvedImages[safeLightboxImageIndex],
                 )}
                 data-swipe-target="lightbox"
-                onPointerCancel={handleSwipePointerCancel}
-                onPointerDown={(event) =>
+                onPointerCancel={(event) => {
+                  handleLightboxZoomPointerEnd(event);
+                  handleSwipePointerCancel();
+                }}
+                onDoubleClick={handleLightboxDoubleClick}
+                onPointerDown={(event) => {
+                  const isZoomPointerHandled =
+                    handleLightboxZoomPointerDown(event);
+
+                  if (isZoomPointerHandled) {
+                    return;
+                  }
+
                   handleSwipePointerDown({
                     event,
                     target: 'lightbox',
-                  })
-                }
-                onPointerMove={handleSwipePointerMove}
-                onPointerUp={handleSwipePointerEnd}
+                  });
+                }}
+                onPointerMove={(event) => {
+                  const isZoomPointerHandled =
+                    handleLightboxZoomPointerMove(event);
+
+                  if (isZoomPointerHandled) {
+                    return;
+                  }
+
+                  handleSwipePointerMove(event);
+                }}
+                onPointerUp={(event) => {
+                  const isZoomPointerHandled =
+                    handleLightboxZoomPointerEnd(event);
+
+                  if (isZoomPointerHandled) {
+                    return;
+                  }
+
+                  handleSwipePointerEnd(event);
+                }}
                 style={getGalleryImageFrameStyle(
                   resolvedImages[safeLightboxImageIndex],
                 )}
               >
-                {renderSwipeableMedia({
-                  currentIndex: safeLightboxImageIndex,
-                  kind: 'lightbox',
-                  swipeState: lightboxSwipeState,
-                  target: 'lightbox',
-                })}
+                <span
+                  className={styles.lightboxZoomSurface}
+                  style={{
+                    transform: `translate3d(${lightboxZoomState.translateX}px, ${lightboxZoomState.translateY}px, 0) scale(${lightboxZoomState.scale})`,
+                  }}
+                >
+                  {renderSwipeableMedia({
+                    currentIndex: safeLightboxImageIndex,
+                    kind: 'lightbox',
+                    swipeState: lightboxSwipeState,
+                    target: 'lightbox',
+                  })}
+                </span>
               </div>
 
               {hasMultipleImages ? (

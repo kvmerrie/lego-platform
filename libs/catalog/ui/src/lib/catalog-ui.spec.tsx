@@ -283,7 +283,7 @@ describe('CatalogSetCard', () => {
     );
     expect(css).toContain('border-radius: 0;');
     expect(css).toMatch(/\.galleryMainVisual \{\s+border: 0;/u);
-    expect(galleryVisualRule).toContain('aspect-ratio: 4 / 3;');
+    expect(galleryVisualRule).toContain('aspect-ratio: 1 / 1;');
     expect(galleryVisualRule).toContain('contain: paint;');
     expect(galleryVisualRule).toContain('transition: border-color');
     expect(galleryVisualRule).not.toContain('box-shadow var(');
@@ -2788,6 +2788,28 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('gap: var(--lego-space-12);');
   });
 
+  it('keeps set-detail breadcrumbs aligned with a compact non-hero intro rhythm', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const detailIntroRule =
+      css.match(/\.detailPageIntro \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(detailIntroRule).toContain(
+      '--catalog-page-intro-inline-padding: var(',
+    );
+    expect(detailIntroRule).toContain('gap: var(--lego-space-2);');
+    expect(detailIntroRule).toContain(
+      'padding-block-start: var(--lego-space-2);',
+    );
+    expect(css).toContain('@media (min-width: 64rem)');
+    expect(css).toContain(
+      '.detailPageIntro {\n      gap: var(--lego-space-3);',
+    );
+    expect(css).toContain('padding-block-start: var(--lego-space-3);');
+  });
+
   it('keeps the theme logo non-clickable when the theme href is not valid', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
@@ -2942,6 +2964,11 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/themes/ideas"');
     expect(markup).toContain('Setcontext');
+    expect(markup).toContain('detailPageIntro');
+    expect(markup).toContain('detailBreadcrumbs');
+    expect(markup.indexOf('Setcontext')).toBeLessThan(
+      markup.indexOf('Motorized Lighthouse'),
+    );
     expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
     expect(markup).toContain('Volg deze prijs');
