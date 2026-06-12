@@ -19,6 +19,7 @@ import { createSupabaseAdminClient } from '@lego-platform/shared/data-access-aut
 
 type MetadataTarget = 'production' | 'staging';
 type CopyMetadataMode = 'production-to-staging';
+type CatalogSetImageVariantBackfill = 'large';
 
 function getFlagValue({
   argv,
@@ -135,6 +136,41 @@ export function parseRefreshThumbnails(argv: readonly string[]): boolean {
     argv,
     flag: '--refresh-thumbnails',
   });
+}
+
+export function parseVariantBackfill(
+  argv: readonly string[],
+): CatalogSetImageVariantBackfill | undefined {
+  const rawValue = getFlagValue({
+    argv,
+    flag: '--variant',
+  });
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  if (rawValue === 'large') {
+    return rawValue;
+  }
+
+  throw new Error('Use --variant=large.');
+}
+
+function parseSetIds(argv: readonly string[]): string[] | undefined {
+  const setIds = [
+    ...(parseOptionalCsvFlag({
+      argv,
+      flag: '--set-ids',
+    }) ?? []),
+    ...(parseOptionalCsvFlag({
+      argv,
+      flag: '--set',
+    }) ?? []),
+  ];
+  const uniqueSetIds = [...new Set(setIds)];
+
+  return uniqueSetIds.length ? uniqueSetIds : undefined;
 }
 
 export function parseRefreshSocial(argv: readonly string[]): boolean {
@@ -295,10 +331,7 @@ export async function main(argv = process.argv.slice(2)) {
     argv,
     flag: '--concurrency',
   });
-  const setIds = parseOptionalCsvFlag({
-    argv,
-    flag: '--set-ids',
-  });
+  const setIds = parseSetIds(argv);
   const missingOnly = hasBooleanFlag({
     argv,
     flag: '--missing-only',
@@ -311,6 +344,8 @@ export async function main(argv = process.argv.slice(2)) {
   const refreshCard = parseRefreshCard(argv);
   const refreshSocial = parseRefreshSocial(argv);
   const refreshThumbnails = parseRefreshThumbnails(argv);
+  const variantBackfill = parseVariantBackfill(argv);
+  const refreshLarge = variantBackfill === 'large';
   const metadataTarget = parseMetadataTarget(argv);
   const copyMetadata = parseCopyMetadataMode(argv);
   const rewritePublicUrls = parseRewritePublicUrls(argv);
@@ -319,6 +354,12 @@ export async function main(argv = process.argv.slice(2)) {
 
   if (copyMetadata && rewritePublicUrls) {
     throw new Error('Use either --copy-metadata or --rewrite-public-urls.');
+  }
+
+  if (write && refreshLarge && !limit && !(setIds?.length ?? 0)) {
+    throw new Error(
+      '--variant=large write mode requires --limit, --set, or --set-ids for phased backfill.',
+    );
   }
 
   if (!rewritePublicUrls) {
@@ -339,7 +380,7 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   console.log(
-    `[catalog-set-image-sync] start mode=${mode} metadata_target=${metadataTarget} metadata_url=${describeSupabaseRef(metadataTargetUrl)} storage_url=${rewritePublicUrls ? 'none' : describeSupabaseRef(storageTargetUrl)} bucket=${CATALOG_SET_IMAGES_BUCKET} limit=${limit ?? 0} set_ids=${setIds?.join(',') ?? 'none'} missing_only=${missingOnly} refresh_failed=${refreshFailed} refresh_image_metadata=${refreshImageMetadata} refresh_card=${refreshCard} refresh_social=${refreshSocial} refresh_thumbnails=${refreshThumbnails} debug_dedupe=${debugDedupe} concurrency=${concurrency ?? 0} upload_retries=${uploadRetryCount ?? 0} copy_metadata=${copyMetadata ?? 'none'} rewrite_public_urls=${rewritePublicUrls}`,
+    `[catalog-set-image-sync] start mode=${mode} metadata_target=${metadataTarget} metadata_url=${describeSupabaseRef(metadataTargetUrl)} storage_url=${rewritePublicUrls ? 'none' : describeSupabaseRef(storageTargetUrl)} bucket=${CATALOG_SET_IMAGES_BUCKET} limit=${limit ?? 0} set_ids=${setIds?.join(',') ?? 'none'} missing_only=${missingOnly} refresh_failed=${refreshFailed} refresh_image_metadata=${refreshImageMetadata} refresh_card=${refreshCard} refresh_large=${refreshLarge} refresh_social=${refreshSocial} refresh_thumbnails=${refreshThumbnails} variant=${variantBackfill ?? 'full'} debug_dedupe=${debugDedupe} concurrency=${concurrency ?? 0} upload_retries=${uploadRetryCount ?? 0} copy_metadata=${copyMetadata ?? 'none'} rewrite_public_urls=${rewritePublicUrls}`,
   );
 
   if (rewritePublicUrls) {
@@ -402,12 +443,13 @@ export async function main(argv = process.argv.slice(2)) {
     },
     onSelection: (diagnostics) => {
       console.log(
-        `[catalog-set-image-sync] selection selected_sets=${diagnostics.selectedSetCount} candidate_sets=${diagnostics.candidateSetCount} missing_hero_count=${diagnostics.missingHeroCount} missing_card_count=${diagnostics.missingCardCount} missing_social_count=${diagnostics.missingSocialCount} complete_image_set_count=${diagnostics.completeImageSetCount}`,
+        `[catalog-set-image-sync] selection selected_sets=${diagnostics.selectedSetCount} candidate_sets=${diagnostics.candidateSetCount} missing_hero_count=${diagnostics.missingHeroCount} missing_card_count=${diagnostics.missingCardCount} missing_large_count=${diagnostics.missingLargeCount} missing_social_count=${diagnostics.missingSocialCount} complete_image_set_count=${diagnostics.completeImageSetCount}`,
       );
     },
     refreshImageMetadata,
     refreshFailed,
     refreshCard,
+    refreshLarge,
     refreshSocial,
     refreshThumbnails,
     setIds,
@@ -434,7 +476,7 @@ export async function main(argv = process.argv.slice(2)) {
     );
   }
   console.log(
-    `[catalog-set-image-sync] footprint avg_card_bytes=${result.footprintReport.byType.card.averageBytes} avg_hero_bytes=${result.footprintReport.byType.hero.averageBytes} avg_gallery_bytes=${result.footprintReport.byType.gallery.averageBytes} avg_social_bytes=${result.footprintReport.byType.social.averageBytes} avg_thumbnail_bytes=${result.footprintReport.byType.thumbnail.averageBytes} avg_bytes_per_set=${result.footprintReport.averageBytesPerSet} storage_gb_100=${result.footprintReport.projections.sets100.storageGb} storage_gb_1000=${result.footprintReport.projections.sets1000.storageGb} storage_gb_current_catalog=${result.footprintReport.projections.currentCatalog.storageGb} current_catalog_sets=${result.footprintReport.currentCatalogSetCount}`,
+    `[catalog-set-image-sync] footprint avg_card_bytes=${result.footprintReport.byType.card.averageBytes} avg_hero_bytes=${result.footprintReport.byType.hero.averageBytes} avg_gallery_bytes=${result.footprintReport.byType.gallery.averageBytes} avg_large_bytes=${result.footprintReport.byType.large.averageBytes} avg_social_bytes=${result.footprintReport.byType.social.averageBytes} avg_thumbnail_bytes=${result.footprintReport.byType.thumbnail.averageBytes} avg_bytes_per_set=${result.footprintReport.averageBytesPerSet} storage_gb_100=${result.footprintReport.projections.sets100.storageGb} storage_gb_1000=${result.footprintReport.projections.sets1000.storageGb} storage_gb_current_catalog=${result.footprintReport.projections.currentCatalog.storageGb} current_catalog_sets=${result.footprintReport.currentCatalogSetCount}`,
   );
   for (const audit of result.dedupeAudits) {
     console.log(

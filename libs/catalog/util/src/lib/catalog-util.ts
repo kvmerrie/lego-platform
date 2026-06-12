@@ -72,6 +72,7 @@ export interface CatalogSetImage {
   attributionText?: string;
   height?: number;
   imageRole?: CatalogSetImageRole;
+  largeUrl?: string;
   order?: number;
   sha256?: string;
   thumbnailUrl?: string;
@@ -1531,6 +1532,7 @@ function toCatalogSetImageSeed(
   }
 
   const normalizedUrl = normalizeCatalogImageUrl(image.url);
+  const normalizedLargeUrl = normalizeCatalogImageUrl(image.largeUrl);
   const normalizedThumbnailUrl = normalizeCatalogImageUrl(image.thumbnailUrl);
 
   if (!normalizedUrl) {
@@ -1560,6 +1562,11 @@ function toCatalogSetImageSeed(
     ...(normalizedThumbnailUrl
       ? {
           thumbnailUrl: normalizedThumbnailUrl,
+        }
+      : {}),
+    ...(normalizedLargeUrl
+      ? {
+          largeUrl: normalizedLargeUrl,
         }
       : {}),
     ...(image.type
@@ -1667,6 +1674,8 @@ export function normalizeCatalogSetImages({
       thumbnailUrl:
         existingCatalogSetImage.thumbnailUrl ??
         normalizedCatalogSetImage.thumbnailUrl,
+      largeUrl:
+        existingCatalogSetImage.largeUrl ?? normalizedCatalogSetImage.largeUrl,
       type: existingCatalogSetImage.type ?? normalizedCatalogSetImage.type,
       url: normalizedCatalogSetImage.url,
       width: existingCatalogSetImage.width ?? normalizedCatalogSetImage.width,
@@ -1705,6 +1714,11 @@ export function normalizeCatalogSetImages({
       ...(catalogSetImage.thumbnailUrl
         ? {
             thumbnailUrl: catalogSetImage.thumbnailUrl,
+          }
+        : {}),
+      ...(catalogSetImage.largeUrl
+        ? {
+            largeUrl: catalogSetImage.largeUrl,
           }
         : {}),
       ...(catalogSetImage.sha256

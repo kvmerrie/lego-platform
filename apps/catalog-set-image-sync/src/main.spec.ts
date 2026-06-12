@@ -10,6 +10,7 @@ import {
   parseRefreshThumbnails,
   parseRewritePublicUrls,
   parseUploadRetries,
+  parseVariantBackfill,
 } from './main';
 
 describe('catalog set image sync CLI', () => {
@@ -50,6 +51,15 @@ describe('catalog set image sync CLI', () => {
   test('parses image metadata refresh mode', () => {
     expect(parseRefreshImageMetadata([])).toBe(false);
     expect(parseRefreshImageMetadata(['--refresh-image-metadata'])).toBe(true);
+  });
+
+  test('parses large variant backfill mode', () => {
+    expect(parseVariantBackfill([])).toBeUndefined();
+    expect(parseVariantBackfill(['--variant=large'])).toBe('large');
+    expect(parseVariantBackfill(['--variant', 'large'])).toBe('large');
+    expect(() => parseVariantBackfill(['--variant=thumbnail'])).toThrow(
+      'Use --variant=large.',
+    );
   });
 
   test('parses dedupe debug mode', () => {

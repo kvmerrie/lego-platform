@@ -944,6 +944,18 @@ describe('catalog effective data access web', () => {
         },
         {
           content_type: 'image/webp',
+          height: 1493,
+          image_type: 'large',
+          public_url: '/images/sets/10309/large/0.webp',
+          set_id: '10309',
+          sort_order: 0,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/large/0.webp',
+          width: 1920,
+        },
+        {
+          content_type: 'image/webp',
           height: 900,
           image_type: 'gallery',
           metadata_json: {
@@ -981,6 +993,18 @@ describe('catalog effective data access web', () => {
         },
         {
           content_type: 'image/webp',
+          height: 1493,
+          image_type: 'large',
+          public_url: '/images/sets/10309/large/2.webp',
+          set_id: '10309',
+          sort_order: 2,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: 'sets/10309/large/2.webp',
+          width: 1920,
+        },
+        {
+          content_type: 'image/webp',
           height: 900,
           image_role: 'model_secondary',
           image_type: 'gallery',
@@ -997,6 +1021,18 @@ describe('catalog effective data access web', () => {
           storage_bucket: 'catalog-set-images',
           storage_path: null,
           width: 1200,
+        },
+        {
+          content_type: 'image/webp',
+          height: 1493,
+          image_type: 'large',
+          public_url: 'https://www.brickhunt.nl/images/sets/10309/large/3.webp',
+          set_id: '10309',
+          sort_order: 3,
+          status: 'active',
+          storage_bucket: 'catalog-set-images',
+          storage_path: null,
+          width: 1920,
         },
         {
           content_type: 'image/jpeg',
@@ -1082,6 +1118,7 @@ describe('catalog effective data access web', () => {
     expect(catalogSet?.primaryImage).toBe('/images/sets/10309/hero.webp');
     expect(catalogSet?.images).toEqual([
       {
+        largeUrl: '/images/sets/10309/large/0.webp',
         order: 0,
         thumbnailUrl: '/images/sets/10309/thumbs/0.webp',
         type: 'hero',
@@ -1098,6 +1135,7 @@ describe('catalog effective data access web', () => {
       {
         height: 900,
         imageRole: 'box_front',
+        largeUrl: '/images/sets/10309/large/2.webp',
         order: 201,
         thumbnailUrl: '/images/sets/10309/thumbs/2.webp',
         type: 'detail',
@@ -1107,6 +1145,7 @@ describe('catalog effective data access web', () => {
       {
         height: 900,
         imageRole: 'model_secondary',
+        largeUrl: '/images/sets/10309/large/3.webp',
         order: 202,
         thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
         type: 'detail',
@@ -1137,6 +1176,9 @@ describe('catalog effective data access web', () => {
     ).toBe(false);
     expect(
       catalogSet?.images?.some((image) => image.url.includes('card.webp')),
+    ).toBe(false);
+    expect(
+      catalogSet?.images?.some((image) => image.url.includes('/large/')),
     ).toBe(false);
   });
 

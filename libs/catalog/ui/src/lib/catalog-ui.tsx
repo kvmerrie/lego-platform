@@ -1881,6 +1881,11 @@ function createCatalogGalleryImageItems(
               caption: catalogSetImage.attributionText,
             }
           : {}),
+        ...(catalogSetImage.largeUrl
+          ? {
+              largeSrc: catalogSetImage.largeUrl,
+            }
+          : {}),
         src: catalogSetImage.url,
         ...(catalogSetImage.thumbnailUrl
           ? {

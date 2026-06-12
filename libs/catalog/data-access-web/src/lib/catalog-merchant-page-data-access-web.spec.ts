@@ -12,6 +12,15 @@ type InMemoryFilter = {
   value: unknown;
 };
 
+function restoreEnvValue(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}
+
 function createInMemoryTableBuilder(rows: readonly Record<string, unknown>[]) {
   const filters: InMemoryFilter[] = [];
   const orders: Array<{ ascending: boolean; column: string }> = [];
@@ -238,6 +247,28 @@ function createMerchantSnapshotTables(
 }
 
 describe('commerce merchant page snapshot reader', () => {
+  test('falls back without Supabase environment during public page prerender', async () => {
+    const previousPublicUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+    const previousPublicAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+    const previousServerUrl = process.env['SUPABASE_URL'];
+    const previousServiceRoleKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
+
+    try {
+      delete process.env['NEXT_PUBLIC_SUPABASE_URL'];
+      delete process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+      delete process.env['SUPABASE_URL'];
+      delete process.env['SUPABASE_SERVICE_ROLE_KEY'];
+
+      await expect(getActiveCommerceMerchantsOverview()).resolves.toEqual([]);
+      await expect(getMerchantDeals('goodbricks')).resolves.toBeNull();
+    } finally {
+      restoreEnvValue('NEXT_PUBLIC_SUPABASE_URL', previousPublicUrl);
+      restoreEnvValue('NEXT_PUBLIC_SUPABASE_ANON_KEY', previousPublicAnonKey);
+      restoreEnvValue('SUPABASE_URL', previousServerUrl);
+      restoreEnvValue('SUPABASE_SERVICE_ROLE_KEY', previousServiceRoleKey);
+    }
+  });
+
   test('reads merchant deals from precomputed snapshots', async () => {
     const result = await getMerchantDeals('goodbricks', {
       supabaseClient: createSupabaseClient(

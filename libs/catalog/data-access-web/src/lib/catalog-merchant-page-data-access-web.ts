@@ -1,5 +1,8 @@
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
-import { getServerSupabaseConfig } from '@lego-platform/shared/config';
+import {
+  getBrowserSupabaseConfig,
+  hasBrowserSupabaseConfig,
+} from '@lego-platform/shared/config';
 import { createClient } from '@supabase/supabase-js';
 
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
@@ -139,12 +142,18 @@ interface NormalizedMerchantSnapshot {
   onlyAtMerchantDeals: CommerceMerchantDeal[];
 }
 
-function getMerchantPageSupabaseClient(): CommerceMerchantPageSupabaseClient {
-  const serverSupabaseConfig = getServerSupabaseConfig();
+function getMerchantPageSupabaseClient():
+  | CommerceMerchantPageSupabaseClient
+  | undefined {
+  if (!hasBrowserSupabaseConfig()) {
+    return undefined;
+  }
+
+  const browserSupabaseConfig = getBrowserSupabaseConfig();
 
   return createClient(
-    serverSupabaseConfig.url,
-    serverSupabaseConfig.serviceRoleKey,
+    browserSupabaseConfig.url,
+    browserSupabaseConfig.anonKey,
     {
       auth: {
         autoRefreshToken: false,
@@ -469,10 +478,22 @@ export async function getActiveCommerceMerchantsOverview({
 }: {
   supabaseClient?: CommerceMerchantPageSupabaseClient;
 } = {}): Promise<CommerceMerchantOverviewItem[]> {
-  const [merchants, snapshotRows] = await Promise.all([
-    listActiveMerchantPageMerchants({ supabaseClient }),
-    listMerchantPageSnapshotRows({ supabaseClient }),
-  ]);
+  if (!supabaseClient) {
+    return [];
+  }
+
+  let merchants: CommerceMerchantPageMerchant[];
+  let snapshotRows: CommerceMerchantPageSnapshotRow[];
+
+  try {
+    [merchants, snapshotRows] = await Promise.all([
+      listActiveMerchantPageMerchants({ supabaseClient }),
+      listMerchantPageSnapshotRows({ supabaseClient }),
+    ]);
+  } catch {
+    return [];
+  }
+
   const snapshotByMerchantSlug = new Map(
     snapshotRows.flatMap((row) => {
       const snapshot = normalizeSnapshotPayload({ row });
@@ -512,11 +533,18 @@ export async function getMerchantDeals(
 ): Promise<CommerceMerchantDealsResult | null> {
   const normalizedMerchantSlug = normalizeMerchantSlug(merchantSlug);
 
-  if (!normalizedMerchantSlug) {
+  if (!normalizedMerchantSlug || !supabaseClient) {
     return null;
   }
 
-  const merchants = await listActiveMerchantPageMerchants({ supabaseClient });
+  let merchants: CommerceMerchantPageMerchant[];
+
+  try {
+    merchants = await listActiveMerchantPageMerchants({ supabaseClient });
+  } catch {
+    return null;
+  }
+
   const merchant = merchants.find(
     (candidateMerchant) =>
       normalizeMerchantSlug(candidateMerchant.slug) === normalizedMerchantSlug,

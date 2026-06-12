@@ -516,7 +516,7 @@ interface CatalogStoredSetImageRow {
   content_type: string | null;
   height: number | null;
   image_role?: CatalogSetImage['imageRole'] | null;
-  image_type: 'card' | 'gallery' | 'hero' | 'social' | 'thumbnail';
+  image_type: 'card' | 'gallery' | 'hero' | 'large' | 'social' | 'thumbnail';
   metadata_json?: unknown;
   public_url: string | null;
   set_id: string;
@@ -2594,6 +2594,7 @@ function getStoredGalleryImageOrder(row: CatalogStoredSetImageRow): number {
 
 function toStoredCatalogSetImage(
   row: CatalogStoredSetImageRow,
+  largeUrlBySortOrder: ReadonlyMap<number, string>,
   thumbnailUrlBySortOrder: ReadonlyMap<number, string>,
 ): CatalogSetImage | undefined {
   const publicUrl = getStoredSetImagePublicUrl(row);
@@ -2605,6 +2606,7 @@ function toStoredCatalogSetImage(
   if (
     row.image_type === 'card' ||
     row.image_type === 'hero' ||
+    row.image_type === 'large' ||
     row.image_type === 'thumbnail'
   ) {
     return undefined;
@@ -2633,6 +2635,11 @@ function toStoredCatalogSetImage(
       : {}),
     type: row.image_type === 'social' ? 'social' : 'detail',
     url: publicUrl,
+    ...(row.image_type === 'gallery' && largeUrlBySortOrder.has(row.sort_order)
+      ? {
+          largeUrl: largeUrlBySortOrder.get(row.sort_order),
+        }
+      : {}),
     ...(row.image_type === 'gallery' &&
     thumbnailUrlBySortOrder.has(row.sort_order)
       ? {
@@ -2679,10 +2686,23 @@ function applyStoredCatalogSetImages({
           getStoredSetImagePublicUrl(row) as string,
         ]),
     );
+    const largeUrlBySortOrder = new Map(
+      storedRows
+        .filter(
+          (row) =>
+            row.image_type === 'large' && getStoredSetImagePublicUrl(row),
+        )
+        .map((row) => [
+          row.sort_order,
+          getStoredSetImagePublicUrl(row) as string,
+        ]),
+    );
     const storedHeroThumbnailUrl = thumbnailUrlBySortOrder.get(0);
+    const storedHeroLargeUrl = largeUrlBySortOrder.get(0);
     const storedHeroImage =
       storedHeroPublicUrl && storedHeroThumbnailUrl
         ? {
+            ...(storedHeroLargeUrl ? { largeUrl: storedHeroLargeUrl } : {}),
             order: 0,
             thumbnailUrl: storedHeroThumbnailUrl,
             type: 'hero' as const,
@@ -2690,7 +2710,13 @@ function applyStoredCatalogSetImages({
           }
         : undefined;
     const storedImages = storedRows
-      .map((row) => toStoredCatalogSetImage(row, thumbnailUrlBySortOrder))
+      .map((row) =>
+        toStoredCatalogSetImage(
+          row,
+          largeUrlBySortOrder,
+          thumbnailUrlBySortOrder,
+        ),
+      )
       .filter((image): image is CatalogSetImage => image != null)
       .sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
 
@@ -2856,6 +2882,10 @@ function toCatalogSetDetailFromCanonicalSet(
     (image) =>
       image.type === 'hero' && image.url === canonicalCatalogSet.imageUrl,
   )?.thumbnailUrl;
+  const primaryImageLargeUrl = canonicalCatalogSet.images?.find(
+    (image) =>
+      image.type === 'hero' && image.url === canonicalCatalogSet.imageUrl,
+  )?.largeUrl;
   const nonPrimaryCanonicalImages = canonicalCatalogSet.images?.filter(
     (image) =>
       !(image.type === 'hero' && image.url === canonicalCatalogSet.imageUrl),
@@ -2941,6 +2971,11 @@ function toCatalogSetDetailFromCanonicalSet(
                     ...(primaryImageThumbnailUrl
                       ? {
                           thumbnailUrl: primaryImageThumbnailUrl,
+                        }
+                      : {}),
+                    ...(primaryImageLargeUrl
+                      ? {
+                          largeUrl: primaryImageLargeUrl,
                         }
                       : {}),
                     type: 'hero' as const,

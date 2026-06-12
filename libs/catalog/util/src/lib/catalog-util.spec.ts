@@ -383,6 +383,7 @@ describe('catalog snapshot helpers', () => {
         images: [
           'https://images.example/rivendell-side.jpg',
           {
+            largeUrl: 'https://images.example/rivendell-council-large.webp',
             thumbnailUrl: 'https://images.example/rivendell-council-thumb.jpg',
             type: 'detail',
             url: 'https://images.example/rivendell-council.jpg',
@@ -410,6 +411,7 @@ describe('catalog snapshot helpers', () => {
           url: 'https://images.example/rivendell-side.jpg',
         },
         {
+          largeUrl: 'https://images.example/rivendell-council-large.webp',
           order: 2,
           thumbnailUrl: 'https://images.example/rivendell-council-thumb.jpg',
           type: 'detail',
@@ -427,6 +429,8 @@ describe('catalog snapshot helpers', () => {
           'https://www.brickhunt.nl/images/sets/10309/hero.webp?legacy=1',
         images: [
           {
+            largeUrl:
+              'https://ggqystcenwpbrjlkcmnt.supabase.co/storage/v1/object/public/catalog-set-images/sets/10309/large/3.webp?download=1',
             thumbnailUrl:
               'https://www.brickhunt.nl/images/sets/10309/thumbs/3.webp',
             type: 'detail',
@@ -449,6 +453,7 @@ describe('catalog snapshot helpers', () => {
           url: '/images/sets/10309/hero.webp',
         },
         {
+          largeUrl: '/images/sets/10309/large/3.webp',
           order: 1,
           thumbnailUrl: '/images/sets/10309/thumbs/3.webp',
           type: 'detail',

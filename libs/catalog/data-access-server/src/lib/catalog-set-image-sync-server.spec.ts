@@ -1,6 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
 import sharp = require('sharp');
 import {
+  LARGE_SET_IMAGE_MAX_DIMENSION,
+  LARGE_SET_IMAGE_WEBP_QUALITY,
   copyCatalogSetImageMetadata,
   rewriteCatalogSetImagePublicUrls,
   syncCatalogSetImages,
@@ -215,6 +217,8 @@ async function createTestImage({
   background = '#ffffff',
   box,
   format = 'png',
+  height = 120,
+  width = 160,
 }: {
   background?: string;
   box?: {
@@ -225,13 +229,15 @@ async function createTestImage({
     width: number;
   };
   format?: 'jpeg' | 'png';
+  height?: number;
+  width?: number;
 } = {}): Promise<Buffer> {
   const base = sharp({
     create: {
       background,
       channels: 3,
-      height: 120,
-      width: 160,
+      height,
+      width,
     },
   });
   const image = box
@@ -372,6 +378,7 @@ describe('catalog set image sync server', () => {
     expect(result.footprintReport.byType.card.averageBytes).toBeGreaterThan(0);
     expect(result.footprintReport.byType.hero.averageBytes).toBeGreaterThan(0);
     expect(result.footprintReport.byType.gallery.averageBytes).toBe(0);
+    expect(result.footprintReport.byType.large.averageBytes).toBeGreaterThan(0);
     expect(result.footprintReport.byType.social.averageBytes).toBeGreaterThan(
       0,
     );
@@ -416,7 +423,7 @@ describe('catalog set image sync server', () => {
     });
 
     expect(result.exactDuplicateCount).toBe(1);
-    expect(upload).toHaveBeenCalledTimes(4);
+    expect(upload).toHaveBeenCalledTimes(5);
     expect(upsert).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
@@ -738,7 +745,7 @@ describe('catalog set image sync server', () => {
     ).rejects.toThrow('--debug-dedupe is dry-run only');
   });
 
-  test('writes hero, card, social, and thumbnail rows when write mode is enabled', async () => {
+  test('writes hero, large, card, social, and thumbnail rows when write mode is enabled', async () => {
     const { client, upload, upsert } = createSetImageSyncSupabaseMock({
       catalogRows: [createCatalogRow()],
     });
@@ -750,7 +757,7 @@ describe('catalog set image sync server', () => {
     });
 
     expect(result.uploadedBytes).toBeGreaterThan(0);
-    expect(upload).toHaveBeenCalledTimes(4);
+    expect(upload).toHaveBeenCalledTimes(5);
     expect(upsert).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
@@ -774,6 +781,17 @@ describe('catalog set image sync server', () => {
           set_id: '10316',
           status: 'active',
           storage_path: 'sets/10316/card.webp',
+        }),
+        expect.objectContaining({
+          image_type: 'large',
+          metadata_json: expect.objectContaining({
+            storagePublicUrl:
+              'https://storage.example.com/sets/10316/large/0.webp',
+          }),
+          public_url: '/images/sets/10316/large/0.webp',
+          set_id: '10316',
+          status: 'active',
+          storage_path: 'sets/10316/large/0.webp',
         }),
         expect.objectContaining({
           image_type: 'social',
@@ -823,7 +841,7 @@ describe('catalog set image sync server', () => {
       supabaseClient: client,
     });
 
-    expect(upload).toHaveBeenCalledTimes(4);
+    expect(upload).toHaveBeenCalledTimes(5);
     expect(result.failedSetCount).toBe(0);
     expect(result.failedSourceCount).toBe(0);
     expect(result.failedVariantCount).toBe(1);
@@ -1555,6 +1573,71 @@ describe('catalog set image sync server', () => {
     );
   });
 
+  test('refreshes large images at 1920 WebP quality 88 without re-uploading other variants', async () => {
+    const { client, upload, upsert } = createSetImageSyncSupabaseMock({
+      catalogRows: [createCatalogRow()],
+      imageRows: [createStoredImageRow()],
+    });
+
+    const result = await syncCatalogSetImages({
+      dryRun: false,
+      fetchFn: createImageFetch({
+        bytes: await createTestImage({
+          height: 2000,
+          width: 2400,
+        }),
+      }),
+      refreshLarge: true,
+      supabaseClient: client,
+    });
+
+    const uploadedLargeImage = upload.mock.calls[0]?.[1] as Buffer | undefined;
+    const uploadedMetadata = uploadedLargeImage
+      ? await sharp(uploadedLargeImage).metadata()
+      : undefined;
+
+    expect(LARGE_SET_IMAGE_WEBP_QUALITY).toBe(88);
+    expect(result.refreshLarge).toBe(true);
+    expect(result.results[0]?.largeImageStored).toBe(true);
+    expect(result.results[0]?.imageCountByType.hero).toBe(0);
+    expect(result.results[0]?.imageCountByType.card).toBe(0);
+    expect(result.results[0]?.imageCountByType.gallery).toBe(0);
+    expect(result.results[0]?.imageCountByType.large).toBe(1);
+    expect(result.results[0]?.imageCountByType.social).toBe(0);
+    expect(result.results[0]?.imageCountByType.thumbnail).toBe(0);
+    expect(uploadedMetadata?.format).toBe('webp');
+    expect(uploadedMetadata?.width).toBeLessThanOrEqual(
+      LARGE_SET_IMAGE_MAX_DIMENSION,
+    );
+    expect(uploadedMetadata?.height).toBeLessThanOrEqual(
+      LARGE_SET_IMAGE_MAX_DIMENSION,
+    );
+    expect(upload).toHaveBeenCalledTimes(1);
+    expect(upload).toHaveBeenCalledWith(
+      'sets/10316/large/0.webp',
+      expect.any(Buffer),
+      expect.objectContaining({
+        contentType: 'image/webp',
+        upsert: true,
+      }),
+    );
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          content_type: 'image/webp',
+          image_type: 'large',
+          public_url: '/images/sets/10316/large/0.webp',
+          set_id: '10316',
+          status: 'active',
+          storage_path: 'sets/10316/large/0.webp',
+        }),
+      ],
+      {
+        onConflict: 'set_id,image_type,sort_order',
+      },
+    );
+  });
+
   test('refreshes thumbnails for hero and visible gallery images only', async () => {
     const imageByUrl = new Map([
       [
@@ -1949,6 +2032,7 @@ describe('catalog set image sync server', () => {
       completeImageSetCount: 1,
       missingCardCount: 2,
       missingHeroCount: 1,
+      missingLargeCount: 4,
       missingSocialCount: 2,
       selectedSetCount: 3,
     });
@@ -2093,8 +2177,11 @@ describe('catalog set image sync server', () => {
       storageSupabaseClient: storage.client,
     });
 
-    expect(storage.upload).toHaveBeenCalledTimes(4);
+    expect(storage.upload).toHaveBeenCalledTimes(5);
     expect(storage.getPublicUrl).toHaveBeenCalledWith('sets/10316/hero.webp');
+    expect(storage.getPublicUrl).toHaveBeenCalledWith(
+      'sets/10316/large/0.webp',
+    );
     expect(storage.getPublicUrl).toHaveBeenCalledWith('sets/10316/card.webp');
     expect(storage.getPublicUrl).toHaveBeenCalledWith(
       'sets/10316/thumbs/0.webp',

@@ -10,6 +10,7 @@ const CATALOG_STORED_SET_IMAGE_TYPES = [
   'card',
   'gallery',
   'hero',
+  'large',
   'social',
   'thumbnail',
 ] as const;
@@ -36,6 +37,8 @@ const BYTES_PER_GB = 1_000_000_000;
 const SOCIAL_IMAGE_BACKGROUND = { b: 255, g: 255, r: 255 } as const;
 const SOCIAL_IMAGE_HEIGHT = 630;
 const SOCIAL_IMAGE_WIDTH = 1200;
+export const LARGE_SET_IMAGE_MAX_DIMENSION = 1920;
+export const LARGE_SET_IMAGE_WEBP_QUALITY = 88;
 const PERCEPTUAL_DUPLICATE_DISTANCE_THRESHOLD = 5;
 const DEDUPE_AUDIT_THRESHOLDS = [5, 8, 10, 12, 16] as const;
 const DEDUPE_AUDIT_GALLERY_PAIR_LIMIT = 10;
@@ -109,6 +112,7 @@ export interface CatalogSetImageSyncItemResult {
   imageBytesByType: Record<CatalogStoredSetImageType, number>;
   imageCountByType: Record<CatalogStoredSetImageType, number>;
   heroSimilaritySuppressedCount: number;
+  largeImageStored: boolean;
   perceptualDuplicateCount: number;
   roleCounts: Record<CatalogSetImageRole, number>;
   setId: string;
@@ -253,6 +257,7 @@ export interface CatalogSetImageSyncResult {
   refreshFailed: boolean;
   refreshSocial: boolean;
   refreshCard: boolean;
+  refreshLarge: boolean;
   refreshThumbnails: boolean;
   roleCounts: Record<CatalogSetImageRole, number>;
   selectedSetCount: number;
@@ -270,6 +275,7 @@ export interface CatalogSetImageCoverageDiagnostics {
   completeImageSetCount: number;
   missingCardCount: number;
   missingHeroCount: number;
+  missingLargeCount: number;
   missingSocialCount: number;
   selectedSetCount: number;
 }
@@ -291,6 +297,7 @@ export interface CatalogSetImageSyncOptions {
   refreshImageMetadata?: boolean;
   refreshFailed?: boolean;
   refreshCard?: boolean;
+  refreshLarge?: boolean;
   refreshSocial?: boolean;
   refreshThumbnails?: boolean;
   onProgress?: (progress: CatalogSetImageSyncProgress) => void;
@@ -434,6 +441,7 @@ interface CatalogSetImageProcessContext {
   debugDedupe: boolean;
   refreshImageMetadata: boolean;
   refreshCard: boolean;
+  refreshLarge: boolean;
   refreshSocial: boolean;
   refreshThumbnails: boolean;
   storageSupabaseClient: CatalogSetImageStorageClient;
@@ -457,6 +465,7 @@ interface CatalogSetImageUploadErrorDetails {
 interface CatalogSetImageState {
   activeCardSetIds: Set<string>;
   activeHeroSetIds: Set<string>;
+  activeLargeSetIds: Set<string>;
   activeSocialSetIds: Set<string>;
   activeThumbnailSetIds: Set<string>;
   failedSetIds: Set<string>;
@@ -499,6 +508,7 @@ function createEmptyImageTypeNumberRecord(): Record<
     card: 0,
     gallery: 0,
     hero: 0,
+    large: 0,
     social: 0,
     thumbnail: 0,
   };
@@ -1652,16 +1662,27 @@ async function optimizeSetImageVariant({
               .webp({
                 quality: 78,
               })
-          : image
-              .resize({
-                fit: 'inside',
-                height: 1280,
-                width: 1280,
-                withoutEnlargement: true,
-              })
-              .webp({
-                quality: 84,
-              });
+          : imageType === 'large'
+            ? image
+                .resize({
+                  fit: 'inside',
+                  height: LARGE_SET_IMAGE_MAX_DIMENSION,
+                  width: LARGE_SET_IMAGE_MAX_DIMENSION,
+                  withoutEnlargement: true,
+                })
+                .webp({
+                  quality: LARGE_SET_IMAGE_WEBP_QUALITY,
+                })
+            : image
+                .resize({
+                  fit: 'inside',
+                  height: 1280,
+                  width: 1280,
+                  withoutEnlargement: true,
+                })
+                .webp({
+                  quality: 84,
+                });
   const output = await transformed.toBuffer({ resolveWithObject: true });
 
   return {
@@ -1858,7 +1879,18 @@ function getImageForStoredSlot({
   imageType: CatalogStoredSetImageType;
   sortOrder: number;
 }): AnalyzedSetImage | undefined {
-  if (imageType === 'card' || imageType === 'hero' || imageType === 'social') {
+  if (
+    imageType === 'card' ||
+    imageType === 'hero' ||
+    imageType === 'large' ||
+    imageType === 'social'
+  ) {
+    if (imageType === 'large' && sortOrder > 0) {
+      return analyzedGalleryImages.find(
+        (image) => image.sortOrder === sortOrder,
+      );
+    }
+
     return sortOrder === 0 ? analyzedHeroImage : undefined;
   }
 
@@ -1880,6 +1912,12 @@ function getDuplicateDecisionForStoredSlot({
   image: AnalyzedSetImage;
   imageType: CatalogStoredSetImageType;
 }): DuplicateDecision | undefined {
+  if (imageType === 'large') {
+    return image.sortOrder > 0
+      ? duplicateDecisions.get(image.slotKey)
+      : undefined;
+  }
+
   if (imageType === 'card' || imageType === 'hero' || imageType === 'social') {
     return undefined;
   }
@@ -1920,6 +1958,7 @@ function buildMetadataRefreshRows({
       });
       const curationDecision =
         existingRow.image_type === 'gallery' ||
+        (existingRow.image_type === 'large' && existingRow.sort_order > 0) ||
         (existingRow.image_type === 'thumbnail' && existingRow.sort_order > 0)
           ? curationDecisions.get(image.slotKey)
           : undefined;
@@ -2267,6 +2306,7 @@ async function processCatalogSetImageSyncCandidate({
   metadataSupabaseClient,
   refreshImageMetadata,
   refreshCard,
+  refreshLarge,
   refreshSocial,
   refreshThumbnails,
   storageSupabaseClient,
@@ -2299,6 +2339,7 @@ async function processCatalogSetImageSyncCandidate({
       heroSimilaritySuppressedCount: 0,
       imageBytesByType: createEmptyImageTypeNumberRecord(),
       imageCountByType: createEmptyImageTypeNumberRecord(),
+      largeImageStored: false,
       perceptualDuplicateCount: 0,
       roleCounts: createEmptyRoleCountRecord(),
       setId: candidate.setId,
@@ -2396,6 +2437,7 @@ async function processCatalogSetImageSyncCandidate({
       heroSimilaritySuppressedCount: 0,
       imageBytesByType: createEmptyImageTypeNumberRecord(),
       imageCountByType: createEmptyImageTypeNumberRecord(),
+      largeImageStored: false,
       perceptualDuplicateCount: 0,
       roleCounts: createEmptyRoleCountRecord(),
       setId: candidate.setId,
@@ -2532,6 +2574,7 @@ async function processCatalogSetImageSyncCandidate({
       heroSimilaritySuppressedCount: suppressedImages.length,
       imageBytesByType: createEmptyImageTypeNumberRecord(),
       imageCountByType,
+      largeImageStored: refreshRows.some((row) => row.image_type === 'large'),
       perceptualDuplicateCount,
       roleCounts,
       setId: candidate.setId,
@@ -2572,8 +2615,9 @@ async function processCatalogSetImageSyncCandidate({
     })
     .filter((row): row is CatalogSetImageUpsertRow => row != null);
   const shouldGenerateFullImages =
-    !refreshCard && !refreshSocial && !refreshThumbnails;
+    !refreshCard && !refreshLarge && !refreshSocial && !refreshThumbnails;
   const shouldGenerateCardImage = shouldGenerateFullImages || refreshCard;
+  const shouldGenerateLargeImages = shouldGenerateFullImages || refreshLarge;
   const shouldGenerateSocialImage = shouldGenerateFullImages || refreshSocial;
   const shouldGenerateThumbnailImages =
     shouldGenerateFullImages || refreshThumbnails;
@@ -2604,6 +2648,21 @@ async function processCatalogSetImageSyncCandidate({
         imageType: 'card',
         inputBytes: analyzedHeroImage.downloadedImage.bytes,
         storagePath: `sets/${candidate.setId}/card.webp`,
+      }),
+    });
+  }
+
+  if (shouldGenerateLargeImages) {
+    variants.push({
+      image: analyzedHeroImage,
+      originalSha256: analyzedHeroImage.downloadedImage.sha256,
+      sortOrder: 0,
+      source: analyzedHeroImage.candidate.source,
+      sourceUrl: analyzedHeroImage.candidate.imageUrl,
+      variant: await optimizeSetImageVariant({
+        imageType: 'large',
+        inputBytes: analyzedHeroImage.downloadedImage.bytes,
+        storagePath: `sets/${candidate.setId}/large/0.webp`,
       }),
     });
   }
@@ -2657,6 +2716,24 @@ async function processCatalogSetImageSyncCandidate({
           imageType: 'gallery',
           inputBytes: galleryImage.downloadedImage.bytes,
           storagePath: `sets/${candidate.setId}/gallery/${sortOrder}.webp`,
+        }),
+      });
+    }
+
+    if (
+      shouldGenerateLargeImages &&
+      visibleGallerySlotKeys.has(galleryImage.slotKey)
+    ) {
+      variants.push({
+        image: galleryImage,
+        originalSha256: galleryImage.downloadedImage.sha256,
+        sortOrder,
+        source: galleryImage.candidate.source,
+        sourceUrl: galleryImage.candidate.imageUrl,
+        variant: await optimizeSetImageVariant({
+          imageType: 'large',
+          inputBytes: galleryImage.downloadedImage.bytes,
+          storagePath: `sets/${candidate.setId}/large/${sortOrder}.webp`,
         }),
       });
     }
@@ -2751,6 +2828,7 @@ async function processCatalogSetImageSyncCandidate({
       );
       const curationDecision =
         variant.variant.imageType === 'gallery' ||
+        (variant.variant.imageType === 'large' && variant.sortOrder > 0) ||
         (variant.variant.imageType === 'thumbnail' && variant.sortOrder > 0)
           ? curationDecisions.get(variant.image.slotKey)
           : undefined;
@@ -2809,6 +2887,7 @@ async function processCatalogSetImageSyncCandidate({
     heroSimilaritySuppressedCount: suppressedImages.length,
     imageBytesByType,
     imageCountByType,
+    largeImageStored: isImageTypeStored('large'),
     perceptualDuplicateCount,
     roleCounts,
     setId: candidate.setId,
@@ -2829,6 +2908,7 @@ async function listCatalogSetImageSyncCandidates({
   refreshImageMetadata,
   refreshFailed,
   refreshCard,
+  refreshLarge,
   refreshSocial,
   refreshThumbnails,
   setIds,
@@ -2839,12 +2919,14 @@ async function listCatalogSetImageSyncCandidates({
   refreshImageMetadata: boolean;
   refreshFailed: boolean;
   refreshCard: boolean;
+  refreshLarge: boolean;
   refreshSocial: boolean;
   refreshThumbnails: boolean;
   setIds?: readonly string[];
   supabaseClient: CatalogSetImageMetadataClient;
 }): Promise<CatalogSetImageCandidateSelection> {
-  const requiresImageStateFiltering = missingOnly || refreshFailed;
+  const requiresImageStateFiltering =
+    missingOnly || refreshFailed || refreshLarge;
   const candidateRows = requiresImageStateFiltering
     ? await listCatalogSetImageCandidateRowsForFiltering({
         setIds,
@@ -2892,6 +2974,13 @@ async function listCatalogSetImageSyncCandidates({
           (!state.activeCardSetIds.has(candidate.setId) ||
             !state.activeSocialSetIds.has(candidate.setId) ||
             !state.activeThumbnailSetIds.has(candidate.setId))
+        );
+      }
+
+      if (refreshLarge) {
+        return (
+          state.activeHeroSetIds.has(candidate.setId) &&
+          !state.activeLargeSetIds.has(candidate.setId)
         );
       }
 
@@ -2952,6 +3041,14 @@ async function listCatalogSetImageSyncCandidates({
     }
 
     if (missingOnly) {
+      return isMissing;
+    }
+
+    if (refreshLarge && refreshFailed) {
+      return isMissing || hasFailed;
+    }
+
+    if (refreshLarge) {
       return isMissing;
     }
 
@@ -3079,11 +3176,13 @@ function buildCatalogSetImageCoverageDiagnostics({
   let completeImageSetCount = 0;
   let missingCardCount = 0;
   let missingHeroCount = 0;
+  let missingLargeCount = 0;
   let missingSocialCount = 0;
 
   for (const candidate of candidates) {
     const hasCard = state.activeCardSetIds.has(candidate.setId);
     const hasHero = state.activeHeroSetIds.has(candidate.setId);
+    const hasLarge = state.activeLargeSetIds.has(candidate.setId);
     const hasSocial = state.activeSocialSetIds.has(candidate.setId);
 
     if (hasCard && hasHero && hasSocial) {
@@ -3098,6 +3197,10 @@ function buildCatalogSetImageCoverageDiagnostics({
       missingHeroCount += 1;
     }
 
+    if (!hasLarge) {
+      missingLargeCount += 1;
+    }
+
     if (!hasSocial) {
       missingSocialCount += 1;
     }
@@ -3108,6 +3211,7 @@ function buildCatalogSetImageCoverageDiagnostics({
     completeImageSetCount,
     missingCardCount,
     missingHeroCount,
+    missingLargeCount,
     missingSocialCount,
     selectedSetCount,
   };
@@ -3151,6 +3255,7 @@ async function readCatalogSetImageState({
 }): Promise<{
   activeHeroSetIds: Set<string>;
   activeCardSetIds: Set<string>;
+  activeLargeSetIds: Set<string>;
   activeSocialSetIds: Set<string>;
   activeThumbnailSetIds: Set<string>;
   failedSetIds: Set<string>;
@@ -3158,6 +3263,7 @@ async function readCatalogSetImageState({
 }> {
   const activeHeroSetIds = new Set<string>();
   const activeCardSetIds = new Set<string>();
+  const activeLargeSetIds = new Set<string>();
   const activeSocialSetIds = new Set<string>();
   const activeThumbnailSetIds = new Set<string>();
   const failedSetIds = new Set<string>();
@@ -3167,6 +3273,7 @@ async function readCatalogSetImageState({
     return {
       activeHeroSetIds,
       activeCardSetIds,
+      activeLargeSetIds,
       activeSocialSetIds,
       activeThumbnailSetIds,
       failedSetIds,
@@ -3210,6 +3317,10 @@ async function readCatalogSetImageState({
           activeHeroSetIds.add(row.set_id);
         }
 
+        if (row.image_type === 'large' && row.status === 'active') {
+          activeLargeSetIds.add(row.set_id);
+        }
+
         if (row.image_type === 'social' && row.status === 'active') {
           activeSocialSetIds.add(row.set_id);
         }
@@ -3240,6 +3351,7 @@ async function readCatalogSetImageState({
   return {
     activeHeroSetIds,
     activeCardSetIds,
+    activeLargeSetIds,
     activeSocialSetIds,
     activeThumbnailSetIds,
     failedSetIds,
@@ -3400,7 +3512,11 @@ function buildCatalogSetImageFootprintReport({
   activeCatalogSetCount: number;
   results: readonly CatalogSetImageSyncItemResult[];
 }): CatalogSetImageFootprintReport {
-  const sampledResults = results.filter((result) => result.heroImageStored);
+  const sampledResults = results.filter((result) =>
+    CATALOG_STORED_SET_IMAGE_TYPES.some(
+      (imageType) => result.imageCountByType[imageType] > 0,
+    ),
+  );
   const sampleSetCount = sampledResults.length;
   const byType = {
     card: {
@@ -3414,6 +3530,11 @@ function buildCatalogSetImageFootprintReport({
       totalBytes: 0,
     },
     hero: {
+      averageBytes: 0,
+      imageCount: 0,
+      totalBytes: 0,
+    },
+    large: {
       averageBytes: 0,
       imageCount: 0,
       totalBytes: 0,
@@ -3489,20 +3610,23 @@ function buildCatalogSetImageFootprintReport({
 function isCatalogSetImageSyncResultFailedForMode({
   refreshCard,
   refreshImageMetadata,
+  refreshLarge,
   refreshSocial,
   refreshThumbnails,
   result,
 }: {
   refreshCard: boolean;
   refreshImageMetadata: boolean;
+  refreshLarge: boolean;
   refreshSocial: boolean;
   refreshThumbnails: boolean;
   result: CatalogSetImageSyncItemResult;
 }): boolean {
-  if (refreshCard || refreshSocial || refreshThumbnails) {
+  if (refreshCard || refreshLarge || refreshSocial || refreshThumbnails) {
     return (
       result.failedVariantCount > 0 ||
       (refreshCard && !result.cardImageStored) ||
+      (refreshLarge && !result.largeImageStored) ||
       (refreshSocial && !result.socialImageStored) ||
       (refreshThumbnails && !result.thumbnailImageStored)
     );
@@ -3528,6 +3652,7 @@ export async function syncCatalogSetImages({
   refreshImageMetadata = false,
   refreshFailed = false,
   refreshCard = false,
+  refreshLarge = false,
   refreshSocial = false,
   refreshThumbnails = false,
   setIds,
@@ -3562,6 +3687,7 @@ export async function syncCatalogSetImages({
     refreshImageMetadata,
     refreshFailed,
     refreshCard,
+    refreshLarge,
     refreshSocial,
     refreshThumbnails,
     setIds: normalizedSetIds,
@@ -3598,6 +3724,7 @@ export async function syncCatalogSetImages({
         metadataSupabaseClient: resolvedMetadataSupabaseClient,
         refreshImageMetadata,
         refreshCard,
+        refreshLarge,
         refreshSocial,
         refreshThumbnails,
         storageSupabaseClient: resolvedStorageSupabaseClient,
@@ -3635,6 +3762,7 @@ export async function syncCatalogSetImages({
       isCatalogSetImageSyncResultFailedForMode({
         refreshCard,
         refreshImageMetadata,
+        refreshLarge,
         refreshSocial,
         refreshThumbnails,
         result,
@@ -3675,6 +3803,7 @@ export async function syncCatalogSetImages({
     refreshImageMetadata,
     refreshFailed,
     refreshCard,
+    refreshLarge,
     refreshSocial,
     refreshThumbnails,
     results,

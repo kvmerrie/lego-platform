@@ -10,25 +10,39 @@ import {
   ImageGallery,
   type CarouselImage,
 } from './image-carousel';
+import {
+  clampImageZoomTransform,
+  getImageZoomContentPointForFocalPoint,
+  stepImageZoomMomentum,
+  zoomImageTransformAroundContentPoint,
+  zoomImageTransformAroundFocalPoint,
+} from './image-zoom-gestures';
 
 vi.mock('next/image', () => ({
   default: ({
     alt,
     className,
+    quality,
     src,
   }: {
     alt: string;
     className?: string;
+    quality?: number;
     src: string;
-  }) => <img alt={alt} className={className} src={src} />,
+  }) => (
+    <img alt={alt} className={className} data-quality={quality} src={src} />
+  ),
 }));
 
 function dispatchPointerEvent(
   element: Element | null,
   type: string,
   options: {
+    button?: number;
+    buttons?: number;
     clientX: number;
     clientY: number;
+    isPrimary?: boolean;
     pointerId?: number;
     pointerType?: string;
   },
@@ -43,8 +57,13 @@ function dispatchPointerEvent(
   });
 
   Object.assign(event, {
+    button: options.button ?? 0,
+    buttons:
+      options.buttons ??
+      (type === 'pointerup' || type === 'pointercancel' ? 0 : 1),
     clientX: options.clientX,
     clientY: options.clientY,
+    isPrimary: options.isPrimary ?? true,
     pointerId: options.pointerId ?? 1,
     pointerType: options.pointerType ?? 'touch',
   });
@@ -54,9 +73,254 @@ function dispatchPointerEvent(
   return event;
 }
 
+function mockPointerCapture(element: Element | null) {
+  const capturedPointerIds = new Set<number>();
+  const setPointerCapture = vi.fn((pointerId: number) => {
+    capturedPointerIds.add(pointerId);
+  });
+  const releasePointerCapture = vi.fn((pointerId: number) => {
+    capturedPointerIds.delete(pointerId);
+  });
+  const hasPointerCapture = vi.fn((pointerId: number) =>
+    capturedPointerIds.has(pointerId),
+  );
+
+  if (element) {
+    Object.defineProperties(element, {
+      hasPointerCapture: {
+        configurable: true,
+        value: hasPointerCapture,
+      },
+      releasePointerCapture: {
+        configurable: true,
+        value: releasePointerCapture,
+      },
+      setPointerCapture: {
+        configurable: true,
+        value: setPointerCapture,
+      },
+    });
+  }
+
+  return {
+    hasPointerCapture,
+    releasePointerCapture,
+    setPointerCapture,
+  };
+}
+
+function mockElementRect(
+  element: Element | null,
+  {
+    height,
+    left = 0,
+    top = 0,
+    width,
+  }: {
+    height: number;
+    left?: number;
+    top?: number;
+    width: number;
+  },
+) {
+  if (!element) {
+    return;
+  }
+
+  Object.defineProperty(element, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => ({
+      bottom: top + height,
+      height,
+      left,
+      right: left + width,
+      toJSON: () => undefined,
+      top,
+      width,
+      x: left,
+      y: top,
+    }),
+  });
+}
+
 describe('ImageGallery', () => {
   let container: HTMLDivElement;
   let root: Root;
+
+  describe('image zoom gesture helpers', () => {
+    it('zooms around a focal point instead of the image center', () => {
+      const transform = zoomImageTransformAroundFocalPoint({
+        currentTransform: {
+          scale: 1,
+          translateX: 0,
+          translateY: 0,
+        },
+        focalPoint: {
+          x: -150,
+          y: -100,
+        },
+        targetScale: 2.5,
+        transformOptions: {
+          maxScale: 3,
+          minScale: 1,
+          viewport: {
+            height: 300,
+            width: 400,
+          },
+        },
+      });
+
+      expect(transform).toEqual({
+        scale: 2.5,
+        translateX: 225,
+        translateY: 150,
+      });
+    });
+
+    it('keeps the pinch midpoint stable under the fingers', () => {
+      const initialTransform = {
+        scale: 1.5,
+        translateX: 20,
+        translateY: -10,
+      };
+      const contentPoint = getImageZoomContentPointForFocalPoint({
+        focalPoint: {
+          x: 80,
+          y: 20,
+        },
+        transform: initialTransform,
+      });
+      const nextTransform = zoomImageTransformAroundContentPoint({
+        contentPoint,
+        focalPoint: {
+          x: 100,
+          y: 40,
+        },
+        targetScale: 2.4,
+        transformOptions: {
+          maxScale: 3,
+          minScale: 1,
+          viewport: {
+            height: 300,
+            width: 400,
+          },
+        },
+      });
+
+      expect(contentPoint).toEqual({
+        x: 40,
+        y: 20,
+      });
+      expect(
+        nextTransform.translateX + contentPoint.x * nextTransform.scale,
+      ).toBeCloseTo(100);
+      expect(
+        nextTransform.translateY + contentPoint.y * nextTransform.scale,
+      ).toBeCloseTo(40);
+    });
+
+    it('clamps pan so the zoomed image cannot be dragged fully out of view', () => {
+      expect(
+        clampImageZoomTransform(
+          {
+            scale: 2,
+            translateX: 1000,
+            translateY: -1000,
+          },
+          {
+            maxScale: 3,
+            minScale: 1,
+            viewport: {
+              height: 200,
+              width: 300,
+            },
+          },
+        ),
+      ).toEqual({
+        scale: 2,
+        translateX: 150,
+        translateY: -100,
+      });
+
+      expect(
+        clampImageZoomTransform(
+          {
+            scale: 1,
+            translateX: 80,
+            translateY: 40,
+          },
+          {
+            maxScale: 3,
+            minScale: 1,
+            viewport: {
+              height: 200,
+              width: 300,
+            },
+          },
+        ),
+      ).toEqual({
+        scale: 1,
+        translateX: 0,
+        translateY: 0,
+      });
+    });
+
+    it('applies momentum with friction and stops at bounds', () => {
+      const momentumStep = stepImageZoomMomentum({
+        elapsedMs: 1000 / 60,
+        friction: 0.92,
+        minVelocity: 0.01,
+        transform: {
+          scale: 2,
+          translateX: 0,
+          translateY: 0,
+        },
+        transformOptions: {
+          maxScale: 3,
+          minScale: 1,
+          viewport: {
+            height: 300,
+            width: 400,
+          },
+        },
+        velocity: {
+          x: 1,
+          y: 0,
+        },
+      });
+
+      expect(momentumStep.transform.translateX).toBeCloseTo(1000 / 60);
+      expect(momentumStep.velocity.x).toBeCloseTo(0.92);
+      expect(momentumStep.shouldContinue).toBe(true);
+
+      const boundedStep = stepImageZoomMomentum({
+        elapsedMs: 1000 / 60,
+        friction: 0.92,
+        minVelocity: 0.01,
+        transform: {
+          scale: 2,
+          translateX: 200,
+          translateY: 0,
+        },
+        transformOptions: {
+          maxScale: 3,
+          minScale: 1,
+          viewport: {
+            height: 300,
+            width: 400,
+          },
+        },
+        velocity: {
+          x: 1,
+          y: 0,
+        },
+      });
+
+      expect(boundedStep.transform.translateX).toBe(200);
+      expect(boundedStep.velocity.x).toBe(0);
+      expect(boundedStep.shouldContinue).toBe(false);
+    });
+  });
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -227,6 +491,87 @@ describe('ImageGallery', () => {
     expect(mobileFocusRule).toContain(
       'box-shadow: inset 0 0 0 4px var(--lego-focus-ring);',
     );
+  });
+
+  it('uses high quality for set detail and lightbox images while keeping thumbnails lean', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'LEGO Icons Vespa 125 hoofdbeeld',
+              largeSrc: '/images/sets/10298/large/0.webp',
+              src: '/images/sets/10298/hero.webp',
+              thumbnailSrc: '/images/sets/10298/thumbs/hero.webp',
+            },
+            {
+              alt: 'LEGO Icons Vespa 125 stuurdetail',
+              src: '/images/sets/10298/gallery/detail.webp',
+              thumbnailSrc: '/images/sets/10298/thumbs/detail.webp',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    expect(
+      Array.from(
+        container.querySelectorAll<HTMLImageElement>(
+          '[class*="galleryImageDetail"]',
+        ),
+      ).some((image) => image.getAttribute('data-quality') === '90'),
+    ).toBe(true);
+    expect(
+      container
+        .querySelector<HTMLImageElement>('[class*="detailMainFrame"] img')
+        ?.getAttribute('src'),
+    ).toBe('/images/sets/10298/large/0.webp');
+
+    expect(
+      Array.from(
+        container.querySelectorAll<HTMLImageElement>(
+          '[class*="galleryImageThumbnail"]',
+        ),
+      ).every((image) => !image.hasAttribute('data-quality')),
+    ).toBe(true);
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      Array.from(
+        document.body.querySelectorAll<HTMLImageElement>(
+          '[data-lightbox-media-surface="light"] [class*="galleryImageDetail"]',
+        ),
+      ).some((image) => image.getAttribute('data-quality') === '90'),
+    ).toBe(true);
+    expect(
+      document.body
+        .querySelector<HTMLImageElement>(
+          '[data-lightbox-media-surface="light"] [class*="galleryImageDetail"]',
+        )
+        ?.getAttribute('src'),
+    ).toBe('/images/sets/10298/large/0.webp');
   });
 
   it('renders an article grid and opens a fullscreen viewer with controls for multiple images', () => {
@@ -2153,7 +2498,7 @@ describe('ImageGallery', () => {
     );
   });
 
-  it('zooms the selected lightbox image and resets zoom on image change', () => {
+  it('zooms the selected lightbox image with a desktop double click and resets zoom on image change', () => {
     act(() => {
       root.render(
         <ImageGallery
@@ -2199,12 +2544,18 @@ describe('ImageGallery', () => {
     );
 
     expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('false');
+    mockElementRect(mediaFrame, {
+      height: 300,
+      width: 400,
+    });
 
     act(() => {
       mediaFrame?.dispatchEvent(
         new MouseEvent('dblclick', {
           bubbles: true,
           cancelable: true,
+          clientX: 40,
+          clientY: 50,
         }),
       );
     });
@@ -2214,7 +2565,7 @@ describe('ImageGallery', () => {
       mediaFrame
         ?.querySelector<HTMLElement>('[class*="lightboxZoomSurface"]')
         ?.getAttribute('style'),
-    ).toContain('scale(2)');
+    ).toContain('translate3d(240px, 150px, 0) scale(2.5)');
 
     act(() => {
       document.body
@@ -2234,6 +2585,637 @@ describe('ImageGallery', () => {
         .querySelector<HTMLElement>('[data-lightbox-media-surface="light"]')
         ?.getAttribute('data-lightbox-zoomed'),
     ).toBe('false');
+  });
+
+  it('debounces a rapid desktop double click after zooming and allows a later double click to zoom out', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Ruimteschip cockpit detail',
+                src: 'https://images.example/spaceship-cockpit-detail.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector<HTMLElement>(
+        '[data-lightbox-media-surface="light"]',
+      );
+      const zoomSurface = () =>
+        mediaFrame?.querySelector<HTMLElement>(
+          '[class*="lightboxZoomSurface"]',
+        );
+
+      mockElementRect(mediaFrame, {
+        height: 300,
+        width: 400,
+      });
+
+      act(() => {
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(2.5)');
+
+      act(() => {
+        vi.advanceTimersByTime(80);
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(2.5)');
+
+      act(() => {
+        vi.advanceTimersByTime(340);
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('false');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(1)');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not move a zoomed lightbox image on desktop mousemove alone', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Ruimteschip motor detail',
+                src: 'https://images.example/spaceship-engine.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector<HTMLElement>(
+        '[data-lightbox-media-surface="light"]',
+      );
+      const zoomSurface = () =>
+        mediaFrame?.querySelector<HTMLElement>(
+          '[class*="lightboxZoomSurface"]',
+        );
+
+      mockElementRect(mediaFrame, {
+        height: 300,
+        width: 400,
+      });
+
+      act(() => {
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(2.5)');
+
+      const pointerCapture = mockPointerCapture(mediaFrame);
+
+      act(() => {
+        const pointerMoveEvent = dispatchPointerEvent(
+          mediaFrame,
+          'pointermove',
+          {
+            buttons: 0,
+            clientX: 0,
+            clientY: 0,
+            pointerId: 7,
+            pointerType: 'mouse',
+          },
+        );
+
+        expect(pointerMoveEvent?.defaultPrevented).toBe(false);
+      });
+
+      expect(pointerCapture.setPointerCapture).not.toHaveBeenCalled();
+      expect(mediaFrame?.getAttribute('data-lightbox-panning')).toBe('false');
+      expect(zoomSurface()?.getAttribute('style')).toContain(
+        'translate3d(0px, 0px, 0) scale(2.5)',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('pans a zoomed lightbox image with desktop mouse drag and pointer capture', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Ruimteschip motor detail',
+                src: 'https://images.example/spaceship-engine.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector<HTMLElement>(
+        '[data-lightbox-media-surface="light"]',
+      );
+      const zoomSurface = () =>
+        mediaFrame?.querySelector<HTMLElement>(
+          '[class*="lightboxZoomSurface"]',
+        );
+
+      mockElementRect(mediaFrame, {
+        height: 300,
+        width: 400,
+      });
+
+      act(() => {
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain(
+        'translate3d(0px, 0px, 0) scale(2.5)',
+      );
+
+      const pointerCapture = mockPointerCapture(mediaFrame);
+
+      act(() => {
+        const pointerDownEvent = dispatchPointerEvent(
+          mediaFrame,
+          'pointerdown',
+          {
+            clientX: 220,
+            clientY: 150,
+            pointerId: 7,
+            pointerType: 'mouse',
+          },
+        );
+        const pointerMoveEvent = dispatchPointerEvent(
+          mediaFrame,
+          'pointermove',
+          {
+            clientX: 110,
+            clientY: 150,
+            pointerId: 7,
+            pointerType: 'mouse',
+          },
+        );
+
+        expect(pointerDownEvent?.defaultPrevented).toBe(true);
+        expect(pointerMoveEvent?.defaultPrevented).toBe(true);
+      });
+
+      expect(pointerCapture.setPointerCapture).toHaveBeenCalledWith(7);
+      expect(mediaFrame?.getAttribute('data-lightbox-panning')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain(
+        'translate3d(-110px, 0px, 0) scale(2.5)',
+      );
+
+      act(() => {
+        dispatchPointerEvent(mediaFrame, 'pointerup', {
+          clientX: 110,
+          clientY: 150,
+          pointerId: 7,
+          pointerType: 'mouse',
+        });
+      });
+
+      expect(pointerCapture.releasePointerCapture).toHaveBeenCalledWith(7);
+      expect(mediaFrame?.getAttribute('data-lightbox-panning')).toBe('false');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('ignores stray touch pointer movement without an active touch gesture', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Ruimteschip vleugeldetail',
+              src: 'https://images.example/spaceship-wing.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const mediaFrame = document.body.querySelector<HTMLElement>(
+      '[data-lightbox-media-surface="light"]',
+    );
+    const zoomSurface = () =>
+      mediaFrame?.querySelector<HTMLElement>('[class*="lightboxZoomSurface"]');
+
+    mockElementRect(mediaFrame, {
+      height: 300,
+      width: 400,
+    });
+
+    act(() => {
+      mediaFrame?.dispatchEvent(
+        new MouseEvent('dblclick', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 150,
+        }),
+      );
+    });
+
+    expect(zoomSurface()?.getAttribute('style')).toContain(
+      'translate3d(0px, 0px, 0) scale(2.5)',
+    );
+
+    act(() => {
+      const pointerMoveEvent = dispatchPointerEvent(mediaFrame, 'pointermove', {
+        clientX: 0,
+        clientY: 0,
+        pointerId: 9,
+        pointerType: 'touch',
+      });
+
+      expect(pointerMoveEvent?.defaultPrevented).toBe(false);
+    });
+
+    expect(zoomSurface()?.getAttribute('style')).toContain(
+      'translate3d(0px, 0px, 0) scale(2.5)',
+    );
+  });
+
+  it('does not follow desktop mouse movement while the lightbox image is at scale one', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Ruimteschip cockpit',
+              src: 'https://images.example/spaceship-cockpit.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const mediaFrame = document.body.querySelector<HTMLElement>(
+      '[data-lightbox-media-surface="light"]',
+    );
+    const zoomSurface = mediaFrame?.querySelector<HTMLElement>(
+      '[class*="lightboxZoomSurface"]',
+    );
+    const pointerCapture = mockPointerCapture(mediaFrame);
+
+    act(() => {
+      const pointerMoveEvent = dispatchPointerEvent(mediaFrame, 'pointermove', {
+        buttons: 0,
+        clientX: 110,
+        clientY: 150,
+        pointerId: 8,
+        pointerType: 'mouse',
+      });
+
+      expect(pointerMoveEvent?.defaultPrevented).toBe(false);
+    });
+
+    expect(pointerCapture.setPointerCapture).not.toHaveBeenCalled();
+    expect(pointerCapture.releasePointerCapture).not.toHaveBeenCalled();
+    expect(mediaFrame?.getAttribute('data-lightbox-panning')).toBe('false');
+    expect(zoomSurface?.getAttribute('style')).toContain(
+      'translate3d(0px, 0px, 0) scale(1)',
+    );
+  });
+
+  it('debounces repeated quick touch taps after a focal-point double tap', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Minifiguur gezicht detail',
+                src: 'https://images.example/minifigure-face.jpg',
+              },
+              {
+                alt: 'Minifiguur accessoires',
+                src: 'https://images.example/minifigure-accessories.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      act(() => {
+        document.body
+          .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector<HTMLElement>(
+        '[data-lightbox-media-surface="light"]',
+      );
+      const zoomSurface = () =>
+        mediaFrame?.querySelector<HTMLElement>(
+          '[class*="lightboxZoomSurface"]',
+        );
+      let pointerId = 1;
+
+      mockElementRect(mediaFrame, {
+        height: 300,
+        width: 400,
+      });
+
+      function tapLightbox() {
+        dispatchPointerEvent(mediaFrame, 'pointerdown', {
+          clientX: 64,
+          clientY: 72,
+          pointerId,
+        });
+        dispatchPointerEvent(mediaFrame, 'pointerup', {
+          clientX: 64,
+          clientY: 72,
+          pointerId,
+        });
+        pointerId += 1;
+      }
+
+      act(() => {
+        tapLightbox();
+        vi.advanceTimersByTime(90);
+        tapLightbox();
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(2.5)');
+
+      act(() => {
+        vi.advanceTimersByTime(80);
+        tapLightbox();
+        vi.advanceTimersByTime(80);
+        tapLightbox();
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(2.5)');
+
+      act(() => {
+        vi.advanceTimersByTime(340);
+        tapLightbox();
+        vi.advanceTimersByTime(90);
+        tapLightbox();
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('false');
+      expect(zoomSurface()?.getAttribute('style')).toContain('scale(1)');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('lets scale-one lightbox swipes navigate but blocks slide swipe while panning a zoomed image', () => {
+    vi.useFakeTimers();
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'Kasteel voorzijde',
+                src: 'https://images.example/castle-front.jpg',
+              },
+              {
+                alt: 'Kasteel minifiguren',
+                src: 'https://images.example/castle-minifigures.jpg',
+              },
+            ]}
+            variant="detail"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>(
+            'button[aria-label="Alle afbeeldingen weergeven"]',
+          )
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+      act(() => {
+        document.body
+          .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      const mediaFrame = document.body.querySelector<HTMLElement>(
+        '[data-swipe-target="lightbox"]',
+      );
+      const swipeTrack = document.body.querySelector<HTMLElement>(
+        '[data-swipe-track="lightbox"]',
+      );
+
+      act(() => {
+        dispatchPointerEvent(mediaFrame, 'pointerdown', {
+          clientX: 240,
+          clientY: 120,
+          pointerId: 1,
+        });
+        dispatchPointerEvent(mediaFrame, 'pointermove', {
+          clientX: 140,
+          clientY: 124,
+          pointerId: 1,
+        });
+        dispatchPointerEvent(mediaFrame, 'pointerup', {
+          clientX: 132,
+          clientY: 124,
+          pointerId: 1,
+        });
+      });
+
+      expect(swipeTrack?.dataset['swipePhase']).toBe('settling');
+
+      act(() => {
+        vi.advanceTimersByTime(240);
+      });
+
+      expect(
+        document.body.querySelector('[data-lightbox-active-index="1"]'),
+      ).not.toBeNull();
+
+      mockElementRect(mediaFrame, {
+        height: 300,
+        width: 400,
+      });
+
+      act(() => {
+        mediaFrame?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 200,
+            clientY: 150,
+          }),
+        );
+      });
+
+      expect(mediaFrame?.getAttribute('data-lightbox-zoomed')).toBe('true');
+
+      act(() => {
+        dispatchPointerEvent(mediaFrame, 'pointerdown', {
+          clientX: 220,
+          clientY: 150,
+          pointerId: 2,
+        });
+        const panMoveEvent = dispatchPointerEvent(mediaFrame, 'pointermove', {
+          clientX: 110,
+          clientY: 150,
+          pointerId: 2,
+        });
+
+        expect(panMoveEvent?.defaultPrevented).toBe(true);
+      });
+
+      expect(swipeTrack?.dataset['swipePhase']).not.toBe('dragging');
+      expect(
+        document.body.querySelector('[data-lightbox-active-index="1"]'),
+      ).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('keeps set detail gallery images on a white contained product surface', () => {
@@ -2283,14 +3265,26 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailGalleryControls {');
     expect(css).toContain('position: absolute;');
     expect(css).toContain('background: rgba(12, 18, 32, 0.68);');
-    expect(css).toContain('.detailMainButton,\n.lightboxMediaFrame {');
-    expect(css).toContain('touch-action: pan-y;');
+    expect(css).toContain('.detailMainButton {\n  touch-action: pan-y;');
+    expect(css).toContain(
+      '.lightboxMediaFrame {\n  cursor: zoom-in;\n  overscroll-behavior: contain;\n  touch-action: none;',
+    );
+    expect(css).toContain('user-select: none;');
+    expect(css).toContain(
+      ".lightboxZoomSurface[data-lightbox-zoom-animating='true']",
+    );
+    expect(css).toContain(
+      'transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);',
+    );
     expect(css).not.toContain('touch-action: pan-x;');
     expect(css).toContain('.swipeViewport {');
     expect(css).toContain('.swipeTrack {');
     expect(css).toContain('.swipeSlideFrame,');
     expect(css).toContain('.lightboxZoomSurface {');
     expect(css).toContain(".lightboxMediaFrame[data-lightbox-zoomed='true']");
+    expect(css).toContain(".lightboxMediaFrame[data-lightbox-panning='true']");
+    expect(css).toContain('cursor: grab;');
+    expect(css).toContain('cursor: grabbing;');
     expect(css).toContain("data-swipe-phase='dragging'");
     expect(css).toContain("data-swipe-phase='resetting'");
     expect(css).toContain('transition: transform 240ms ease-out;');
@@ -2307,9 +3301,7 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
     expect(css).toContain('height: clamp(28rem, 58vh, 42rem);');
     expect(css).toContain('@media (max-width: 47.99rem)');
-    expect(css).toContain(
-      '.detailMainButton,\n  .lightboxMediaFrame {\n    touch-action: pan-y;',
-    );
+    expect(css).toContain('.detailMainButton {\n    touch-action: pan-y;');
     expect(css).toContain('.detailThumbRow {\n    display: none;');
     expect(css).toContain('.detailGalleryCounter {\n    left: 0;');
     expect(css).toContain('.detailGalleryActions {\n    bottom: 0;');
@@ -2413,7 +3405,7 @@ describe('ImageGallery', () => {
     );
   });
 
-  it('uses thumbnailSrc for set detail thumbnails while keeping src for main images', () => {
+  it('uses largeSrc for set detail images while keeping thumbnailSrc for thumbnails', () => {
     act(() => {
       root.render(
         <ImageGallery
@@ -2424,6 +3416,8 @@ describe('ImageGallery', () => {
             },
             {
               alt: 'LEGO Icons Eiffeltoren detail',
+              largeSrc:
+                'https://images.brickset.com/sets/AdditionalImages/10307-1/large_10307_alt1.webp',
               src: 'https://images.brickset.com/sets/AdditionalImages/10307-1/10307_alt1.jpg',
               thumbnailSrc:
                 'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_alt1_jpg.jpg',
@@ -2456,6 +3450,25 @@ describe('ImageGallery', () => {
       'https://images.brickset.com/sets/AdditionalImages/10307-1/tn_10307_alt1_jpg.jpg',
     );
     expect(thumbnails[1]?.getAttribute('src')).not.toContain('10307_alt1.jpg');
+
+    act(() => {
+      container
+        .querySelectorAll<HTMLButtonElement>('[class*="detailThumbButton"]')[1]
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      container
+        .querySelector<HTMLImageElement>('[class*="detailMainFrame"] img')
+        ?.getAttribute('src'),
+    ).toBe(
+      'https://images.brickset.com/sets/AdditionalImages/10307-1/large_10307_alt1.webp',
+    );
   });
 
   it('does not allocate the desktop thumbnail sidebar for single-image detail galleries', () => {
