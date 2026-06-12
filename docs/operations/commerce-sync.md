@@ -277,6 +277,8 @@ Available feed commands:
 - `pnpm sync:alternate-feed`
 - `pnpm sync:coolblue-feed`
 - `pnpm sync:joybuy-feed`
+- `pnpm sync:proshop-feed`
+- `pnpm sync:awin-proshop-feed`
 - `pnpm sync:rakuten-lego-feed`
 - `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:conrad-feed`
@@ -298,6 +300,7 @@ Recommended feed cadence:
 | Alternate        | TradeTracker | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
 | Coolblue         | Awin         | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
 | Joybuy           | Awin         | every 6 hours, offset from other jobs     | Broad affiliate feed; strict LEGO filtering and unmatched reports.    |
+| Proshop          | Awin         | every 6 hours, offset from other jobs     | Awin CSV feed; strict LEGO filtering and title fallback for set IDs.  |
 | LEGO EU          | Rakuten      | every 6 hours after feed availability     | SFTP gzip XML feed; list files first to discover MID/filename.        |
 | Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
 | MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
@@ -354,6 +357,49 @@ Joybuy job notes:
 - use `pnpm sync:joybuy-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
 - use `--report-unmatched-path tmp/joybuy-unmatched.json` when reviewing LEGO candidates that do not match the catalog
 - use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses `aw_product_id`, `merchant_product_id`, feed IDs, deeplink IDs, URLs or EAN-like identifiers as LEGO set numbers
+
+Proshop uses the same generic Awin CSV download, gzip decompression, parser and
+strict affiliate importer as Joybuy. It reads the standard Awin columns:
+`aw_deep_link`, `product_name`, `aw_product_id`, `merchant_product_id`,
+`merchant_image_url`, `description`, `merchant_category`, `search_price`,
+`merchant_name`, `merchant_id`, `category_name`, `category_id`, `aw_image_url`,
+`currency`, `store_price`, `delivery_cost`, `merchant_deep_link`, `language`,
+`last_updated`, `display_price`, `data_feed_id`, `mpn`, `in_stock`, and
+`stock_status`.
+
+Required Proshop env vars:
+
+- `AWIN_PROSHOP_FEED_URL`
+- `AWIN_PROSHOP_MERCHANT_SLUG=proshop`
+- `AWIN_PROSHOP_MERCHANT_NAME=Proshop`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Get the Proshop feed URL from Awin Product Feeds for the approved Proshop
+advertiser, using the CSV feed URL with gzip compression when available. Paste
+that full URL into `AWIN_PROSHOP_FEED_URL` in the scheduled-job environment; do
+not commit the URL, because it can include publisher/feed credentials.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:proshop-feed
+```
+
+`pnpm sync:awin-proshop-feed` is an equivalent explicit Awin alias.
+
+Recommended cadence:
+
+- every 6 hours, offset from the other Awin/feed jobs, for example `40 */6 * * *`
+
+Proshop job notes:
+
+- use `pnpm sync:proshop-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:proshop-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/proshop-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- if `mpn` is missing, the sync falls back to set-number extraction from human fields such as product title, description and category
 - the sync never uses `aw_product_id`, `merchant_product_id`, feed IDs, deeplink IDs, URLs or EAN-like identifiers as LEGO set numbers
 
 LEGO EU uses the Rakuten Product Catalog over SFTP. The feed file is gzip

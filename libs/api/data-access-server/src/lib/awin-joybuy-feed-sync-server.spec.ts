@@ -96,6 +96,20 @@ describe('Awin Joybuy feed sync server', () => {
     });
   });
 
+  test('does not use mpn as a Joybuy set-number source', () => {
+    expect(
+      normalizeAwinJoybuyCsvRowToAffiliateFeedRow({
+        mpn: '75355',
+        product_name: 'LEGO Star Wars X-wing Starfighter',
+        description: 'LEGO bouwset zonder nummer',
+        category_name: 'LEGO',
+      }),
+    ).toMatchObject({
+      brand: 'LEGO',
+      legoSetNumber: undefined,
+    });
+  });
+
   test('reports unmatched rows and maps Joybuy rows through the strict importer', async () => {
     const csvBody = `aw_deep_link,product_name,aw_product_id,merchant_product_id,merchant_image_url,description,merchant_category,category_name,search_price,currency,store_price,delivery_cost,in_stock,stock_status
 https://awin.example/10316,LEGO Icons 10316 Rivendell,aw-1,sku-1,https://images.example/10316.jpg,Build Rivendell,Bouwsets,LEGO,399.99,EUR,429.99,4.95,1,

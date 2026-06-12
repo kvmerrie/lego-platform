@@ -10,9 +10,11 @@ const feedJobProjects = new Set([
   'conrad-feed-sync',
   'coppenswarenhuis-feed-sync',
   'goodbricks-feed-sync',
+  'joybuy-feed-sync',
   'lidl-feed-sync',
   'mediamarkt-feed-sync',
   'misterbricks-feed-sync',
+  'proshop-feed-sync',
 ]);
 
 const manualCronJobProjects = new Set([

@@ -52,6 +52,20 @@ export interface AwinFeedSyncResult extends AlternateAffiliateFeedImportResult {
   merchantName: string;
   merchantSlug: string;
   normalizedRowCount: number;
+  phaseTimingsMs?: AwinFeedSyncPhaseTimings;
+}
+
+export interface AwinFeedSyncPhaseTimings {
+  catalogMatch: number;
+  csvParse: number;
+  downloadDecompress: number;
+  latestUpsert: number;
+  normalizeFilter: number;
+  revalidation: number;
+  seedUpsert: number;
+  snapshotCurrentOfferUpdate: number;
+  staleMark: number;
+  total: number;
 }
 
 export interface AwinFeedSyncDependencies {
@@ -65,8 +79,18 @@ export interface AwinFeedDefinition {
   normalizeRow: (row: AwinCsvRow) => AlternateAffiliateFeedRow;
 }
 
+export interface StrictAwinCsvRowNormalizeOptions {
+  useMpnSetNumber?: boolean;
+}
+
 function stripBom(value: string): string {
   return value.replace(/^\uFEFF/u, '');
+}
+
+function startTimer(): () => number {
+  const startedAt = Date.now();
+
+  return () => Date.now() - startedAt;
 }
 
 function normalizeCsvHeader(value: string): string {
@@ -236,6 +260,69 @@ export function decodeAwinFeedBody(buffer: Buffer): string {
   return stripBom(resolvedBuffer.toString('utf8'));
 }
 
+const strictAwinNonLegoProductPattern =
+  /\b(?:nintendo\s*switch|playstation|ps5|xbox|videogame|video\s*game|software|game|games|boek|book|boeken|kleding|shirt|pyjama|rugzak|tas|beker|drinkfles|sleutelhanger|keychain|watch|horloge|lamp|light\s*kit|storage|opberg|etui|puzzel|puzzle|poster|kalender|calendar|display\s*case|vitrine|stofkap|onderdelen|loose\s*parts|losse\s*stenen|minifiguur\s*los|minifigure\s*display|compatible\s*bricks|alternative\s*brick|cada|cobi|mould\s*king)\b/iu;
+const strictAwinSetNumberPattern = /\b(\d{4,7})(?:-1)?\b/u;
+
+function normalizeAwinSearchText(value?: string): string {
+  return (
+    value
+      ?.normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/®/g, '')
+      .toLowerCase()
+      .trim() ?? ''
+  );
+}
+
+function stripAwinHtml(value?: string): string | undefined {
+  const strippedValue = value
+    ?.replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return strippedValue || undefined;
+}
+
+function readAwinHumanTextFields(row: AwinCsvRow): readonly string[] {
+  return [
+    readAwinCsvCell(row, ['product_name']),
+    readAwinCsvCell(row, ['description']),
+    readAwinCsvCell(row, ['merchant_category']),
+    readAwinCsvCell(row, ['category_name']),
+  ].flatMap((value) => (value ? [stripAwinHtml(value) ?? value] : []));
+}
+
+export function isStrictAwinLegoCandidate(row: AwinCsvRow): boolean {
+  const humanText = normalizeAwinSearchText(
+    readAwinHumanTextFields(row).join(' '),
+  );
+
+  return (
+    Boolean(humanText) &&
+    /\blego\b/u.test(humanText) &&
+    !strictAwinNonLegoProductPattern.test(humanText)
+  );
+}
+
+export function extractAwinSetNumberFromHumanFields(
+  row: AwinCsvRow,
+): string | undefined {
+  if (!isStrictAwinLegoCandidate(row)) {
+    return undefined;
+  }
+
+  for (const fieldValue of readAwinHumanTextFields(row)) {
+    const match = strictAwinSetNumberPattern.exec(fieldValue);
+
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+
+  return undefined;
+}
+
 function normalizeAwinAvailabilityText(row: AwinCsvRow): string {
   const stockStatus = readAwinCsvCell(row, ['stock_status']);
   const inStockValue = readAwinCsvCell(row, ['in_stock'])?.toLowerCase();
@@ -294,6 +381,37 @@ export function normalizeAwinCsvRowToAffiliateFeedRow(
   };
 }
 
+export function normalizeStrictAwinCsvRowToAffiliateFeedRow(
+  row: AwinCsvRow,
+  options: StrictAwinCsvRowNormalizeOptions = {},
+): AlternateAffiliateFeedRow {
+  const rawCurrency = readAwinCsvCell(row, ['currency']);
+  const rawSearchPrice = readAwinCsvCell(row, ['search_price']);
+  const rawStorePrice = readAwinCsvCell(row, ['store_price']);
+  const isLegoCandidate = isStrictAwinLegoCandidate(row);
+  const mpnSetNumber = options.useMpnSetNumber
+    ? readAwinCsvCell(row, ['mpn'])
+    : undefined;
+
+  return {
+    affiliateDeeplink:
+      readAwinCsvCell(row, ['aw_deep_link', 'merchant_deep_link']) ?? '',
+    availabilityText: normalizeAwinAvailabilityText(row) || undefined,
+    brand: isLegoCandidate ? 'LEGO' : undefined,
+    category: readAwinCsvCell(row, ['merchant_category', 'category_name']),
+    currency: rawCurrency?.toUpperCase(),
+    description: stripAwinHtml(readAwinCsvCell(row, ['description'])),
+    imageUrl: readAwinCsvCell(row, ['merchant_image_url', 'aw_image_url']),
+    legoSetNumber: isLegoCandidate
+      ? (mpnSetNumber ?? extractAwinSetNumberFromHumanFields(row))
+      : undefined,
+    price: rawSearchPrice ?? rawStorePrice,
+    productId: readAwinCsvCell(row, ['aw_product_id', 'merchant_product_id']),
+    productTitle: readAwinCsvCell(row, ['product_name']),
+    shippingCost: readAwinCsvCell(row, ['delivery_cost']),
+  };
+}
+
 function buildDebugSample({
   normalizeRow,
   row,
@@ -343,8 +461,13 @@ async function fetchAwinFeedRows({
   fetchedRows: number;
   legoCandidateCount: number;
   normalizedRows: readonly AlternateAffiliateFeedRow[];
+  phaseTimingsMs: Pick<
+    AwinFeedSyncPhaseTimings,
+    'csvParse' | 'downloadDecompress' | 'normalizeFilter'
+  >;
   samples: readonly AwinDebugSample[];
 }> {
+  const stopDownloadDecompressTimer = startTimer();
   const response = await fetchFn(config.feedUrl, {
     headers: {
       Accept: 'text/csv,application/octet-stream;q=0.9,*/*;q=0.1',
@@ -368,11 +491,17 @@ async function fetchAwinFeedRows({
   const csvStream = shouldGunzip
     ? responseStream.pipe(createGunzip())
     : responseStream;
+  const phaseTimingsMs = {
+    csvParse: 0,
+    downloadDecompress: stopDownloadDecompressTimer(),
+    normalizeFilter: 0,
+  };
   const normalizedRows: AlternateAffiliateFeedRow[] = [];
   const samples: AwinDebugSample[] = [];
   const csvHeaders = new Set<string>();
   let fetchedRows = 0;
   let legoCandidateCount = 0;
+  const stopCsvParseTimer = startTimer();
 
   for await (const row of parseAwinProductFeedCsvStream(csvStream)) {
     fetchedRows += 1;
@@ -381,7 +510,9 @@ async function fetchAwinFeedRows({
       csvHeaders.add(header);
     }
 
+    const stopNormalizeFilterTimer = startTimer();
     const normalizedRow = normalizeRow(row);
+    phaseTimingsMs.normalizeFilter += stopNormalizeFilterTimer();
     normalizedRows.push(normalizedRow);
 
     if (normalizedRow.brand === 'LEGO') {
@@ -401,6 +532,10 @@ async function fetchAwinFeedRows({
       break;
     }
   }
+  phaseTimingsMs.csvParse = Math.max(
+    0,
+    stopCsvParseTimer() - phaseTimingsMs.normalizeFilter,
+  );
 
   return {
     csvHeaders: [...csvHeaders].sort((left, right) =>
@@ -409,6 +544,7 @@ async function fetchAwinFeedRows({
     fetchedRows,
     legoCandidateCount,
     normalizedRows,
+    phaseTimingsMs,
     samples,
   };
 }
@@ -422,6 +558,7 @@ export async function syncAwinFeed({
   dependencies?: AwinFeedSyncDependencies;
   options?: AwinFeedSyncOptions;
 }): Promise<AwinFeedSyncResult> {
+  const stopTotalTimer = startTimer();
   const fetchFn = dependencies?.fetchFn ?? fetch;
   const importAffiliateFeedRowsForMerchantFn =
     dependencies?.importAffiliateFeedRowsForMerchantFn ??
@@ -465,6 +602,19 @@ export async function syncAwinFeed({
           samples: parsedFeed.samples,
         }
       : undefined;
+  const phaseTimingsMs: AwinFeedSyncPhaseTimings = {
+    catalogMatch: importResult.phaseTimingsMs?.catalogMatch ?? 0,
+    csvParse: parsedFeed.phaseTimingsMs.csvParse,
+    downloadDecompress: parsedFeed.phaseTimingsMs.downloadDecompress,
+    latestUpsert: importResult.phaseTimingsMs?.latestUpsert ?? 0,
+    normalizeFilter: parsedFeed.phaseTimingsMs.normalizeFilter,
+    revalidation: 0,
+    seedUpsert: importResult.phaseTimingsMs?.seedUpsert ?? 0,
+    snapshotCurrentOfferUpdate:
+      importResult.phaseTimingsMs?.snapshotCurrentOfferUpdate ?? 0,
+    staleMark: importResult.phaseTimingsMs?.staleMark ?? 0,
+    total: stopTotalTimer(),
+  };
 
   return {
     ...importResult,
@@ -474,6 +624,7 @@ export async function syncAwinFeed({
     merchantName: definition.config.merchantName,
     merchantSlug: definition.config.merchantSlug,
     normalizedRowCount: parsedFeed.normalizedRows.length,
+    phaseTimingsMs,
     unmatchedDebug: importResult.unmatchedDebug,
   };
 }

@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  type AwinFeedSyncPhaseTimings,
   logScheduledJobFailure,
   revalidatePublicCatalogPriceChanges,
   resolveAffiliateFeedDiscoveryEnabled,
@@ -73,6 +74,23 @@ function parseOptionalStringFlag({
   return rawValue ? rawValue : undefined;
 }
 
+function formatAwinPhaseTimings(
+  phaseTimingsMs: AwinFeedSyncPhaseTimings,
+): string {
+  return JSON.stringify({
+    download_decompress: phaseTimingsMs.downloadDecompress,
+    csv_parse: phaseTimingsMs.csvParse,
+    normalize_filter: phaseTimingsMs.normalizeFilter,
+    catalog_match: phaseTimingsMs.catalogMatch,
+    seed_upsert: phaseTimingsMs.seedUpsert,
+    latest_upsert: phaseTimingsMs.latestUpsert,
+    snapshot_current_offer_update: phaseTimingsMs.snapshotCurrentOfferUpdate,
+    stale_mark: phaseTimingsMs.staleMark,
+    revalidation: phaseTimingsMs.revalidation,
+    total: phaseTimingsMs.total,
+  });
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const startedAt = Date.now();
@@ -122,6 +140,9 @@ async function main() {
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
+  const phaseTimingsMs = result.phaseTimingsMs
+    ? { ...result.phaseTimingsMs }
+    : undefined;
 
   if (result.debugInfo) {
     console.log(
@@ -212,11 +233,15 @@ async function main() {
 
   if (result.changedSetIds.length > 0) {
     try {
+      const revalidationStartedAt = Date.now();
       const revalidationResult = await revalidatePublicCatalogPriceChanges({
         changedSetIds: result.changedSetIds,
         changedSetSlugs: result.changedSetSlugs,
         reason: 'coolblue_feed_sync',
       });
+      if (phaseTimingsMs) {
+        phaseTimingsMs.revalidation = Date.now() - revalidationStartedAt;
+      }
       console.log(
         `[coolblue-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
       );
@@ -226,6 +251,13 @@ async function main() {
         error: error instanceof Error ? error.message : String(error),
       });
     }
+  }
+
+  if (phaseTimingsMs) {
+    phaseTimingsMs.total = Date.now() - startedAt;
+    console.log(
+      `[coolblue-feed-sync] phase_timings ${formatAwinPhaseTimings(phaseTimingsMs)}`,
+    );
   }
 
   console.log(

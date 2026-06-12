@@ -1,5 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
+  bulkRefreshCommerceOfferLatestObservations,
+  bulkUpsertCommerceOfferLatestRecords,
+  bulkUpsertCommerceOfferSeedsByCompositeKey,
   copyCommerceDataFromProduction,
   createCommerceBenchmarkSet,
   createCommerceMerchant,
@@ -153,6 +156,141 @@ function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
 }
 
 describe('commerce data access server', () => {
+  test('bulk upserts offer seeds by the set and merchant composite key', async () => {
+    const select = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'seed-10316-proshop',
+          set_id: '10316',
+          merchant_id: 'merchant-proshop',
+          product_url: 'https://proshop.example/10316',
+          is_active: true,
+          validation_status: 'valid',
+          last_verified_at: '2026-06-12T09:00:00.000Z',
+          notes: '',
+          created_at: '2026-06-12T09:00:00.000Z',
+          updated_at: '2026-06-12T09:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const upsert = vi.fn(() => ({
+      select,
+    }));
+    const from = vi.fn(() => ({
+      upsert,
+    }));
+
+    const result = await bulkUpsertCommerceOfferSeedsByCompositeKey({
+      inputs: [
+        {
+          setId: '10316',
+          merchantId: 'merchant-proshop',
+          productUrl: 'https://proshop.example/10316',
+          isActive: true,
+          validationStatus: 'valid',
+          lastVerifiedAt: '2026-06-12T09:00:00.000Z',
+          notes: '',
+        },
+      ],
+      supabaseClient: { from } as never,
+    });
+
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        {
+          set_id: '10316',
+          merchant_id: 'merchant-proshop',
+          product_url: 'https://proshop.example/10316',
+          is_active: true,
+          validation_status: 'valid',
+          last_verified_at: '2026-06-12T09:00:00.000Z',
+          notes: '',
+        },
+      ],
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: 'seed-10316-proshop',
+        setId: '10316',
+        merchantId: 'merchant-proshop',
+      }),
+    ]);
+  });
+
+  test('bulk upserts latest offers by offer seed id and refreshes observations in one update', async () => {
+    const latestUpsert = vi.fn().mockResolvedValue({
+      error: null,
+    });
+    const inFilter = vi.fn().mockResolvedValue({
+      error: null,
+    });
+    const update = vi.fn(() => ({
+      in: inFilter,
+    }));
+    const from = vi.fn((table: string) => {
+      if (table !== 'commerce_offer_latest') {
+        throw new Error(`Unexpected table ${table}`);
+      }
+
+      return {
+        update,
+        upsert: latestUpsert,
+      };
+    });
+    const supabaseClient = { from } as never;
+
+    await bulkUpsertCommerceOfferLatestRecords({
+      inputs: [
+        {
+          offerSeedId: 'seed-10316-proshop',
+          fetchStatus: 'success',
+          priceMinor: 39999,
+          currencyCode: 'EUR',
+          availability: 'in_stock',
+          observedAt: '2026-06-12T09:00:00.000Z',
+          fetchedAt: '2026-06-12T09:00:00.000Z',
+        },
+      ],
+      supabaseClient,
+    });
+    const refreshedCount = await bulkRefreshCommerceOfferLatestObservations({
+      offerSeedIds: ['seed-10316-proshop', 'seed-10316-proshop'],
+      observedAt: '2026-06-12T09:05:00.000Z',
+      fetchedAt: '2026-06-12T09:05:00.000Z',
+      supabaseClient,
+    });
+
+    expect(latestUpsert).toHaveBeenCalledWith(
+      [
+        {
+          offer_seed_id: 'seed-10316-proshop',
+          price_minor: 39999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-06-12T09:00:00.000Z',
+          fetched_at: '2026-06-12T09:00:00.000Z',
+          error_message: null,
+        },
+      ],
+      {
+        onConflict: 'offer_seed_id',
+      },
+    );
+    expect(update).toHaveBeenCalledWith({
+      observed_at: '2026-06-12T09:05:00.000Z',
+      fetched_at: '2026-06-12T09:05:00.000Z',
+    });
+    expect(inFilter).toHaveBeenCalledWith('offer_seed_id', [
+      'seed-10316-proshop',
+    ]);
+    expect(refreshedCount).toBe(1);
+  });
+
   test('joins merchants and latest offers onto offer seeds', async () => {
     const order = vi.fn().mockResolvedValueOnce({
       data: [

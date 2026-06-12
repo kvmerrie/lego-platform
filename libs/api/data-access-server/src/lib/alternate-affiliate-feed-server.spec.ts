@@ -110,6 +110,157 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
+  test('uses bulk seed and latest persistence when bulk dependencies are available', async () => {
+    const bulkUpsertCommerceOfferSeedsByCompositeKeyFn = vi
+      .fn()
+      .mockResolvedValue([
+        {
+          id: 'seed-10316-proshop',
+          setId: '10316',
+          merchantId: 'merchant-proshop',
+        },
+        {
+          id: 'seed-75355-proshop',
+          setId: '75355',
+          merchantId: 'merchant-proshop',
+        },
+      ]);
+    const bulkUpsertCommerceOfferLatestRecordsFn = vi
+      .fn()
+      .mockResolvedValue(undefined);
+    const bulkRefreshCommerceOfferLatestObservationsFn = vi
+      .fn()
+      .mockResolvedValue(0);
+    const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
+    const upsertCommerceOfferLatestRecordFn = vi.fn();
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        bulkRefreshCommerceOfferLatestObservationsFn,
+        bulkUpsertCommerceOfferLatestRecordsFn,
+        bulkUpsertCommerceOfferSeedsByCompositeKeyFn,
+        createCommerceMerchantFn: vi.fn(),
+        getNow: () => new Date('2026-06-12T09:00:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316',
+            slug: 'rivendell-10316',
+            sourceSetNumber: '10316-1',
+          },
+          {
+            setId: '75355',
+            slug: 'x-wing-starfighter-75355',
+            sourceSetNumber: '75355-1',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([
+          {
+            id: 'merchant-proshop',
+            slug: 'proshop',
+            name: 'Proshop',
+            isActive: true,
+            sourceType: 'affiliate',
+            affiliateNetwork: 'Awin',
+            notes: '',
+            createdAt: '2026-06-12T08:00:00.000Z',
+            updatedAt: '2026-06-12T08:00:00.000Z',
+          },
+        ]),
+        listCommerceOfferSeedsFn: vi.fn().mockResolvedValue([]),
+        upsertCommerceOfferLatestRecordFn,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+        updateCommerceMerchantFn: vi.fn().mockResolvedValue({
+          id: 'merchant-proshop',
+          slug: 'proshop',
+          name: 'Proshop',
+          isActive: true,
+          sourceType: 'affiliate',
+          affiliateNetwork: 'Awin',
+          notes: '',
+          createdAt: '2026-06-12T08:00:00.000Z',
+          updatedAt: '2026-06-12T08:00:00.000Z',
+        }),
+      },
+      merchant: {
+        affiliateNetwork: 'Awin',
+        name: 'Proshop',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Proshop Awin product feed.',
+        slug: 'proshop',
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://awin.example/10316',
+          availabilityText: 'In stock',
+          brand: 'LEGO',
+          condition: 'new',
+          currency: 'EUR',
+          legoSetNumber: '10316',
+          price: '399.99',
+          productTitle: 'LEGO Icons Rivendell',
+        },
+        {
+          affiliateDeeplink: 'https://awin.example/75355',
+          availabilityText: 'In stock',
+          brand: 'LEGO',
+          condition: 'new',
+          currency: 'EUR',
+          legoSetNumber: '75355',
+          price: '239.99',
+          productTitle: 'LEGO Star Wars X-wing Starfighter',
+        },
+      ],
+    });
+
+    expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(bulkUpsertCommerceOfferSeedsByCompositeKeyFn).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(bulkUpsertCommerceOfferSeedsByCompositeKeyFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          setId: '10316',
+          merchantId: 'merchant-proshop',
+        }),
+        expect.objectContaining({
+          setId: '75355',
+          merchantId: 'merchant-proshop',
+        }),
+      ],
+    });
+    expect(bulkUpsertCommerceOfferLatestRecordsFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          offerSeedId: 'seed-10316-proshop',
+          priceMinor: 39999,
+        }),
+        expect.objectContaining({
+          offerSeedId: 'seed-75355-proshop',
+          priceMinor: 23999,
+        }),
+      ],
+    });
+    expect(bulkRefreshCommerceOfferLatestObservationsFn).toHaveBeenCalledWith({
+      fetchedAt: '2026-06-12T09:00:00.000Z',
+      observedAt: '2026-06-12T09:00:00.000Z',
+      offerSeedIds: [],
+    });
+    expect(result).toMatchObject({
+      importedOfferCount: 2,
+      matchedOfferCount: 2,
+      upsertedLatestCount: 2,
+      upsertedSeedCount: 2,
+    });
+    expect(result.phaseTimingsMs).toMatchObject({
+      catalogMatch: expect.any(Number),
+      latestUpsert: expect.any(Number),
+      seedUpsert: expect.any(Number),
+      staleMark: expect.any(Number),
+      total: expect.any(Number),
+    });
+  });
+
   test('refreshes checked timestamps without reporting changed sets when feed content is unchanged', async () => {
     const markCommerceOfferLatestUnavailableFn = vi.fn();
     const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();

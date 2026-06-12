@@ -437,11 +437,20 @@ on public.commerce_merchants (is_active);
 create index if not exists commerce_offer_seeds_merchant_id_idx
 on public.commerce_offer_seeds (merchant_id);
 
+create index if not exists commerce_offer_seeds_merchant_set_idx
+on public.commerce_offer_seeds (merchant_id, set_id);
+
+create index if not exists commerce_offer_seeds_merchant_product_url_idx
+on public.commerce_offer_seeds (merchant_id, product_url);
+
 create index if not exists commerce_offer_seeds_set_id_idx
 on public.commerce_offer_seeds (set_id);
 
 create index if not exists commerce_offer_seeds_is_active_idx
 on public.commerce_offer_seeds (is_active);
+
+create index if not exists commerce_offer_latest_fetch_status_availability_idx
+on public.commerce_offer_latest (fetch_status, availability);
 
 create index if not exists commerce_benchmark_sets_created_at_idx
 on public.commerce_benchmark_sets (created_at);
@@ -456,6 +465,10 @@ where offer_count > 0;
 create index if not exists commerce_current_offer_snapshots_best_price_idx
 on public.commerce_current_offer_snapshots (best_price_minor)
 where best_price_minor is not null;
+
+create index if not exists commerce_current_offer_snapshots_best_merchant_slug_idx
+on public.commerce_current_offer_snapshots (best_merchant_slug)
+where best_merchant_slug is not null;
 
 drop trigger if exists set_profiles_updated_at on public.profiles;
 create trigger set_profiles_updated_at

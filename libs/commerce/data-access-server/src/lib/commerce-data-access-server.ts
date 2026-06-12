@@ -1450,6 +1450,46 @@ export async function upsertCommerceOfferLatestRecord({
   }
 }
 
+function toCommerceOfferLatestUpsertRow(input: CommerceOfferLatestRecordInput) {
+  return {
+    offer_seed_id: input.offerSeedId,
+    price_minor: input.priceMinor ?? null,
+    currency_code: input.currencyCode ?? null,
+    availability: input.availability ?? null,
+    fetch_status: input.fetchStatus,
+    observed_at: input.observedAt ?? null,
+    fetched_at: input.fetchedAt ?? null,
+    error_message: input.errorMessage ?? null,
+  };
+}
+
+export async function bulkUpsertCommerceOfferLatestRecords({
+  inputs,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  inputs: readonly CommerceOfferLatestRecordInput[];
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<void> {
+  if (!inputs.length) {
+    return;
+  }
+
+  for (const chunk of chunkCommerceRows(
+    inputs.map(toCommerceOfferLatestUpsertRow),
+    500,
+  )) {
+    const { error } = await supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .upsert(chunk, {
+        onConflict: 'offer_seed_id',
+      });
+
+    if (error) {
+      throw new Error('Unable to persist commerce latest offer records.');
+    }
+  }
+}
+
 export async function refreshCommerceOfferLatestObservation({
   fetchedAt,
   observedAt,
@@ -1474,6 +1514,44 @@ export async function refreshCommerceOfferLatestObservation({
       'Unable to refresh the commerce latest offer observation timestamp.',
     );
   }
+}
+
+export async function bulkRefreshCommerceOfferLatestObservations({
+  fetchedAt,
+  observedAt,
+  offerSeedIds,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  fetchedAt: string;
+  observedAt: string;
+  offerSeedIds: readonly string[];
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<number> {
+  const uniqueOfferSeedIds = [
+    ...new Set(offerSeedIds.map((offerSeedId) => offerSeedId.trim())),
+  ].filter(Boolean);
+
+  if (!uniqueOfferSeedIds.length) {
+    return 0;
+  }
+
+  for (const chunk of chunkCommerceRows(uniqueOfferSeedIds, 500)) {
+    const { error } = await supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .update({
+        observed_at: observedAt,
+        fetched_at: fetchedAt,
+      })
+      .in('offer_seed_id', chunk);
+
+    if (error) {
+      throw new Error(
+        'Unable to refresh commerce latest offer observation timestamps.',
+      );
+    }
+  }
+
+  return uniqueOfferSeedIds.length;
 }
 
 export async function markCommerceOfferLatestUnavailable({
@@ -1514,6 +1592,18 @@ export async function markCommerceOfferLatestUnavailable({
   }
 
   return uniqueOfferSeedIds.length;
+}
+
+function toCommerceOfferSeedUpsertRow(input: CommerceOfferSeedInput) {
+  return {
+    set_id: normalizeCatalogSetId(input.setId),
+    merchant_id: input.merchantId,
+    product_url: input.productUrl,
+    is_active: input.isActive,
+    validation_status: input.validationStatus,
+    last_verified_at: input.lastVerifiedAt ?? null,
+    notes: input.notes ?? '',
+  };
 }
 
 export async function upsertCommerceOfferSeedByCompositeKey({
@@ -1566,6 +1656,48 @@ export async function upsertCommerceOfferSeedByCompositeKey({
       ]),
     ),
   });
+}
+
+export async function bulkUpsertCommerceOfferSeedsByCompositeKey({
+  inputs,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  inputs: readonly CommerceOfferSeedInput[];
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<CommerceOfferSeed[]> {
+  if (!inputs.length) {
+    return [];
+  }
+
+  const rows: CommerceOfferSeedRow[] = [];
+
+  for (const chunk of chunkCommerceRows(
+    inputs.map(toCommerceOfferSeedUpsertRow),
+    500,
+  )) {
+    const { data, error } = await supabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .upsert(chunk, {
+        onConflict: 'set_id,merchant_id',
+      })
+      .select(
+        'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+      );
+
+    if (error || !data) {
+      throw new Error('Unable to upsert commerce offer seeds.');
+    }
+
+    rows.push(...(data as CommerceOfferSeedRow[]));
+  }
+
+  return rows.map((row) =>
+    toCommerceOfferSeed({
+      row,
+      merchantById: new Map(),
+      latestOfferBySeedId: new Map(),
+    }),
+  );
 }
 
 export async function updateCommerceOfferSeedValidationState({

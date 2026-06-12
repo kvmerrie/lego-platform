@@ -606,6 +606,12 @@ export const awinJoybuyEnvKeys = {
   merchantName: 'AWIN_JOYBUY_MERCHANT_NAME',
 } as const;
 
+export const awinProshopEnvKeys = {
+  feedUrl: 'AWIN_PROSHOP_FEED_URL',
+  merchantSlug: 'AWIN_PROSHOP_MERCHANT_SLUG',
+  merchantName: 'AWIN_PROSHOP_MERCHANT_NAME',
+} as const;
+
 export const adtractionGoodbricksEnvKeys = {
   feedUrl: 'ADTRACTION_GOODBRICKS_FEED_URL',
   merchantSlug: 'ADTRACTION_GOODBRICKS_MERCHANT_SLUG',
@@ -714,17 +720,15 @@ export interface TradeTrackerConradFeedConfig {
   merchantSlug: string;
 }
 
-export interface AwinCoolblueFeedConfig {
+export interface AwinMerchantFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
 }
 
-export interface AwinJoybuyFeedConfig {
-  feedUrl: string;
-  merchantName: string;
-  merchantSlug: string;
-}
+export type AwinCoolblueFeedConfig = AwinMerchantFeedConfig;
+export type AwinJoybuyFeedConfig = AwinMerchantFeedConfig;
+export type AwinProshopFeedConfig = AwinMerchantFeedConfig;
 
 export interface AdtractionGoodbricksFeedConfig {
   feedUrl: string;
@@ -1709,34 +1713,138 @@ export function getTradeTrackerConradFeedConfig(
   };
 }
 
-export function getAwinCoolblueFeedConfig(
-  environment: Record<string, string | undefined> = process.env,
-): AwinCoolblueFeedConfig {
+function getAwinMerchantFeedConfig({
+  defaultMerchantName,
+  defaultMerchantSlug,
+  environment,
+  envKeys,
+}: {
+  defaultMerchantName: string;
+  defaultMerchantSlug: string;
+  environment: Record<string, string | undefined>;
+  envKeys: {
+    feedUrl: string;
+    merchantName: string;
+    merchantSlug: string;
+  };
+}): AwinMerchantFeedConfig {
   return {
     feedUrl: requireEnvValue({
       environment,
-      key: awinCoolblueEnvKeys.feedUrl,
+      key: envKeys.feedUrl,
     }),
     merchantSlug:
-      environment[awinCoolblueEnvKeys.merchantSlug]?.trim() || 'coolblue',
+      environment[envKeys.merchantSlug]?.trim() || defaultMerchantSlug,
     merchantName:
-      environment[awinCoolblueEnvKeys.merchantName]?.trim() || 'Coolblue',
+      environment[envKeys.merchantName]?.trim() || defaultMerchantName,
   };
+}
+
+export function getAwinCoolblueFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AwinCoolblueFeedConfig {
+  return getAwinMerchantFeedConfig({
+    defaultMerchantName: 'Coolblue',
+    defaultMerchantSlug: 'coolblue',
+    environment,
+    envKeys: awinCoolblueEnvKeys,
+  });
 }
 
 export function getAwinJoybuyFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): AwinJoybuyFeedConfig {
-  return {
-    feedUrl: requireEnvValue({
-      environment,
-      key: awinJoybuyEnvKeys.feedUrl,
-    }),
-    merchantSlug:
-      environment[awinJoybuyEnvKeys.merchantSlug]?.trim() || 'joybuy',
-    merchantName:
-      environment[awinJoybuyEnvKeys.merchantName]?.trim() || 'Joybuy',
-  };
+  return getAwinMerchantFeedConfig({
+    defaultMerchantName: 'Joybuy',
+    defaultMerchantSlug: 'joybuy',
+    environment,
+    envKeys: awinJoybuyEnvKeys,
+  });
+}
+
+export function getAwinProshopFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AwinProshopFeedConfig {
+  return getAwinMerchantFeedConfig({
+    defaultMerchantName: 'Proshop',
+    defaultMerchantSlug: 'proshop',
+    environment,
+    envKeys: awinProshopEnvKeys,
+  });
+}
+
+function hasAwinMerchantFeedConfig({
+  environment,
+  envKeys,
+}: {
+  environment: Record<string, string | undefined>;
+  envKeys: { feedUrl: string };
+}): boolean {
+  return Boolean(environment[envKeys.feedUrl]);
+}
+
+function getMissingAwinMerchantEnvKeys({
+  environment,
+  envKeys,
+}: {
+  environment: Record<string, string | undefined>;
+  envKeys: { feedUrl: string };
+}): string[] {
+  return environment[envKeys.feedUrl] ? [] : [envKeys.feedUrl];
+}
+
+export function hasAwinCoolblueFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return hasAwinMerchantFeedConfig({
+    environment,
+    envKeys: awinCoolblueEnvKeys,
+  });
+}
+
+export function getMissingAwinCoolblueEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return getMissingAwinMerchantEnvKeys({
+    environment,
+    envKeys: awinCoolblueEnvKeys,
+  });
+}
+
+export function hasAwinJoybuyFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return hasAwinMerchantFeedConfig({
+    environment,
+    envKeys: awinJoybuyEnvKeys,
+  });
+}
+
+export function getMissingAwinJoybuyEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return getMissingAwinMerchantEnvKeys({
+    environment,
+    envKeys: awinJoybuyEnvKeys,
+  });
+}
+
+export function hasAwinProshopFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return hasAwinMerchantFeedConfig({
+    environment,
+    envKeys: awinProshopEnvKeys,
+  });
+}
+
+export function getMissingAwinProshopEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return getMissingAwinMerchantEnvKeys({
+    environment,
+    envKeys: awinProshopEnvKeys,
+  });
 }
 
 export function getAdtractionGoodbricksFeedConfig(
@@ -1862,34 +1970,6 @@ export function resolveRakutenLegoFeedFilename(
   throw new Error(
     `Missing Rakuten LEGO feed filename. Set ${rakutenLegoEnvKeys.filename} or ${rakutenLegoEnvKeys.mid}.`,
   );
-}
-
-export function hasAwinCoolblueFeedConfig(
-  environment: Record<string, string | undefined> = process.env,
-): boolean {
-  return Boolean(environment[awinCoolblueEnvKeys.feedUrl]);
-}
-
-export function getMissingAwinCoolblueEnvKeys(
-  environment: Record<string, string | undefined> = process.env,
-): string[] {
-  return environment[awinCoolblueEnvKeys.feedUrl]
-    ? []
-    : [awinCoolblueEnvKeys.feedUrl];
-}
-
-export function hasAwinJoybuyFeedConfig(
-  environment: Record<string, string | undefined> = process.env,
-): boolean {
-  return Boolean(environment[awinJoybuyEnvKeys.feedUrl]);
-}
-
-export function getMissingAwinJoybuyEnvKeys(
-  environment: Record<string, string | undefined> = process.env,
-): string[] {
-  return environment[awinJoybuyEnvKeys.feedUrl]
-    ? []
-    : [awinJoybuyEnvKeys.feedUrl];
 }
 
 export function hasAdtractionGoodbricksFeedConfig(

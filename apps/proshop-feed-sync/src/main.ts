@@ -5,12 +5,12 @@ import {
   logScheduledJobFailure,
   revalidatePublicCatalogPriceChanges,
   resolveAffiliateFeedDiscoveryEnabled,
-  syncAwinJoybuyFeed,
+  syncAwinProshopFeed,
 } from '@lego-platform/api/data-access-server';
 import {
-  getMissingAwinJoybuyEnvKeys,
+  getMissingAwinProshopEnvKeys,
   getMissingServerSupabaseEnvKeys,
-  hasAwinJoybuyFeedConfig,
+  hasAwinProshopFeedConfig,
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
@@ -130,21 +130,21 @@ async function main() {
 
   if (!hasServerSupabaseConfig() && !dryRun) {
     throw new Error(
-      `Joybuy feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
+      `Proshop feed sync requires Supabase server access. Missing: ${getMissingServerSupabaseEnvKeys().join(', ')}.`,
     );
   }
 
-  if (!hasAwinJoybuyFeedConfig()) {
+  if (!hasAwinProshopFeedConfig()) {
     throw new Error(
-      `Joybuy feed sync requires an Awin feed URL. Missing: ${getMissingAwinJoybuyEnvKeys().join(', ')}.`,
+      `Proshop feed sync requires an Awin feed URL. Missing: ${getMissingAwinProshopEnvKeys().join(', ')}.`,
     );
   }
 
   console.log(
-    `[joybuy-feed-sync] start source=awin merchant=joybuy mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[proshop-feed-sync] start source=awin merchant=proshop mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
-  const result = await syncAwinJoybuyFeed({
+  const result = await syncAwinProshopFeed({
     options: {
       collectUnmatchedDebug:
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
@@ -161,7 +161,7 @@ async function main() {
 
   if (result.debugInfo) {
     console.log(
-      `[joybuy-feed-sync] debug_samples fetched_products=${result.debugInfo.fetchedProductCount} lego_candidates=${result.debugInfo.legoCandidateCount} sample_count=${result.debugInfo.sampleCount}`,
+      `[proshop-feed-sync] debug_samples fetched_products=${result.debugInfo.fetchedProductCount} lego_candidates=${result.debugInfo.legoCandidateCount} sample_count=${result.debugInfo.sampleCount}`,
     );
     console.log(
       JSON.stringify(
@@ -176,7 +176,7 @@ async function main() {
 
   if (result.unmatchedDebug) {
     console.log(
-      `[joybuy-feed-sync] debug_unmatched total_rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount} sample_count=${result.unmatchedDebug.sampleRows.length}`,
+      `[proshop-feed-sync] debug_unmatched total_rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount} sample_count=${result.unmatchedDebug.sampleRows.length}`,
     );
     console.log(
       JSON.stringify(
@@ -214,7 +214,7 @@ async function main() {
         ),
       );
       console.log(
-        `[joybuy-feed-sync] unmatched_report_written path=${JSON.stringify(reportUnmatchedPath)} rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount}`,
+        `[proshop-feed-sync] unmatched_report_written path=${JSON.stringify(reportUnmatchedPath)} rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount}`,
       );
     }
   }
@@ -225,16 +225,16 @@ async function main() {
       const revalidationResult = await revalidatePublicCatalogPriceChanges({
         changedSetIds: result.changedSetIds,
         changedSetSlugs: result.changedSetSlugs,
-        reason: 'joybuy_feed_sync',
+        reason: 'proshop_feed_sync',
       });
       if (phaseTimingsMs) {
         phaseTimingsMs.revalidation = Date.now() - revalidationStartedAt;
       }
       console.log(
-        `[joybuy-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
+        `[proshop-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
       );
     } catch (error) {
-      console.warn('[joybuy-feed-sync] revalidation warning', {
+      console.warn('[proshop-feed-sync] revalidation warning', {
         changed_set_count: result.changedSetIds.length,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -244,20 +244,20 @@ async function main() {
   if (phaseTimingsMs) {
     phaseTimingsMs.total = Date.now() - startedAt;
     console.log(
-      `[joybuy-feed-sync] phase_timings ${formatAwinPhaseTimings(phaseTimingsMs)}`,
+      `[proshop-feed-sync] phase_timings ${formatAwinPhaseTimings(phaseTimingsMs)}`,
     );
   }
 
   console.log(
-    `[joybuy-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[proshop-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
 main().catch((error) => {
   const classification = logScheduledJobFailure({
-    context: 'source=awin merchant=joybuy',
+    context: 'source=awin merchant=proshop',
     error,
-    jobName: 'joybuy-feed-sync',
+    jobName: 'proshop-feed-sync',
   });
 
   if (!classification.recoverable) {

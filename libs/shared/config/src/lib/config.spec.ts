@@ -5,6 +5,7 @@ import {
   getAdtractionGoodbricksFeedConfig,
   getAwinCoolblueFeedConfig,
   getAwinJoybuyFeedConfig,
+  getAwinProshopFeedConfig,
   getAdminPromotionConfig,
   getBrickfeverFeedConfig,
   getBricksetGalleryRenderMode,
@@ -20,6 +21,7 @@ import {
   getMissingAdminPromotionEnvKeys,
   getMissingAwinCoolblueEnvKeys,
   getMissingAwinJoybuyEnvKeys,
+  getMissingAwinProshopEnvKeys,
   getMissingBrickfeverEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
@@ -59,6 +61,7 @@ import {
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
   hasAwinJoybuyFeedConfig,
+  hasAwinProshopFeedConfig,
   hasBrowserSupabaseConfig,
   hasBrickfeverFeedConfig,
   hasMisterBricksFeedConfig,
@@ -78,6 +81,7 @@ import {
   bricksetGalleryEnvKeys,
   resolvePublicSiteAllowIndexing,
   brickfeverEnvKeys,
+  awinProshopEnvKeys,
   misterBricksEnvKeys,
   rakutenLegoEnvKeys,
   tradeDoublerMediaMarktEnvKeys,
@@ -831,6 +835,57 @@ describe('shared config Awin Joybuy feed helpers', () => {
 
     expect(hasAwinJoybuyFeedConfig()).toBe(false);
     expect(getMissingAwinJoybuyEnvKeys()).toEqual(['AWIN_JOYBUY_FEED_URL']);
+  });
+});
+
+describe('shared config Awin Proshop feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Awin Proshop feed config with sensible merchant defaults', () => {
+    process.env.AWIN_PROSHOP_FEED_URL =
+      'https://feeds.awin.example/proshop.csv.gz';
+
+    expect(hasAwinProshopFeedConfig()).toBe(true);
+    expect(getMissingAwinProshopEnvKeys()).toEqual([]);
+    expect(getAwinProshopFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/proshop.csv.gz',
+      merchantSlug: 'proshop',
+      merchantName: 'Proshop',
+    });
+  });
+
+  test('allows explicit Proshop merchant overrides for the Awin feed config', () => {
+    process.env.AWIN_PROSHOP_FEED_URL =
+      'https://feeds.awin.example/proshop.csv.gz';
+    process.env.AWIN_PROSHOP_MERCHANT_SLUG = 'proshop-nl';
+    process.env.AWIN_PROSHOP_MERCHANT_NAME = 'Proshop Nederland';
+
+    expect(getAwinProshopFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/proshop.csv.gz',
+      merchantSlug: 'proshop-nl',
+      merchantName: 'Proshop Nederland',
+    });
+  });
+
+  test('reports the missing Awin Proshop feed URL without requiring it for other Awin merchants', () => {
+    delete process.env.AWIN_PROSHOP_FEED_URL;
+    process.env.AWIN_COOLBLUE_FEED_URL =
+      'https://feeds.awin.example/coolblue.csv.gz';
+    process.env.AWIN_JOYBUY_FEED_URL =
+      'https://feeds.awin.example/joybuy.csv.gz';
+
+    expect(hasAwinProshopFeedConfig()).toBe(false);
+    expect(getMissingAwinProshopEnvKeys()).toEqual([
+      awinProshopEnvKeys.feedUrl,
+    ]);
+    expect(hasAwinCoolblueFeedConfig()).toBe(true);
+    expect(hasAwinJoybuyFeedConfig()).toBe(true);
+    expect(() => getAwinCoolblueFeedConfig()).not.toThrow();
+    expect(() => getAwinJoybuyFeedConfig()).not.toThrow();
   });
 });
 

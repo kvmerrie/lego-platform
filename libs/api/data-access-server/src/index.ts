@@ -5,6 +5,7 @@ export * from './lib/alternate-affiliate-feed-server';
 export * from './lib/awin-feed-sync-server';
 export * from './lib/awin-coolblue-sync-server';
 export * from './lib/awin-joybuy-feed-sync-server';
+export * from './lib/awin-proshop-feed-sync-server';
 export * from './lib/catalog-bulk-onboarding-server';
 export * from './lib/catalog-discovery-candidates-server';
 export * from './lib/catalog-import-enrichment-server';

@@ -1,5 +1,8 @@
 import { listCanonicalCatalogSets } from '@lego-platform/catalog/data-access-server';
 import {
+  bulkRefreshCommerceOfferLatestObservations,
+  bulkUpsertCommerceOfferLatestRecords,
+  bulkUpsertCommerceOfferSeedsByCompositeKey,
   createCommerceMerchant,
   listCommerceMerchants,
   listCommerceOfferSeeds,
@@ -110,6 +113,16 @@ export interface AlternateAffiliateFeedImportResult {
   autoImportableMissingSetCount: number;
   reviewNeededMissingSetCount: number;
   ignoredOrNonSetMissingSetCount: number;
+  phaseTimingsMs?: AffiliateFeedImportPhaseTimings;
+}
+
+export interface AffiliateFeedImportPhaseTimings {
+  catalogMatch: number;
+  latestUpsert: number;
+  seedUpsert: number;
+  snapshotCurrentOfferUpdate: number;
+  staleMark: number;
+  total: number;
 }
 
 export type ExistingStaleSuccessLatestReason =
@@ -133,6 +146,9 @@ export interface ExistingStaleSuccessLatestDiagnosticRow {
 }
 
 export interface AlternateAffiliateFeedImportDependencies {
+  bulkRefreshCommerceOfferLatestObservationsFn?: typeof bulkRefreshCommerceOfferLatestObservations;
+  bulkUpsertCommerceOfferLatestRecordsFn?: typeof bulkUpsertCommerceOfferLatestRecords;
+  bulkUpsertCommerceOfferSeedsByCompositeKeyFn?: typeof bulkUpsertCommerceOfferSeedsByCompositeKey;
   createCommerceMerchantFn?: typeof createCommerceMerchant;
   getNow?: () => Date;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
@@ -795,6 +811,75 @@ function buildUnmatchedDebugInfo({
   };
 }
 
+function startTimer(): () => number {
+  const startedAt = Date.now();
+
+  return () => Date.now() - startedAt;
+}
+
+function buildCommerceOfferSeedInputKey(input: CommerceOfferSeedInput): string {
+  return buildCommerceOfferSeedKey({
+    merchantId: input.merchantId,
+    setId: input.setId,
+  });
+}
+
+async function defaultLegacyBulkUpsertCommerceOfferSeedsByCompositeKey({
+  inputs,
+  upsertCommerceOfferSeedByCompositeKeyFn,
+}: {
+  inputs: readonly CommerceOfferSeedInput[];
+  upsertCommerceOfferSeedByCompositeKeyFn: typeof upsertCommerceOfferSeedByCompositeKey;
+}): Promise<CommerceOfferSeed[]> {
+  return Promise.all(
+    inputs.map((input) =>
+      upsertCommerceOfferSeedByCompositeKeyFn({
+        input,
+      }),
+    ),
+  );
+}
+
+async function defaultLegacyBulkUpsertCommerceOfferLatestRecords({
+  inputs,
+  upsertCommerceOfferLatestRecordFn,
+}: {
+  inputs: readonly CommerceOfferLatestRecordInput[];
+  upsertCommerceOfferLatestRecordFn: typeof upsertCommerceOfferLatestRecord;
+}): Promise<void> {
+  await Promise.all(
+    inputs.map((input) =>
+      upsertCommerceOfferLatestRecordFn({
+        input,
+      }),
+    ),
+  );
+}
+
+async function defaultLegacyBulkRefreshCommerceOfferLatestObservations({
+  fetchedAt,
+  offerSeedIds,
+  observedAt,
+  refreshCommerceOfferLatestObservationFn,
+}: {
+  fetchedAt: string;
+  offerSeedIds: readonly string[];
+  observedAt: string;
+  refreshCommerceOfferLatestObservationFn: typeof refreshCommerceOfferLatestObservation;
+}): Promise<number> {
+  await Promise.all(
+    offerSeedIds.map((offerSeedId) =>
+      refreshCommerceOfferLatestObservationFn({
+        fetchedAt,
+        observedAt,
+        offerSeedId,
+      }),
+    ),
+  );
+
+  return new Set(offerSeedIds).size;
+}
+
 async function ensureAffiliateMerchant({
   createCommerceMerchantFn,
   dryRun,
@@ -885,6 +970,9 @@ export async function importAffiliateFeedRowsForMerchant({
   rows: readonly AlternateAffiliateFeedRow[];
 }): Promise<AlternateAffiliateFeedImportResult> {
   const {
+    bulkRefreshCommerceOfferLatestObservationsFn,
+    bulkUpsertCommerceOfferLatestRecordsFn,
+    bulkUpsertCommerceOfferSeedsByCompositeKeyFn,
     createCommerceMerchantFn = createCommerceMerchant,
     getNow = () => new Date(),
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
@@ -897,6 +985,48 @@ export async function importAffiliateFeedRowsForMerchant({
     upsertDiscoveredAffiliateSetFn = upsertCommerceAffiliateDiscoveredSet,
     updateCommerceMerchantFn = updateCommerceMerchant,
   } = dependencies;
+  const resolvedBulkUpsertCommerceOfferSeedsByCompositeKeyFn =
+    bulkUpsertCommerceOfferSeedsByCompositeKeyFn ??
+    (dependencies.upsertCommerceOfferSeedByCompositeKeyFn
+      ? (input: { inputs: readonly CommerceOfferSeedInput[] }) =>
+          defaultLegacyBulkUpsertCommerceOfferSeedsByCompositeKey({
+            inputs: input.inputs,
+            upsertCommerceOfferSeedByCompositeKeyFn,
+          })
+      : bulkUpsertCommerceOfferSeedsByCompositeKey);
+  const resolvedBulkUpsertCommerceOfferLatestRecordsFn =
+    bulkUpsertCommerceOfferLatestRecordsFn ??
+    (dependencies.upsertCommerceOfferLatestRecordFn
+      ? (input: { inputs: readonly CommerceOfferLatestRecordInput[] }) =>
+          defaultLegacyBulkUpsertCommerceOfferLatestRecords({
+            inputs: input.inputs,
+            upsertCommerceOfferLatestRecordFn,
+          })
+      : bulkUpsertCommerceOfferLatestRecords);
+  const resolvedBulkRefreshCommerceOfferLatestObservationsFn =
+    bulkRefreshCommerceOfferLatestObservationsFn ??
+    (dependencies.refreshCommerceOfferLatestObservationFn
+      ? (input: {
+          fetchedAt: string;
+          observedAt: string;
+          offerSeedIds: readonly string[];
+        }) =>
+          defaultLegacyBulkRefreshCommerceOfferLatestObservations({
+            fetchedAt: input.fetchedAt,
+            observedAt: input.observedAt,
+            offerSeedIds: input.offerSeedIds,
+            refreshCommerceOfferLatestObservationFn,
+          })
+      : bulkRefreshCommerceOfferLatestObservations);
+  const stopTotalTimer = startTimer();
+  const phaseTimingsMs: AffiliateFeedImportPhaseTimings = {
+    catalogMatch: 0,
+    latestUpsert: 0,
+    seedUpsert: 0,
+    snapshotCurrentOfferUpdate: 0,
+    staleMark: 0,
+    total: 0,
+  };
   const shouldPersistDiscoveredSets =
     !options?.dryRun &&
     Boolean(options?.persistDiscoveredSets ?? options?.discoverMissingSets);
@@ -964,6 +1094,13 @@ export async function importAffiliateFeedRowsForMerchant({
     string,
     AlternateAffiliateFeedUnmatchedSetSummary
   >();
+  const pendingMatchedOffers: {
+    existingOfferSeed?: CommerceOfferSeed;
+    latestOfferInput: Omit<CommerceOfferLatestRecordInput, 'offerSeedId'>;
+    matchedCatalogSetId: string;
+    offerSeedInput: CommerceOfferSeedInput;
+  }[] = [];
+  const stopCatalogMatchTimer = startTimer();
 
   for (const row of rows) {
     if (!isLegoBrand(row.brand)) {
@@ -1146,17 +1283,10 @@ export async function importAffiliateFeedRowsForMerchant({
         row,
       }),
     };
-    const seedContentChanged = hasOfferSeedContentChanged({
-      existingOfferSeed,
-      input: offerSeedInput,
-    });
-    const offerSeed = seedContentChanged
-      ? await upsertCommerceOfferSeedByCompositeKeyFn({
-          input: offerSeedInput,
-        })
-      : existingOfferSeed;
-    const latestOfferInput: CommerceOfferLatestRecordInput = {
-      offerSeedId: offerSeed.id,
+    const latestOfferInput: Omit<
+      CommerceOfferLatestRecordInput,
+      'offerSeedId'
+    > = {
       fetchStatus: 'success',
       priceMinor,
       currencyCode: 'EUR',
@@ -1164,42 +1294,145 @@ export async function importAffiliateFeedRowsForMerchant({
       observedAt,
       fetchedAt: observedAt,
     };
-    const latestOfferContentChanged = hasLatestOfferContentChanged({
-      existingOfferSeed,
-      input: latestOfferInput,
-    });
-    const latestOfferObservationChanged = shouldRefreshLatestOfferObservation({
-      existingOfferSeed,
-      input: latestOfferInput,
-    });
 
-    if (latestOfferContentChanged) {
-      await upsertCommerceOfferLatestRecordFn({
+    pendingMatchedOffers.push({
+      existingOfferSeed,
+      latestOfferInput,
+      matchedCatalogSetId,
+      offerSeedInput,
+    });
+  }
+
+  phaseTimingsMs.catalogMatch = stopCatalogMatchTimer();
+
+  if (!options?.dryRun && pendingMatchedOffers.length > 0) {
+    const seedInputsToUpsertByKey = new Map<string, CommerceOfferSeedInput>();
+
+    for (const pendingOffer of pendingMatchedOffers) {
+      if (
+        hasOfferSeedContentChanged({
+          existingOfferSeed: pendingOffer.existingOfferSeed,
+          input: pendingOffer.offerSeedInput,
+        })
+      ) {
+        seedInputsToUpsertByKey.set(
+          buildCommerceOfferSeedInputKey(pendingOffer.offerSeedInput),
+          pendingOffer.offerSeedInput,
+        );
+      }
+    }
+
+    const stopSeedUpsertTimer = startTimer();
+    const upsertedOfferSeeds =
+      await resolvedBulkUpsertCommerceOfferSeedsByCompositeKeyFn({
+        inputs: [...seedInputsToUpsertByKey.values()],
+      });
+    phaseTimingsMs.seedUpsert = stopSeedUpsertTimer();
+    const offerSeedBySetAndMerchantId = new Map(
+      existingOfferSeeds.map((offerSeed) => [
+        buildCommerceOfferSeedKey({
+          merchantId: offerSeed.merchantId,
+          setId: offerSeed.setId,
+        }),
+        offerSeed,
+      ]),
+    );
+
+    for (const offerSeed of upsertedOfferSeeds) {
+      offerSeedBySetAndMerchantId.set(
+        buildCommerceOfferSeedKey({
+          merchantId: offerSeed.merchantId,
+          setId: offerSeed.setId,
+        }),
+        offerSeed,
+      );
+      upsertedSeedIds.add(offerSeed.id);
+    }
+
+    const latestInputsToUpsert: CommerceOfferLatestRecordInput[] = [];
+    const latestOfferSeedIdsToRefresh: string[] = [];
+
+    for (const pendingOffer of pendingMatchedOffers) {
+      const seedKey = buildCommerceOfferSeedInputKey(
+        pendingOffer.offerSeedInput,
+      );
+      const offerSeed = offerSeedBySetAndMerchantId.get(seedKey);
+
+      if (!offerSeed) {
+        throw new Error(
+          'Unable to resolve the commerce offer seed after upsert.',
+        );
+      }
+
+      const latestOfferInput: CommerceOfferLatestRecordInput = {
+        ...pendingOffer.latestOfferInput,
+        offerSeedId: offerSeed.id,
+      };
+      const seedContentChanged = seedInputsToUpsertByKey.has(seedKey);
+      const latestOfferContentChanged = hasLatestOfferContentChanged({
+        existingOfferSeed: pendingOffer.existingOfferSeed,
         input: latestOfferInput,
       });
-    } else if (latestOfferObservationChanged) {
-      await refreshCommerceOfferLatestObservationFn({
-        fetchedAt: latestOfferInput.fetchedAt ?? observedAt,
-        observedAt: latestOfferInput.observedAt ?? observedAt,
-        offerSeedId: latestOfferInput.offerSeedId,
+      const latestOfferObservationChanged = shouldRefreshLatestOfferObservation(
+        {
+          existingOfferSeed: pendingOffer.existingOfferSeed,
+          input: latestOfferInput,
+        },
+      );
+
+      if (latestOfferContentChanged) {
+        latestInputsToUpsert.push(latestOfferInput);
+      } else if (latestOfferObservationChanged) {
+        latestOfferSeedIdsToRefresh.push(offerSeed.id);
+      } else {
+        unchangedLatestRefreshSkippedCount += 1;
+      }
+
+      matchedCatalogSetIds.add(pendingOffer.matchedCatalogSetId);
+      matchedOfferSeedIds.add(offerSeed.id);
+
+      if (seedContentChanged) {
+        changedSetIds.add(pendingOffer.matchedCatalogSetId);
+      }
+
+      if (latestOfferContentChanged) {
+        upsertedLatestSeedIds.add(offerSeed.id);
+        changedSetIds.add(pendingOffer.matchedCatalogSetId);
+      }
+    }
+
+    const stopLatestUpsertTimer = startTimer();
+    const latestInputsToUpsertBySeedId = new Map(
+      latestInputsToUpsert.map((input) => [input.offerSeedId, input] as const),
+    );
+    const uniqueLatestOfferSeedIdsToRefresh = [
+      ...new Set(latestOfferSeedIdsToRefresh),
+    ];
+
+    await resolvedBulkUpsertCommerceOfferLatestRecordsFn({
+      inputs: [...latestInputsToUpsertBySeedId.values()],
+    });
+    const refreshedLatestCount =
+      await resolvedBulkRefreshCommerceOfferLatestObservationsFn({
+        fetchedAt: observedAt,
+        observedAt,
+        offerSeedIds: uniqueLatestOfferSeedIdsToRefresh,
       });
-      timestampRefreshedLatestSeedIds.add(offerSeed.id);
-    } else {
-      unchangedLatestRefreshSkippedCount += 1;
+
+    for (const offerSeedId of uniqueLatestOfferSeedIdsToRefresh) {
+      timestampRefreshedLatestSeedIds.add(offerSeedId);
     }
 
-    matchedCatalogSetIds.add(matchedCatalogSetId);
-    matchedOfferSeedIds.add(offerSeed.id);
-
-    if (seedContentChanged) {
-      upsertedSeedIds.add(offerSeed.id);
-      changedSetIds.add(matchedCatalogSetId);
+    if (refreshedLatestCount !== uniqueLatestOfferSeedIdsToRefresh.length) {
+      throw new Error(
+        'Unable to refresh all unchanged commerce latest offers.',
+      );
     }
 
-    if (latestOfferContentChanged) {
-      upsertedLatestSeedIds.add(offerSeed.id);
-      changedSetIds.add(matchedCatalogSetId);
-    }
+    phaseTimingsMs.latestUpsert = stopLatestUpsertTimer();
+  } else if (options?.dryRun) {
+    phaseTimingsMs.seedUpsert = 0;
+    phaseTimingsMs.latestUpsert = 0;
   }
 
   const staleLatestOfferSeedIds =
@@ -1223,6 +1456,8 @@ export async function importAffiliateFeedRowsForMerchant({
 
   let latestRowsMarkedStaleCount = 0;
 
+  const stopStaleMarkTimer = startTimer();
+
   if (staleLatestOfferSeedIds.length > 0) {
     latestRowsMarkedStaleCount = await markCommerceOfferLatestUnavailableFn({
       fetchedAt: observedAt,
@@ -1240,6 +1475,8 @@ export async function importAffiliateFeedRowsForMerchant({
   } else if (rows.length === 0 || matchedOfferSeedIds.size === 0) {
     staleMarkSkippedReason = 'no_confident_feed_matches';
   }
+
+  phaseTimingsMs.staleMark = stopStaleMarkTimer();
 
   const existingStaleSuccessLatestDiagnostics =
     (!options?.dryRun || options.collectStaleLatestDiagnostics) &&
@@ -1265,6 +1502,8 @@ export async function importAffiliateFeedRowsForMerchant({
           reportRows: [],
           sample: [],
         };
+
+  phaseTimingsMs.total = stopTotalTimer();
 
   return {
     changedSetIds: [...changedSetIds].sort(),
@@ -1313,6 +1552,7 @@ export async function importAffiliateFeedRowsForMerchant({
     autoImportableMissingSetCount: autoImportableMissingSetIds.size,
     reviewNeededMissingSetCount: reviewNeededMissingSetIds.size,
     ignoredOrNonSetMissingSetCount: ignoredOrNonSetMissingSetIds.size,
+    phaseTimingsMs,
     ...(options?.collectUnmatchedDebug && skippedUnmatchedSetCount > 0
       ? {
           unmatchedDebug: buildUnmatchedDebugInfo({
