@@ -149,6 +149,16 @@ describe('affiliate discovered sets import', () => {
       createdCatalogSetCount: 1,
       failedLookupCount: 0,
       importedCount: 1,
+      phaseTimingsMs: expect.objectContaining({
+        catalogLoad: expect.any(Number),
+        catalogResolve: expect.any(Number),
+        enrichment: expect.any(Number),
+        latestUpsert: expect.any(Number),
+        revalidation: expect.any(Number),
+        seedUpsert: expect.any(Number),
+        statusUpdate: expect.any(Number),
+        total: expect.any(Number),
+      }),
       requestedCount: 1,
       skippedCount: 0,
       uniqueSetCount: 1,
@@ -321,6 +331,14 @@ describe('affiliate discovered sets import', () => {
     const result = await importAffiliateDiscoveredSets({
       dependencies: {
         createCatalogSetFn,
+        enrichCatalogSetMinifigSummariesFn: vi.fn(async () => ({
+          changedSetIds: [],
+          changedSetSlugs: [],
+          failedSetIds: [],
+          failedSets: 0,
+          processedSets: 1,
+          summariesUpserted: 0,
+        })),
         listCanonicalCatalogSetsFn: vi.fn(async () => []),
         listDiscoveredSetsFn: vi.fn(async () => [
           createDiscoveredSet({ id: 'discovered-a' }),
@@ -352,6 +370,108 @@ describe('affiliate discovered sets import', () => {
       createdCatalogSetCount: 1,
       importedCount: 2,
       uniqueSetCount: 1,
+    });
+  });
+
+  test('uses bulk seed, latest, and status writes when single-row dependencies are not supplied', async () => {
+    const bulkUpsertCommerceOfferSeedsByCompositeKeyFn = vi.fn(
+      async ({ inputs }) =>
+        inputs.map((input) => ({
+          ...createOfferSeed(),
+          id: `seed-${input.merchantId}`,
+          setId: input.setId,
+          merchantId: input.merchantId,
+          productUrl: input.productUrl,
+        })),
+    );
+    const bulkUpsertCommerceOfferLatestRecordsFn = vi.fn(async () => undefined);
+    const bulkUpdateDiscoveredSetReviewStatesFn = vi.fn(async () => 2);
+    const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn(async () =>
+      createOfferSeed(),
+    );
+    const upsertCommerceOfferLatestRecordFn = vi.fn(async () => undefined);
+    const updateDiscoveredSetReviewStateFn = vi.fn(async () =>
+      createDiscoveredSet({ status: 'imported' }),
+    );
+
+    const result = await importAffiliateDiscoveredSets({
+      dependencies: {
+        bulkUpdateDiscoveredSetReviewStatesFn,
+        bulkUpsertCommerceOfferLatestRecordsFn,
+        bulkUpsertCommerceOfferSeedsByCompositeKeyFn,
+        listCanonicalCatalogSetsFn: vi.fn(async () => [
+          {
+            setId: '75313',
+            sourceSetNumber: '75313-1',
+            slug: 'at-at-75313',
+            name: 'AT-AT',
+            primaryTheme: 'Star Wars',
+            pieceCount: 6785,
+            releaseYear: 2021,
+            status: 'active',
+            source: 'overlay',
+            createdAt: '2026-05-06T12:00:00.000Z',
+            updatedAt: '2026-05-06T12:00:00.000Z',
+          },
+        ]),
+        listDiscoveredSetsFn: vi.fn(async () => [
+          createDiscoveredSet({ id: 'discovered-a' }),
+          createDiscoveredSet({
+            id: 'discovered-b',
+            affiliate: {
+              id: 'merchant-2',
+              name: 'Goodbricks',
+              slug: 'goodbricks',
+            },
+            productUrl: 'https://shop.example.test/75313-goodbricks',
+          }),
+        ]),
+        updateDiscoveredSetReviewStateFn,
+        upsertCommerceOfferLatestRecordFn,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+      },
+      highConfidenceOnly: true,
+    });
+
+    expect(bulkUpsertCommerceOfferSeedsByCompositeKeyFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          merchantId: 'merchant-1',
+          setId: '75313',
+        }),
+        expect.objectContaining({
+          merchantId: 'merchant-2',
+          setId: '75313',
+        }),
+      ],
+    });
+    expect(bulkUpsertCommerceOfferLatestRecordsFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          offerSeedId: 'seed-merchant-1',
+          priceMinor: 64999,
+        }),
+        expect.objectContaining({
+          offerSeedId: 'seed-merchant-2',
+          priceMinor: 64999,
+        }),
+      ],
+    });
+    expect(bulkUpdateDiscoveredSetReviewStatesFn).toHaveBeenCalledWith({
+      updates: [
+        expect.objectContaining({
+          discoveredSetIds: ['discovered-a', 'discovered-b'],
+          importedSetId: '75313',
+          status: 'imported',
+        }),
+      ],
+    });
+    expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(updateDiscoveredSetReviewStateFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      attachedOfferCount: 2,
+      importedCount: 2,
     });
   });
 

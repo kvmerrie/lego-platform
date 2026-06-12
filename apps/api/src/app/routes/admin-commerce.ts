@@ -715,9 +715,21 @@ export function createAdminCommerceRoutes({
         }
 
         try {
-          return await commerceService.importDiscoveredSets(
+          const result = await commerceService.importDiscoveredSets(
             readAffiliateDiscoveredSetImportBody(request.body),
           );
+
+          request.log.info(
+            {
+              attached_offer_count: result.attachedOfferCount,
+              imported_count: result.importedCount,
+              phase_timings: result.phaseTimingsMs,
+              requested_count: result.requestedCount,
+            },
+            'Affiliate discovered-set import phase timings.',
+          );
+
+          return result;
         } catch (error) {
           return reply.status(400).send({
             message: toBadRequestMessage(

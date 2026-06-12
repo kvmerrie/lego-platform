@@ -7,7 +7,10 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogOfferItem } from './catalog-commerce-ui';
-import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
+import {
+  CatalogOfferComparisonRail,
+  getMerchantFaviconUrl,
+} from './catalog-offer-comparison-rail';
 
 vi.mock('next/link', () => ({
   default: ({
@@ -174,6 +177,241 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(container.textContent).not.toContain('LEGO® LEGO®');
   });
 
+  it('renders a favicon for a known merchant while keeping the merchant name visible', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/lego',
+              ctaLabel: 'Bekijk bij LEGO',
+              isBest: true,
+              merchantLabel: 'LEGO',
+              merchantSlug: 'lego-nl',
+              price: '€ 59,99',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="1 winkel nagekeken"
+        />,
+      );
+    });
+
+    const favicon = container.querySelector<HTMLImageElement>(
+      'img[src="/merchant-favicons/lego-nl.png"]',
+    );
+
+    expect(favicon).not.toBeNull();
+    expect(favicon?.getAttribute('alt')).toBe('');
+    expect(favicon?.getAttribute('loading')).toBe('lazy');
+    expect(favicon?.getAttribute('decoding')).toBe('async');
+    expect(container.textContent).toContain('LEGO');
+  });
+
+  it('renders the full merchant name as a native title only on the merchant text', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/goodbricks',
+              ctaLabel: 'Bekijk bij Goodbricks',
+              isBest: true,
+              merchantLabel: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              price: '€ 59,99',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="1 winkel nagekeken"
+        />,
+      );
+    });
+
+    const merchantText = container.querySelector(
+      '[class*="merchantBrandName"]',
+    );
+    const card = container.querySelector('[class*="offerRailCard"]');
+    const action = container.querySelector('[class*="offerRailAction"]');
+
+    expect(merchantText?.getAttribute('title')).toBe('Goodbricks');
+    expect(card?.getAttribute('title')).toBeNull();
+    expect(action?.getAttribute('title')).toBeNull();
+  });
+
+  it('resolves newly added merchant favicon mappings', () => {
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'Coolblue',
+        merchantSlug: 'coolblue',
+      }),
+    ).toBe('/merchant-favicons/coolblue.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'MisterBricks',
+        merchantSlug: 'misterbricks',
+      }),
+    ).toBe('/merchant-favicons/misterbricks.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'Top1Toys',
+        merchantSlug: 'top1toys',
+      }),
+    ).toBe('/merchant-favicons/top1toys.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'wehkamp',
+        merchantSlug: 'wehkamp',
+      }),
+    ).toBe('/merchant-favicons/wehkamp.ico');
+  });
+
+  it('keeps merchant favicon resolving case-insensitive and tolerant for name variants', () => {
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'Nu het laagst bij COOLBLUE',
+      }),
+    ).toBe('/merchant-favicons/coolblue.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantId: 'merchant-proshop',
+        merchantLabel: 'Proshop',
+      }),
+    ).toBe('/merchant-favicons/proshop.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'Bij Top 1 Toys',
+      }),
+    ).toBe('/merchant-favicons/top1toys.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantSlug: 'lego-eu',
+        merchantLabel: 'LEGO®',
+      }),
+    ).toBe('/merchant-favicons/lego-nl.png');
+  });
+
+  it('does not render a broken favicon image for an unknown merchant', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/unknown',
+              ctaLabel: 'Bekijk bij onbekend',
+              isBest: true,
+              merchantLabel: 'Onbekende winkel',
+              merchantSlug: 'unknown-shop',
+              price: '€ 59,99',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="1 winkel nagekeken"
+        />,
+      );
+    });
+
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.textContent).toContain('Onbekende winkel');
+  });
+
+  it('uses the same merchant favicon resolver and inline brand component in rail and overlay offers', async () => {
+    const knownMerchantOffer: CatalogOfferItem = {
+      checkedLabel: 'Vandaag om 09:00',
+      ctaHref: 'https://example.com/lego',
+      ctaLabel: 'Bekijk bij LEGO',
+      isBest: true,
+      merchantLabel: 'LEGO',
+      merchantSlug: 'lego-nl',
+      price: '€ 89,99',
+      rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+      stockLabel: 'Op voorraad',
+    };
+    const expectedFaviconUrl = getMerchantFaviconUrl(knownMerchantOffer);
+
+    await openOverlay({
+      overlayOffers: makeOverflowOffers([knownMerchantOffer, offers[1]]),
+      summaryLabel: '2 winkels nagekeken',
+    });
+
+    const dialog = document.body.querySelector(
+      '[data-offer-comparison-dialog="true"]',
+    );
+    const railMerchant = container.querySelector(
+      '[class*="offerRailMerchant"][class*="merchantBrandInline"]',
+    );
+    const overlayMerchant = dialog?.querySelector(
+      '[class*="offerOverlayMerchant"][class*="merchantBrandInline"]',
+    );
+    const railFavicon = railMerchant?.querySelector<HTMLImageElement>('img');
+    const overlayFavicon =
+      overlayMerchant?.querySelector<HTMLImageElement>('img');
+
+    expect(expectedFaviconUrl).toBe('/merchant-favicons/lego-nl.png');
+    expect(railFavicon?.getAttribute('src')).toBe(expectedFaviconUrl);
+    expect(overlayFavicon?.getAttribute('src')).toBe(expectedFaviconUrl);
+    expect(railFavicon?.className).toBe(overlayFavicon?.className);
+    expect(railMerchant?.className).toContain('merchantBrandInline');
+    expect(overlayMerchant?.className).toContain('merchantBrandInline');
+    expect(container.textContent).toContain('LEGO');
+    expect(dialog?.textContent).toContain('LEGO');
+  });
+
+  it('renders offer rail CTAs with design-system primary and secondary button variants while keeping the full card clickable', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={offers}
+          summaryLabel="2 winkels nagekeken"
+        />,
+      );
+    });
+
+    const bestDealCard = container.querySelector<HTMLAnchorElement>(
+      'a[href="https://example.com/best"]',
+    );
+    const alternativeCard = container.querySelector<HTMLAnchorElement>(
+      'a[href="https://example.com/alternative"]',
+    );
+    const bestDealAction = bestDealCard?.querySelector<HTMLElement>(
+      '[class*="buttonAccent"]',
+    );
+    const alternativeAction = alternativeCard?.querySelector<HTMLElement>(
+      '[class*="buttonSecondary"]',
+    );
+
+    expect(bestDealCard?.className).toContain('offerRailCardLink');
+    expect(bestDealCard?.getAttribute('aria-label')).toBe(
+      'Bekijk deal bij bol',
+    );
+    expect(bestDealCard?.getAttribute('target')).toBe('_blank');
+    expect(bestDealCard?.getAttribute('rel')).toBe(
+      'noopener noreferrer sponsored',
+    );
+    expect(bestDealCard?.getAttribute('data-brickhunt-event')).toBe(
+      'offer_click',
+    );
+    expect(bestDealCard?.getAttribute('data-brickhunt-properties')).toContain(
+      'comparison_row',
+    );
+    expect(bestDealAction?.className).toContain('offerRailAction');
+    expect(bestDealAction?.className).toContain('buttonAccent');
+    expect(bestDealAction?.textContent).toContain('Bekijk deal');
+    expect(alternativeCard?.className).toContain('offerRailCardLink');
+    expect(alternativeCard?.getAttribute('aria-label')).toBe(
+      'Naar winkel bij LEGO',
+    );
+    expect(alternativeAction?.className).toContain('offerRailAction');
+    expect(alternativeAction?.className).toContain('buttonSecondary');
+    expect(alternativeAction?.textContent).toContain('Naar winkel');
+  });
+
   it('renders the full comparison trigger for normal multi-shop rails', () => {
     act(() => {
       root.render(
@@ -192,6 +430,8 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(trigger?.getAttribute('aria-label')).toBe(
       'Vergelijk alle 2 winkels',
     );
+    expect(trigger?.className).toContain('offerRailViewAllAction');
+    expect(trigger?.className).toContain('buttonSecondary');
   });
 
   it('does not render the full comparison trigger for a single offer', () => {
@@ -353,7 +593,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(rows).toHaveLength(overlayOffers.length);
     expect(priceCells).toHaveLength(overlayOffers.length);
     expect(dialog?.textContent).toContain('Beste deal');
-    expect(dialog?.textContent).toContain('Bekijk beste deal');
+    expect(dialog?.textContent).toContain('Bekijk deal');
     expect(dialog?.textContent).toContain('Naar winkel');
     expect(dialog?.textContent).toContain('LEGO');
     expect(dialog?.textContent).not.toContain('LEGO LEGO');

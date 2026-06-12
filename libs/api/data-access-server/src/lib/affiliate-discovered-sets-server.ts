@@ -8,6 +8,9 @@ import {
   type EnrichCatalogSetMinifigSummariesFn,
 } from './catalog-minifig-onboarding-server';
 import {
+  bulkUpdateCommerceAffiliateDiscoveredSetReviewStates,
+  bulkUpsertCommerceOfferLatestRecords,
+  bulkUpsertCommerceOfferSeedsByCompositeKey,
   listCommerceAffiliateDiscoveredSets,
   upsertCommerceOfferLatestRecord,
   upsertCommerceOfferSeedByCompositeKey,
@@ -21,10 +24,16 @@ import type {
   CommerceAffiliateDiscoveredSet,
   CommerceAffiliateDiscoveredSetImportResult,
   CommerceAffiliateDiscoveredSetStatus,
+  CommerceOfferLatestRecordInput,
+  CommerceOfferSeed,
+  CommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface ImportAffiliateDiscoveredSetsDependencies {
+  bulkUpdateDiscoveredSetReviewStatesFn?: typeof bulkUpdateCommerceAffiliateDiscoveredSetReviewStates;
+  bulkUpsertCommerceOfferLatestRecordsFn?: typeof bulkUpsertCommerceOfferLatestRecords;
+  bulkUpsertCommerceOfferSeedsByCompositeKeyFn?: typeof bulkUpsertCommerceOfferSeedsByCompositeKey;
   createCatalogSetFn?: typeof createCatalogSet;
   enrichCatalogSetMinifigSummariesFn?: EnrichCatalogSetMinifigSummariesFn;
   getNow?: () => Date;
@@ -44,10 +53,28 @@ const REBRICKABLE_LOOKUP_RETRY_BASE_DELAY_MS = 500;
 
 type ResolvedCatalogSet = CatalogSet | { setId: string };
 
+type AffiliateDiscoveredSetImportPhaseTimings = NonNullable<
+  CommerceAffiliateDiscoveredSetImportResult['phaseTimingsMs']
+>;
+
 interface CatalogSetResolution {
   catalogSet?: ResolvedCatalogSet;
   created: boolean;
   error?: string;
+}
+
+interface PendingDiscoveredSetOfferImport {
+  catalogSetId: string;
+  discoveredSet: CommerceAffiliateDiscoveredSet;
+  seedInput: CommerceOfferSeedInput;
+}
+
+interface DiscoveredSetStatusUpdate {
+  discoveredSetIds: readonly string[];
+  importAttemptedAt?: string;
+  importError?: string | null;
+  importedSetId?: string;
+  status: CommerceAffiliateDiscoveredSetStatus;
 }
 
 export function resolveAffiliateFeedDiscoveryEnabled({
@@ -238,6 +265,159 @@ function isCatalogSetWithPublicSurface(
   );
 }
 
+function createEmptyAffiliateDiscoveredSetImportPhaseTimings(): AffiliateDiscoveredSetImportPhaseTimings {
+  return {
+    catalogLoad: 0,
+    catalogResolve: 0,
+    seedUpsert: 0,
+    latestUpsert: 0,
+    statusUpdate: 0,
+    enrichment: 0,
+    revalidation: 0,
+    total: 0,
+  };
+}
+
+async function timeAffiliateDiscoveredSetImportPhase<
+  Phase extends keyof Omit<AffiliateDiscoveredSetImportPhaseTimings, 'total'>,
+  Result,
+>({
+  callback,
+  phase,
+  phaseTimingsMs,
+}: {
+  callback: () => Promise<Result>;
+  phase: Phase;
+  phaseTimingsMs: AffiliateDiscoveredSetImportPhaseTimings;
+}): Promise<Result> {
+  const startedAt = Date.now();
+
+  try {
+    return await callback();
+  } finally {
+    phaseTimingsMs[phase] += Date.now() - startedAt;
+  }
+}
+
+function getOfferSeedImportKey(
+  input: Pick<CommerceOfferSeedInput, 'merchantId' | 'setId'>,
+): string {
+  return `${input.setId}:${input.merchantId}`;
+}
+
+async function upsertOfferSeedsForDiscoveredSetImports({
+  bulkUpsertCommerceOfferSeedsByCompositeKeyFn,
+  pendingOfferImports,
+  upsertCommerceOfferSeedByCompositeKeyFn,
+}: {
+  bulkUpsertCommerceOfferSeedsByCompositeKeyFn?:
+    | typeof bulkUpsertCommerceOfferSeedsByCompositeKey
+    | undefined;
+  pendingOfferImports: readonly PendingDiscoveredSetOfferImport[];
+  upsertCommerceOfferSeedByCompositeKeyFn: typeof upsertCommerceOfferSeedByCompositeKey;
+}): Promise<Map<string, CommerceOfferSeed>> {
+  const seedByKey = new Map<string, CommerceOfferSeed>();
+
+  if (bulkUpsertCommerceOfferSeedsByCompositeKeyFn) {
+    const seedInputByKey = new Map<string, CommerceOfferSeedInput>();
+
+    for (const pendingOfferImport of pendingOfferImports) {
+      seedInputByKey.set(
+        getOfferSeedImportKey(pendingOfferImport.seedInput),
+        pendingOfferImport.seedInput,
+      );
+    }
+
+    const upsertedSeeds = await bulkUpsertCommerceOfferSeedsByCompositeKeyFn({
+      inputs: [...seedInputByKey.values()],
+    });
+
+    for (const upsertedSeed of upsertedSeeds) {
+      seedByKey.set(getOfferSeedImportKey(upsertedSeed), upsertedSeed);
+    }
+
+    return seedByKey;
+  }
+
+  for (const pendingOfferImport of pendingOfferImports) {
+    const upsertedSeed = await upsertCommerceOfferSeedByCompositeKeyFn({
+      input: pendingOfferImport.seedInput,
+    });
+
+    seedByKey.set(
+      getOfferSeedImportKey(pendingOfferImport.seedInput),
+      upsertedSeed,
+    );
+  }
+
+  return seedByKey;
+}
+
+async function upsertLatestOffersForDiscoveredSetImports({
+  bulkUpsertCommerceOfferLatestRecordsFn,
+  latestInputs,
+  upsertCommerceOfferLatestRecordFn,
+}: {
+  bulkUpsertCommerceOfferLatestRecordsFn?:
+    | typeof bulkUpsertCommerceOfferLatestRecords
+    | undefined;
+  latestInputs: readonly CommerceOfferLatestRecordInput[];
+  upsertCommerceOfferLatestRecordFn: typeof upsertCommerceOfferLatestRecord;
+}): Promise<void> {
+  if (bulkUpsertCommerceOfferLatestRecordsFn) {
+    const latestInputByOfferSeedId = new Map<
+      string,
+      CommerceOfferLatestRecordInput
+    >();
+
+    for (const latestInput of latestInputs) {
+      latestInputByOfferSeedId.set(latestInput.offerSeedId, latestInput);
+    }
+
+    await bulkUpsertCommerceOfferLatestRecordsFn({
+      inputs: [...latestInputByOfferSeedId.values()],
+    });
+    return;
+  }
+
+  for (const latestInput of latestInputs) {
+    await upsertCommerceOfferLatestRecordFn({
+      input: latestInput,
+    });
+  }
+}
+
+async function updateDiscoveredSetReviewStatesForImport({
+  bulkUpdateDiscoveredSetReviewStatesFn,
+  statusUpdates,
+  updateDiscoveredSetReviewStateFn,
+}: {
+  bulkUpdateDiscoveredSetReviewStatesFn?:
+    | typeof bulkUpdateCommerceAffiliateDiscoveredSetReviewStates
+    | undefined;
+  statusUpdates: readonly DiscoveredSetStatusUpdate[];
+  updateDiscoveredSetReviewStateFn: typeof updateCommerceAffiliateDiscoveredSetReviewState;
+}): Promise<void> {
+  if (bulkUpdateDiscoveredSetReviewStatesFn) {
+    await bulkUpdateDiscoveredSetReviewStatesFn({
+      updates: statusUpdates,
+    });
+    return;
+  }
+
+  for (const statusUpdate of statusUpdates) {
+    for (const discoveredSetId of statusUpdate.discoveredSetIds) {
+      await updateDiscoveredSetReviewStateFn({
+        discoveredSetId,
+        importAttemptedAt: statusUpdate.importAttemptedAt,
+        importError: statusUpdate.importError,
+        importedSetId: statusUpdate.importedSetId,
+        status: statusUpdate.status,
+      });
+    }
+  }
+}
+
 export async function importAffiliateDiscoveredSets({
   dependencies = {},
   discoveredSetIds,
@@ -249,7 +429,12 @@ export async function importAffiliateDiscoveredSets({
   highConfidenceOnly?: boolean;
   maxBatchSize?: number;
 } = {}): Promise<CommerceAffiliateDiscoveredSetImportResult> {
+  const totalStartedAt = Date.now();
+  const phaseTimingsMs = createEmptyAffiliateDiscoveredSetImportPhaseTimings();
   const {
+    bulkUpdateDiscoveredSetReviewStatesFn,
+    bulkUpsertCommerceOfferLatestRecordsFn,
+    bulkUpsertCommerceOfferSeedsByCompositeKeyFn,
     createCatalogSetFn = createCatalogSet,
     enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummariesBestEffort,
     getNow = () => new Date(),
@@ -265,6 +450,21 @@ export async function importAffiliateDiscoveredSets({
     upsertCommerceOfferLatestRecordFn = upsertCommerceOfferLatestRecord,
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
   } = dependencies;
+  const activeBulkUpdateDiscoveredSetReviewStatesFn =
+    bulkUpdateDiscoveredSetReviewStatesFn ??
+    (dependencies.updateDiscoveredSetReviewStateFn
+      ? undefined
+      : bulkUpdateCommerceAffiliateDiscoveredSetReviewStates);
+  const activeBulkUpsertCommerceOfferLatestRecordsFn =
+    bulkUpsertCommerceOfferLatestRecordsFn ??
+    (dependencies.upsertCommerceOfferLatestRecordFn
+      ? undefined
+      : bulkUpsertCommerceOfferLatestRecords);
+  const activeBulkUpsertCommerceOfferSeedsByCompositeKeyFn =
+    bulkUpsertCommerceOfferSeedsByCompositeKeyFn ??
+    (dependencies.upsertCommerceOfferSeedByCompositeKeyFn
+      ? undefined
+      : bulkUpsertCommerceOfferSeedsByCompositeKey);
   const requestedIds = new Set(discoveredSetIds ?? []);
   const allRequestedDiscoveredSets = (
     await listDiscoveredSetsFn({
@@ -278,17 +478,24 @@ export async function importAffiliateDiscoveredSets({
   const safeMaxBatchSize = Math.max(1, maxBatchSize);
   const discoveredSets = allRequestedDiscoveredSets.slice(0, safeMaxBatchSize);
   const observedAt = getNow().toISOString();
-  const catalogSetById = new Map(
-    (await listCanonicalCatalogSetsFn()).map(
-      (catalogSet) => [catalogSet.setId, catalogSet] as const,
-    ),
-  );
+  const catalogSetById = await timeAffiliateDiscoveredSetImportPhase({
+    callback: async () =>
+      new Map(
+        (await listCanonicalCatalogSetsFn()).map(
+          (catalogSet) => [catalogSet.setId, catalogSet] as const,
+        ),
+      ),
+    phase: 'catalogLoad',
+    phaseTimingsMs,
+  });
   let alreadyCatalogedCount = 0;
   let attachedOfferCount = 0;
   let createdCatalogSetCount = 0;
   let failedLookupCount = 0;
   let importedCount = 0;
   let skippedCount = allRequestedDiscoveredSets.length - discoveredSets.length;
+  const importedStatusUpdates: DiscoveredSetStatusUpdate[] = [];
+  const pendingOfferImports: PendingDiscoveredSetOfferImport[] = [];
 
   const discoveredSetsBySetId = groupDiscoveredSetsBySetId(
     discoveredSets.filter((discoveredSet) => {
@@ -303,30 +510,45 @@ export async function importAffiliateDiscoveredSets({
 
   for (const setDiscoveredSets of discoveredSetsBySetId.values()) {
     const [representativeDiscoveredSet] = setDiscoveredSets;
-    const catalogResolution = await resolveCatalogSetForDiscoveredSet({
-      catalogSetById,
-      createCatalogSetFn,
-      discoveredSet: representativeDiscoveredSet,
-      searchCatalogMissingSetsFn,
-      sleepFn,
+    const catalogResolution = await timeAffiliateDiscoveredSetImportPhase({
+      callback: () =>
+        resolveCatalogSetForDiscoveredSet({
+          catalogSetById,
+          createCatalogSetFn,
+          discoveredSet: representativeDiscoveredSet,
+          searchCatalogMissingSetsFn,
+          sleepFn,
+        }),
+      phase: 'catalogResolve',
+      phaseTimingsMs,
     });
 
     if (!catalogResolution.catalogSet) {
       failedLookupCount += setDiscoveredSets.length;
       skippedCount += setDiscoveredSets.length;
 
-      await Promise.all(
-        setDiscoveredSets.map((discoveredSet) =>
-          updateDiscoveredSetReviewStateFn({
-            discoveredSetId: discoveredSet.id,
-            importAttemptedAt: observedAt,
-            importError:
-              catalogResolution.error ??
-              `Unable to resolve ${discoveredSet.normalizedSetId} during import.`,
-            status: 'new',
+      await timeAffiliateDiscoveredSetImportPhase({
+        callback: () =>
+          updateDiscoveredSetReviewStatesForImport({
+            bulkUpdateDiscoveredSetReviewStatesFn:
+              activeBulkUpdateDiscoveredSetReviewStatesFn,
+            statusUpdates: [
+              {
+                discoveredSetIds: setDiscoveredSets.map(
+                  (discoveredSet) => discoveredSet.id,
+                ),
+                importAttemptedAt: observedAt,
+                importError:
+                  catalogResolution.error ??
+                  `Unable to resolve ${representativeDiscoveredSet.normalizedSetId} during import.`,
+                status: 'new',
+              },
+            ],
+            updateDiscoveredSetReviewStateFn,
           }),
-        ),
-      );
+        phase: 'statusUpdate',
+        phaseTimingsMs,
+      });
       continue;
     }
 
@@ -334,20 +556,32 @@ export async function importAffiliateDiscoveredSets({
       createdCatalogSetCount += 1;
 
       try {
-        const enrichment = await enrichCatalogSetMinifigSummariesFn({
-          setIds: [catalogResolution.catalogSet.setId],
+        const enrichment = await timeAffiliateDiscoveredSetImportPhase({
+          callback: () =>
+            enrichCatalogSetMinifigSummariesFn({
+              setIds: [catalogResolution.catalogSet.setId],
+            }),
+          phase: 'enrichment',
+          phaseTimingsMs,
         });
+
+        const revalidationTarget = catalogResolution.catalogSet;
 
         if (
           enrichment.changedSetIds.length > 0 &&
-          isCatalogSetWithPublicSurface(catalogResolution.catalogSet)
+          isCatalogSetWithPublicSurface(revalidationTarget)
         ) {
-          await revalidatePublicCatalogPathsFn({
-            includeDeals: false,
-            includeHome: false,
-            includeThemeDirectory: false,
-            reason: 'affiliate_discovered_set_minifig_enrichment',
-            targets: [catalogResolution.catalogSet],
+          await timeAffiliateDiscoveredSetImportPhase({
+            callback: () =>
+              revalidatePublicCatalogPathsFn({
+                includeDeals: false,
+                includeHome: false,
+                includeThemeDirectory: false,
+                reason: 'affiliate_discovered_set_minifig_enrichment',
+                targets: [revalidationTarget],
+              }),
+            phase: 'revalidation',
+            phaseTimingsMs,
           });
         }
       } catch (error) {
@@ -362,8 +596,10 @@ export async function importAffiliateDiscoveredSets({
     }
 
     for (const discoveredSet of setDiscoveredSets) {
-      const offerSeed = await upsertCommerceOfferSeedByCompositeKeyFn({
-        input: {
+      pendingOfferImports.push({
+        catalogSetId: catalogResolution.catalogSet.setId,
+        discoveredSet,
+        seedInput: {
           setId: catalogResolution.catalogSet.setId,
           merchantId: discoveredSet.affiliate.id,
           productUrl: discoveredSet.productUrl,
@@ -374,36 +610,83 @@ export async function importAffiliateDiscoveredSets({
             'Imported from the affiliate discovered sets review queue. Raw feed payload remains on the discovered set row.',
         },
       });
-
-      if (
-        typeof discoveredSet.priceMinor === 'number' &&
-        discoveredSet.currencyCode
-      ) {
-        await upsertCommerceOfferLatestRecordFn({
-          input: {
-            offerSeedId: offerSeed.id,
-            fetchStatus: 'success',
-            priceMinor: discoveredSet.priceMinor,
-            currencyCode: discoveredSet.currencyCode,
-            availability: 'unknown',
-            observedAt,
-            fetchedAt: observedAt,
-          },
-        });
-      }
-
-      await updateDiscoveredSetReviewStateFn({
-        discoveredSetId: discoveredSet.id,
-        importAttemptedAt: observedAt,
-        importError: null,
-        importedSetId: catalogResolution.catalogSet.setId,
-        status: 'imported',
-      });
-
-      attachedOfferCount += 1;
-      importedCount += 1;
     }
+
+    importedStatusUpdates.push({
+      discoveredSetIds: setDiscoveredSets.map(
+        (discoveredSet) => discoveredSet.id,
+      ),
+      importAttemptedAt: observedAt,
+      importError: null,
+      importedSetId: catalogResolution.catalogSet.setId,
+      status: 'imported',
+    });
   }
+
+  const seedByKey = await timeAffiliateDiscoveredSetImportPhase({
+    callback: () =>
+      upsertOfferSeedsForDiscoveredSetImports({
+        bulkUpsertCommerceOfferSeedsByCompositeKeyFn:
+          activeBulkUpsertCommerceOfferSeedsByCompositeKeyFn,
+        pendingOfferImports,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+      }),
+    phase: 'seedUpsert',
+    phaseTimingsMs,
+  });
+  const latestInputs: CommerceOfferLatestRecordInput[] = [];
+
+  for (const pendingOfferImport of pendingOfferImports) {
+    const offerSeed = seedByKey.get(
+      getOfferSeedImportKey(pendingOfferImport.seedInput),
+    );
+
+    if (
+      !offerSeed ||
+      typeof pendingOfferImport.discoveredSet.priceMinor !== 'number' ||
+      !pendingOfferImport.discoveredSet.currencyCode
+    ) {
+      continue;
+    }
+
+    latestInputs.push({
+      offerSeedId: offerSeed.id,
+      fetchStatus: 'success',
+      priceMinor: pendingOfferImport.discoveredSet.priceMinor,
+      currencyCode: pendingOfferImport.discoveredSet.currencyCode,
+      availability: 'unknown',
+      observedAt,
+      fetchedAt: observedAt,
+    });
+  }
+
+  await timeAffiliateDiscoveredSetImportPhase({
+    callback: () =>
+      upsertLatestOffersForDiscoveredSetImports({
+        bulkUpsertCommerceOfferLatestRecordsFn:
+          activeBulkUpsertCommerceOfferLatestRecordsFn,
+        latestInputs,
+        upsertCommerceOfferLatestRecordFn,
+      }),
+    phase: 'latestUpsert',
+    phaseTimingsMs,
+  });
+
+  await timeAffiliateDiscoveredSetImportPhase({
+    callback: () =>
+      updateDiscoveredSetReviewStatesForImport({
+        bulkUpdateDiscoveredSetReviewStatesFn:
+          activeBulkUpdateDiscoveredSetReviewStatesFn,
+        statusUpdates: importedStatusUpdates,
+        updateDiscoveredSetReviewStateFn,
+      }),
+    phase: 'statusUpdate',
+    phaseTimingsMs,
+  });
+
+  attachedOfferCount += pendingOfferImports.length;
+  importedCount += pendingOfferImports.length;
+  phaseTimingsMs.total = Date.now() - totalStartedAt;
 
   return {
     alreadyCatalogedCount,
@@ -411,6 +694,7 @@ export async function importAffiliateDiscoveredSets({
     createdCatalogSetCount,
     failedLookupCount,
     importedCount,
+    phaseTimingsMs,
     requestedCount: allRequestedDiscoveredSets.length,
     skippedCount,
     uniqueSetCount: discoveredSetsBySetId.size,

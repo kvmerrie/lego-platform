@@ -1505,10 +1505,8 @@ describe('CatalogSetCard', () => {
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
-    const offerHoverRule =
-      css.match(/\.offerRailCardLink:hover \.offerRailCard \{[^}]+\}/u)?.[0] ??
-      '';
-    const offerCardRule = css.match(/\.offerRailCard \{[^}]+\}/u)?.[0] ?? '';
+    const offerCardRule =
+      css.match(/\n {2}\.offerRailCard \{[^}]+\}/u)?.[0] ?? '';
     const bestDealRule =
       css.match(/\.offerRailCard\[data-best='true'\] \{[^}]+\}/u)?.[0] ?? '';
     const unknownStockRule =
@@ -1519,27 +1517,15 @@ describe('CatalogSetCard', () => {
       css.match(
         /\.offerRailCard\[data-stock-state='unknown'\]\[data-price-comparison='lower-unavailable'\]\s+\.offerRailPrice \{[^}]+\}/u,
       )?.[0] ?? '';
-    const secondaryActionRule =
-      css.match(/\.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u)?.[0] ??
-      '';
-    const directHoverSecondaryActionRule =
-      css.match(
-        /\.offerRailAction\[data-tone='secondary'\]:hover \{[^}]+\}/u,
-      )?.[0] ?? '';
+    const actionRule = css.match(/\.offerRailAction \{[^}]+\}/u)?.[0] ?? '';
+    const viewAllRule =
+      css.match(/\.offerRailViewAllAction \{[^}]+\}/u)?.[0] ?? '';
 
     expect(offerCardRule).not.toContain('transform');
     expect(bestDealRule).not.toContain('translateY');
-    expect(offerHoverRule).not.toContain('translateY');
-    expect(offerHoverRule).not.toContain('0 0.55rem');
     expect(offerCardRule).toContain('border: var(--lego-border-width-1) solid');
     expect(offerCardRule).toContain('transition: border-color');
     expect(offerCardRule).not.toContain('box-shadow var(');
-    expect(offerHoverRule).toContain(
-      'border-color: var(--catalog-offer-card-interaction-border-color);',
-    );
-    expect(offerHoverRule).toContain('box-shadow: inset 0 0 0 1px');
-    expect(offerHoverRule).not.toContain('linear-gradient');
-    expect(offerHoverRule).not.toContain('background');
     expect(offerCardRule).toContain('background: var(--lego-surface-default);');
     expect(bestDealRule).toContain('background: var(--lego-positive-subtle);');
     expect(bestDealRule).toContain('--catalog-offer-card-border-color:');
@@ -1562,18 +1548,23 @@ describe('CatalogSetCard', () => {
     expect(css).not.toContain(
       ".offerRailCardLink:hover .offerRailCard[data-price-comparison='lower-unavailable']",
     );
-    expect(secondaryActionRule).toContain('background: transparent;');
-    expect(secondaryActionRule).toContain('border-color: var(--lego-text);');
-    expect(secondaryActionRule).toContain('color: var(--lego-text);');
+    expect(actionRule).toContain('width: 100%;');
+    expect(actionRule).toContain('white-space: nowrap;');
+    expect(actionRule).not.toContain('background:');
+    expect(actionRule).not.toContain('border-color:');
+    expect(actionRule).not.toContain('color:');
+    expect(viewAllRule).toContain('width: 100%;');
+    expect(viewAllRule).not.toContain('background:');
+    expect(viewAllRule).not.toContain('border-color:');
+    expect(viewAllRule).not.toContain('color:');
     expect(css).not.toContain(
       ".offerRailCardLink:hover .offerRailAction[data-tone='secondary']",
     );
     expect(css).not.toContain(
       ".offerRailCardLink:focus-visible .offerRailAction[data-tone='secondary']",
     );
-    expect(directHoverSecondaryActionRule).toContain(
-      'background: var(--lego-accent);',
-    );
+    expect(css).not.toContain(".offerRailAction[data-tone='secondary']");
+    expect(css).not.toContain(".offerRailAction[data-tone='accent']");
     expect(css).toContain('white-space: nowrap;');
   });
 
@@ -1638,10 +1629,6 @@ describe('CatalogSetCard', () => {
     );
     const browseActionHoverRule =
       css.match(/\.cardCompactActionBrowse:hover \{[^}]+\}/u)?.[0] ?? '';
-    const offerAccentHoverRule =
-      css.match(
-        /\.offerRailAction\[data-tone='accent'\]:hover \{[^}]+\}/u,
-      )?.[0] ?? '';
 
     expect(css).not.toContain('.setCardLink:hover .cardCompactActionBrowse');
     expect(css).not.toContain(
@@ -1653,8 +1640,11 @@ describe('CatalogSetCard', () => {
     expect(browseActionHoverRule).toContain(
       'background: var(--lego-accent-hover);',
     );
-    expect(offerAccentHoverRule).toContain(
-      'background: var(--lego-accent-hover);',
+    expect(css).not.toContain(".offerRailAction[data-tone='accent']:hover");
+    expect(css).not.toContain(".offerRailAction[data-tone='secondary']:hover");
+    expect(css).not.toContain('.offerRailCardLink:hover .offerRailAction');
+    expect(css).not.toContain(
+      '.offerRailCardLink:focus-visible .offerRailAction',
     );
   });
 
@@ -2417,7 +2407,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="https://example.com/rivendell-lego"');
     expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('Bekijk beste deal');
+    expect(markup).toContain('Bekijk deal');
     expect(markup).toContain('Naar winkel');
     expect(markup).toContain('LEGO');
     expect(markup).not.toContain('LEGO LEGO');

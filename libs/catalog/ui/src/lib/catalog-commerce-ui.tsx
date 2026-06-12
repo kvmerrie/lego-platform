@@ -34,7 +34,10 @@ export interface CatalogDecisionOffer {
   decisionLabel?: string;
   decisionTone?: ComponentProps<typeof Badge>['tone'];
   eyebrow?: string;
+  merchantId?: string;
+  merchantKey?: string;
   merchantLabel: string;
+  merchantSlug?: string;
   price: string;
   rankingLabel?: string;
   stockLabel: string;
@@ -48,7 +51,10 @@ export interface CatalogOfferItem {
   ctaHref: string;
   ctaLabel: string;
   isBest?: boolean;
+  merchantId?: string;
+  merchantKey?: string;
   merchantLabel: string;
+  merchantSlug?: string;
   price: string;
   rankingLabel?: string;
   stockLabel: string;

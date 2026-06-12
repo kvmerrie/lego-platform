@@ -2414,7 +2414,7 @@
     --lego-surface-padding-md-inline: 1rem;
     background: var(--lego-surface-accent);
     border-radius: var(--lego-radius-md);
-    gap: var(--lego-space-2);
+    gap: var(--lego-space-3);
   }
 
   .offerRailHeading {
@@ -2450,18 +2450,25 @@
     display: flex;
   }
 
-  .offerRailCardLink {
-    border-radius: var(--lego-radius-sm);
-    color: inherit;
-    display: block;
-    height: 100%;
-    min-width: 0;
+  .offerRailItem {
     scroll-snap-align: start;
+  }
+
+  .offerRailCardLink {
+    color: inherit;
+    display: flex;
+    height: 100%;
     text-decoration: none;
   }
 
   .offerRailCardLink:focus-visible {
     outline: none;
+  }
+
+  .offerRailCardLink:focus-visible .offerRailCard {
+    border-color: var(--catalog-offer-card-interaction-border-color);
+    box-shadow: inset 0 0 0 1px
+      var(--catalog-offer-card-interaction-outline-color);
   }
 
   .offerRailCard {
@@ -2484,6 +2491,7 @@
     display: grid;
     gap: 0.5rem;
     grid-template-rows: auto auto minmax(0, 1fr) auto;
+    height: 100%;
     min-height: 14rem;
     min-width: 0;
     overflow: hidden;
@@ -2521,13 +2529,6 @@
     color: var(--lego-text-muted);
   }
 
-  .offerRailCardLink:focus-visible .offerRailCard {
-    border-color: var(--catalog-offer-card-interaction-border-color);
-    box-shadow:
-      inset 0 0 0 1px var(--catalog-offer-card-interaction-outline-color),
-      0 0 0 4px var(--lego-focus-ring);
-  }
-
   .offerRailHeader {
     align-items: start;
     column-gap: var(--lego-space-1);
@@ -2538,16 +2539,37 @@
   }
 
   .offerRailMerchant {
+    align-items: center;
     color: var(--lego-text);
-    display: -webkit-box;
+    display: inline-flex;
     font-size: 0.94rem;
     font-weight: var(--lego-font-weight-semibold);
+    gap: 0.38rem;
     line-height: 1.25;
     margin: 0;
     min-width: 0;
     overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .merchantBrandInline {
+    max-width: 100%;
+  }
+
+  .merchantBrandFavicon {
+    border-radius: 4px;
+    flex: 0 0 1.125rem;
+    height: 1.125rem;
+    object-fit: contain;
+    width: 1.125rem;
+  }
+
+  .merchantBrandName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .offerRailBadges {
@@ -2639,6 +2661,10 @@
     overflow: hidden;
   }
 
+  .offerRailChecked svg {
+    flex: 0 0 auto;
+  }
+
   .offerRailChecked span {
     min-width: 0;
     overflow: hidden;
@@ -2653,55 +2679,19 @@
   }
 
   .offerRailAction {
-    align-items: center;
-    border: var(--lego-border-width-2) solid transparent;
-    border-radius: var(--lego-radius-pill);
-    box-sizing: border-box;
-    display: inline-flex;
-    font-size: var(--lego-text-role-meta-size);
-    font-weight: var(--lego-font-weight-semibold);
-    gap: 0.35rem;
-    justify-content: center;
-    line-height: 1;
     margin-top: 0.08rem;
     max-width: 100%;
-    min-width: 0;
-    padding: 0.62rem 0.74rem;
     white-space: nowrap;
     width: 100%;
-  }
-
-  .offerRailAction[data-tone='accent'] {
-    background: var(--lego-accent);
-    color: var(--lego-accent-contrast);
-  }
-
-  .offerRailAction[data-tone='secondary'] {
-    background: transparent;
-    border-color: var(--lego-text);
-    color: var(--lego-text);
   }
 
   .offerRailFooter {
     display: flex;
     justify-content: flex-start;
-    margin-top: var(--lego-space-2);
   }
 
   .offerRailViewAllAction {
-    font-size: var(--lego-text-role-meta-size);
-    gap: 0.32rem;
-    justify-content: center;
-    text-align: left;
     width: 100%;
-  }
-
-  .offerRailViewAllAction:hover {
-    color: var(--lego-text);
-  }
-
-  .offerRailViewAllAction:focus-visible {
-    color: var(--lego-text);
   }
 
   .offerOverlayBackdrop {
@@ -2863,10 +2853,12 @@
   }
 
   .offerOverlayMerchant {
+    align-items: center;
     color: var(--lego-text);
-    display: block;
+    display: inline-flex;
     font-size: 0.95rem;
     font-weight: var(--lego-font-weight-semibold);
+    gap: 0.38rem;
     line-height: 1.2;
     margin: 0;
     min-width: 0;
@@ -4396,18 +4388,6 @@
       border-color: transparent;
       color: var(--lego-accent-contrast);
       text-decoration: none;
-    }
-
-    .offerRailAction[data-tone='accent']:hover {
-      background: var(--lego-accent-hover);
-      border-color: transparent;
-      color: var(--lego-accent-contrast);
-    }
-
-    .offerRailAction[data-tone='secondary']:hover {
-      background: var(--lego-accent);
-      border-color: transparent;
-      color: var(--lego-accent-contrast);
     }
 
     .themeBadgeLink:hover,

@@ -1574,6 +1574,7 @@ function buildOfferList(
       ctaLabel: `Bekijk bij ${merchantName}`,
       isBest: bestOffer?.url === catalogOffer.url,
       merchantLabel: merchantName,
+      merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
       price: formatOfferPrice(catalogOffer),
       rankingLabel: buildOfferRankingLabel({
         bestOffer,

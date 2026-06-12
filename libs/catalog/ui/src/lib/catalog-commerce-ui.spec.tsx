@@ -300,11 +300,12 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('href="https://example.com/atat-amazon"');
     expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('Bekijk beste deal');
+    expect(markup).toContain('Bekijk deal');
     expect(markup).toContain('Naar winkel');
     expect(markup).toContain('Amazon');
     expect(markup).not.toContain('Amazon Amazon');
-    expect(markup).toContain('Nagekeken 2 apr');
+    expect(markup).toContain('2 apr 09:00');
+    expect(markup).toContain('Nagekeken 2 april om 09:00');
     expect(markup).not.toContain('2 apr om 09:00');
     expect(markup).toContain('data-best="true"');
     expect(markup).toContain('data-stock-state="available"');
@@ -461,11 +462,50 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(presentation.stockLabel).toBe('Uitverkocht');
-    expect(presentation.railCheckedLabel).toBe('Nagekeken 2 apr');
+    expect(presentation.railCheckedLabel).toBe('2 apr 09:00');
+    expect(presentation.railCheckedTitle).toBe('Nagekeken 2 april om 09:00');
     expect(presentation.overlayCheckedLabel).toBe('2 apr om 09:00');
     expect(presentation.deltaLabel).toBe('€30,04 duurder');
     expect(presentation.actionLabel).toBe('Naar winkel');
     expect(presentation.priceComparisonState).toBe('higher');
+  });
+
+  it('formats compact rail timestamps with Dutch short dates and safe fallbacks', () => {
+    const baseComparisonContext = {
+      bestPriceMinor: 104995,
+      comparedOfferCount: 1,
+      reviewedInStockOfferCount: 1,
+    };
+    const datedPresentation = buildCompactOfferPresentation({
+      comparisonContext: baseComparisonContext,
+      offer: {
+        checkedLabel: 'Nagekeken 7 juni, 12:55',
+        ctaHref: 'https://example.com/dated',
+        ctaLabel: 'Bekijk bij Shop',
+        merchantLabel: 'Shop',
+        price: '€ 1.049,95',
+        stockLabel: 'Op voorraad',
+      },
+    });
+    const fallbackPresentation = buildCompactOfferPresentation({
+      comparisonContext: baseComparisonContext,
+      offer: {
+        checkedLabel: '',
+        ctaHref: 'https://example.com/fallback',
+        ctaLabel: 'Bekijk bij Shop',
+        merchantLabel: 'Shop',
+        price: '€ 1.049,95',
+        stockLabel: 'Op voorraad',
+      },
+    });
+
+    expect(datedPresentation.railCheckedLabel).toBe('7 jun 12:55');
+    expect(datedPresentation.railCheckedTitle).toBe(
+      'Nagekeken 7 juni om 12:55',
+    );
+    expect(datedPresentation.overlayCheckedLabel).toBe('7 juni om 12:55');
+    expect(fallbackPresentation.railCheckedLabel).toBe('onbekend');
+    expect(fallbackPresentation.railCheckedTitle).toBe('Nagekeken onbekend');
   });
 
   it('marks exact price ties as secondary alternatives', () => {
@@ -565,7 +605,7 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(presentation.confidenceLabel).toBe('€30,04 goedkoper dan de rest');
-    expect(presentation.actionLabel).toBe('Bekijk beste deal');
+    expect(presentation.actionLabel).toBe('Bekijk deal');
     expect(presentation.priceComparisonState).toBe('best');
   });
 
@@ -725,11 +765,12 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.railCheckedLabel).toBe('Nagekeken vandaag');
+    expect(presentation.railCheckedLabel).toBe('vandaag 03:00');
+    expect(presentation.railCheckedTitle).toBe('Nagekeken vandaag om 03:00');
     expect(presentation.overlayCheckedLabel).toBe('Vandaag om 03:00');
   });
 
-  it('renders compact day labels in the rail without exact times', () => {
+  it('renders compact checked timestamps in the rail with full native titles', () => {
     const markup = renderToStaticMarkup(
       <CatalogOfferComparison
         id="set-offers"
@@ -756,10 +797,12 @@ describe('Catalog commerce UI', () => {
       />,
     );
 
-    expect(markup).toContain('>Nagekeken vandaag<');
-    expect(markup).toContain('>Nagekeken gisteren<');
-    expect(markup).not.toContain('Vandaag om 03:00');
-    expect(markup).not.toContain('Gisteren om 11:34');
+    expect(markup).toContain('>vandaag 03:00<');
+    expect(markup).toContain('>gisteren 11:34<');
+    expect(markup).toContain('title="Nagekeken vandaag om 03:00"');
+    expect(markup).toContain('title="Nagekeken gisteren om 11:34"');
+    expect(markup).not.toContain('>Nagekeken vandaag<');
+    expect(markup).not.toContain('>Nagekeken gisteren<');
   });
 
   it('renders a trust panel with compact signal rows', () => {

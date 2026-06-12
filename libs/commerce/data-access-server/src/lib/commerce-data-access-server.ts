@@ -1123,6 +1123,60 @@ export async function updateCommerceAffiliateDiscoveredSetReviewState({
   );
 }
 
+export async function bulkUpdateCommerceAffiliateDiscoveredSetReviewStates({
+  updates,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  updates: readonly {
+    discoveredSetIds: readonly string[];
+    importAttemptedAt?: string;
+    importError?: string | null;
+    importedSetId?: string;
+    status: CommerceAffiliateDiscoveredSetStatus;
+  }[];
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<number> {
+  let updatedCount = 0;
+
+  for (const update of updates) {
+    const discoveredSetIds = [
+      ...new Set(
+        update.discoveredSetIds
+          .map((discoveredSetId) => discoveredSetId.trim())
+          .filter(Boolean),
+      ),
+    ];
+
+    for (const chunk of chunkCommerceRows(discoveredSetIds, 500)) {
+      const { error } = await supabaseClient
+        .from(COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE)
+        .update({
+          status: update.status,
+          imported_set_id: update.importedSetId ?? null,
+          ...(typeof update.importAttemptedAt === 'string'
+            ? {
+                import_attempted_at: update.importAttemptedAt,
+              }
+            : {}),
+          ...(typeof update.importError !== 'undefined'
+            ? {
+                import_error: update.importError,
+              }
+            : {}),
+        })
+        .in('id', chunk);
+
+      if (error) {
+        throw new Error('Unable to update affiliate discovered sets.');
+      }
+
+      updatedCount += chunk.length;
+    }
+  }
+
+  return updatedCount;
+}
+
 export async function createCommerceMerchant({
   input,
   supabaseClient = getServerSupabaseAdminClient(),

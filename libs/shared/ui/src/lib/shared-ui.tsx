@@ -378,6 +378,42 @@ export const Button = forwardRef<
   );
 });
 
+export function ActionChrome({
+  children,
+  className,
+  size = 'default',
+  surface = 'default',
+  tone = 'secondary',
+  variant,
+  ...rest
+}: HTMLAttributes<HTMLSpanElement> & {
+  children: ReactNode;
+  size?: ActionSize;
+  surface?: ActionSurface;
+  tone?: Exclude<ActionTone, 'card'>;
+  variant?: ActionVariant;
+}) {
+  const usesInlineLayout = tone === 'inline';
+  const variantClassName = variant
+    ? buttonVariantClasses[variant]
+    : buttonToneClasses[tone];
+
+  return (
+    <span
+      className={joinClasses(
+        styles.interactiveBase,
+        usesInlineLayout ? undefined : actionSizeClasses[size],
+        actionSurfaceClasses[surface],
+        variantClassName,
+        className,
+      )}
+      {...rest}
+    >
+      <span className={styles.interactiveContent}>{children}</span>
+    </span>
+  );
+}
+
 export function ActionLink({
   children,
   className,

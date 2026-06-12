@@ -328,6 +328,16 @@ export interface CommerceAffiliateDiscoveredSetImportResult {
   createdCatalogSetCount: number;
   failedLookupCount: number;
   importedCount: number;
+  phaseTimingsMs?: {
+    catalogLoad: number;
+    catalogResolve: number;
+    seedUpsert: number;
+    latestUpsert: number;
+    statusUpdate: number;
+    enrichment: number;
+    revalidation: number;
+    total: number;
+  };
   requestedCount: number;
   skippedCount: number;
   uniqueSetCount: number;

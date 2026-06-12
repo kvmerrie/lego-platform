@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
   bulkRefreshCommerceOfferLatestObservations,
+  bulkUpdateCommerceAffiliateDiscoveredSetReviewStates,
   bulkUpsertCommerceOfferLatestRecords,
   bulkUpsertCommerceOfferSeedsByCompositeKey,
   copyCommerceDataFromProduction,
@@ -289,6 +290,44 @@ describe('commerce data access server', () => {
       'seed-10316-proshop',
     ]);
     expect(refreshedCount).toBe(1);
+  });
+
+  test('bulk updates affiliate discovered-set review states by id', async () => {
+    const inFilter = vi.fn().mockResolvedValue({
+      error: null,
+    });
+    const update = vi.fn(() => ({
+      in: inFilter,
+    }));
+    const from = vi.fn(() => ({
+      update,
+    }));
+
+    const updatedCount =
+      await bulkUpdateCommerceAffiliateDiscoveredSetReviewStates({
+        updates: [
+          {
+            discoveredSetIds: ['discovered-a', 'discovered-b', 'discovered-a'],
+            importAttemptedAt: '2026-06-12T09:00:00.000Z',
+            importError: null,
+            importedSetId: '75313',
+            status: 'imported',
+          },
+        ],
+        supabaseClient: { from } as never,
+      });
+
+    expect(update).toHaveBeenCalledWith({
+      status: 'imported',
+      imported_set_id: '75313',
+      import_attempted_at: '2026-06-12T09:00:00.000Z',
+      import_error: null,
+    });
+    expect(inFilter).toHaveBeenCalledWith('id', [
+      'discovered-a',
+      'discovered-b',
+    ]);
+    expect(updatedCount).toBe(2);
   });
 
   test('joins merchants and latest offers onto offer seeds', async () => {

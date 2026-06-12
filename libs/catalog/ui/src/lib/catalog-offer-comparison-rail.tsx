@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { ChevronRight, Clock3, Eye } from 'lucide-react';
 import {
+  ActionChrome,
   ActionLink,
   Badge,
   Button,
@@ -29,9 +30,13 @@ interface CompactOfferPresentation {
   actionLabel: string;
   overlayCheckedLabel: string;
   railCheckedLabel: string;
+  railCheckedTitle: string;
   confidenceLabel?: string;
   deltaLabel?: string;
+  merchantId?: string;
+  merchantKey?: string;
   merchantLabel: string;
+  merchantSlug?: string;
   price: string;
   priceComparisonState:
     | 'best'
@@ -49,6 +54,124 @@ interface CompactOfferComparisonContext {
   comparedOfferCount: number;
   nextBestAvailablePriceMinor?: number;
   reviewedInStockOfferCount: number;
+}
+
+interface MerchantFaviconInput {
+  merchantId?: string;
+  merchantKey?: string;
+  merchantLabel?: string;
+  merchantName?: string;
+  merchantSlug?: string;
+}
+
+const MERCHANT_FAVICON_BASE_PATH = '/merchant-favicons';
+
+const MERCHANT_FAVICON_BY_KEY: Record<string, string> = {
+  alternate: 'alternate.png',
+  'amazon-nl': 'amazon-nl.ico',
+  amazon: 'amazon-nl.ico',
+  bol: 'bol.ico',
+  brickfever: 'brickfever.png',
+  conrad: 'conrad.webp',
+  coolblue: 'coolblue.png',
+  coppens: 'coppenswarenhuis.png',
+  coppenswarenhuis: 'coppenswarenhuis.png',
+  goodbricks: 'goodbricks.png',
+  intertoys: 'intertoys.ico',
+  joybuy: 'joybuy.ico',
+  lego: 'lego-nl.png',
+  'lego-eu': 'lego-nl.png',
+  'lego-nl': 'lego-nl.png',
+  lidl: 'lidl.png',
+  mediamarkt: 'mediamarkt.png',
+  'media-markt': 'mediamarkt.png',
+  misterbricks: 'misterbricks.png',
+  proshop: 'proshop.png',
+  'rakuten-lego-eu': 'rakuten-lego-eu.png',
+  top1toys: 'top1toys.png',
+  'top-1-toys': 'top1toys.png',
+  wehkamp: 'wehkamp.ico',
+};
+// Smyths Toys is intentionally omitted until its official site returns a
+// verifiable favicon instead of bot-challenge HTML to non-interactive fetches.
+
+function normalizeMerchantFaviconKey(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/®/g, '')
+    .replace(/&/g, ' en ')
+    .replace(/^(?:bij|laagst bij|nu het laagst bij|actuele prijs bij)\s+/u, '')
+    .replace(/^merchant-/u, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function getMerchantFaviconFileName(
+  merchant: MerchantFaviconInput,
+): string | undefined {
+  const candidateKeys = [
+    merchant.merchantSlug,
+    merchant.merchantKey,
+    merchant.merchantId,
+    merchant.merchantName,
+    merchant.merchantLabel,
+  ]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .map(normalizeMerchantFaviconKey);
+
+  for (const candidateKey of candidateKeys) {
+    const faviconFileName = MERCHANT_FAVICON_BY_KEY[candidateKey];
+
+    if (faviconFileName) {
+      return faviconFileName;
+    }
+  }
+
+  return undefined;
+}
+
+export function getMerchantFaviconUrl(
+  merchant: MerchantFaviconInput,
+): string | undefined {
+  const faviconFileName = getMerchantFaviconFileName(merchant);
+
+  return faviconFileName
+    ? `${MERCHANT_FAVICON_BASE_PATH}/${faviconFileName}`
+    : undefined;
+}
+
+export function MerchantBrandInline({
+  className,
+  merchant,
+}: {
+  className?: string;
+  merchant: MerchantFaviconInput & { merchantLabel: string };
+}) {
+  const faviconUrl = getMerchantFaviconUrl(merchant);
+
+  return (
+    <p
+      className={[className, styles.merchantBrandInline]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {faviconUrl ? (
+        <img
+          alt=""
+          className={styles.merchantBrandFavicon}
+          decoding="async"
+          loading="lazy"
+          src={faviconUrl}
+        />
+      ) : null}
+      <span className={styles.merchantBrandName} title={merchant.merchantLabel}>
+        {merchant.merchantLabel}
+      </span>
+    </p>
+  );
 }
 
 function parseDisplayedPriceMinor(priceLabel: string): number | undefined {
@@ -129,23 +252,103 @@ function getCompactCheckedLabel(checkedLabel: string): string {
   return checkedLabel.replace(/^nagekeken\s+/i, '').replace(', ', ' om ');
 }
 
-function getCompactRailCheckedLabel(checkedLabel: string): string {
-  const normalizedLabel = getCompactCheckedLabel(checkedLabel);
+const COMPACT_CHECKED_MONTHS: Record<string, { full: string; short: string }> =
+  {
+    apr: { full: 'april', short: 'apr' },
+    april: { full: 'april', short: 'apr' },
+    aug: { full: 'augustus', short: 'aug' },
+    augustus: { full: 'augustus', short: 'aug' },
+    dec: { full: 'december', short: 'dec' },
+    december: { full: 'december', short: 'dec' },
+    feb: { full: 'februari', short: 'feb' },
+    februari: { full: 'februari', short: 'feb' },
+    jan: { full: 'januari', short: 'jan' },
+    januari: { full: 'januari', short: 'jan' },
+    jul: { full: 'juli', short: 'jul' },
+    juli: { full: 'juli', short: 'jul' },
+    jun: { full: 'juni', short: 'jun' },
+    juni: { full: 'juni', short: 'jun' },
+    maart: { full: 'maart', short: 'mrt' },
+    mei: { full: 'mei', short: 'mei' },
+    mrt: { full: 'maart', short: 'mrt' },
+    nov: { full: 'november', short: 'nov' },
+    november: { full: 'november', short: 'nov' },
+    okt: { full: 'oktober', short: 'okt' },
+    oktober: { full: 'oktober', short: 'okt' },
+    sep: { full: 'september', short: 'sep' },
+    september: { full: 'september', short: 'sep' },
+  };
+
+function getCompactRailCheckedPresentation(checkedLabel: string): {
+  label: string;
+  title: string;
+} {
+  const normalizedLabel = getCompactCheckedLabel(checkedLabel)
+    .replace(/\s+/g, ' ')
+    .trim();
   const normalizedLowerLabel = normalizedLabel.toLowerCase();
+  const relativeDateMatch = normalizedLabel.match(
+    /^(vandaag|gisteren|eergisteren)\s+om\s+(\d{1,2}:\d{2})/iu,
+  );
+
+  if (relativeDateMatch) {
+    const relativeDay = relativeDateMatch[1]?.toLowerCase() ?? 'vandaag';
+    const timeLabel = relativeDateMatch[2] ?? '';
+
+    return {
+      label: `${relativeDay} ${timeLabel}`.trim(),
+      title: `Nagekeken ${relativeDay} om ${timeLabel}`.trim(),
+    };
+  }
+
+  const dateMatch = normalizedLabel.match(
+    /^(\d{1,2})\s+([a-z]+)\s+om\s+(\d{1,2}:\d{2})/iu,
+  );
+
+  if (dateMatch) {
+    const day = dateMatch[1] ?? '';
+    const month = dateMatch[2]?.toLowerCase() ?? '';
+    const timeLabel = dateMatch[3] ?? '';
+    const monthPresentation = COMPACT_CHECKED_MONTHS[month] ?? {
+      full: month,
+      short: month,
+    };
+
+    return {
+      label: `${day} ${monthPresentation.short} ${timeLabel}`.trim(),
+      title:
+        `Nagekeken ${day} ${monthPresentation.full} om ${timeLabel}`.trim(),
+    };
+  }
 
   if (normalizedLowerLabel.startsWith('vandaag')) {
-    return 'Nagekeken vandaag';
+    return {
+      label: 'vandaag',
+      title: 'Nagekeken vandaag',
+    };
   }
 
   if (normalizedLowerLabel.startsWith('gisteren')) {
-    return 'Nagekeken gisteren';
+    return {
+      label: 'gisteren',
+      title: 'Nagekeken gisteren',
+    };
   }
 
   if (normalizedLowerLabel.startsWith('eergisteren')) {
-    return 'Nagekeken 2 dagen geleden';
+    return {
+      label: '2 dagen geleden',
+      title: 'Nagekeken 2 dagen geleden',
+    };
   }
 
-  return `Nagekeken ${normalizedLabel.replace(/\s+om\s+.+$/i, '')}`;
+  const fallbackLabel =
+    normalizedLabel.replace(/\s+om\s+.+$/i, '').trim() || 'onbekend';
+
+  return {
+    label: fallbackLabel,
+    title: `Nagekeken ${fallbackLabel}`,
+  };
 }
 
 function getOfferCountSummaryLabel({
@@ -344,11 +547,15 @@ export function buildCompactOfferPresentation({
     bestPriceMinor: comparisonContext.bestPriceMinor,
     offer,
   });
+  const railCheckedPresentation = getCompactRailCheckedPresentation(
+    offer.checkedLabel,
+  );
 
   return {
-    actionLabel: offer.isBest ? 'Bekijk beste deal' : 'Naar winkel',
+    actionLabel: offer.isBest ? 'Bekijk deal' : 'Naar winkel',
     overlayCheckedLabel: getCompactCheckedLabel(offer.checkedLabel),
-    railCheckedLabel: getCompactRailCheckedLabel(offer.checkedLabel),
+    railCheckedLabel: railCheckedPresentation.label,
+    railCheckedTitle: railCheckedPresentation.title,
     confidenceLabel: getBestOfferConfidenceLabel({
       bestPriceMinor: comparisonContext.bestPriceMinor,
       comparedOfferCount: comparisonContext.comparedOfferCount,
@@ -358,7 +565,10 @@ export function buildCompactOfferPresentation({
       reviewedInStockOfferCount: comparisonContext.reviewedInStockOfferCount,
     }),
     deltaLabel: deltaPresentation.deltaLabel,
+    merchantId: offer.merchantId,
+    merchantKey: offer.merchantKey,
     merchantLabel: offer.merchantLabel,
+    merchantSlug: offer.merchantSlug,
     price: offer.price,
     priceComparisonState: deltaPresentation.priceComparisonState,
     stockLabel: getCompactStockLabel(offer.stockLabel),
@@ -396,69 +606,12 @@ function CatalogOfferRailCard({
       : styles.offerRailSupportLineDefault,
   ].join(' ');
 
-  const card = (
-    <article
-      className={styles.offerRailCard}
-      data-best={offer.isBest ? 'true' : 'false'}
-      data-price-comparison={presentation.priceComparisonState}
-      data-stock-state={presentation.stockState}
-    >
-      <div className={styles.offerRailHeader}>
-        <p className={styles.offerRailMerchant}>{presentation.merchantLabel}</p>
-        <div className={styles.offerRailBadges}>
-          {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
-          {!offer.isBest &&
-          (presentation.priceComparisonState === 'same' ||
-            presentation.priceComparisonState === 'close') ? (
-            <Badge tone="neutral">Alternatief</Badge>
-          ) : null}
-        </div>
-      </div>
-      <div className={styles.offerRailPriceBlock}>
-        <p className={styles.offerRailPrice}>{presentation.price}</p>
-        <div className={styles.offerRailSupport}>
-          <p
-            aria-hidden={
-              !presentation.confidenceLabel && !presentation.deltaLabel
-                ? 'true'
-                : undefined
-            }
-            className={supportLineClassName}
-            data-kind={offer.isBest ? 'confidence' : 'delta'}
-            data-wrap={offer.isBest ? 'best' : 'default'}
-          >
-            {presentation.confidenceLabel ??
-              presentation.deltaLabel ??
-              '\u00a0'}
-          </p>
-        </div>
-      </div>
-      <div className={styles.offerRailStatusBlock}>
-        <span
-          className={styles.offerAvailabilityStatus}
-          data-state={presentation.stockState}
-        >
-          {presentation.stockLabel}
-        </span>
-        <p className={styles.offerRailChecked}>
-          <Clock3 aria-hidden="true" size={14} strokeWidth={2.2} />
-          <span>{presentation.railCheckedLabel}</span>
-        </p>
-      </div>
-      <div className={styles.offerRailActionRow}>
-        <span
-          className={styles.offerRailAction}
-          data-tone={offer.isBest ? 'accent' : 'secondary'}
-        >
-          <Eye aria-hidden="true" size={15} strokeWidth={2.2} />
-          <span>{presentation.actionLabel}</span>
-        </span>
-      </div>
-    </article>
-  );
-
   return (
     <ActionLink
+      aria-label={buildOfferActionAriaLabel({
+        actionLabel: presentation.actionLabel,
+        merchantLabel: presentation.merchantLabel,
+      })}
       className={styles.offerRailCardLink}
       href={offer.ctaHref}
       prefetch={false}
@@ -467,8 +620,73 @@ function CatalogOfferRailCard({
       tone="card"
       {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
     >
-      {card}
-      <VisuallyHidden>{presentation.actionLabel}</VisuallyHidden>
+      <article
+        className={styles.offerRailCard}
+        data-best={offer.isBest ? 'true' : 'false'}
+        data-price-comparison={presentation.priceComparisonState}
+        data-stock-state={presentation.stockState}
+      >
+        <div className={styles.offerRailHeader}>
+          <MerchantBrandInline
+            className={styles.offerRailMerchant}
+            merchant={presentation}
+          />
+          <div className={styles.offerRailBadges}>
+            {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
+            {!offer.isBest &&
+            (presentation.priceComparisonState === 'same' ||
+              presentation.priceComparisonState === 'close') ? (
+              <Badge tone="neutral">Alternatief</Badge>
+            ) : null}
+          </div>
+        </div>
+        <div className={styles.offerRailPriceBlock}>
+          <p className={styles.offerRailPrice}>{presentation.price}</p>
+          <div className={styles.offerRailSupport}>
+            <p
+              aria-hidden={
+                !presentation.confidenceLabel && !presentation.deltaLabel
+                  ? 'true'
+                  : undefined
+              }
+              className={supportLineClassName}
+              data-kind={offer.isBest ? 'confidence' : 'delta'}
+              data-wrap={offer.isBest ? 'best' : 'default'}
+            >
+              {presentation.confidenceLabel ??
+                presentation.deltaLabel ??
+                '\u00a0'}
+            </p>
+          </div>
+        </div>
+        <div className={styles.offerRailStatusBlock}>
+          <span
+            className={styles.offerAvailabilityStatus}
+            data-state={presentation.stockState}
+          >
+            {presentation.stockLabel}
+          </span>
+          <p
+            aria-label={presentation.railCheckedTitle}
+            className={styles.offerRailChecked}
+            title={presentation.railCheckedTitle}
+          >
+            <Clock3 aria-hidden="true" size={14} strokeWidth={2.2} />
+            <span>{presentation.railCheckedLabel}</span>
+          </p>
+        </div>
+        <div className={styles.offerRailActionRow}>
+          <ActionChrome
+            aria-hidden="true"
+            className={styles.offerRailAction}
+            variant={offer.isBest ? 'primary' : 'secondary'}
+          >
+            <Eye aria-hidden="true" size={15} strokeWidth={2.2} />
+            <span>{presentation.actionLabel}</span>
+          </ActionChrome>
+        </div>
+        <VisuallyHidden>{presentation.actionLabel}</VisuallyHidden>
+      </article>
     </ActionLink>
   );
 }
@@ -504,9 +722,10 @@ function CatalogOfferOverlayRow({
         data-price-comparison={presentation.priceComparisonState}
       >
         <div className={styles.offerOverlayMerchantCell}>
-          <p className={styles.offerOverlayMerchant}>
-            {presentation.merchantLabel}
-          </p>
+          <MerchantBrandInline
+            className={styles.offerOverlayMerchant}
+            merchant={presentation}
+          />
           <div className={styles.offerOverlayBadges}>
             {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
             {!offer.isBest &&
@@ -616,6 +835,7 @@ export function CatalogOfferComparisonRail({
               }}
               tone="secondary"
               type="button"
+              variant="secondary"
             >
               {viewAllLabel}
               <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
