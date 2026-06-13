@@ -52,6 +52,7 @@ import {
 import {
   buildEffectiveSetDealSnapshot,
   formatPriceMinor,
+  type HeroDealPresentation,
   type PricePanelSnapshot,
 } from '@lego-platform/pricing/util';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
@@ -1494,6 +1495,69 @@ type SetDetailDealVerdict = Omit<
   label: string;
 };
 
+function getHeroDealDecisionTone(
+  state: HeroDealPresentation['state'],
+): CatalogSetDetailVerdict['tone'] {
+  switch (state) {
+    case 'exceptional_deal':
+    case 'strong_deal':
+    case 'good_deal':
+      return 'positive';
+    case 'wait':
+      return 'warning';
+    case 'market_price':
+      return 'info';
+    case 'no_reliable_offer':
+    case 'price_building':
+      return 'neutral';
+  }
+}
+
+function getHeroMerchantCtaLabel({
+  merchantName,
+  presentation,
+}: {
+  merchantName: string;
+  presentation: HeroDealPresentation;
+}): string {
+  switch (presentation.merchantCtaIntent) {
+    case 'availability_check':
+      return `Bekijk voorraad bij ${merchantName}`;
+    case 'deal':
+      return `Bekijk deal bij ${merchantName}`;
+    case 'price_check':
+    default:
+      return `Bekijk prijs bij ${merchantName}`;
+  }
+}
+
+function getHeroPrimaryMerchantCta({
+  ctaHref,
+  merchantName,
+  presentation,
+}: {
+  ctaHref: string;
+  merchantName: string;
+  presentation: HeroDealPresentation;
+}):
+  | Pick<CatalogSetDetailBestDeal, 'ctaHref' | 'ctaLabel' | 'ctaTone'>
+  | Record<string, never> {
+  const shouldShowMerchantCta =
+    presentation.primaryAction === 'merchant' ||
+    presentation.secondaryAction === 'merchant' ||
+    presentation.hasPurchasableOffer;
+
+  if (!shouldShowMerchantCta) {
+    return {};
+  }
+
+  return {
+    ctaHref,
+    ctaLabel: getHeroMerchantCtaLabel({ merchantName, presentation }),
+    ctaTone: presentation.primaryAction === 'merchant' ? 'accent' : 'secondary',
+  };
+}
+
 function buildBestDeal({
   catalogOffer,
   catalogOffers,
@@ -1518,24 +1582,27 @@ function buildBestDeal({
   }
 
   if (!catalogOffer && pricePanelSnapshot) {
-    const coverageLabel = buildMerchantCoverageLabel(merchantCount);
+    const effectiveMerchantCount =
+      merchantCount ?? pricePanelSnapshot.merchantCount;
+    const coverageLabel = buildMerchantCoverageLabel(effectiveMerchantCount);
     const heroDealPresentation = getHeroDealPresentation({
       currencyCode: pricePanelSnapshot.currencyCode,
       currentPriceMinor: pricePanelSnapshot.headlinePriceMinor,
+      hasMerchantOffer: false,
+      merchantCount: effectiveMerchantCount,
+      observedAt: pricePanelSnapshot.observedAt,
       referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
     });
 
     return {
       checkedLabel: formatOfferCheckedAtCompact(pricePanelSnapshot.observedAt),
       coverageLabel,
-      decisionHelper:
-        heroDealPresentation.classification === 'neutral'
-          ? decisionPresentation.noOfferCopy
-          : heroDealPresentation.helper,
-      decisionLabel: heroDealPresentation.label,
-      decisionTone: heroDealPresentation.tone,
+      decisionHelper: heroDealPresentation.advice,
+      decisionLabel: heroDealPresentation.title,
+      decisionTone: getHeroDealDecisionTone(heroDealPresentation.state),
       merchantLabel:
-        heroDealPresentation.classification === 'neutral'
+        heroDealPresentation.state === 'no_reliable_offer' ||
+        heroDealPresentation.state === 'price_building'
           ? decisionPresentation.noOfferTitle
           : 'Prijs gezien, klikroute volgt',
       price: formatPriceMinor({
@@ -1543,7 +1610,7 @@ function buildBestDeal({
         minorUnits: pricePanelSnapshot.headlinePriceMinor,
       }),
       rankingLabel:
-        heroDealPresentation.rankingLabel ??
+        heroDealPresentation.evidence[0] ??
         ([pricePanelSnapshot.lowestAvailabilityLabel, coverageLabel]
           .filter(Boolean)
           .join(' · ') ||
@@ -1559,6 +1626,7 @@ function buildBestDeal({
 
   const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
   const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
+  const effectiveMerchantCount = merchantCount ?? catalogOffers?.length ?? 1;
   const lowestComparableOffer = getLowestComparableCatalogOffer(
     catalogOffers ?? [catalogOffer],
   );
@@ -1566,17 +1634,27 @@ function buildBestDeal({
     lowestComparableOffer && lowestComparableOffer.url !== catalogOffer.url
       ? catalogOffer.priceCents - lowestComparableOffer.priceCents
       : undefined;
+  const isBestCurrentOffer =
+    !lowestComparableOffer ||
+    lowestComparableOffer.url === catalogOffer.url ||
+    catalogOffer.priceCents <= lowestComparableOffer.priceCents;
   const nextBestPriceDeltaMinor = getNextBestOfferPriceDeltaMinor(
     catalogOffers ?? [catalogOffer],
     catalogOffer,
   );
   const heroDealPresentation = getHeroDealPresentation({
+    availability: catalogOffer.availability,
     currencyCode: catalogOffer.currency,
     currentPriceMinor: catalogOffer.priceCents,
+    hasMerchantOffer: Boolean(catalogOffer.url),
+    isBestCurrentOffer,
+    isTrustedMerchant: true,
     legoOfferPriceMinor: getOfficialLegoOfferReferencePriceMinor({
       catalogOffer,
       catalogOffers,
     }),
+    merchantCount: effectiveMerchantCount,
+    observedAt: catalogOffer.checkedAt,
     referencePriceMinor: pricePanelSnapshot?.referencePriceMinor,
   });
 
@@ -1584,17 +1662,19 @@ function buildBestDeal({
     affiliateNote:
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
-    ctaHref: catalogOffer.url,
-    ctaLabel: `Bekijk deal bij ${merchantName}`,
-    ctaTone: heroDealPresentation.ctaTone,
-    coverageLabel: buildMerchantCoverageLabel(merchantCount),
-    decisionHelper: heroDealPresentation.helper,
-    decisionLabel: heroDealPresentation.label,
-    decisionTone: heroDealPresentation.tone,
+    ...getHeroPrimaryMerchantCta({
+      ctaHref: catalogOffer.url,
+      merchantName,
+      presentation: heroDealPresentation,
+    }),
+    coverageLabel: buildMerchantCoverageLabel(effectiveMerchantCount),
+    decisionHelper: heroDealPresentation.advice,
+    decisionLabel: heroDealPresentation.title,
+    decisionTone: getHeroDealDecisionTone(heroDealPresentation.state),
     merchantLabel: `Bij ${merchantName}`,
     price: formatOfferPrice(catalogOffer),
     rankingLabel:
-      heroDealPresentation.rankingLabel ??
+      heroDealPresentation.evidence[0] ??
       buildBestOfferRankingLabel({
         availability: catalogOffer.availability,
         currencyCode: catalogOffer.currency,
@@ -1606,7 +1686,7 @@ function buildBestDeal({
     trackingEvent: {
       event: 'offer_click',
       properties: {
-        merchantCount,
+        merchantCount: effectiveMerchantCount,
         merchantName,
         merchantSlug,
         offerPlacement: 'best_offer',
@@ -2517,7 +2597,7 @@ export default async function SetDetailPage({
               setId: catalogSetDetail.id,
               theme: catalogSetDetail.theme,
             }}
-            productIntent="wishlist"
+            productIntent="price-alert"
             setId={catalogSetDetail.id}
             variant="inline"
           />

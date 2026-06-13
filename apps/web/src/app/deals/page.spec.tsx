@@ -130,6 +130,61 @@ describe('deals page snapshots', () => {
     );
   });
 
+  it('keeps the #1 premium deal as a commerce card with merchant action', async () => {
+    dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
+      snapshotGeneratedAt: new Date().toISOString(),
+      stats: {
+        activeDealCount: 1,
+      },
+      setCards: [
+        {
+          id: '10316',
+          name: 'The Lord of the Rings: Rivendell',
+          pieces: 6167,
+          priceContext: {
+            coverageLabel: '3 winkels nagekeken',
+            currentPrice: 'Vanaf €158,00',
+            decisionLabel: 'Goede prijs',
+            merchantLabel: 'Nu het laagst bij Proshop',
+            pricePositionTone: 'positive',
+            primaryActionHref: 'https://partner.example/rivendell-proshop',
+            reviewedLabel: 'Vandaag gecontroleerd',
+          },
+          releaseYear: 2023,
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+          theme: 'Icons',
+        },
+      ],
+      totalSetCount: 1,
+    });
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        searchParams: Promise.resolve({ sort: 'premium-deals' }),
+      }),
+    );
+
+    expect(dealsPageMocks.getCatalogDealPageSnapshot).toHaveBeenCalledWith({
+      limit: 40,
+      offset: 0,
+      sortKey: 'premium-deals',
+    });
+    expect(dealsPageMocks.catalogSetCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ctaMode: 'commerce',
+        priceContext: expect.objectContaining({
+          currentPrice: 'Vanaf €158,00',
+          decisionLabel: 'Goede prijs',
+          merchantLabel: 'Nu het laagst bij Proshop',
+          pricePositionTone: 'positive',
+          primaryActionHref: 'https://partner.example/rivendell-proshop',
+        }),
+        variant: 'featured',
+      }),
+    );
+  });
+
   it('renders pagination with the active sort query', async () => {
     dealsPageMocks.getCatalogDealPageSnapshot.mockResolvedValue({
       snapshotGeneratedAt: new Date().toISOString(),

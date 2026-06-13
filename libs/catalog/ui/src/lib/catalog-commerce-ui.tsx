@@ -155,14 +155,14 @@ function CatalogDecisionOfferCard({
           </Badge>
         ) : null}
       </div>
-      <p className={styles.bestDealMeta}>{offer.merchantLabel}</p>
+      <p className={styles.bestDealPrice}>{offer.price}</p>
       {offer.rankingLabel ? (
         <p className={styles.bestDealRanking}>{offer.rankingLabel}</p>
       ) : null}
-      <p className={styles.bestDealPrice}>{offer.price}</p>
       {offer.decisionHelper ? (
         <p className={styles.bestDealDecision}>{offer.decisionHelper}</p>
       ) : null}
+      <p className={styles.bestDealMeta}>{offer.merchantLabel}</p>
       <div className={styles.bestDealSignals}>
         <MetaSignal
           icon={<Package2 aria-hidden="true" size={16} strokeWidth={2.2} />}

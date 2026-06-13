@@ -250,18 +250,18 @@ describe('pricing data access', () => {
   });
 
   describe('getHeroDealPresentation', () => {
-    test('builds a warm card when reliable price data is missing', () => {
+    test('builds a follow-first presentation when reliable price data is missing', () => {
       expect(
         getHeroDealPresentation({
           currentPriceMinor: undefined,
           referencePriceMinor: 19999,
         }),
-      ).toEqual({
-        classification: 'missing_price',
-        ctaTone: 'secondary',
-        helper: 'Prijsbeeld bouwt nog op.',
-        label: 'Nog geen deal',
-        tone: 'warning',
+      ).toMatchObject({
+        adviceCategory: 'follow',
+        followIntent: 'track_new_set',
+        primaryAction: 'follow',
+        state: 'price_building',
+        title: 'Prijsbeeld bouwt op',
       });
 
       expect(
@@ -271,92 +271,123 @@ describe('pricing data access', () => {
           referencePriceMinor: 19999,
         }),
       ).toMatchObject({
-        classification: 'missing_price',
-        ctaTone: 'secondary',
-        tone: 'warning',
+        primaryAction: 'follow',
+        state: 'price_building',
       });
     });
 
-    test('keeps prices around LEGO/list price neutral', () => {
+    test('keeps prices around LEGO/list price neutral when confidence is usable', () => {
       expect(
         getHeroDealPresentation({
-          currentPriceMinor: 19999,
+          currentPriceMinor: 10000,
+          historyDays: 540,
+          historyPointCount: 60,
+          lowest30dMinor: 9500,
+          lowestEverMinor: 9500,
+          merchantCount: 3,
+          observedAt: '2026-06-13T09:00:00.000Z',
+          referencePriceMinor: 10000,
+        }),
+      ).toMatchObject({
+        adviceCategory: 'neutral',
+        merchantCtaIntent: 'price_check',
+        primaryAction: 'merchant',
+        state: 'market_price',
+        title: 'Normale prijs',
+      });
+    });
+
+    test('warns when the current price is meaningfully above reference', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 21999,
+          observedAt: '2026-06-13T09:00:00.000Z',
           referencePriceMinor: 19999,
         }),
       ).toMatchObject({
-        classification: 'neutral',
-        ctaTone: 'accent',
-        helper: 'Laagste prijs die we nu vinden.',
-        label: 'Actuele prijs',
-        savingsMinor: 0,
-        savingsPercentage: 0,
-        tone: 'neutral',
+        adviceCategory: 'wait',
+        commerceIntent: 'balanced',
+        evidence: expect.arrayContaining(['€20 boven referentie']),
+        followIntent: 'wait_for_drop',
+        hasPurchasableOffer: true,
+        merchantCtaIntent: 'price_check',
+        primaryAction: 'merchant',
+        secondaryAction: 'follow',
+        state: 'wait',
+        title: 'Wachten kan lonen',
       });
     });
 
-    test('keeps small discounts below the deal threshold neutral', () => {
+    test('keeps small reference-only discounts out of hard deal language without hiding merchant access', () => {
       expect(
         getHeroDealPresentation({
           currentPriceMinor: 19699,
+          observedAt: '2026-06-13T09:00:00.000Z',
           referencePriceMinor: 19999,
         }),
       ).toMatchObject({
-        classification: 'neutral',
-        ctaTone: 'accent',
-        savingsMinor: 300,
-        tone: 'neutral',
+        hasPurchasableOffer: true,
+        merchantCtaIntent: 'price_check',
+        primaryAction: 'merchant',
+        secondaryAction: 'follow',
+        riskFlags: ['limited_history', 'single_merchant'],
       });
     });
 
-    test('classifies meaningful LEGO/list price discounts as green good deals', () => {
+    test('classifies meaningful discounts as good deals when history supports them', () => {
       expect(
         getHeroDealPresentation({
           currentPriceMinor: 14499,
+          historyDays: 540,
+          historyPointCount: 60,
+          lowest30dMinor: 14499,
+          lowestEverMinor: 13999,
+          merchantCount: 3,
+          observedAt: '2026-06-13T09:00:00.000Z',
           referencePriceMinor: 15999,
         }),
       ).toMatchObject({
-        classification: 'good_deal',
-        ctaTone: 'accent',
-        helper: 'Nu goedkoper dan bij LEGO.',
-        label: 'Goede deal',
-        rankingLabel: '€15 onder LEGO prijs',
-        savingsMinor: 1500,
-        tone: 'positive',
+        adviceCategory: 'buy_if_you_want_it',
+        evidence: expect.arrayContaining(['€15 goedkoper dan referentie']),
+        primaryAction: 'merchant',
+        state: 'good_deal',
+        title: 'Goede prijs',
       });
     });
 
-    test('classifies a €70 LEGO/list price discount as a green great deal', () => {
+    test('does not turn a reference-only €70 discount into hard buy copy but keeps merchant primary', () => {
       expect(
         getHeroDealPresentation({
           currentPriceMinor: 12999,
+          observedAt: '2026-06-13T09:00:00.000Z',
           referencePriceMinor: 19999,
         }),
       ).toMatchObject({
-        classification: 'great_deal',
-        ctaTone: 'accent',
-        helper: 'Nu goedkoper dan bij LEGO.',
-        label: 'Bespaar tot €70',
-        rankingLabel: '€70 onder LEGO prijs',
-        savingsMinor: 7000,
-        tone: 'positive',
+        adviceCategory: 'buy_if_you_want_it',
+        commerceIntent: 'push_merchant',
+        evidence: expect.arrayContaining(['€70 goedkoper dan referentie']),
+        hasPurchasableOffer: true,
+        merchantCtaIntent: 'deal',
+        primaryAction: 'merchant',
+        state: 'good_deal',
+        title: 'Goede prijs',
       });
     });
 
-    test('uses the official LEGO offer price as a reference fallback', () => {
+    test('uses the official LEGO offer price as a reference fallback without overstating confidence', () => {
       expect(
         getHeroDealPresentation({
           currentPriceMinor: 17900,
           legoOfferPriceMinor: 24999,
+          observedAt: '2026-06-13T09:00:00.000Z',
           referencePriceMinor: undefined,
         }),
       ).toMatchObject({
-        classification: 'great_deal',
-        ctaTone: 'accent',
-        helper: 'Nu goedkoper dan bij LEGO.',
-        label: 'Bespaar tot €70',
-        rankingLabel: '€70 onder LEGO prijs',
-        savingsMinor: 7099,
-        tone: 'positive',
+        evidence: expect.arrayContaining(['€70 goedkoper dan LEGO']),
+        hasPurchasableOffer: true,
+        merchantCtaIntent: 'deal',
+        primaryAction: 'merchant',
+        state: 'good_deal',
       });
     });
   });

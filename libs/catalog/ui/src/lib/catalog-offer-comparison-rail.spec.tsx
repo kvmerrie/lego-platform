@@ -552,6 +552,50 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(alternativeAction?.textContent).toContain('Naar winkel');
   });
 
+  it('keeps the best current offer as a deal card with a merchant CTA', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/proshop',
+              ctaLabel: 'Bekijk bij Proshop',
+              merchantLabel: 'Proshop',
+              price: '€ 158,00',
+              rankingLabel: '€61 goedkoper dan LEGO',
+              stockLabel: 'Op voorraad',
+            },
+            {
+              checkedLabel: 'Vandaag om 09:05',
+              ctaHref: 'https://example.com/coolblue',
+              ctaLabel: 'Bekijk bij Coolblue',
+              merchantLabel: 'Coolblue',
+              price: '€ 219,00',
+              rankingLabel: 'LEGO referentieprijs',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="3 winkels nagekeken"
+        />,
+      );
+    });
+
+    const bestDealCard = container.querySelector<HTMLAnchorElement>(
+      'a[href="https://example.com/proshop"]',
+    );
+    const bestDealAction = bestDealCard?.querySelector<HTMLElement>(
+      '[class*="buttonAccent"]',
+    );
+
+    expect(bestDealCard).not.toBeNull();
+    expect(bestDealCard?.textContent).toContain('Beste deal');
+    expect(bestDealCard?.getAttribute('aria-label')).toBe(
+      'Bekijk deal bij Proshop',
+    );
+    expect(bestDealAction?.textContent).toContain('Bekijk deal');
+  });
+
   it('renders the full comparison trigger on the heading for normal multi-shop rails', () => {
     act(() => {
       root.render(

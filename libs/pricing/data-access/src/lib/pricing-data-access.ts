@@ -3,11 +3,17 @@ import {
   EURO_CURRENCY_CODE,
   NEW_OFFER_CONDITION,
   PRICING_HISTORY_TABLE,
+  buildHeroDealPresentation,
   type PriceHistoryPoint,
   type PriceHistorySummary,
   type PricePanelSnapshot,
   type PricingObservation,
   type FeaturedSetPriceContext,
+  type HeroDealPresentation,
+  type HeroPriceTrend,
+  type HeroSetLifecycle,
+  type PricingAvailability,
+  type PricingCurrencyCode,
   type SetDealVerdict,
   type SetPriceInsight,
   type TrackedPriceSummary,
@@ -118,23 +124,6 @@ export interface SetDecisionPresentation {
   verdict: SetDealVerdict;
 }
 
-export type HeroDealPresentationClassification =
-  | 'good_deal'
-  | 'great_deal'
-  | 'missing_price'
-  | 'neutral';
-
-export interface HeroDealPresentation {
-  classification: HeroDealPresentationClassification;
-  ctaTone: 'accent' | 'secondary';
-  helper: string;
-  label: string;
-  rankingLabel?: string;
-  savingsMinor?: number;
-  savingsPercentage?: number;
-  tone: SetDealVerdict['tone'];
-}
-
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -215,56 +204,55 @@ function getReviewedOfferLabel(merchantCount: number): string {
   return `${merchantCount} reviewed aanbieding${merchantCount === 1 ? '' : 'en'}`;
 }
 
-function formatHeroSavingsAmount({
-  currencyCode,
-  minorUnits,
-}: {
-  currencyCode: string;
-  minorUnits: number;
-}): string {
-  const absoluteMinorUnits = Math.abs(Math.round(minorUnits));
-  const wholeEuroMinorUnits = Math.floor(absoluteMinorUnits / 100) * 100;
-
-  return new Intl.NumberFormat(getDefaultFormattingLocale(), {
-    currency: currencyCode,
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0,
-    style: 'currency',
-  })
-    .format(wholeEuroMinorUnits / 100)
-    .replace(/\s+/gu, '');
-}
-
 export function getHeroDealPresentation({
+  availability,
   currencyCode = EURO_CURRENCY_CODE,
   currentPriceMinor,
+  dataQualityIssueCount,
+  hasMerchantOffer = true,
   hasReliableCurrentPrice = true,
+  historyDays,
+  historyPointCount,
+  isBestCurrentOffer,
+  isPremiumDeal,
+  isTrustedMerchant,
   legoOfferPriceMinor,
   listPriceMinor,
+  lowest30dMinor,
+  lowestEverMinor,
+  merchantCount,
+  now,
+  observedAt,
+  priceTrend,
+  priceVolatilityRatio,
   referencePriceMinor,
+  setAgeDays,
+  setLifecycle,
 }: {
-  currencyCode?: string;
+  currencyCode?: PricingCurrencyCode;
+  availability?: PricingAvailability;
   currentPriceMinor?: number | null;
+  dataQualityIssueCount?: number;
+  hasMerchantOffer?: boolean;
   hasReliableCurrentPrice?: boolean;
+  historyDays?: number;
+  historyPointCount?: number;
+  isBestCurrentOffer?: boolean;
+  isPremiumDeal?: boolean;
+  isTrustedMerchant?: boolean;
   legoOfferPriceMinor?: number | null;
   listPriceMinor?: number | null;
+  lowest30dMinor?: number | null;
+  lowestEverMinor?: number | null;
+  merchantCount?: number;
+  now?: Date;
+  observedAt?: string;
+  priceTrend?: HeroPriceTrend;
+  priceVolatilityRatio?: number;
   referencePriceMinor?: number | null;
+  setAgeDays?: number;
+  setLifecycle?: HeroSetLifecycle;
 }): HeroDealPresentation {
-  const hasCurrentPrice =
-    hasReliableCurrentPrice &&
-    typeof currentPriceMinor === 'number' &&
-    currentPriceMinor > 0;
-
-  if (!hasCurrentPrice) {
-    return {
-      classification: 'missing_price',
-      ctaTone: 'secondary',
-      helper: 'Prijsbeeld bouwt nog op.',
-      label: 'Nog geen deal',
-      tone: 'warning',
-    };
-  }
-
   const effectiveReferencePriceMinor = [
     referencePriceMinor,
     legoOfferPriceMinor,
@@ -273,70 +261,34 @@ export function getHeroDealPresentation({
     (candidate): candidate is number =>
       typeof candidate === 'number' && candidate > 0,
   );
-  const hasReferencePrice = typeof effectiveReferencePriceMinor === 'number';
-  const savingsMinor = hasReferencePrice
-    ? effectiveReferencePriceMinor - currentPriceMinor
-    : undefined;
-  const savingsPercentage =
-    hasReferencePrice && typeof savingsMinor === 'number'
-      ? (savingsMinor / effectiveReferencePriceMinor) * 100
-      : undefined;
-  const hasSavings =
-    typeof savingsMinor === 'number' &&
-    savingsMinor > 0 &&
-    typeof savingsPercentage === 'number' &&
-    savingsPercentage > 0;
-  const hasMinimumDealSavings =
-    hasSavings && savingsMinor >= 500 && savingsPercentage >= 3;
 
-  if (
-    hasMinimumDealSavings &&
-    (savingsMinor >= 2000 || savingsPercentage >= 10)
-  ) {
-    const savingsLabel = formatHeroSavingsAmount({
-      currencyCode,
-      minorUnits: savingsMinor,
-    });
-
-    return {
-      classification: 'great_deal',
-      ctaTone: 'accent',
-      helper: 'Nu goedkoper dan bij LEGO.',
-      label: `Bespaar tot ${savingsLabel}`,
-      rankingLabel: `${savingsLabel} onder LEGO prijs`,
-      savingsMinor,
-      savingsPercentage,
-      tone: 'positive',
-    };
-  }
-
-  if (hasMinimumDealSavings) {
-    const savingsLabel = formatHeroSavingsAmount({
-      currencyCode,
-      minorUnits: savingsMinor,
-    });
-
-    return {
-      classification: 'good_deal',
-      ctaTone: 'accent',
-      helper: 'Nu goedkoper dan bij LEGO.',
-      label: 'Goede deal',
-      rankingLabel: `${savingsLabel} onder LEGO prijs`,
-      savingsMinor,
-      savingsPercentage,
-      tone: 'positive',
-    };
-  }
-
-  return {
-    classification: 'neutral',
-    ctaTone: 'accent',
-    helper: 'Laagste prijs die we nu vinden.',
-    label: 'Actuele prijs',
-    savingsMinor,
-    savingsPercentage,
-    tone: 'neutral',
-  };
+  return buildHeroDealPresentation({
+    availability,
+    currencyCode,
+    currentPriceMinor,
+    dataQualityIssueCount,
+    hasMerchantOffer,
+    hasReliableCurrentPrice,
+    historyDays,
+    historyPointCount,
+    isBestCurrentOffer,
+    isPremiumDeal,
+    isTrustedMerchant,
+    lowest30dMinor,
+    lowestEverMinor,
+    merchantCount,
+    now,
+    observedAt,
+    priceTrend,
+    priceVolatilityRatio,
+    referenceLabel:
+      typeof legoOfferPriceMinor === 'number' && legoOfferPriceMinor > 0
+        ? 'LEGO'
+        : 'referentie',
+    referencePriceMinor: effectiveReferencePriceMinor,
+    setAgeDays,
+    setLifecycle,
+  });
 }
 
 function getPricePositionLabel({

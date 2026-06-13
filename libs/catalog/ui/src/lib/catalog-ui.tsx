@@ -2299,6 +2299,20 @@ export function CatalogSetDetailPanel({
   const secondaryPriceAlertAction = shouldLeadHeroWithFollowAction
     ? undefined
     : priceAlertAction;
+  const shouldElevateFollowModule = Boolean(
+    hasFollowModule &&
+      dealVerdict.tone === 'warning' &&
+      !shouldLeadHeroWithFollowAction,
+  );
+  const followModule = hasFollowModule ? (
+    <CatalogPriceDecisionSecondary
+      compact
+      followAction={secondaryPriceAlertAction}
+      followCopy={followCopy}
+      followTitle={followTitle}
+      verdictTone={dealVerdict.tone}
+    />
+  ) : null;
 
   return (
     <section className={styles.detailPage}>
@@ -2395,6 +2409,7 @@ export function CatalogSetDetailPanel({
       priceHistoryPanel ||
       hasFollowModule ? (
         <section className={styles.detailCommerceFlow}>
+          {shouldElevateFollowModule ? followModule : null}
           <CatalogOfferComparison
             className={styles.detailOfferComparisonSection}
             id={offerComparisonSectionId}
@@ -2407,15 +2422,7 @@ export function CatalogSetDetailPanel({
             title={getCatalogDecisionSupportTitle(dealVerdict)}
           />
           {priceHistoryPanel}
-          {hasFollowModule ? (
-            <CatalogPriceDecisionSecondary
-              compact
-              followAction={secondaryPriceAlertAction}
-              followCopy={followCopy}
-              followTitle={followTitle}
-              verdictTone={dealVerdict.tone}
-            />
-          ) : null}
+          {!shouldElevateFollowModule ? followModule : null}
         </section>
       ) : null}
 
