@@ -4051,12 +4051,10 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#123abc',
           public_description: 'Grote blikvangers voor op de plank.',
           public_display_name: 'Custom Icons',
-          public_hero_text_color: '#ffffff',
           public_image_url: 'https://cdn.example.com/custom-icons.jpg',
           public_logo_url: 'https://cdn.example.com/icons-logo.svg',
           public_order: 1,
           public_surface_color: '#234bcd',
-          public_surface_text_color: '#ffffff',
           slug: 'icons',
           status: 'active',
         },
@@ -4092,7 +4090,6 @@ describe('catalog effective data access web', () => {
     expect(iconsItem?.visual).toMatchObject({
       backgroundColor: '#234bcd',
       imageUrl: 'https://cdn.example.com/custom-icons.jpg',
-      textColor: '#ffffff',
     });
     expect(cityItem?.themeSnapshot.name).toBe('City');
     expect(cityItem?.themeSnapshot.introSupport).toContain(
@@ -4397,7 +4394,6 @@ describe('catalog effective data access web', () => {
           public_homepage_order: 80,
           public_order: 80,
           public_surface_color: '#14213d',
-          public_surface_text_color: '#ffffff',
           slug: 'star-wars',
           status: 'active',
         },
@@ -4549,7 +4545,6 @@ describe('catalog effective data access web', () => {
     expect(homepageItems[0]?.visual).toMatchObject({
       backgroundColor: '#14213d',
       imageUrl: 'https://cdn.example.com/75419.jpg',
-      textColor: '#ffffff',
     });
     expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
       'Architecture',
@@ -4924,7 +4919,6 @@ describe('catalog effective data access web', () => {
           public_display_name: 'Star Wars',
           public_order: 1,
           public_surface_color: '#5573b5',
-          public_surface_text_color: '#ffffff',
           slug: 'star-wars',
           status: 'active',
         },
@@ -4935,7 +4929,6 @@ describe('catalog effective data access web', () => {
           public_display_name: 'Super Mario',
           public_order: 2,
           public_surface_color: '#d85a50',
-          public_surface_text_color: '#ffffff',
           slug: 'super-mario',
           status: 'active',
         },
@@ -4964,11 +4957,9 @@ describe('catalog effective data access web', () => {
 
     expect(starWarsItem?.visual).toMatchObject({
       backgroundColor: '#5573b5',
-      textColor: '#ffffff',
     });
     expect(superMarioItem?.visual).toMatchObject({
       backgroundColor: '#d85a50',
-      textColor: '#ffffff',
     });
   });
 
@@ -5214,11 +5205,9 @@ describe('catalog effective data access web', () => {
           id: 'theme:editions',
           is_public: true,
           public_accent_color: '#e0b84f',
-          public_hero_text_color: '#171a22',
           public_image_url: null,
           public_order: 325,
           public_surface_color: '#e0b84f',
-          public_surface_text_color: '#171a22',
           slug: 'editions',
           status: 'active',
         },
@@ -5273,7 +5262,9 @@ describe('catalog effective data access web', () => {
     });
     expect(editionsItem?.imageUrl).toBe('https://cdn.example.com/editions.jpg');
     expect(editionsItem?.visual?.backgroundColor).toBe('#e0b84f');
-    expect(editionsItem?.visual?.textColor).toBe('#171a22');
+    expect(Object.keys(editionsItem?.visual ?? {})).not.toContain(
+      ['text', 'Color'].join(''),
+    );
     expect(editionsItem?.visual?.imageUrl).toBeUndefined();
   });
 
@@ -5307,11 +5298,9 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#e0b84f',
           public_description:
             'Bijzondere releases die niet netjes in een grotere themalijn vallen.',
-          public_hero_text_color: '#171a22',
           public_image_url: 'https://cdn.example.com/editions-public.jpg',
           public_order: 325,
           public_surface_color: '#e0b84f',
-          public_surface_text_color: '#171a22',
           slug: 'editions',
           status: 'active',
         },
@@ -5343,7 +5332,6 @@ describe('catalog effective data access web', () => {
     expect(themePage?.visual).toEqual({
       backgroundColor: '#e0b84f',
       imageUrl: 'https://cdn.example.com/editions-public.jpg',
-      textColor: '#171a22',
     });
   });
 
@@ -5376,11 +5364,9 @@ describe('catalog effective data access web', () => {
           is_public: true,
           public_accent_color: null,
           public_display_name: 'LEGO® Animal Crossing™',
-          public_hero_text_color: '#10241f',
           public_image_url: null,
           public_order: 10,
           public_surface_color: '#6bbf59',
-          public_surface_text_color: '#10241f',
           slug: 'animal-crossing',
           status: 'active',
         },
@@ -5413,13 +5399,11 @@ describe('catalog effective data access web', () => {
     );
     expect(directoryItem?.visual).toEqual({
       backgroundColor: '#6bbf59',
-      textColor: '#10241f',
     });
     expect(themePage?.themeSnapshot.name).toBe('LEGO® Animal Crossing™');
     expect(themePage?.visual).toEqual({
       backgroundColor: '#6bbf59',
       imageUrl: 'https://cdn.example.com/animal-crossing-summary.jpg',
-      textColor: '#10241f',
     });
   });
 
@@ -6786,13 +6770,11 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#08636f',
           public_description: 'Displaysets voor Rivendell en Technic.',
           public_display_name: 'Displaysets voor volwassenen',
-          public_hero_text_color: '#ffffff',
           public_homepage_order: 10,
           public_image_url: 'https://example.test/collection.jpg',
           public_logo_url: 'https://example.test/collection-logo.svg',
           public_order: 10,
           public_surface_color: '#08636f',
-          public_surface_text_color: '#ffffff',
           public_tile_image_url: 'https://example.test/collection-tile.jpg',
           status: 'active',
           updated_at: '2026-06-06T10:00:00.000Z',
@@ -6813,7 +6795,6 @@ describe('catalog effective data access web', () => {
           metadata_json: {
             description: 'Kies display boven speelfuncties.',
             surfaceColor: '#ff0000',
-            surfaceTextColor: '#000000',
           },
           reference_id: 'lego-voor-volwassenen',
           reference_type: 'collection',
@@ -6853,7 +6834,6 @@ describe('catalog effective data access web', () => {
         backgroundColor: '#08636f',
         imageUrl: 'https://example.test/collection-tile.jpg',
         tileImageUrl: 'https://example.test/collection-tile.jpg',
-        textColor: '#ffffff',
       },
     });
   });
@@ -6868,13 +6848,11 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#3aaee8',
           public_description: 'Nieuwe dozen.',
           public_display_name: 'Nieuwe sets',
-          public_hero_text_color: '#08243a',
           public_homepage_order: 10,
           public_image_url: 'https://example.test/new-sets-hero.jpg',
           public_logo_url: 'https://example.test/new-sets-logo.svg',
           public_order: 10,
           public_surface_color: '#3aaee8',
-          public_surface_text_color: '#08243a',
           public_tile_image_url: 'https://example.test/new-sets-tile.jpg',
           status: 'active',
           updated_at: '2026-06-06T10:00:00.000Z',
@@ -6959,7 +6937,6 @@ describe('catalog effective data access web', () => {
           image_url: 'https://example.test/deals.jpg',
           metadata_json: {
             surfaceColor: '#00a99d',
-            surfaceTextColor: '#062927',
           },
           reference_id: 'deals',
           reference_type: 'custom',
@@ -6995,7 +6972,6 @@ describe('catalog effective data access web', () => {
       visual: {
         backgroundColor: '#00a99d',
         imageUrl: 'https://example.test/deals.jpg',
-        textColor: '#062927',
       },
     });
   });
@@ -7016,7 +6992,6 @@ describe('catalog effective data access web', () => {
           image_url: 'https://example.test/themes.jpg',
           metadata_json: {
             surfaceColor: '#8758d8',
-            surfaceTextColor: '#ffffff',
           },
           reference_id: 'themes',
           reference_type: 'custom',
@@ -7052,7 +7027,6 @@ describe('catalog effective data access web', () => {
       visual: {
         backgroundColor: '#8758d8',
         imageUrl: 'https://example.test/themes.jpg',
-        textColor: '#ffffff',
       },
     });
   });
@@ -7098,7 +7072,9 @@ describe('catalog effective data access web', () => {
     const [tile] = await listHomepageDiscoveryTiles({ supabaseClient });
 
     expect(tile?.visual?.backgroundColor).toBeUndefined();
-    expect(tile?.visual?.textColor).toBeUndefined();
+    expect(Object.keys(tile?.visual ?? {})).not.toContain(
+      ['text', 'Color'].join(''),
+    );
     expect(tile?.imageUrl).toBe('https://example.test/deals.jpg');
   });
 
@@ -7131,13 +7107,11 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#00a99d',
           public_description: 'Herkenbare sets tot 100 euro.',
           public_display_name: 'Tot 100 euro',
-          public_hero_text_color: '#062927',
           public_homepage_order: 20,
           public_image_url: 'https://example.test/under-100.jpg',
           public_logo_url: null,
           public_order: 20,
           public_surface_color: '#00a99d',
-          public_surface_text_color: '#062927',
           public_tile_image_url: 'https://example.test/under-100-tile.jpg',
           status: 'active',
           updated_at: '2026-06-06T10:00:00.000Z',
@@ -7341,13 +7315,11 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#3aaee8',
           public_description: 'Nieuw binnen: speeders, kastelen en bloemen.',
           public_display_name: 'Net binnen bij Brickhunt',
-          public_hero_text_color: '#08243a',
           public_homepage_order: 10,
           public_image_url: 'https://example.test/new-sets.jpg',
           public_logo_url: null,
           public_order: 10,
           public_surface_color: '#3aaee8',
-          public_surface_text_color: '#08243a',
           public_tile_image_url: 'https://example.test/new-sets-tile.jpg',
           status: 'active',
           updated_at: '2026-06-06T10:00:00.000Z',
@@ -7389,7 +7361,6 @@ describe('catalog effective data access web', () => {
       visual: {
         backgroundColor: '#3aaee8',
         imageUrl: 'https://example.test/new-sets.jpg',
-        textColor: '#08243a',
       },
     });
   });
@@ -7404,13 +7375,11 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#f28c28',
           public_description: 'Niet laten liggen.',
           public_display_name: 'Binnenkort weg',
-          public_hero_text_color: '#281400',
           public_homepage_order: 10,
           public_image_url: 'https://example.test/retiring-hero.jpg',
           public_logo_url: null,
           public_order: 10,
           public_surface_color: '#f28c28',
-          public_surface_text_color: '#281400',
           public_tile_image_url: 'not-a-url',
           status: 'active',
           updated_at: '2026-06-06T10:00:00.000Z',
@@ -7479,10 +7448,14 @@ describe('catalog effective data access web', () => {
 
     expect(cityItem?.themeSnapshot.name).toBe('City');
     expect(cityItem?.visual?.backgroundColor).toBeUndefined();
-    expect(cityItem?.visual?.textColor).toBeUndefined();
+    expect(Object.keys(cityItem?.visual ?? {})).not.toContain(
+      ['text', 'Color'].join(''),
+    );
     expect(zeldaItem?.themeSnapshot.name).toBe('LEGO® The Legend of Zelda™');
     expect(zeldaItem?.visual?.backgroundColor).toBeUndefined();
-    expect(zeldaItem?.visual?.textColor).toBeUndefined();
+    expect(Object.keys(zeldaItem?.visual ?? {})).not.toContain(
+      ['text', 'Color'].join(''),
+    );
   });
 
   test('uses representative set images for fallback theme directory tiles', async () => {

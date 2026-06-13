@@ -37,7 +37,7 @@ import {
   type CatalogSetDetailTrustSignal,
   type CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
-import { normalizeTheme } from '@lego-platform/catalog/util';
+import { isThemeVisible, normalizeTheme } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { listPublishedArticlesByPrimarySetNumber } from '@lego-platform/content/data-access';
 import type { ContentArticleListItem } from '@lego-platform/content/util';
@@ -46,6 +46,7 @@ import {
   buildBrickhuntValueItems,
   buildSetDecisionSupportItems,
   buildSetDealVerdict,
+  getHeroDealPresentation,
   getPricePanelSnapshot,
 } from '@lego-platform/pricing/data-access';
 import {
@@ -72,7 +73,10 @@ import {
   resolvePublicMerchantDisplayName,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
+import {
+  getAccessibleForegroundColor,
+  getBrickhuntAnalyticsPriceVerdict,
+} from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
@@ -110,6 +114,8 @@ const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
 const SET_DETAIL_METADATA_IMAGE_VERSION_LENGTH = 12;
 const SET_DETAIL_OG_IMAGE_WIDTH = 1200;
 const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
+const SET_DETAIL_THEME_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const SET_DETAIL_HIDDEN_THEME_SLUGS = new Set(['other', 'unknown']);
 const SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const SET_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let setPagePerfLogCount = 0;
@@ -918,6 +924,25 @@ function getLowestComparableCatalogOffer(
   );
 }
 
+function isLowestComparableCatalogOffer({
+  catalogOffer,
+  lowestOffer,
+}: {
+  catalogOffer: CatalogOffer;
+  lowestOffer?: CatalogOffer;
+}): boolean {
+  if (!lowestOffer || catalogOffer.priceCents <= 0) {
+    return false;
+  }
+
+  return (
+    catalogOffer.currency === lowestOffer.currency &&
+    catalogOffer.priceCents === lowestOffer.priceCents &&
+    (catalogOffer.availability === 'in_stock' ||
+      catalogOffer.availability === 'unknown')
+  );
+}
+
 function getCatalogOfferMerchantSlug(
   catalogOffer: CatalogOffer,
 ): string | undefined {
@@ -963,6 +988,43 @@ function getCatalogOfferPublicMerchantName(catalogOffer: CatalogOffer): string {
     merchantName: catalogOffer.merchantName,
     merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
   });
+}
+
+function isOfficialLegoCatalogOffer(catalogOffer: CatalogOffer): boolean {
+  const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
+
+  return (
+    merchantSlug === 'rakuten-lego-eu' ||
+    merchantSlug === 'lego-nl' ||
+    merchantSlug === 'lego' ||
+    catalogOffer.merchant === 'lego' ||
+    getCatalogOfferPublicMerchantName(catalogOffer) === 'LEGO®'
+  );
+}
+
+function getOfficialLegoOfferReferencePriceMinor({
+  catalogOffer,
+  catalogOffers,
+}: {
+  catalogOffer?: CatalogOffer | null;
+  catalogOffers?: readonly CatalogOffer[];
+}): number | undefined {
+  if (!catalogOffer?.currency || !catalogOffers?.length) {
+    return undefined;
+  }
+
+  return [...catalogOffers]
+    .filter(
+      (candidate) =>
+        isOfficialLegoCatalogOffer(candidate) &&
+        candidate.currency === catalogOffer.currency &&
+        candidate.priceCents > 0,
+    )
+    .sort(
+      (left, right) =>
+        right.checkedAt.localeCompare(left.checkedAt) ||
+        right.priceCents - left.priceCents,
+    )[0]?.priceCents;
 }
 
 function withCatalogOfferPublicMerchantName(
@@ -1355,15 +1417,6 @@ function buildBestOfferRankingLabel({
   return 'Laagste nagekeken prijs, nu uitverkocht.';
 }
 
-function shortenCommerceHeroDecisionHelper(explanation: string): string {
-  const [firstSentence] = explanation
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean);
-
-  return firstSentence ?? explanation;
-}
-
 function buildOfferRankingLabel({
   bestOffer,
   catalogOffer,
@@ -1466,22 +1519,35 @@ function buildBestDeal({
 
   if (!catalogOffer && pricePanelSnapshot) {
     const coverageLabel = buildMerchantCoverageLabel(merchantCount);
+    const heroDealPresentation = getHeroDealPresentation({
+      currencyCode: pricePanelSnapshot.currencyCode,
+      currentPriceMinor: pricePanelSnapshot.headlinePriceMinor,
+      referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
+    });
 
     return {
       checkedLabel: formatOfferCheckedAtCompact(pricePanelSnapshot.observedAt),
       coverageLabel,
-      decisionHelper: decisionPresentation.noOfferCopy,
-      decisionLabel: dealVerdict.label,
-      decisionTone: dealVerdict.tone,
-      merchantLabel: decisionPresentation.noOfferTitle,
+      decisionHelper:
+        heroDealPresentation.classification === 'neutral'
+          ? decisionPresentation.noOfferCopy
+          : heroDealPresentation.helper,
+      decisionLabel: heroDealPresentation.label,
+      decisionTone: heroDealPresentation.tone,
+      merchantLabel:
+        heroDealPresentation.classification === 'neutral'
+          ? decisionPresentation.noOfferTitle
+          : 'Prijs gezien, klikroute volgt',
       price: formatPriceMinor({
         currencyCode: pricePanelSnapshot.currencyCode,
         minorUnits: pricePanelSnapshot.headlinePriceMinor,
       }),
       rankingLabel:
-        [pricePanelSnapshot.lowestAvailabilityLabel, coverageLabel]
+        heroDealPresentation.rankingLabel ??
+        ([pricePanelSnapshot.lowestAvailabilityLabel, coverageLabel]
           .filter(Boolean)
-          .join(' · ') || undefined,
+          .join(' · ') ||
+          undefined),
       stockLabel:
         pricePanelSnapshot.lowestAvailabilityLabel ?? 'Prijs wordt gevolgd',
     };
@@ -1504,6 +1570,15 @@ function buildBestDeal({
     catalogOffers ?? [catalogOffer],
     catalogOffer,
   );
+  const heroDealPresentation = getHeroDealPresentation({
+    currencyCode: catalogOffer.currency,
+    currentPriceMinor: catalogOffer.priceCents,
+    legoOfferPriceMinor: getOfficialLegoOfferReferencePriceMinor({
+      catalogOffer,
+      catalogOffers,
+    }),
+    referencePriceMinor: pricePanelSnapshot?.referencePriceMinor,
+  });
 
   return {
     affiliateNote:
@@ -1511,20 +1586,22 @@ function buildBestDeal({
     checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
     ctaHref: catalogOffer.url,
     ctaLabel: `Bekijk deal bij ${merchantName}`,
-    ctaTone: dealVerdict.tone === 'positive' ? 'accent' : 'secondary',
+    ctaTone: heroDealPresentation.ctaTone,
     coverageLabel: buildMerchantCoverageLabel(merchantCount),
-    decisionHelper: shortenCommerceHeroDecisionHelper(dealVerdict.explanation),
-    decisionLabel: dealVerdict.label,
-    decisionTone: dealVerdict.tone,
+    decisionHelper: heroDealPresentation.helper,
+    decisionLabel: heroDealPresentation.label,
+    decisionTone: heroDealPresentation.tone,
     merchantLabel: `Bij ${merchantName}`,
     price: formatOfferPrice(catalogOffer),
-    rankingLabel: buildBestOfferRankingLabel({
-      availability: catalogOffer.availability,
-      currencyCode: catalogOffer.currency,
-      lowestPriceDeltaMinor,
-      merchantCount,
-      nextBestPriceDeltaMinor,
-    }),
+    rankingLabel:
+      heroDealPresentation.rankingLabel ??
+      buildBestOfferRankingLabel({
+        availability: catalogOffer.availability,
+        currencyCode: catalogOffer.currency,
+        lowestPriceDeltaMinor,
+        merchantCount,
+        nextBestPriceDeltaMinor,
+      }),
     stockLabel: getOfferStockLabel(catalogOffer.availability),
     trackingEvent: {
       event: 'offer_click',
@@ -1567,12 +1644,16 @@ function buildOfferList(
     dedupeCatalogOffersByPublicMerchant(catalogOffers),
   ).map((catalogOffer, index) => {
     const merchantName = getCatalogOfferPublicMerchantName(catalogOffer);
+    const isLowestCurrentPrice = isLowestComparableCatalogOffer({
+      catalogOffer,
+      lowestOffer,
+    });
 
     return {
       checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
       ctaHref: catalogOffer.url,
       ctaLabel: `Bekijk bij ${merchantName}`,
-      isBest: bestOffer?.url === catalogOffer.url,
+      isBest: isLowestCurrentPrice,
       merchantLabel: merchantName,
       merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
       price: formatOfferPrice(catalogOffer),
@@ -1589,8 +1670,7 @@ function buildOfferList(
           merchantName,
           merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
           offerPlacement: 'comparison_row',
-          offerRole:
-            bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
+          offerRole: isLowestCurrentPrice ? 'best' : 'alternative',
           pageSurface: 'set_detail',
           priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
           rankPosition: index + 1,
@@ -1647,7 +1727,6 @@ function buildTrackedAvailabilityFallbackBestDeal({
       ? formatOfferCheckedAtCompact(checkedAt)
       : 'Recent gecontroleerd',
     coverageLabel: buildMerchantCoverageLabel(primarySeedCount),
-    decisionTone: 'neutral' as const,
   };
 
   if (state === 'retired') {
@@ -1656,6 +1735,7 @@ function buildTrackedAvailabilityFallbackBestDeal({
       decisionHelper:
         'Bij de vaste winkels zien we nu geen nieuwe voorraad meer. Deze set lijkt uit productie en duikt vooral nog op via losse restvoorraad.',
       decisionLabel: 'Uit productie',
+      decisionTone: 'neutral' as const,
       merchantLabel: 'Niet meer verkrijgbaar',
       price: 'Niet meer verkrijgbaar',
       stockLabel: 'Soms nog tweedehands te vinden',
@@ -1666,11 +1746,12 @@ function buildTrackedAvailabilityFallbackBestDeal({
     return {
       ...sharedFields,
       decisionHelper:
-        'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
-      decisionLabel: 'Nog geen actuele prijs',
-      merchantLabel: 'Nog geen actuele prijs',
+        'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
+      decisionLabel: 'Nog geen deal',
+      decisionTone: 'warning' as const,
+      merchantLabel: 'Prijsbeeld bouwt nog op',
       price: 'Nog geen actuele prijs',
-      stockLabel: 'Nog geen actuele voorraad',
+      stockLabel: 'Prijsbeeld bouwt nog op',
     };
   }
 
@@ -1679,6 +1760,7 @@ function buildTrackedAvailabilityFallbackBestDeal({
     decisionHelper:
       'Bij de winkels die Brickhunt volgt zien we nu geen nieuwe voorraad.',
     decisionLabel: 'Geen actuele voorraad gevonden',
+    decisionTone: 'neutral' as const,
     merchantLabel: 'Geen actuele voorraad gevonden',
     price: 'Geen actuele voorraad gevonden',
     stockLabel: 'Geen actuele voorraad',
@@ -1899,6 +1981,32 @@ function getArticleThemeSlug(
   return article.themeSlug ?? normalizeTheme(article.theme)?.key ?? 'lego';
 }
 
+function buildValidSetDetailThemeHref(
+  themeSlug?: string | null,
+): string | undefined {
+  const normalizedThemeSlug = themeSlug?.trim();
+
+  return normalizedThemeSlug &&
+    SET_DETAIL_THEME_SLUG_PATTERN.test(normalizedThemeSlug) &&
+    !SET_DETAIL_HIDDEN_THEME_SLUGS.has(normalizedThemeSlug) &&
+    isThemeVisible(normalizedThemeSlug)
+    ? buildThemePath(normalizedThemeSlug)
+    : undefined;
+}
+
+export function getSetDetailThemeHref({
+  publicTheme,
+  theme,
+}: {
+  publicTheme?: { slug?: string | null } | null;
+  theme?: string | null;
+}): string | undefined {
+  return (
+    buildValidSetDetailThemeHref(publicTheme?.slug) ??
+    buildValidSetDetailThemeHref(normalizeTheme(theme ?? undefined)?.key)
+  );
+}
+
 export function SetNewsRail({
   articles,
 }: {
@@ -1940,11 +2048,9 @@ export function buildSetDetailComparableRailStyle(
   const backgroundColor =
     catalogSetDetail.publicTheme?.surfaceColor ??
     catalogSetDetail.publicTheme?.accentColor;
-  const textColor =
-    catalogSetDetail.publicTheme?.surfaceTextColor ??
-    catalogSetDetail.publicTheme?.heroTextColor;
+  const surfaceForeground = getAccessibleForegroundColor(backgroundColor);
 
-  if (!backgroundColor && !textColor) {
+  if (!backgroundColor) {
     return undefined;
   }
 
@@ -1954,8 +2060,8 @@ export function buildSetDetailComparableRailStyle(
     railStyle['--article-theme-surface'] = backgroundColor;
   }
 
-  if (textColor) {
-    railStyle['--article-theme-surface-text'] = textColor;
+  if (surfaceForeground) {
+    railStyle['--article-theme-surface-text'] = surfaceForeground;
   }
 
   return railStyle;
@@ -1973,6 +2079,7 @@ export function SetDetailInternalLinkRails({
   }
 
   const displayTitle = getCatalogSetDisplayTitle(catalogSetDetail);
+  const themeHref = getSetDetailThemeHref(catalogSetDetail);
 
   return (
     <>
@@ -1980,6 +2087,8 @@ export function SetDetailInternalLinkRails({
         <CatalogFeatureSetList
           className={styles.comparableSetsRail}
           description={`Meer ${catalogSetDetail.theme}-sets die logisch naast ${displayTitle} staan.`}
+          headingActionLabel={`Bekijk alle ${catalogSetDetail.theme}-sets`}
+          headingHref={themeHref}
           key={block.id}
           railLayoutMode="default"
           sectionId="same-theme-sets"
@@ -2290,9 +2399,7 @@ export default async function SetDetailPage({
   const analyticsPriceVerdict = hasTrackedAvailabilityFallback
     ? 'neutral'
     : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
-  const themeHref = catalogSetDetail.publicTheme
-    ? buildThemePath(catalogSetDetail.publicTheme.slug)
-    : undefined;
+  const themeHref = getSetDetailThemeHref(catalogSetDetail);
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
   );

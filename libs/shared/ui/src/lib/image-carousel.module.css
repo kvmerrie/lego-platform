@@ -467,14 +467,22 @@
 }
 
 .lightboxBackdrop {
+  --gallery-lightbox-close-duration: 260ms;
+  --gallery-lightbox-close-easing: cubic-bezier(0.32, 0, 0.67, 0);
+  --gallery-lightbox-open-duration: 380ms;
+  --gallery-lightbox-open-easing: cubic-bezier(0.32, 0.72, 0, 1);
+
   align-items: center;
   background: rgba(12, 18, 32, 0.82);
   display: flex;
   inset: 0;
   justify-content: center;
+  opacity: 0;
   overscroll-behavior: contain;
   padding: var(--lego-space-4);
   position: fixed;
+  transition: opacity var(--gallery-lightbox-open-duration)
+    var(--gallery-lightbox-open-easing);
   z-index: 1400;
 }
 
@@ -490,8 +498,38 @@
   max-height: min(100%, calc(100vh - (var(--lego-space-4) * 2)));
   max-width: min(90vw, 92rem);
   min-height: 0;
+  opacity: 0;
   padding: 0;
+  transform: translateY(0.75rem) scale(0.985);
+  transition:
+    transform var(--gallery-lightbox-open-duration)
+      var(--gallery-lightbox-open-easing),
+    opacity var(--gallery-lightbox-open-duration)
+      var(--gallery-lightbox-open-easing);
+  will-change: transform, opacity;
   width: 90vw;
+}
+
+.lightboxBackdrop[data-lightbox-state='open'] {
+  opacity: 1;
+}
+
+.lightboxBackdrop[data-lightbox-state='closing'] {
+  opacity: 0;
+  transition-duration: var(--gallery-lightbox-close-duration);
+  transition-timing-function: var(--gallery-lightbox-close-easing);
+}
+
+.lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.985);
+  transition-duration: var(--gallery-lightbox-close-duration);
+  transition-timing-function: var(--gallery-lightbox-close-easing);
 }
 
 .lightboxDialog[data-lightbox-variant='detail'] {
@@ -1094,7 +1132,21 @@
     height: min(92vh, 100dvh);
     max-height: 100dvh;
     max-width: 100vw;
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform var(--gallery-lightbox-open-duration)
+      var(--gallery-lightbox-open-easing);
     width: 100vw;
+  }
+
+  .lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {
+    transform: translateY(0);
+  }
+
+  .lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {
+    transform: translateY(100%);
+    transition-duration: var(--gallery-lightbox-close-duration);
+    transition-timing-function: var(--gallery-lightbox-close-easing);
   }
 
   .lightboxDialog[data-lightbox-variant='detail'] {
@@ -1140,5 +1192,20 @@
 
   .lightboxNavButtonNext {
     right: var(--lego-space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightboxBackdrop,
+  .lightboxDialog,
+  .lightboxBackdrop[data-lightbox-state='closing'],
+  .lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {
+    transition-duration: 1ms;
+    transition-timing-function: linear;
+  }
+
+  .lightboxDialog,
+  .lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {
+    transform: none;
   }
 }

@@ -109,9 +109,17 @@ function CatalogDecisionOfferCard({
 }) {
   if (!offer) {
     return (
-      <section className={styles.bestDealCard} data-commerce-state="follow">
+      <section
+        className={styles.bestDealCard}
+        data-commerce-state="follow"
+        data-tone="warning"
+      >
         <p className={styles.bestDealFallbackValue}>Nog geen deal</p>
         <p className={styles.bestDealMeta}>Prijsbeeld bouwt nog op.</p>
+        <p className={styles.bestDealDecision}>
+          Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment
+          wordt.
+        </p>
         {followAction ? (
           <div className={styles.bestDealFollowAction}>{followAction}</div>
         ) : null}

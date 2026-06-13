@@ -181,7 +181,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'Nieuwe sets',
     visual: {
       backgroundColor: '#3aaee8',
-      textColor: '#08243a',
     },
   },
   {
@@ -192,7 +191,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'LEGO voor volwassenen',
     visual: {
       backgroundColor: '#08636f',
-      textColor: '#ffffff',
     },
   },
   {
@@ -203,7 +201,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'LEGO sets onder EUR 50',
     visual: {
       backgroundColor: '#35b765',
-      textColor: '#062817',
     },
   },
   {
@@ -214,7 +211,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'Binnenkort uit handel',
     visual: {
       backgroundColor: '#f28c28',
-      textColor: '#281400',
     },
   },
   {
@@ -225,7 +221,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'Interessante deals',
     visual: {
       backgroundColor: '#00a99d',
-      textColor: '#062927',
     },
   },
   {
@@ -236,7 +231,6 @@ const defaultHomepageDiscoveryTiles = [
     title: 'Populaire thema’s',
     visual: {
       backgroundColor: '#8758d8',
-      textColor: '#ffffff',
     },
   },
 ] as const;
@@ -270,28 +264,6 @@ function setupHomepageRenderMocks() {
 }
 
 describe('home metadata', () => {
-  it('keeps mobile discovery tiles dense and swipe-friendly', () => {
-    const css = readFileSync(
-      resolve(process.cwd(), 'apps/web/src/app/page.module.css'),
-      'utf-8',
-    );
-    const viewportRule =
-      css.match(/\.discoveryTileViewport \{[^}]+\}/u)?.[0] ?? '';
-    const trackRule = css.match(/\.discoveryTileTrack \{[^}]+\}/u)?.[0] ?? '';
-    const itemRule =
-      css.match(/\.discoveryTileTrack > \* \{[^}]+\}/u)?.[0] ?? '';
-
-    expect(viewportRule).toContain('-webkit-overflow-scrolling: touch;');
-    expect(viewportRule).toContain('overscroll-behavior-x: contain;');
-    expect(viewportRule).toContain('scrollbar-width: none;');
-    expect(trackRule).toContain('scroll-snap-type: x proximity;');
-    expect(trackRule).toContain('touch-action: pan-x pan-y;');
-    expect(itemRule).toContain(
-      'flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));',
-    );
-    expect(css).toContain('flex-basis: min(13rem');
-  });
-
   beforeEach(() => {
     vi.clearAllMocks();
     pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
@@ -442,7 +414,6 @@ describe('home metadata', () => {
         title: 'Displaysets voor je plank',
         visual: {
           backgroundColor: '#123456',
-          textColor: '#ffffff',
         },
       },
     ]);

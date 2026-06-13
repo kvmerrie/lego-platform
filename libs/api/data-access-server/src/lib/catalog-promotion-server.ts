@@ -70,8 +70,6 @@ const CATALOG_THEME_PUBLIC_REVALIDATION_FIELDS = [
   'public_image_url',
   'public_accent_color',
   'public_surface_color',
-  'public_surface_text_color',
-  'public_hero_text_color',
   'public_logo_url',
   'public_homepage_order',
   'public_order',
@@ -84,13 +82,11 @@ const CATALOG_THEME_PRODUCTION_OWNED_PRESENTATION_FIELDS = [
   'public_accent_color',
   'public_description',
   'public_display_name',
-  'public_hero_text_color',
   'public_homepage_order',
   'public_image_url',
   'public_logo_url',
   'public_order',
   'public_surface_color',
-  'public_surface_text_color',
   'slug',
   'status',
 ] as const;
@@ -208,13 +204,11 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
       'public_accent_color',
       'public_description',
       'public_display_name',
-      'public_hero_text_color',
       'public_homepage_order',
       'public_image_url',
       'public_logo_url',
       'public_order',
       'public_surface_color',
-      'public_surface_text_color',
       'slug',
       'status',
     ],
@@ -344,13 +338,11 @@ interface CatalogThemeRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   slug: string;
   status: string;
   updated_at: string;
@@ -661,7 +653,7 @@ const CATALOG_PROMOTION_PREVIEW_TABLES = [
   },
   {
     columns:
-      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
+      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
     onConflict: 'id',
     orderBy: 'slug',
     table: CATALOG_THEMES_TABLE,
@@ -2898,7 +2890,7 @@ export async function promoteCatalogFromStagingToProduction({
       }),
       readOrderedRows<CatalogThemeRow>({
         columns:
-          'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
+          'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
         orderBy: 'slug',
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_THEMES_TABLE,

@@ -5,7 +5,6 @@ import {
   buildCatalogSetSlug,
   createCatalogSetRecord,
   getCatalogThemeDisplayName,
-  getCatalogThemeMutedTextColor,
   getCatalogThemeSurfaceTone,
   getCatalogThemeVisual,
   getCatalogProductSlug,
@@ -141,8 +140,6 @@ describe('catalog snapshot helpers', () => {
     expect(getCatalogThemeVisual('Animal Crossing')).toBeUndefined();
     expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
     expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('light');
-    expect(getCatalogThemeMutedTextColor('#ffffff')).toBe('#f4f7fb');
-    expect(getCatalogThemeMutedTextColor('#171a22')).toBe('#425066');
   });
 
   test('resolves primary themes and secondary labels from external subthemes', () => {

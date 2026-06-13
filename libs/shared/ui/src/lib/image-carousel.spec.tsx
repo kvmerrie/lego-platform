@@ -345,6 +345,29 @@ describe('ImageGallery', () => {
     });
   }
 
+  async function finishLightboxClose() {
+    const backdrop = document.body.querySelector(
+      '[data-lightbox-backdrop="true"]',
+    ) as HTMLDivElement | null;
+    const dialog = document.body.querySelector(
+      '[role="dialog"]',
+    ) as HTMLDivElement | null;
+
+    expect(backdrop?.getAttribute('data-lightbox-state')).toBe('closing');
+    expect(dialog?.getAttribute('data-lightbox-state')).toBe('closing');
+
+    act(() => {
+      dialog?.dispatchEvent(
+        new Event('transitionend', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    await flushAnimationFrame();
+  }
+
   function renderOverviewButtons(images: readonly CarouselImage[]) {
     act(() => {
       root.render(<ImageGallery images={images} variant="detail" />);
@@ -836,7 +859,7 @@ describe('ImageGallery', () => {
     delete (window as unknown as { gtag?: typeof gtag }).gtag;
   });
 
-  it('closes the fullscreen viewer with the close button and Escape', () => {
+  it('closes the fullscreen viewer with the close button and Escape', async () => {
     act(() => {
       root.render(
         <ImageGallery
@@ -883,6 +906,15 @@ describe('ImageGallery', () => {
       );
     });
 
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      document.body
+        .querySelector('[data-lightbox-backdrop="true"]')
+        ?.getAttribute('data-lightbox-state'),
+    ).toBe('closing');
+
+    await finishLightboxClose();
+
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     act(() => {
@@ -904,6 +936,10 @@ describe('ImageGallery', () => {
         }),
       );
     });
+
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+
+    await finishLightboxClose();
 
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
   });
@@ -957,8 +993,10 @@ describe('ImageGallery', () => {
 
     expect(backdrop).not.toBeNull();
     expect(backdrop?.parentElement).toBe(document.body);
+    expect(backdrop?.getAttribute('data-lightbox-state')).toBe('open');
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(dialog?.getAttribute('data-lightbox-state')).toBe('open');
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.documentElement.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(closeButton);
@@ -1007,7 +1045,11 @@ describe('ImageGallery', () => {
       );
     });
 
-    await flushAnimationFrame();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+
+    await finishLightboxClose();
 
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe('');
@@ -3314,11 +3356,31 @@ describe('ImageGallery', () => {
     expect(css).toContain('border-radius: 0;');
     expect(css).toContain('--lego-caption-font-size');
     expect(css).toContain('.lightboxBackdrop {');
+    expect(css).toContain('--gallery-lightbox-open-duration: 380ms;');
+    expect(css).toContain(
+      '--gallery-lightbox-open-easing: cubic-bezier(0.32, 0.72, 0, 1);',
+    );
+    expect(css).toContain('--gallery-lightbox-close-duration: 260ms;');
+    expect(css).toContain(
+      '--gallery-lightbox-close-easing: cubic-bezier(0.32, 0, 0.67, 0);',
+    );
     expect(css).toContain('position: fixed;');
     expect(css).toContain('inset: 0;');
     expect(css).toContain('z-index: 1400;');
+    expect(css).toContain(".lightboxBackdrop[data-lightbox-state='open'] {");
+    expect(css).toContain(".lightboxBackdrop[data-lightbox-state='closing'] {");
+    expect(css).toContain(
+      ".lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {",
+    );
+    expect(css).toContain(
+      ".lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {",
+    );
     expect(css).toContain('height: 92vh;');
     expect(css).toContain('width: 90vw;');
+    expect(css).toContain('transform: translateY(100%);');
+    expect(css).toContain(
+      ".lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {\n    transform: translateY(0);",
+    );
     expect(css).toContain('max-width: min(90vw, 92rem);');
     expect(css).toContain(".lightboxDialog[data-lightbox-variant='detail']");
     expect(css).toContain('gap: 0;');

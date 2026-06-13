@@ -13,9 +13,9 @@ const CATALOG_COLLECTION_PRESENTATIONS_TABLE =
 const PUBLIC_PAGE_SECTIONS_TABLE = 'public_page_sections';
 const PUBLIC_PAGE_SECTION_ITEMS_TABLE = 'public_page_section_items';
 const ADMIN_THEME_SELECT =
-  'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, updated_at';
+  'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status, updated_at';
 const ADMIN_COLLECTION_SELECT =
-  'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at';
+  'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at';
 
 type CatalogCmsAdminSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -26,13 +26,11 @@ export interface AdminCatalogThemePresentation {
   publicAccentColor?: string | null;
   publicDescription?: string | null;
   publicDisplayName?: string | null;
-  publicHeroTextColor?: string | null;
   publicHomepageOrder?: number | null;
   publicImageUrl?: string | null;
   publicLogoUrl?: string | null;
   publicOrder?: number | null;
   publicSurfaceColor?: string | null;
-  publicSurfaceTextColor?: string | null;
   publicTileImageUrl?: string | null;
   slug: string;
   status: string;
@@ -44,13 +42,11 @@ export interface AdminCatalogThemePresentationInput {
   publicAccentColor?: string | null;
   publicDescription?: string | null;
   publicDisplayName?: string | null;
-  publicHeroTextColor?: string | null;
   publicHomepageOrder?: number | null;
   publicImageUrl?: string | null;
   publicLogoUrl?: string | null;
   publicOrder?: number | null;
   publicSurfaceColor?: string | null;
-  publicSurfaceTextColor?: string | null;
   publicTileImageUrl?: string | null;
   status: string;
 }
@@ -63,13 +59,11 @@ export interface AdminCatalogCollectionPresentationInput {
   publicAccentColor?: string | null;
   publicDescription?: string | null;
   publicDisplayName?: string | null;
-  publicHeroTextColor?: string | null;
   publicHomepageOrder?: number | null;
   publicImageUrl?: string | null;
   publicLogoUrl?: string | null;
   publicOrder?: number | null;
   publicSurfaceColor?: string | null;
-  publicSurfaceTextColor?: string | null;
   publicTileImageUrl?: string | null;
   status: string;
 }
@@ -81,13 +75,11 @@ interface AdminCatalogThemePresentationRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url: string | null;
   slug: string;
   status: string;
@@ -101,13 +93,11 @@ interface AdminCatalogCollectionPresentationRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url: string | null;
   status: string;
   updated_at: string | null;
@@ -165,13 +155,11 @@ function toThemePresentation(
     publicAccentColor: row.public_accent_color,
     publicDescription: row.public_description,
     publicDisplayName: row.public_display_name,
-    publicHeroTextColor: row.public_hero_text_color,
     publicHomepageOrder: row.public_homepage_order,
     publicImageUrl: row.public_image_url,
     publicLogoUrl: row.public_logo_url,
     publicOrder: row.public_order,
     publicSurfaceColor: row.public_surface_color,
-    publicSurfaceTextColor: row.public_surface_text_color,
     publicTileImageUrl: row.public_tile_image_url,
     slug: row.slug,
     status: row.status,
@@ -189,13 +177,11 @@ function toCollectionPresentation(
     publicAccentColor: row.public_accent_color,
     publicDescription: row.public_description,
     publicDisplayName: row.public_display_name,
-    publicHeroTextColor: row.public_hero_text_color,
     publicHomepageOrder: row.public_homepage_order,
     publicImageUrl: row.public_image_url,
     publicLogoUrl: row.public_logo_url,
     publicOrder: row.public_order,
     publicSurfaceColor: row.public_surface_color,
-    publicSurfaceTextColor: row.public_surface_text_color,
     publicTileImageUrl: row.public_tile_image_url,
     status: row.status,
     updatedAt: row.updated_at,
@@ -298,13 +284,11 @@ export async function updateAdminCatalogThemePresentation({
     public_accent_color: readOptionalString(input.publicAccentColor),
     public_description: readOptionalString(input.publicDescription),
     public_display_name: readOptionalString(input.publicDisplayName),
-    public_hero_text_color: readOptionalString(input.publicHeroTextColor),
     public_homepage_order: readOptionalInteger(input.publicHomepageOrder),
     public_image_url: readOptionalString(input.publicImageUrl),
     public_logo_url: readOptionalString(input.publicLogoUrl),
     public_order: readOptionalInteger(input.publicOrder),
     public_surface_color: readOptionalString(input.publicSurfaceColor),
-    public_surface_text_color: readOptionalString(input.publicSurfaceTextColor),
     public_tile_image_url: readOptionalString(input.publicTileImageUrl),
     status: input.status === 'inactive' ? 'inactive' : 'active',
     updated_at: new Date().toISOString(),
@@ -376,13 +360,11 @@ export async function updateAdminCatalogCollectionPresentation({
     public_accent_color: readOptionalString(input.publicAccentColor),
     public_description: readOptionalString(input.publicDescription),
     public_display_name: readOptionalString(input.publicDisplayName),
-    public_hero_text_color: readOptionalString(input.publicHeroTextColor),
     public_homepage_order: readOptionalInteger(input.publicHomepageOrder),
     public_image_url: readOptionalString(input.publicImageUrl),
     public_logo_url: readOptionalString(input.publicLogoUrl),
     public_order: readOptionalInteger(input.publicOrder),
     public_surface_color: readOptionalString(input.publicSurfaceColor),
-    public_surface_text_color: readOptionalString(input.publicSurfaceTextColor),
     public_tile_image_url: readOptionalString(input.publicTileImageUrl),
     status: input.status === 'inactive' ? 'inactive' : 'active',
     updated_at: new Date().toISOString(),

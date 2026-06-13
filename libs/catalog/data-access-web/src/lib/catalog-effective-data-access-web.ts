@@ -126,9 +126,9 @@ const BRICKSET_SOURCE_METADATA_POLICIES = [
   'render_publicly_with_attribution',
 ] as const;
 const CATALOG_THEME_SELECT_COLUMNS =
-  'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order';
+  'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_accent_color, public_surface_color, public_logo_url, status, is_public, public_homepage_order, public_order';
 const CATALOG_THEME_LEGACY_SELECT_COLUMNS =
-  'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order';
+  'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_logo_url, status, is_public, public_homepage_order, public_order';
 
 function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
   const chunks: T[][] = [];
@@ -247,7 +247,6 @@ const HOMEPAGE_DEFAULT_DISCOVERY_ROUTE_ITEMS = [
       imageSetIds: ['77245', '72036', '60443', '72035'],
       imageThemeSlugs: ['speed-champions', 'city', 'super-mario', 'star-wars'],
       surfaceColor: '#00a99d',
-      surfaceTextColor: '#062927',
       visualKey: 'deals',
     },
     referenceId: 'deals',
@@ -264,7 +263,6 @@ const HOMEPAGE_DEFAULT_DISCOVERY_ROUTE_ITEMS = [
       imageSetIds: [],
       imageThemeSlugs: ['star-wars', 'icons', 'technic'],
       surfaceColor: '#8758d8',
-      surfaceTextColor: '#ffffff',
       visualKey: 'popularThemes',
     },
     referenceId: 'themes',
@@ -551,13 +549,11 @@ interface CatalogThemeRow {
   public_accent_color?: string | null;
   public_description?: string | null;
   public_display_name?: string | null;
-  public_hero_text_color?: string | null;
   public_homepage_order?: number | null;
   public_image_url?: string | null;
   public_logo_url?: string | null;
   public_order?: number | null;
   public_surface_color?: string | null;
-  public_surface_text_color?: string | null;
   public_tile_image_url?: string | null;
   slug?: string;
   status?: string;
@@ -651,13 +647,11 @@ interface CatalogCollectionPresentationRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url?: string | null;
   status: string;
   updated_at: string | null;
@@ -3124,7 +3118,7 @@ async function listCatalogThemeIdentityBySetId({
       ? await supabaseClient
           .from(CATALOG_THEMES_TABLE)
           .select(
-            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public',
+            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_logo_url, status, is_public',
           )
           .in('id', primaryThemeIdsToLoad)
       : { data: [], error: null };
@@ -3205,13 +3199,6 @@ async function listCatalogThemeIdentityBySetId({
         const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
           publicPrimaryTheme?.public_surface_color,
         );
-        const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
-          publicPrimaryTheme?.public_surface_text_color,
-        );
-        const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
-          publicPrimaryTheme?.public_hero_text_color,
-        );
-
         return [
           catalogRow.set_id,
           {
@@ -3224,11 +3211,6 @@ async function listCatalogThemeIdentityBySetId({
                           accentColor: publicAccentColor,
                         }
                       : {}),
-                    ...(publicHeroTextColor
-                      ? {
-                          heroTextColor: publicHeroTextColor,
-                        }
-                      : {}),
                     ...(publicThemeLogoUrl
                       ? {
                           logoUrl: publicThemeLogoUrl,
@@ -3239,11 +3221,6 @@ async function listCatalogThemeIdentityBySetId({
                     ...(publicSurfaceColor
                       ? {
                           surfaceColor: publicSurfaceColor,
-                        }
-                      : {}),
-                    ...(publicSurfaceTextColor
-                      ? {
-                          surfaceTextColor: publicSurfaceTextColor,
                         }
                       : {}),
                   },
@@ -4123,7 +4100,7 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
         activeSupabaseClient
           .from(CATALOG_THEMES_TABLE)
           .select(
-            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public',
+            'id, slug, display_name, public_display_name, public_accent_color, public_surface_color, public_logo_url, status, is_public',
           )
           .eq('slug', themeSlug)
           .eq('status', 'active')
@@ -4176,12 +4153,6 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
     const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
       themeRow.public_surface_color,
     );
-    const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
-      themeRow.public_surface_text_color,
-    );
-    const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
-      themeRow.public_hero_text_color,
-    );
     const themeIdentity = resolveCatalogThemeIdentityFromPersistence({
       primaryThemeName: publicThemeName,
       sourceThemeName: undefined,
@@ -4191,11 +4162,6 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
           ...(publicAccentColor
             ? {
                 accentColor: publicAccentColor,
-              }
-            : {}),
-          ...(publicHeroTextColor
-            ? {
-                heroTextColor: publicHeroTextColor,
               }
             : {}),
           ...(publicThemeLogoUrl
@@ -4208,11 +4174,6 @@ async function listCatalogSimilarSetCandidateCardsFromSupabase({
           ...(publicSurfaceColor
             ? {
                 surfaceColor: publicSurfaceColor,
-              }
-            : {}),
-          ...(publicSurfaceTextColor
-            ? {
-                surfaceTextColor: publicSurfaceTextColor,
               }
             : {}),
         }
@@ -8269,8 +8230,6 @@ function toCatalogCollectionPresentation(
       normalizeCatalogThemePublicText(row.public_description) ?? null,
     publicDisplayName:
       normalizeCatalogThemePublicText(row.public_display_name) ?? null,
-    publicHeroTextColor:
-      normalizeCatalogThemePublicTextColor(row.public_hero_text_color) ?? null,
     publicHomepageOrder: row.public_homepage_order,
     publicImageUrl:
       normalizeCatalogThemePublicImageUrl(row.public_image_url) ?? null,
@@ -8279,9 +8238,6 @@ function toCatalogCollectionPresentation(
     publicOrder: row.public_order,
     publicSurfaceColor:
       normalizeCatalogThemePublicAccentColor(row.public_surface_color) ?? null,
-    publicSurfaceTextColor:
-      normalizeCatalogThemePublicTextColor(row.public_surface_text_color) ??
-      null,
     publicTileImageUrl:
       normalizeCatalogThemePublicImageUrl(row.public_tile_image_url) ?? null,
     status: row.status === 'inactive' ? 'inactive' : 'active',
@@ -8355,38 +8311,22 @@ function normalizeCatalogThemePublicAccentColor(
   return normalizedValue;
 }
 
-function normalizeCatalogThemePublicTextColor(
-  value?: string | null,
-): string | undefined {
-  return normalizeCatalogThemePublicAccentColor(value);
-}
-
 function createPublicCatalogThemeVisual({
   imageUrl,
   publicAccentColor,
-  publicHeroTextColor,
   publicSurfaceColor,
-  publicSurfaceTextColor,
   tileImageUrl,
 }: {
   imageUrl?: string;
   publicAccentColor?: string;
-  publicHeroTextColor?: string;
   publicSurfaceColor?: string;
-  publicSurfaceTextColor?: string;
   tileImageUrl?: string;
 }): CatalogThemeVisual | undefined {
   const backgroundColor = publicSurfaceColor ?? publicAccentColor;
-  const textColor = publicSurfaceTextColor ?? publicHeroTextColor;
   const visual = {
     ...(backgroundColor
       ? {
           backgroundColor,
-        }
-      : {}),
-    ...(textColor
-      ? {
-          textColor,
         }
       : {}),
     ...(imageUrl
@@ -8676,12 +8616,6 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
             themeRow.public_surface_color,
           );
-          const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
-            themeRow.public_surface_text_color,
-          );
-          const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
-            themeRow.public_hero_text_color,
-          );
           const representativeImageUrl =
             normalizeCatalogThemePublicImageUrl(
               themeSummary?.representative_image_url,
@@ -8700,9 +8634,7 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
                 }
               : {}),
             publicAccentColor,
-            publicHeroTextColor,
             publicSurfaceColor,
-            publicSurfaceTextColor,
             ...(publicTileImageUrl
               ? {
                   tileImageUrl: publicTileImageUrl,
@@ -11751,7 +11683,7 @@ export async function listCatalogCollectionPresentations({
     const { data, error } = await activeSupabaseClient
       .from(CATALOG_COLLECTION_PRESENTATIONS_TABLE)
       .select(
-        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
+        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
       )
       .eq('is_public', true)
       .eq('status', 'active')
@@ -11798,7 +11730,7 @@ export async function getCatalogCollectionPresentation({
     const { data, error } = await activeSupabaseClient
       .from(CATALOG_COLLECTION_PRESENTATIONS_TABLE)
       .select(
-        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
+        'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status, metadata_json, updated_at',
       )
       .eq('collection_slug', slug)
       .eq('is_public', true)
@@ -11877,23 +11809,10 @@ function getHomepageDiscoveryVisual(
         readHomepageMetadataString(metadata, 'backgroundColor'),
       ))
     : undefined;
-  const textColor = supportsItemSurfaceColors
-    ? (normalizeCatalogThemePublicTextColor(
-        readHomepageMetadataString(metadata, 'surfaceTextColor'),
-      ) ??
-      normalizeCatalogThemePublicTextColor(
-        readHomepageMetadataString(metadata, 'textColor'),
-      ) ??
-      normalizeCatalogThemePublicTextColor(
-        readHomepageMetadataString(metadata, 'heroTextColor'),
-      ))
-    : undefined;
-
   return {
     ...fallback,
     ...keyedVisual,
     ...(backgroundColor ? { backgroundColor } : {}),
-    ...(textColor ? { textColor } : {}),
   };
 }
 
@@ -11925,15 +11844,6 @@ function toCollectionVisual(
     ...fallback,
     ...(presentation?.publicSurfaceColor
       ? { backgroundColor: presentation.publicSurfaceColor }
-      : {}),
-    ...((presentation?.publicHeroTextColor ??
-    presentation?.publicSurfaceTextColor)
-      ? {
-          textColor:
-            presentation.publicHeroTextColor ??
-            presentation.publicSurfaceTextColor ??
-            undefined,
-        }
       : {}),
     ...(imageUrl ? { imageUrl } : {}),
     ...(presentation?.publicTileImageUrl
@@ -12613,12 +12523,6 @@ export async function getCatalogThemePageBySlug({
       const publicSurfaceColor = normalizeCatalogThemePublicAccentColor(
         themeRow.public_surface_color,
       );
-      const publicSurfaceTextColor = normalizeCatalogThemePublicTextColor(
-        themeRow.public_surface_text_color,
-      );
-      const publicHeroTextColor = normalizeCatalogThemePublicTextColor(
-        themeRow.public_hero_text_color,
-      );
       const safeLimit = normalizeCatalogReadLimit(
         limit,
         CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
@@ -12772,9 +12676,7 @@ export async function getCatalogThemePageBySlug({
         visual: createPublicCatalogThemeVisual({
           imageUrl: visualImageUrl,
           publicAccentColor,
-          publicHeroTextColor,
           publicSurfaceColor,
-          publicSurfaceTextColor,
         }),
       };
     } catch (error) {

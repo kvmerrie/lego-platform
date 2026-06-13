@@ -26,11 +26,15 @@ export function CatalogFeatureSetList({
   actionLabel,
   className,
   description = 'Grote sets die je plank én budget bepalen.',
+  headingActionLabel,
+  headingHref,
+  headingOnClick,
   layout = 'rail',
   prioritizeFirstImage = false,
   railLayoutMode = 'stable-square',
   sectionId = 'featured-sets',
   setCards,
+  showHeadingChevron,
   showSignal = true,
   signalText,
   style,
@@ -43,11 +47,15 @@ export function CatalogFeatureSetList({
   className?: string;
   description?: string;
   eyebrow?: string;
+  headingActionLabel?: string;
+  headingHref?: string;
+  headingOnClick?: () => void;
   layout?: 'grid' | 'rail';
   prioritizeFirstImage?: boolean;
   railLayoutMode?: CatalogSetCardRailLayoutMode;
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
+  showHeadingChevron?: boolean;
   showSignal?: boolean;
   signalText?: string;
   style?: CSSProperties;
@@ -74,6 +82,9 @@ export function CatalogFeatureSetList({
         ? `${homepageSets.length} producten worden weergegeven`
         : description,
     headingClassName: styles.header,
+    headingActionLabel,
+    headingHref,
+    headingOnClick,
     id: sectionId,
     padding: 'default' as const,
     signal:
@@ -91,6 +102,7 @@ export function CatalogFeatureSetList({
     title,
     tone,
     action: actionLink,
+    showHeadingChevron,
     style,
   };
 

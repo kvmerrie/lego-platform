@@ -1,6 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
 import {
-  getCatalogThemeMutedTextColor,
   type CatalogThemeDirectoryItem,
   type CatalogThemeVisual,
 } from '@lego-platform/catalog/util';
@@ -15,6 +14,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import styles from './catalog-feature-theme-index.module.css';
 
 export function CatalogFeatureThemeIndex({
@@ -30,24 +30,22 @@ export function CatalogFeatureThemeIndex({
     return null;
   }
 
-  const introStyle =
-    visual?.backgroundColor || visual?.textColor
-      ? ({
-          ...(visual.backgroundColor
-            ? {
-                '--theme-index-surface': visual.backgroundColor,
-              }
-            : {}),
-          ...(visual.textColor
-            ? {
-                '--theme-index-muted': getCatalogThemeMutedTextColor(
-                  visual.textColor,
-                ),
-                '--theme-index-text': visual.textColor,
-              }
-            : {}),
-        } as CSSProperties)
-      : undefined;
+  const introTextColor = getAccessibleForegroundColor(visual?.backgroundColor);
+  const introStyle = visual?.backgroundColor
+    ? ({
+        ...(visual.backgroundColor
+          ? {
+              '--theme-index-surface': visual.backgroundColor,
+            }
+          : {}),
+        ...(introTextColor
+          ? {
+              '--theme-index-muted': introTextColor,
+              '--theme-index-text': introTextColor,
+            }
+          : {}),
+      } as CSSProperties)
+    : undefined;
 
   return (
     <div className={styles.page}>

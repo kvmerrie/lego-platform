@@ -21,6 +21,7 @@ import type {
   PublicPageSectionItem,
   PublicPageSectionItemReferenceType,
 } from '@lego-platform/catalog/util';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import {
   CommerceAdminApiService,
   type CommerceAdminCmsPromotionPreviewResult,
@@ -263,7 +264,7 @@ function createSectionItem(index: number): PublicPageSectionItem {
           <article
             class="cms-preview cms-preview--hero"
             [style.background]="getPresentationSurfaceColor(presentation)"
-            [style.color]="getPresentationHeroTextColor(presentation)"
+            [style.color]="getPresentationTextColor(presentation)"
           >
             @if (getPresentationHeroImageUrl(presentation)) {
               <img
@@ -290,7 +291,7 @@ function createSectionItem(index: number): PublicPageSectionItem {
             <article
               class="cms-preview-card"
               [style.background]="getPresentationSurfaceColor(presentation)"
-              [style.color]="getPresentationSurfaceTextColor(presentation)"
+              [style.color]="getPresentationTextColor(presentation)"
             >
               @if (getPresentationTileImageUrl(presentation)) {
                 <img
@@ -613,47 +614,6 @@ function createSectionItem(index: number): PublicPageSectionItem {
                               />
                             </div>
                           </label>
-                          <label class="admin-field">
-                            <span>Tile text color</span>
-                            <div class="cms-color-field">
-                              <input
-                                class="cms-color-picker"
-                                name="surfaceTextColorPicker-{{ $index }}"
-                                type="color"
-                                [ngModel]="
-                                  getSectionItemMetadataColorInputValue(
-                                    item,
-                                    'surfaceTextColor'
-                                  )
-                                "
-                                (ngModelChange)="
-                                  updateSectionItemMetadataString(
-                                    item,
-                                    'surfaceTextColor',
-                                    $event
-                                  )
-                                "
-                              />
-                              <input
-                                class="admin-input"
-                                name="surfaceTextColor-{{ $index }}"
-                                placeholder="#ffffff"
-                                [ngModel]="
-                                  getSectionItemMetadataString(
-                                    item,
-                                    'surfaceTextColor'
-                                  )
-                                "
-                                (ngModelChange)="
-                                  updateSectionItemMetadataString(
-                                    item,
-                                    'surfaceTextColor',
-                                    $event
-                                  )
-                                "
-                              />
-                            </div>
-                          </label>
                         </div>
                       }
 
@@ -908,22 +868,6 @@ function createSectionItem(index: number): PublicPageSectionItem {
                   />
                 </label>
                 <label class="admin-field">
-                  <span>Surface text</span>
-                  <input
-                    class="admin-input"
-                    name="publicSurfaceTextColor"
-                    [(ngModel)]="editingTheme().publicSurfaceTextColor"
-                  />
-                </label>
-                <label class="admin-field">
-                  <span>Hero text</span>
-                  <input
-                    class="admin-input"
-                    name="publicHeroTextColor"
-                    [(ngModel)]="editingTheme().publicHeroTextColor"
-                  />
-                </label>
-                <label class="admin-field">
                   <span>Public order</span>
                   <input
                     class="admin-input"
@@ -1114,22 +1058,6 @@ function createSectionItem(index: number): PublicPageSectionItem {
                     class="admin-input"
                     name="collectionPublicSurfaceColor"
                     [(ngModel)]="editingCollection().publicSurfaceColor"
-                  />
-                </label>
-                <label class="admin-field">
-                  <span>Surface text</span>
-                  <input
-                    class="admin-input"
-                    name="collectionPublicSurfaceTextColor"
-                    [(ngModel)]="editingCollection().publicSurfaceTextColor"
-                  />
-                </label>
-                <label class="admin-field">
-                  <span>Hero text</span>
-                  <input
-                    class="admin-input"
-                    name="collectionPublicHeroTextColor"
-                    [(ngModel)]="editingCollection().publicHeroTextColor"
                   />
                 </label>
                 <label class="admin-field">
@@ -1796,14 +1724,16 @@ export class CommerceAdminCmsPageComponent implements OnInit {
       return '';
     }
 
-    const {
-      accentColor: _accentColor,
-      description: _description,
-      heroTextColor: _heroTextColor,
-      surfaceColor: _surfaceColor,
-      surfaceTextColor: _surfaceTextColor,
-      ...visibleMetadata
-    } = item.metadata;
+    const hiddenMetadataKeys = new Set([
+      'accentColor',
+      'description',
+      'surfaceColor',
+    ]);
+    const visibleMetadata = Object.fromEntries(
+      Object.entries(item.metadata).filter(
+        ([key]) => !hiddenMetadataKeys.has(key),
+      ),
+    );
 
     return Object.keys(visibleMetadata).length
       ? JSON.stringify(visibleMetadata)
@@ -1843,15 +1773,11 @@ export class CommerceAdminCmsPageComponent implements OnInit {
   }
 
   getSectionItemPreviewTextColor(item: PublicPageSectionItem): string | null {
-    if (item.referenceType !== 'custom') {
-      return null;
-    }
+    const surfaceColor = this.getSectionItemPreviewSurfaceColor(item);
 
-    return (
-      this.getSectionItemMetadataString(item, 'surfaceTextColor') ||
-      this.getSectionItemMetadataString(item, 'heroTextColor') ||
-      null
-    );
+    return surfaceColor
+      ? (getAccessibleForegroundColor(surfaceColor) ?? null)
+      : null;
   }
 
   updateSectionItemMetadataString(
@@ -1893,21 +1819,11 @@ export class CommerceAdminCmsPageComponent implements OnInit {
     );
   }
 
-  getPresentationSurfaceTextColor(
-    presentation: CmsPresentationPreview,
-  ): string {
+  getPresentationTextColor(presentation: CmsPresentationPreview): string {
     return (
-      presentation.publicSurfaceTextColor ||
-      presentation.publicHeroTextColor ||
-      '#172033'
-    );
-  }
-
-  getPresentationHeroTextColor(presentation: CmsPresentationPreview): string {
-    return (
-      presentation.publicHeroTextColor ||
-      presentation.publicSurfaceTextColor ||
-      '#172033'
+      getAccessibleForegroundColor(
+        this.getPresentationSurfaceColor(presentation),
+      ) ?? '#05070d'
     );
   }
 

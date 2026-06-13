@@ -1378,6 +1378,47 @@
     margin: 0;
   }
 
+  .sectionHeaderTitleAction {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-radius: var(--lego-radius-sm);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: 0.22rem;
+    letter-spacing: inherit;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+    text-align: inherit;
+    text-decoration: none;
+    touch-action: manipulation;
+  }
+
+  .sectionHeaderTitleAction:hover {
+    color: var(--lego-link);
+  }
+
+  .sectionHeaderTitleAction:focus-visible {
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: 4px;
+  }
+
+  .sectionHeaderTitleActionIcon {
+    flex: 0 0 auto;
+    transform: translateX(0);
+    transition: transform var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .sectionHeaderTitleAction:hover .sectionHeaderTitleActionIcon,
+  .sectionHeaderTitleAction:focus-visible .sectionHeaderTitleActionIcon {
+    transform: translateX(0.12rem);
+  }
+
   .sectionHeaderDescription {
     color: var(--lego-text-muted);
     font-size: var(--lego-text-role-support-size);
@@ -1435,6 +1476,14 @@
 
   .sectionHeaderInverse .sectionHeaderTitle {
     color: #ffffff;
+  }
+
+  .sectionHeaderInverse .sectionHeaderTitleAction:hover {
+    color: #ffffff;
+  }
+
+  .sectionHeaderInverse .sectionHeaderTitleAction:focus-visible {
+    outline-color: var(--lego-contrast-white);
   }
 
   .sectionHeaderInverse .sectionHeaderDescription,
@@ -2296,6 +2345,22 @@
     inline-size: 100%;
   }
 
+  .bestDealSideAction :where(button, a),
+  .bestDealFollowAction :where(button, a) {
+    background: var(--lego-surface-default);
+    border-color: var(--lego-border-subtle);
+    box-shadow: 0 0.38rem 0.9rem rgba(17, 24, 39, 0.12);
+    color: var(--lego-text);
+  }
+
+  .bestDealSideAction :where(button, a):hover,
+  .bestDealFollowAction :where(button, a):hover {
+    background: var(--lego-text);
+    border-color: var(--lego-text);
+    box-shadow: 0 0.42rem 1rem rgba(17, 24, 39, 0.18);
+    color: var(--lego-surface-default);
+  }
+
   .bestDealFollowAction {
     display: grid;
   }
@@ -2682,15 +2747,6 @@
     margin-top: 0.08rem;
     max-width: 100%;
     white-space: nowrap;
-    width: 100%;
-  }
-
-  .offerRailFooter {
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .offerRailViewAllAction {
     width: 100%;
   }
 
@@ -4094,6 +4150,56 @@
     margin: 0;
   }
 
+  .visualTileRailViewport {
+    -webkit-overflow-scrolling: touch;
+    margin-inline: calc(
+      -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
+    );
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
+      var(--lego-space-1);
+    scroll-padding-inline: var(
+      --catalog-section-inline-padding,
+      var(--lego-space-4)
+    );
+    scrollbar-width: none;
+  }
+
+  .visualTileRailViewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .visualTileRailTrack {
+    display: flex;
+    gap: var(--lego-space-2);
+    margin: 0;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x pan-y;
+  }
+
+  .visualTileRailTrack::after {
+    content: '';
+    flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
+  }
+
+  .visualTileRailTrack > * {
+    flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .visualTileRailTrack .themePortraitTitle {
+    display: block;
+    letter-spacing: 0;
+    line-height: 1.12;
+    overflow: visible;
+    padding-block: 0.04em 0.06em;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+
   .themeHeader {
     display: grid;
     gap: var(--lego-space-2);
@@ -4246,6 +4352,10 @@
   }
 
   @media (min-width: 48rem) {
+    .visualTileRailTrack > * {
+      flex-basis: min(13rem, calc(100% - var(--lego-space-6)));
+    }
+
     .themePortraitVisual {
       min-height: 11.25rem;
     }
@@ -4416,6 +4526,23 @@
     }
   }
 
+  @media (min-width: 75rem) {
+    .visualTileRailViewport {
+      margin-inline: 0;
+      overflow: visible;
+      padding: 0;
+      scroll-padding-inline: 0;
+    }
+
+    .visualTileRailTrack > * {
+      flex: 1 1 0;
+    }
+
+    .visualTileRailTrack::after {
+      content: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .themePortraitLink,
     .themeFeatureLink {
@@ -4510,10 +4637,6 @@
 
     .offerRailCard {
       width: clamp(10.9rem, 15vw, 12.2rem);
-    }
-
-    .offerRailViewAllAction {
-      width: fit-content;
     }
 
     .offerOverlayBackdrop {

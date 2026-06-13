@@ -12,11 +12,13 @@ import {
   CatalogSetProductDescription,
   CatalogThemeHighlight,
   CatalogVisualTile,
+  CatalogVisualTileRail,
 } from './catalog-ui';
 import {
   SET_CARD_MOBILE_VIEW_STORAGE_KEY,
   normalizeSetCardMobileView,
 } from './catalog-set-card-mobile-layout';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 
 describe('CatalogSetCard', () => {
   function parseTestHexColor(
@@ -48,10 +50,10 @@ describe('CatalogSetCard', () => {
   }
 
   function getTestContrastRatio(
-    foregroundColor: string,
+    foregroundHex: string,
     backgroundColor: string,
   ): number {
-    const foregroundLuminance = getTestRelativeLuminance(foregroundColor);
+    const foregroundLuminance = getTestRelativeLuminance(foregroundHex);
     const backgroundLuminance = getTestRelativeLuminance(backgroundColor);
     const lighter = Math.max(foregroundLuminance, backgroundLuminance);
     const darker = Math.min(foregroundLuminance, backgroundLuminance);
@@ -962,7 +964,7 @@ describe('CatalogSetCard', () => {
 
   it('uses Supabase theme presentation colors for compact set-card theme badges', () => {
     const surfaceColor = '#171717';
-    const textColor = '#ffffff';
+    const badgeForeground = getAccessibleForegroundColor(surfaceColor);
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/darth-vader-bust-75439"
@@ -975,7 +977,6 @@ describe('CatalogSetCard', () => {
             name: 'Star Wars',
             slug: 'star-wars',
             surfaceColor,
-            surfaceTextColor: textColor,
           },
           releaseYear: 2025,
           pieces: 327,
@@ -987,16 +988,16 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('--card-theme-badge-accent:#171717');
     expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
-    expect(markup).toContain(`--card-theme-badge-text:${textColor}`);
+    expect(markup).toContain(`--card-theme-badge-text:${badgeForeground}`);
     expect(
-      getTestContrastRatio(textColor, surfaceColor),
+      getTestContrastRatio(badgeForeground, surfaceColor),
     ).toBeGreaterThanOrEqual(4.5);
     expect(markup).toContain('>Star Wars<');
   });
 
   it('uses Pokémon theme presentation colors for set-card theme badges', () => {
     const surfaceColor = '#f5d547';
-    const textColor = '#171a22';
+    const badgeForeground = getAccessibleForegroundColor(surfaceColor);
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/pikachu-21587"
@@ -1009,7 +1010,6 @@ describe('CatalogSetCard', () => {
             name: 'Pokémon',
             slug: 'pokemon',
             surfaceColor,
-            surfaceTextColor: textColor,
           },
           releaseYear: 2026,
           pieces: 683,
@@ -1020,9 +1020,9 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain(`--card-theme-badge-bg:${surfaceColor}`);
-    expect(markup).toContain(`--card-theme-badge-text:${textColor}`);
+    expect(markup).toContain(`--card-theme-badge-text:${badgeForeground}`);
     expect(
-      getTestContrastRatio(textColor, surfaceColor),
+      getTestContrastRatio(badgeForeground, surfaceColor),
     ).toBeGreaterThanOrEqual(4.5);
     expect(markup).toContain('>Pokémon<');
   });
@@ -1042,7 +1042,6 @@ describe('CatalogSetCard', () => {
             name: 'City',
             slug: 'city',
             surfaceColor,
-            surfaceTextColor: '#ffffff',
           },
           releaseYear: 2025,
           pieces: 345,
@@ -1518,8 +1517,6 @@ describe('CatalogSetCard', () => {
         /\.offerRailCard\[data-stock-state='unknown'\]\[data-price-comparison='lower-unavailable'\]\s+\.offerRailPrice \{[^}]+\}/u,
       )?.[0] ?? '';
     const actionRule = css.match(/\.offerRailAction \{[^}]+\}/u)?.[0] ?? '';
-    const viewAllRule =
-      css.match(/\.offerRailViewAllAction \{[^}]+\}/u)?.[0] ?? '';
 
     expect(offerCardRule).not.toContain('transform');
     expect(bestDealRule).not.toContain('translateY');
@@ -1553,10 +1550,8 @@ describe('CatalogSetCard', () => {
     expect(actionRule).not.toContain('background:');
     expect(actionRule).not.toContain('border-color:');
     expect(actionRule).not.toContain('color:');
-    expect(viewAllRule).toContain('width: 100%;');
-    expect(viewAllRule).not.toContain('background:');
-    expect(viewAllRule).not.toContain('border-color:');
-    expect(viewAllRule).not.toContain('color:');
+    expect(css).not.toContain('.offerRailViewAllAction');
+    expect(css).not.toContain('.offerRailFooter');
     expect(css).not.toContain(
       ".offerRailCardLink:hover .offerRailAction[data-tone='secondary']",
     );
@@ -2651,7 +2646,6 @@ describe('CatalogSetCard', () => {
             name: 'Star Wars',
             slug: 'star-wars',
             surfaceColor: '#171717',
-            surfaceTextColor: '#ffffff',
           },
           releaseYear: 2025,
           pieces: 327,
@@ -2896,7 +2890,7 @@ describe('CatalogSetCard', () => {
           checkedLabel: '31 mrt om 09:00',
           ctaHref: 'https://example.com/c3po',
           ctaLabel: 'Bekijk bij LEGO',
-          ctaTone: 'secondary',
+          ctaTone: 'accent',
           decisionHelper: 'Rond het normale prijsniveau voor deze set.',
           decisionLabel: 'Prima prijs',
           decisionTone: 'info',
@@ -3296,7 +3290,6 @@ describe('CatalogSetCard', () => {
         visual={{
           backgroundColor: '#cf554c',
           imageUrl: 'https://images.example/curated-avengers-tower.jpg',
-          textColor: '#ffffff',
         }}
         imageUrl="https://images.example/fallback-avengers-tower.jpg"
         themeSnapshot={{
@@ -3338,7 +3331,6 @@ describe('CatalogSetCard', () => {
         variant="portrait"
         visual={{
           backgroundColor: '#5573b5',
-          textColor: '#ffffff',
         }}
       />,
     );
@@ -3355,7 +3347,6 @@ describe('CatalogSetCard', () => {
         variant="portrait"
         visual={{
           backgroundColor: '#6bbf59',
-          textColor: '#10241f',
         }}
       />,
     );
@@ -3442,7 +3433,6 @@ describe('CatalogSetCard', () => {
         visual={{
           backgroundColor: '#f0c63b',
           imageUrl: 'https://images.example/curated-rivendell.jpg',
-          textColor: '#171a22',
         }}
         imageUrl="https://images.example/fallback-rivendell.jpg"
         themeSnapshot={{
@@ -3483,7 +3473,6 @@ describe('CatalogSetCard', () => {
         title="Nieuwe sets"
         visual={{
           backgroundColor: '#5573b5',
-          textColor: '#ffffff',
         }}
       />,
     );
@@ -3497,6 +3486,55 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('--theme-text:#ffffff');
     expect(markup).toContain('--theme-muted:#ffffff');
     expect(markup).not.toContain('themePortraitMeta');
+  });
+
+  it('renders a reusable visual tile rail for compact discovery tiles', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogVisualTileRail ariaLabel="Deal categorieen" as="nav">
+        <CatalogVisualTile
+          dataTile="new-sets"
+          href="/nieuwe-lego-sets"
+          imageUrl="https://images.example/new-set.jpg"
+          title="Nieuwe sets"
+        />
+      </CatalogVisualTileRail>,
+    );
+
+    expect(markup).toContain('aria-label="Deal categorieen"');
+    expect(markup).toContain('visualTileRailViewport');
+    expect(markup).toContain('visualTileRailTrack');
+    expect(markup).toContain('data-visual-tile="new-sets"');
+  });
+
+  it('keeps the generic visual tile rail dense and swipe-friendly on mobile', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const viewportRule =
+      css.match(/\.visualTileRailViewport \{[^}]+\}/u)?.[0] ?? '';
+    const trackRule = css.match(/\.visualTileRailTrack \{[^}]+\}/u)?.[0] ?? '';
+    const itemRule =
+      css.match(/\.visualTileRailTrack > \* \{[^}]+\}/u)?.[0] ?? '';
+    const railTitleRule =
+      css.match(/\.visualTileRailTrack \.themePortraitTitle \{[^}]+\}/u)?.[0] ??
+      '';
+
+    expect(viewportRule).toContain('-webkit-overflow-scrolling: touch;');
+    expect(viewportRule).toContain('overscroll-behavior-x: contain;');
+    expect(viewportRule).toContain('scrollbar-width: none;');
+    expect(trackRule).toContain('gap: var(--lego-space-2);');
+    expect(trackRule).toContain('scroll-snap-type: x proximity;');
+    expect(trackRule).toContain('touch-action: pan-x pan-y;');
+    expect(itemRule).toContain(
+      'flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));',
+    );
+    expect(railTitleRule).toContain('letter-spacing: 0;');
+    expect(railTitleRule).toContain('line-height: 1.12;');
+    expect(railTitleRule).toContain('overflow: visible;');
+    expect(railTitleRule).toContain('padding-block: 0.04em 0.06em;');
+    expect(railTitleRule).toContain('-webkit-line-clamp: unset;');
+    expect(css).toContain('flex-basis: min(13rem');
   });
 
   it('keeps theme tile surface colors stronger than shared Surface tone classes', () => {

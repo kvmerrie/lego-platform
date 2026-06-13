@@ -61,6 +61,7 @@ import {
 } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
+  getAccessibleForegroundColor,
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
 import { CatalogSetCardCollectionBrowseMobileLayout } from './catalog-set-card-mobile-layout';
@@ -113,7 +114,6 @@ type CatalogSetCardBadgeTone = ComponentProps<typeof Badge>['tone'];
 export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
-  textColor?: string;
 }
 
 export interface CatalogSetCardPriceContext {
@@ -143,8 +143,6 @@ type CatalogSetCardCollectionLayout = 'grid' | 'rail';
 type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
-const CATALOG_A11Y_TEXT_DARK = '#05070d';
-const CATALOG_A11Y_TEXT_LIGHT = '#ffffff';
 const CATALOG_A11Y_CONTRAST_AA = 4.5;
 
 export interface CatalogBrowsePaginationProps {
@@ -1059,21 +1057,19 @@ function getCatalogThemeStyleVariables({
 }): CSSProperties | undefined {
   const resolvedVisual = visual;
 
-  if (!resolvedVisual?.backgroundColor && !resolvedVisual?.textColor) {
+  if (!resolvedVisual?.backgroundColor) {
     return undefined;
   }
 
-  const themeCardForeground = getAccessibleCatalogCardForeground(
+  const themeCardForeground = getAccessibleForegroundColor(
     resolvedVisual.backgroundColor,
-    resolvedVisual.textColor,
   );
   const themeCardSurface = getAccessibleCatalogCardSurface(
     resolvedVisual.backgroundColor,
     themeCardForeground,
   );
-  const themeBadgeText = getAccessibleCatalogTextColor(
+  const themeBadgeText = getAccessibleForegroundColor(
     resolvedVisual.backgroundColor,
-    resolvedVisual.textColor,
   );
 
   return {
@@ -1101,49 +1097,18 @@ function getCatalogThemeStyleVariables({
   };
 }
 
-function getAccessibleCatalogCardForeground(
-  backgroundColor?: string,
-  preferredTextColor?: string,
-): string | undefined {
-  const darkContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_TEXT_DARK,
-    backgroundColor,
-  );
-  const lightContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_TEXT_LIGHT,
-    backgroundColor,
-  );
-
-  if (typeof darkContrast === 'number' && typeof lightContrast === 'number') {
-    if (
-      darkContrast < CATALOG_A11Y_CONTRAST_AA &&
-      lightContrast < CATALOG_A11Y_CONTRAST_AA
-    ) {
-      return darkContrast >= lightContrast
-        ? CATALOG_A11Y_TEXT_DARK
-        : CATALOG_A11Y_TEXT_LIGHT;
-    }
-
-    return darkContrast >= lightContrast
-      ? CATALOG_A11Y_TEXT_DARK
-      : CATALOG_A11Y_TEXT_LIGHT;
-  }
-
-  return preferredTextColor;
-}
-
 function getAccessibleCatalogCardSurface(
   backgroundColor?: string,
-  foregroundColor?: string,
+  foregroundHex?: string,
 ): string | undefined {
   const currentContrast = getCatalogColorContrastRatio(
-    foregroundColor,
+    foregroundHex,
     backgroundColor,
   );
 
   if (
     !backgroundColor ||
-    !foregroundColor ||
+    !foregroundHex ||
     typeof currentContrast !== 'number' ||
     currentContrast >= CATALOG_A11Y_CONTRAST_AA
   ) {
@@ -1151,7 +1116,7 @@ function getAccessibleCatalogCardSurface(
   }
 
   const background = parseCatalogHexColor(backgroundColor);
-  const foreground = parseCatalogHexColor(foregroundColor);
+  const foreground = parseCatalogHexColor(foregroundHex);
 
   if (!background || !foreground) {
     return backgroundColor;
@@ -1172,7 +1137,7 @@ function getAccessibleCatalogCardSurface(
     );
     const adjustedBackgroundHex = formatCatalogHexColor(adjustedBackground);
     const adjustedContrast = getCatalogColorContrastRatio(
-      foregroundColor,
+      foregroundHex,
       adjustedBackgroundHex,
     );
 
@@ -1187,45 +1152,11 @@ function getAccessibleCatalogCardSurface(
   return backgroundColor;
 }
 
-function getAccessibleCatalogTextColor(
-  backgroundColor?: string,
-  preferredTextColor?: string,
-): string | undefined {
-  const preferredContrast = getCatalogColorContrastRatio(
-    preferredTextColor,
-    backgroundColor,
-  );
-
-  if (
-    typeof preferredContrast === 'number' &&
-    preferredContrast >= CATALOG_A11Y_CONTRAST_AA
-  ) {
-    return preferredTextColor;
-  }
-
-  const darkContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_TEXT_DARK,
-    backgroundColor,
-  );
-  const lightContrast = getCatalogColorContrastRatio(
-    CATALOG_A11Y_TEXT_LIGHT,
-    backgroundColor,
-  );
-
-  if (typeof darkContrast !== 'number' || typeof lightContrast !== 'number') {
-    return preferredTextColor;
-  }
-
-  return darkContrast >= lightContrast
-    ? CATALOG_A11Y_TEXT_DARK
-    : CATALOG_A11Y_TEXT_LIGHT;
-}
-
 function getCatalogColorContrastRatio(
-  foregroundColor?: string,
+  foregroundHex?: string,
   backgroundColor?: string,
 ): number | undefined {
-  const foreground = parseCatalogHexColor(foregroundColor);
+  const foreground = parseCatalogHexColor(foregroundHex);
   const background = parseCatalogHexColor(backgroundColor);
 
   if (!foreground || !background) {
@@ -1320,15 +1251,13 @@ function getCatalogPublicThemeVisual(
   publicTheme?: CatalogPublicThemeReference,
 ): CatalogThemeVisual | undefined {
   const backgroundColor = publicTheme?.surfaceColor ?? publicTheme?.accentColor;
-  const textColor = publicTheme?.surfaceTextColor ?? publicTheme?.heroTextColor;
 
-  if (!backgroundColor && !textColor) {
+  if (!backgroundColor) {
     return undefined;
   }
 
   return {
     backgroundColor,
-    textColor,
   };
 }
 
@@ -2732,6 +2661,29 @@ export function CatalogVisualTile({
         tileContent
       )}
     </Surface>
+  );
+}
+
+export function CatalogVisualTileRail({
+  ariaLabel,
+  as = 'div',
+  children,
+  className,
+}: {
+  ariaLabel?: string;
+  as?: 'div' | 'nav';
+  children: ReactNode;
+  className?: string;
+}) {
+  const Component = as;
+
+  return (
+    <Component
+      {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
+      className={joinClassNames(styles.visualTileRailViewport, className)}
+    >
+      <div className={styles.visualTileRailTrack}>{children}</div>
+    </Component>
   );
 }
 

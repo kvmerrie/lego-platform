@@ -210,13 +210,11 @@ vi.mock('@lego-platform/catalog/util', () => ({
           slug: 'star-wars',
           visual: {
             backgroundColor: '#5573b5',
-            textColor: '#ffffff',
           },
         }
       : undefined,
   getCatalogThemeDisplayName: (theme: string) =>
     theme === 'Star Wars' ? 'Star Wars™' : theme,
-  getCatalogThemeMutedTextColor: () => '#f4f7fb',
   getCatalogThemeSurfaceTone: (theme: string) =>
     theme === 'Star Wars™' ? 'dark' : 'light',
   normalizeTheme: (theme?: string) =>

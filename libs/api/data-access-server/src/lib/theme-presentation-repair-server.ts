@@ -25,8 +25,6 @@ export const THEME_PRESENTATION_REPAIR_FIELDS = [
   'public_logo_url',
   'public_accent_color',
   'public_surface_color',
-  'public_surface_text_color',
-  'public_hero_text_color',
 ] as const;
 
 export type ThemePresentationRepairField =
@@ -42,11 +40,9 @@ interface CatalogThemePresentationRow {
   status: string;
   public_accent_color: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
 }
 
 export interface ThemePresentationFieldRepair {
@@ -181,7 +177,7 @@ async function readCatalogThemePresentationRows({
     const { data, error } = await client
       .from(CATALOG_THEMES_TABLE)
       .select(
-        'id, slug, display_name, status, is_public, public_display_name, public_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color',
+        'id, slug, display_name, status, is_public, public_display_name, public_image_url, public_logo_url, public_accent_color, public_surface_color',
       )
       .order('slug', { ascending: true })
       .range(offset, offset + THEME_PRESENTATION_REPAIR_PAGE_SIZE - 1);

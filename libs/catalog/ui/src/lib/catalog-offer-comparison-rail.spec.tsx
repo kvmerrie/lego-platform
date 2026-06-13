@@ -116,6 +116,21 @@ describe('CatalogOfferComparisonRail overlay', () => {
     });
   }
 
+  async function finishOverlayClose() {
+    const dialog = document.body.querySelector(
+      '[data-offer-comparison-dialog="true"]',
+    );
+
+    expect(dialog?.getAttribute('data-responsive-dialog-state')).toBe(
+      'closing',
+    );
+
+    await act(async () => {
+      dialog?.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+    await flushAnimationFrame();
+  }
+
   async function openOverlay({
     overlayOffers = makeOverflowOffers(),
     summaryLabel = '21 winkels nagekeken',
@@ -132,11 +147,11 @@ describe('CatalogOfferComparisonRail overlay', () => {
       );
     });
 
-    const trigger = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent?.includes('Bekijk alle winkels'),
-    );
+    const trigger = container.querySelector(
+      `h2 button[aria-label="Vergelijk alle ${overlayOffers.length} winkels"]`,
+    ) as HTMLButtonElement | null;
 
-    expect(trigger).not.toBeUndefined();
+    expect(trigger).not.toBeNull();
     trigger?.focus();
 
     act(() => {
@@ -149,7 +164,19 @@ describe('CatalogOfferComparisonRail overlay', () => {
     });
     await flushAnimationFrame();
 
-    return trigger as HTMLButtonElement;
+    return trigger;
+  }
+
+  function getVisibleOfferCard(merchantLabel: string): HTMLElement {
+    const card = Array.from(
+      container.querySelectorAll<HTMLElement>(
+        'article[class*="offerRailCard"]',
+      ),
+    ).find((candidate) => candidate.textContent?.includes(merchantLabel));
+
+    expect(card).not.toBeUndefined();
+
+    return card as HTMLElement;
   }
 
   it('does not duplicate the LEGO merchant label in compact offer text', () => {
@@ -175,6 +202,119 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(container.textContent).toContain('LEGO®');
     expect(container.textContent).not.toContain('LEGO® LEGO®');
+  });
+
+  it('marks the cheapest merchant as the best deal even when another merchant is recommended', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:05',
+              ctaHref: 'https://example.com/coolblue',
+              ctaLabel: 'Bekijk bij Coolblue',
+              isBest: true,
+              merchantLabel: 'Coolblue',
+              price: '€ 179,00',
+              rankingLabel: '€ 0,26 boven laagste prijs',
+              stockLabel: 'Op voorraad',
+            },
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/proshop',
+              ctaLabel: 'Bekijk bij Proshop',
+              merchantLabel: 'Proshop',
+              price: '€ 178,74',
+              rankingLabel: 'Laagste prijs',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="2 winkels nagekeken"
+        />,
+      );
+    });
+
+    const proshopCard = getVisibleOfferCard('Proshop');
+    const coolblueCard = getVisibleOfferCard('Coolblue');
+
+    expect(proshopCard.getAttribute('data-best')).toBe('true');
+    expect(proshopCard.textContent).toContain('Beste deal');
+    expect(proshopCard.textContent).toContain('Bekijk deal');
+    expect(coolblueCard.getAttribute('data-best')).toBe('false');
+    expect(coolblueCard.textContent).not.toContain('Beste deal');
+    expect(coolblueCard.textContent).toContain('€0,26 duurder');
+  });
+
+  it('treats a one-cent price difference as enough for a single best deal badge', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/proshop',
+              ctaLabel: 'Bekijk bij Proshop',
+              merchantLabel: 'Proshop',
+              price: '€ 178,74',
+              stockLabel: 'Op voorraad',
+            },
+            {
+              checkedLabel: 'Vandaag om 09:01',
+              ctaHref: 'https://example.com/coolblue',
+              ctaLabel: 'Bekijk bij Coolblue',
+              isBest: true,
+              merchantLabel: 'Coolblue',
+              price: '€ 178,75',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="2 winkels nagekeken"
+        />,
+      );
+    });
+
+    const proshopCard = getVisibleOfferCard('Proshop');
+    const coolblueCard = getVisibleOfferCard('Coolblue');
+
+    expect(proshopCard.getAttribute('data-best')).toBe('true');
+    expect(coolblueCard.getAttribute('data-best')).toBe('false');
+    expect(coolblueCard.textContent).toContain('€0,01 duurder');
+  });
+
+  it('marks exact price ties as shared best deal cards', () => {
+    act(() => {
+      root.render(
+        <CatalogOfferComparisonRail
+          offers={[
+            {
+              checkedLabel: 'Vandaag om 09:00',
+              ctaHref: 'https://example.com/proshop',
+              ctaLabel: 'Bekijk bij Proshop',
+              merchantLabel: 'Proshop',
+              price: '€ 178,74',
+              stockLabel: 'Op voorraad',
+            },
+            {
+              checkedLabel: 'Vandaag om 09:01',
+              ctaHref: 'https://example.com/coolblue',
+              ctaLabel: 'Bekijk bij Coolblue',
+              merchantLabel: 'Coolblue',
+              price: '€ 178,74',
+              stockLabel: 'Op voorraad',
+            },
+          ]}
+          summaryLabel="2 winkels nagekeken"
+        />,
+      );
+    });
+
+    const proshopCard = getVisibleOfferCard('Proshop');
+    const coolblueCard = getVisibleOfferCard('Coolblue');
+
+    expect(proshopCard.getAttribute('data-best')).toBe('true');
+    expect(coolblueCard.getAttribute('data-best')).toBe('true');
+    expect(proshopCard.textContent).toContain('Beste deal');
+    expect(coolblueCard.textContent).toContain('Beste deal');
   });
 
   it('renders a favicon for a known merchant while keeping the merchant name visible', () => {
@@ -412,7 +552,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(alternativeAction?.textContent).toContain('Naar winkel');
   });
 
-  it('renders the full comparison trigger for normal multi-shop rails', () => {
+  it('renders the full comparison trigger on the heading for normal multi-shop rails', () => {
     act(() => {
       root.render(
         <CatalogOfferComparisonRail
@@ -422,16 +562,14 @@ describe('CatalogOfferComparisonRail overlay', () => {
       );
     });
 
-    const trigger = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent?.includes('Bekijk alle winkels'),
-    );
+    const trigger = container.querySelector(
+      'h2 button[aria-label="Vergelijk alle 2 winkels"]',
+    ) as HTMLButtonElement | null;
 
-    expect(trigger).not.toBeUndefined();
-    expect(trigger?.getAttribute('aria-label')).toBe(
-      'Vergelijk alle 2 winkels',
-    );
-    expect(trigger?.className).toContain('offerRailViewAllAction');
-    expect(trigger?.className).toContain('buttonSecondary');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toContain('Nu bij 2 winkels');
+    expect(trigger?.querySelector('svg')).not.toBeNull();
+    expect(container.textContent).not.toContain('Bekijk alle winkels');
   });
 
   it('does not render the full comparison trigger for a single offer', () => {
@@ -531,6 +669,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(
       document.body.querySelector('[data-offer-comparison-dialog="true"]'),
+    ).not.toBeNull();
+
+    await finishOverlayClose();
+
+    expect(
+      document.body.querySelector('[data-offer-comparison-dialog="true"]'),
     ).toBeNull();
     expect(document.body.style.overflow).toBe('');
     expect(document.documentElement.style.overflow).toBe('');
@@ -552,6 +696,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
       );
     });
     await flushAnimationFrame();
+
+    expect(
+      document.body.querySelector('[data-offer-comparison-dialog="true"]'),
+    ).not.toBeNull();
+
+    await finishOverlayClose();
 
     expect(
       document.body.querySelector('[data-offer-comparison-dialog="true"]'),

@@ -703,6 +703,44 @@ describe('CatalogSetCardRail', () => {
     );
   });
 
+  it('renders interactive rail headings as compact links with chevrons', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRailSection
+          ariaLabel="Meer uit dit thema"
+          headingActionLabel="Bekijk alle Star Wars sets"
+          headingHref="/themes/star-wars"
+          items={[
+            {
+              id: '75446',
+              href: '/sets/grogu-mandalorian-apprentice-75446',
+              setSummary: {
+                id: '75446',
+                slug: 'grogu-mandalorian-apprentice-75446',
+                name: 'Grogu (Mandalorian Apprentice)',
+                theme: 'Star Wars',
+                releaseYear: 2026,
+                pieces: 1200,
+                imageUrl: 'https://images.example/grogu.jpg',
+              },
+            },
+          ]}
+          title="Meer uit dit thema"
+          variant="featured"
+        />,
+      );
+    });
+
+    const headingLink = container.querySelector(
+      'h2 a[aria-label="Bekijk alle Star Wars sets"]',
+    ) as HTMLAnchorElement | null;
+
+    expect(headingLink).not.toBeNull();
+    expect(headingLink?.getAttribute('href')).toBe('/themes/star-wars');
+    expect(headingLink?.textContent).toContain('Meer uit dit thema');
+    expect(headingLink?.querySelector('svg')).not.toBeNull();
+  });
+
   it('pages heading controls by the visible card group on desktop rails', () => {
     railClientWidth = 720;
     railScrollWidth = 2880;

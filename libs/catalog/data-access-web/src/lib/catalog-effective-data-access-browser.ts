@@ -131,14 +131,12 @@ function normalizeFavoriteThemeVisual(
     visual['backgroundColor'],
   );
   const imageUrl = normalizeFavoritePayloadText(visual['imageUrl']);
-  const textColor = normalizeFavoritePayloadText(visual['textColor']);
   const tileImageUrl = normalizeFavoritePayloadText(visual['tileImageUrl']);
 
-  return backgroundColor || imageUrl || textColor || tileImageUrl
+  return backgroundColor || imageUrl || tileImageUrl
     ? {
         ...(backgroundColor ? { backgroundColor } : {}),
         ...(imageUrl ? { imageUrl } : {}),
-        ...(textColor ? { textColor } : {}),
         ...(tileImageUrl ? { tileImageUrl } : {}),
       }
     : undefined;

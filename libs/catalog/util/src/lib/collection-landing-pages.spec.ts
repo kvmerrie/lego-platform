@@ -64,35 +64,27 @@ describe('collection landing page configs', () => {
   it('uses vibrant dedicated discovery colors that do not reuse theme associations', () => {
     expect(catalogDiscoveryVisualVariants.newReleases).toEqual({
       backgroundColor: '#3aaee8',
-      textColor: '#08243a',
     });
     expect(catalogDiscoveryVisualVariants.adultCollectors).toEqual({
       backgroundColor: '#08636f',
-      textColor: '#ffffff',
     });
     expect(catalogDiscoveryVisualVariants.under50).toEqual({
       backgroundColor: '#35b765',
-      textColor: '#062817',
     });
     expect(catalogDiscoveryVisualVariants.retiringSoon).toEqual({
       backgroundColor: '#f28c28',
-      textColor: '#281400',
     });
     expect(catalogDiscoveryVisualVariants.deals).toEqual({
       backgroundColor: '#00a99d',
-      textColor: '#062927',
     });
     expect(catalogDiscoveryVisualVariants.popularThemes).toEqual({
       backgroundColor: '#8758d8',
-      textColor: '#ffffff',
     });
     expect(Object.values(catalogDiscoveryVisualVariants)).not.toContainEqual({
       backgroundColor: '#5573b5',
-      textColor: '#ffffff',
     });
     expect(Object.values(catalogDiscoveryVisualVariants)).not.toContainEqual({
       backgroundColor: '#6bbf59',
-      textColor: '#10241f',
     });
   });
 

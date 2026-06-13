@@ -20,8 +20,6 @@ const CMS_THEME_PRESENTATION_FIELDS = [
   'public_logo_url',
   'public_accent_color',
   'public_surface_color',
-  'public_surface_text_color',
-  'public_hero_text_color',
   'public_order',
   'public_homepage_order',
   'is_public',
@@ -36,8 +34,6 @@ const CMS_COLLECTION_PRESENTATION_FIELDS = [
   'public_logo_url',
   'public_accent_color',
   'public_surface_color',
-  'public_surface_text_color',
-  'public_hero_text_color',
   'public_order',
   'public_homepage_order',
   'is_public',
@@ -114,13 +110,11 @@ interface CatalogCollectionPresentationPromotionRow extends CmsPromotionRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url: string | null;
   status: string;
 }
@@ -132,13 +126,11 @@ interface CatalogThemePresentationPromotionRow extends CmsPromotionRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url: string | null;
   slug: string;
   status: string;
@@ -317,14 +309,14 @@ async function readCmsPromotionSnapshot(
       }),
       readRows<CatalogCollectionPresentationPromotionRow>({
         columns:
-          'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status, metadata_json',
+          'collection_slug, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status, metadata_json',
         orderBy: 'collection_slug',
         supabaseClient,
         table: CATALOG_COLLECTION_PRESENTATIONS_TABLE,
       }),
       readRows<CatalogThemePresentationPromotionRow>({
         columns:
-          'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_order, public_homepage_order, is_public, status',
+          'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_order, public_homepage_order, is_public, status',
         orderBy: 'slug',
         supabaseClient,
         table: CATALOG_THEMES_TABLE,
@@ -706,13 +698,11 @@ function toCollectionPayload(row: CatalogCollectionPresentationPromotionRow) {
     public_accent_color: row.public_accent_color,
     public_description: row.public_description,
     public_display_name: row.public_display_name,
-    public_hero_text_color: row.public_hero_text_color,
     public_homepage_order: row.public_homepage_order,
     public_image_url: row.public_image_url,
     public_logo_url: row.public_logo_url,
     public_order: row.public_order,
     public_surface_color: row.public_surface_color,
-    public_surface_text_color: row.public_surface_text_color,
     public_tile_image_url: row.public_tile_image_url,
     status: row.status,
   };

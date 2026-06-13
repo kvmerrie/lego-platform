@@ -286,7 +286,6 @@ describe('theme page JSON-LD', () => {
       },
       visual: {
         backgroundColor: '#1f4f7a',
-        textColor: '#ffffff',
       },
     });
     themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
@@ -329,7 +328,6 @@ describe('theme page JSON-LD', () => {
         themePage: expect.objectContaining({
           visual: {
             backgroundColor: '#1f4f7a',
-            textColor: '#ffffff',
           },
         }),
       }),
@@ -379,7 +377,6 @@ describe('theme page JSON-LD', () => {
       },
       visual: {
         backgroundColor: '#1f4f7a',
-        textColor: '#ffffff',
       },
     });
     themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(

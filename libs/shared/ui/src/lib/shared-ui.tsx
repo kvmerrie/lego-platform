@@ -622,18 +622,65 @@ export function DetailAccordionSection({
 export function SectionHeading({
   className,
   description,
+  headingActionLabel,
+  headingHref,
+  headingOnClick,
   title,
   titleAs = 'h2',
   tone = 'default',
+  showHeadingChevron = true,
 }: {
   className?: string;
   description?: ReactNode;
+  headingActionLabel?: string;
+  headingHref?: string;
+  headingOnClick?: () => void;
   eyebrow?: string;
+  showHeadingChevron?: boolean;
   title: ReactNode;
   titleAs?: SectionHeadingLevel;
   tone?: SectionHeadingTone;
 }) {
   const TitleTag = titleAs;
+  const isInteractiveHeading = Boolean(headingHref || headingOnClick);
+  const titleContent = isInteractiveHeading ? (
+    headingHref ? (
+      <Link
+        aria-label={headingActionLabel}
+        className={styles.sectionTitleAction}
+        href={headingHref}
+      >
+        <span>{title}</span>
+        {showHeadingChevron ? (
+          <ChevronRight
+            aria-hidden="true"
+            className={styles.sectionTitleActionIcon}
+            size={18}
+            strokeWidth={2.35}
+          />
+        ) : null}
+      </Link>
+    ) : (
+      <button
+        aria-label={headingActionLabel}
+        className={styles.sectionTitleAction}
+        onClick={() => headingOnClick?.()}
+        type="button"
+      >
+        <span>{title}</span>
+        {showHeadingChevron ? (
+          <ChevronRight
+            aria-hidden="true"
+            className={styles.sectionTitleActionIcon}
+            size={18}
+            strokeWidth={2.35}
+          />
+        ) : null}
+      </button>
+    )
+  ) : (
+    title
+  );
 
   return (
     <div
@@ -643,7 +690,7 @@ export function SectionHeading({
         className,
       )}
     >
-      <TitleTag className={styles.sectionTitle}>{title}</TitleTag>
+      <TitleTag className={styles.sectionTitle}>{titleContent}</TitleTag>
       {description ? (
         <p className={styles.sectionDescription}>{description}</p>
       ) : null}
@@ -657,9 +704,13 @@ export function Panel({
   className,
   description,
   elevation = 'rested',
+  headingActionLabel,
   headingClassName,
+  headingHref,
+  headingOnClick,
   headingTone = 'default',
   padding = 'md',
+  showHeadingChevron,
   spacing = 'default',
   title,
   titleAs = 'h2',
@@ -671,9 +722,13 @@ export function Panel({
   description?: ReactNode;
   elevation?: SurfaceElevation;
   eyebrow?: string;
+  headingActionLabel?: string;
   headingClassName?: string;
+  headingHref?: string;
+  headingOnClick?: () => void;
   headingTone?: SectionHeadingTone;
   padding?: SurfacePadding;
+  showHeadingChevron?: boolean;
   spacing?: PanelSpacing;
   title?: ReactNode;
   titleAs?: SectionHeadingLevel;
@@ -696,6 +751,10 @@ export function Panel({
         <SectionHeading
           className={headingClassName}
           description={description}
+          headingActionLabel={headingActionLabel}
+          headingHref={headingHref}
+          headingOnClick={headingOnClick}
+          showHeadingChevron={showHeadingChevron}
           title={title}
           titleAs={titleAs}
           tone={headingTone}

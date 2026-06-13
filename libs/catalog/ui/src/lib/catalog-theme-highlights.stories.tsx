@@ -19,7 +19,6 @@ export const PortraitTile: Story = {
         visual={{
           backgroundColor: '#f0c63b',
           imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-          textColor: '#171a22',
         }}
         themeSnapshot={{
           name: 'Icons',
@@ -42,7 +41,6 @@ export const FeatureTile: Story = {
         visual={{
           backgroundColor: '#cf554c',
           imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/124122.jpg',
-          textColor: '#ffffff',
         }}
         themeSnapshot={{
           name: 'Marvel',

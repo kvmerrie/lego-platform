@@ -152,8 +152,6 @@ create table if not exists public.catalog_themes (
   public_image_url text null,
   public_accent_color text null,
   public_surface_color text null,
-  public_surface_text_color text null,
-  public_hero_text_color text null,
   public_logo_url text null,
   public_homepage_order integer null,
   public_order integer null,

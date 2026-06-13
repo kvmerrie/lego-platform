@@ -27,7 +27,6 @@ function createCatalogSet(
       name: 'Icons',
       slug: 'icons',
       surfaceColor: '#e8f4ff',
-      surfaceTextColor: '#0f3554',
     },
     releaseDate: '2026-05-01',
     releaseDatePrecision: 'day',
@@ -137,7 +136,6 @@ describe('collection page snapshots', () => {
       expect.objectContaining({
         slug: 'icons',
         surfaceColor: '#e8f4ff',
-        surfaceTextColor: '#0f3554',
       }),
     );
   });

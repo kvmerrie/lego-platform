@@ -66,11 +66,9 @@ const baseTheme = {
   is_public: true,
   public_accent_color: null,
   public_display_name: null,
-  public_hero_text_color: null,
   public_image_url: null,
   public_logo_url: null,
   public_surface_color: null,
-  public_surface_text_color: null,
   slug: 'marvel',
   status: 'active',
 };

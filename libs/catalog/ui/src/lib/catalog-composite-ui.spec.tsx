@@ -130,12 +130,10 @@ describe('CatalogPageIntro', () => {
   });
 
   it('resolves reusable black and white hero button tones from visual contrast', () => {
-    expect(getHeroButtonTone({ textColor: '#ffffff' })).toBe('white');
-    expect(getHeroButtonSurface({ textColor: '#ffffff' })).toBe('dark');
-    expect(getHeroButtonTone({ textColor: '#171a22' })).toBe('black');
-    expect(getHeroButtonSurface({ textColor: '#171a22' })).toBe('light');
     expect(getHeroButtonTone({ backgroundColor: '#0b1020' })).toBe('white');
+    expect(getHeroButtonSurface({ backgroundColor: '#0b1020' })).toBe('dark');
     expect(getHeroButtonTone({ backgroundColor: '#f4d35e' })).toBe('black');
+    expect(getHeroButtonSurface({ backgroundColor: '#f4d35e' })).toBe('light');
   });
 
   it('exposes the shared hero button tone and media sizing contract', () => {

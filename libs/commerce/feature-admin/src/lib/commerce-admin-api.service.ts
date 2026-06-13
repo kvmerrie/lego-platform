@@ -42,13 +42,11 @@ export interface CommerceAdminCatalogThemePresentation {
   publicAccentColor?: string | null;
   publicDescription?: string | null;
   publicDisplayName?: string | null;
-  publicHeroTextColor?: string | null;
   publicHomepageOrder?: number | null;
   publicImageUrl?: string | null;
   publicLogoUrl?: string | null;
   publicOrder?: number | null;
   publicSurfaceColor?: string | null;
-  publicSurfaceTextColor?: string | null;
   publicTileImageUrl?: string | null;
   slug: string;
   status: string;

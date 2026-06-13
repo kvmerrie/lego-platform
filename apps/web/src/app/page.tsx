@@ -14,6 +14,7 @@ import {
 import {
   CatalogSectionShell,
   CatalogVisualTile,
+  CatalogVisualTileRail,
 } from '@lego-platform/catalog/ui';
 import {
   CatalogFeatureThemeList,
@@ -946,40 +947,35 @@ export default async function HomePage() {
           <ContentFeaturePageRenderer editorialPage={homepageHeroPage} />
         </div>
         <CatalogSectionShell
-          className={styles.discoveryTileSection}
-          headingClassName={styles.discoveryTileHeading}
           id={HOMEPAGE_DISCOVERY_SECTION_ID}
           title={
             homepageDiscoverySection?.title ?? 'Ontdek LEGO op jouw manier'
           }
           tone="inverse"
         >
-          <div className={styles.discoveryTileViewport}>
-            <div className={styles.discoveryTileTrack}>
-              {renderedHomepageDiscoveryTiles.map((tile, index) => (
-                <CatalogVisualTile
-                  className={styles.discoveryTile}
-                  dataTile={tile.id}
-                  href={tile.href}
-                  imageAlt={tile.alt}
-                  imageUrl={tile.imageUrl}
-                  key={tile.id}
-                  title={tile.title}
-                  trackingEvent={{
-                    event: 'theme_tile_click',
-                    properties: {
-                      pageSurface: 'homepage',
-                      rankPosition: index + 1,
-                      sectionId: HOMEPAGE_DISCOVERY_SECTION_ID,
-                      tileType: 'discovery',
-                      tileId: tile.id,
-                    },
-                  }}
-                  visual={tile.visual}
-                />
-              ))}
-            </div>
-          </div>
+          <CatalogVisualTileRail>
+            {renderedHomepageDiscoveryTiles.map((tile, index) => (
+              <CatalogVisualTile
+                dataTile={tile.id}
+                href={tile.href}
+                imageAlt={tile.alt}
+                imageUrl={tile.imageUrl}
+                key={tile.id}
+                title={tile.title}
+                trackingEvent={{
+                  event: 'theme_tile_click',
+                  properties: {
+                    pageSurface: 'homepage',
+                    rankPosition: index + 1,
+                    sectionId: HOMEPAGE_DISCOVERY_SECTION_ID,
+                    tileType: 'discovery',
+                    tileId: tile.id,
+                  },
+                }}
+                visual={tile.visual}
+              />
+            ))}
+          </CatalogVisualTileRail>
         </CatalogSectionShell>
         {homepageStrongDealSetCards.length ? (
           <div className={styles.sectionGroup}>

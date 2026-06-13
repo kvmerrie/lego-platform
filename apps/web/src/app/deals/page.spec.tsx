@@ -260,7 +260,7 @@ describe('deals page snapshots', () => {
     );
   });
 
-  it('marks the active deal discovery tile and keeps legacy aliases active', async () => {
+  it('marks the active deal discovery tile semantically without visual active styling', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(
       await pageModule.default({
@@ -269,8 +269,11 @@ describe('deals page snapshots', () => {
     );
 
     expect(markup).toContain('data-visual-tile="largest-discount"');
+    expect(markup).toContain('Beste deal');
     expect(markup).toContain('aria-current="page"');
     expect(markup.match(/aria-current="page"/gu)).toHaveLength(1);
+    expect(markup).not.toContain('Actief');
+    expect(markup).not.toContain('discoveryTileActive');
   });
 
   it('removes the old pill filter area', async () => {
@@ -328,6 +331,7 @@ describe('deals page snapshots', () => {
     expect(css).not.toContain('opacity: 0.35;');
     expect(css).not.toContain('.discoveryTileTrack:hover > *');
     expect(css).not.toContain('.discoveryTileTrack:focus-within > *');
+    expect(css).not.toContain('.discoveryTileActive');
     expect(css).not.toContain('transition: opacity 170ms');
   });
 

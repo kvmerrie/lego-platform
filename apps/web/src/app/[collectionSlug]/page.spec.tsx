@@ -253,7 +253,6 @@ describe('collection landing page route', () => {
               name: 'City',
               slug: 'city',
               surfaceColor: '#e7f2ff',
-              surfaceTextColor: '#12385c',
             },
           },
         ],
@@ -535,7 +534,6 @@ describe('collection landing page route', () => {
             publicTheme: expect.objectContaining({
               slug: 'city',
               surfaceColor: '#e7f2ff',
-              surfaceTextColor: '#12385c',
             }),
             priceContext: expect.objectContaining({
               currentPrice: 'Vanaf € 39,99',

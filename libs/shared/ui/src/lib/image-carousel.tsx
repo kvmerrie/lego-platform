@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type TransitionEvent as ReactTransitionEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -90,6 +91,7 @@ type GalleryImageMediaKind =
   | 'overview'
   | 'thumbnail';
 type LightboxMode = 'overview' | 'viewer';
+type LightboxPresentationState = 'closed' | 'opening' | 'open' | 'closing';
 type SwipeTarget = 'detail' | 'lightbox';
 type SwipePhase = 'idle' | 'dragging' | 'resetting' | 'settling';
 
@@ -108,6 +110,8 @@ const LIGHTBOX_MOUSE_DRAG_CLICK_SUPPRESS_MS = 240;
 const LIGHTBOX_ZOOM_ANIMATION_MS = 220;
 const LIGHTBOX_MOMENTUM_FRICTION = 0.92;
 const LIGHTBOX_MOMENTUM_MIN_VELOCITY_PX_PER_MS = 0.018;
+const LIGHTBOX_CLOSE_ANIMATION_MS = 320;
+const LIGHTBOX_REDUCED_MOTION_CLOSE_ANIMATION_MS = 40;
 
 const INITIAL_SWIPE_VISUAL_STATE = {
   delta: 0,
@@ -581,6 +585,8 @@ export function ImageGallery({
     null,
   );
   const [lightboxMode, setLightboxMode] = useState<LightboxMode>('viewer');
+  const [lightboxPresentationState, setLightboxPresentationState] =
+    useState<LightboxPresentationState>('closed');
   const overviewImageButtonRefs = useRef<
     Record<number, HTMLButtonElement | null>
   >({});
@@ -635,6 +641,8 @@ export function ImageGallery({
   } | null>(null);
   const lightboxMouseClickSuppressUntilRef = useRef(0);
   const lightboxZoomAnimationTimerRef = useRef<number | null>(null);
+  const lightboxOpenAnimationFrameRef = useRef<number | null>(null);
+  const lightboxCloseFallbackTimerRef = useRef<number | null>(null);
   const suppressDetailClickRef = useRef(false);
   const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
@@ -693,6 +701,28 @@ export function ImageGallery({
 
     window.clearTimeout(activeTimer);
     lightboxZoomAnimationTimerRef.current = null;
+  }, []);
+
+  const clearLightboxOpenAnimationFrame = useCallback(() => {
+    const activeFrame = lightboxOpenAnimationFrameRef.current;
+
+    if (activeFrame === null) {
+      return;
+    }
+
+    window.cancelAnimationFrame(activeFrame);
+    lightboxOpenAnimationFrameRef.current = null;
+  }, []);
+
+  const clearLightboxCloseFallbackTimer = useCallback(() => {
+    const activeTimer = lightboxCloseFallbackTimerRef.current;
+
+    if (activeTimer === null) {
+      return;
+    }
+
+    window.clearTimeout(activeTimer);
+    lightboxCloseFallbackTimerRef.current = null;
   }, []);
 
   const stopLightboxMomentum = useCallback(() => {
@@ -804,6 +834,42 @@ export function ImageGallery({
     [],
   );
 
+  const finishLightboxClose = useCallback(() => {
+    clearLightboxOpenAnimationFrame();
+    clearLightboxCloseFallbackTimer();
+    setLightboxImageIndex(null);
+    setLightboxMode('viewer');
+    setLightboxPresentationState('closed');
+
+    window.requestAnimationFrame(() => {
+      lightboxTriggerRef.current?.focus({ preventScroll: true });
+    });
+  }, [clearLightboxCloseFallbackTimer, clearLightboxOpenAnimationFrame]);
+
+  const beginLightboxOpen = useCallback(
+    ({ imageIndex, mode }: { imageIndex: number; mode: LightboxMode }) => {
+      clearLightboxOpenAnimationFrame();
+      clearLightboxCloseFallbackTimer();
+      setLightboxPresentationState('opening');
+      setLightboxMode(mode);
+      setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
+
+      lightboxOpenAnimationFrameRef.current = window.requestAnimationFrame(
+        () => {
+          lightboxOpenAnimationFrameRef.current = null;
+          setLightboxPresentationState((currentState) =>
+            currentState === 'opening' ? 'open' : currentState,
+          );
+        },
+      );
+    },
+    [
+      clearLightboxCloseFallbackTimer,
+      clearLightboxOpenAnimationFrame,
+      resolvedImages.length,
+    ],
+  );
+
   const resetLightboxZoom = useCallback(() => {
     stopLightboxMomentum();
     clearLightboxZoomAnimationTimer();
@@ -824,22 +890,47 @@ export function ImageGallery({
   ]);
 
   const closeLightbox = useCallback(() => {
+    if (
+      lightboxImageIndex === null ||
+      lightboxPresentationState === 'closing'
+    ) {
+      return;
+    }
+
     clearSwipeSettleTimer('lightbox');
     clearSwipeResetAnimationFrame('lightbox');
+    clearLightboxOpenAnimationFrame();
+    clearLightboxCloseFallbackTimer();
     resetLightboxZoom();
     setLightboxSwipeState(INITIAL_SWIPE_VISUAL_STATE);
-    setLightboxImageIndex(null);
-    setLightboxMode('viewer');
+    setLightboxPresentationState('closing');
 
-    window.requestAnimationFrame(() => {
-      lightboxTriggerRef.current?.focus({ preventScroll: true });
-    });
-  }, [clearSwipeResetAnimationFrame, clearSwipeSettleTimer, resetLightboxZoom]);
+    const prefersReducedMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    lightboxCloseFallbackTimerRef.current = window.setTimeout(
+      finishLightboxClose,
+      prefersReducedMotion
+        ? LIGHTBOX_REDUCED_MOTION_CLOSE_ANIMATION_MS
+        : LIGHTBOX_CLOSE_ANIMATION_MS,
+    );
+  }, [
+    clearLightboxCloseFallbackTimer,
+    clearLightboxOpenAnimationFrame,
+    clearSwipeResetAnimationFrame,
+    clearSwipeSettleTimer,
+    finishLightboxClose,
+    lightboxImageIndex,
+    lightboxPresentationState,
+    resetLightboxZoom,
+  ]);
 
   useEffect(() => {
     if (!resolvedImages.length) {
       setDetailImageIndex(0);
       setLightboxImageIndex(null);
+      setLightboxPresentationState('closed');
       return;
     }
 
@@ -860,11 +951,12 @@ export function ImageGallery({
 
     rememberLightboxTrigger();
     resetLightboxZoom();
-    setLightboxMode('viewer');
-    setLightboxImageIndex(
-      clampIndex(lightboxRequest.index, resolvedImages.length),
-    );
+    beginLightboxOpen({
+      imageIndex: lightboxRequest.index,
+      mode: 'viewer',
+    });
   }, [
+    beginLightboxOpen,
     lightboxRequest,
     rememberLightboxTrigger,
     resetLightboxZoom,
@@ -1011,8 +1103,15 @@ export function ImageGallery({
       });
       stopLightboxMomentum();
       clearLightboxZoomAnimationTimer();
+      clearLightboxOpenAnimationFrame();
+      clearLightboxCloseFallbackTimer();
     },
-    [clearLightboxZoomAnimationTimer, stopLightboxMomentum],
+    [
+      clearLightboxCloseFallbackTimer,
+      clearLightboxOpenAnimationFrame,
+      clearLightboxZoomAnimationTimer,
+      stopLightboxMomentum,
+    ],
   );
 
   if (!resolvedImages.length) {
@@ -1075,10 +1174,13 @@ export function ImageGallery({
 
     rememberLightboxTrigger(trigger);
     resetLightboxZoom();
-    setLightboxMode(
-      variant === 'detail' && resolvedImages.length > 1 ? 'overview' : 'viewer',
-    );
-    setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
+    beginLightboxOpen({
+      imageIndex,
+      mode:
+        variant === 'detail' && resolvedImages.length > 1
+          ? 'overview'
+          : 'viewer',
+    });
   }
 
   function goToLightboxImage(nextIndex: number) {
@@ -1104,6 +1206,17 @@ export function ImageGallery({
     }
 
     closeLightbox();
+  }
+
+  function handleLightboxTransitionEnd(
+    event: ReactTransitionEvent<HTMLDivElement>,
+  ) {
+    if (
+      event.target === event.currentTarget &&
+      lightboxPresentationState === 'closing'
+    ) {
+      finishLightboxClose();
+    }
   }
 
   function getSwipeDeltaForBounds({
@@ -2010,6 +2123,7 @@ export function ImageGallery({
         className={styles.lightboxBackdrop}
         data-lightbox-backdrop="true"
         data-lightbox-mode={lightboxMode}
+        data-lightbox-state={lightboxPresentationState}
         data-lightbox-variant={variant}
         onClick={closeLightbox}
         role="presentation"
@@ -2020,8 +2134,10 @@ export function ImageGallery({
           className={styles.lightboxDialog}
           data-lightbox-active-index={safeLightboxImageIndex}
           data-lightbox-mode={lightboxMode}
+          data-lightbox-state={lightboxPresentationState}
           data-lightbox-variant={variant}
           onClick={(event) => event.stopPropagation()}
+          onTransitionEnd={handleLightboxTransitionEnd}
           ref={lightboxDialogRef}
           role="dialog"
           tabIndex={-1}

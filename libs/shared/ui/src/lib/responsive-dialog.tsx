@@ -6,7 +6,7 @@ import type {
   KeyboardEvent,
   ReactNode,
 } from 'react';
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { lockDocumentScroll } from './document-scroll-lock';
@@ -25,6 +25,21 @@ type DataAttributes = Record<`data-${string}`, string | undefined>;
 type DialogAttributes = HTMLAttributes<HTMLElement> & DataAttributes;
 type DialogBackdropAttributes = ButtonHTMLAttributes<HTMLButtonElement> &
   DataAttributes;
+type ResponsiveDialogState = 'closing' | 'opening' | 'open';
+
+const RESPONSIVE_DIALOG_CLOSE_TIMEOUT_MS = 340;
+const RESPONSIVE_DIALOG_REDUCED_MOTION_CLOSE_TIMEOUT_MS = 40;
+
+function getResponsiveDialogCloseTimeoutMs(): number {
+  if (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    return RESPONSIVE_DIALOG_REDUCED_MOTION_CLOSE_TIMEOUT_MS;
+  }
+
+  return RESPONSIVE_DIALOG_CLOSE_TIMEOUT_MS;
+}
 
 function getFocusableDialogElements(dialog: HTMLElement | null): HTMLElement[] {
   if (!dialog) {
@@ -134,21 +149,82 @@ export function ResponsiveDialog({
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const closeTimeoutRef = useRef<number | undefined>(undefined);
   const triggerElementRef = useRef<Element | null>(null);
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [dialogState, setDialogState] = useState<ResponsiveDialogState>(
+    isOpen ? 'opening' : 'closing',
+  );
+  const { onTransitionEnd: onDialogTransitionEnd, ...resolvedDialogProps } =
+    dialogProps ?? {};
+
+  const clearCloseTimeout = useCallback(() => {
+    if (closeTimeoutRef.current === undefined) {
+      return;
+    }
+
+    window.clearTimeout(closeTimeoutRef.current);
+    closeTimeoutRef.current = undefined;
+  }, []);
+
+  const finishClosing = useCallback(() => {
+    if (isOpen) {
+      return;
+    }
+
+    clearCloseTimeout();
+    setShouldRender(false);
+  }, [clearCloseTimeout, isOpen]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      clearCloseTimeout();
+      setShouldRender(true);
+      return undefined;
+    }
+
+    if (!shouldRender) {
+      return undefined;
+    }
+
+    setDialogState('closing');
+    clearCloseTimeout();
+    closeTimeoutRef.current = window.setTimeout(
+      finishClosing,
+      getResponsiveDialogCloseTimeoutMs(),
+    );
+
+    return clearCloseTimeout;
+  }, [clearCloseTimeout, finishClosing, isOpen, shouldRender]);
+
+  useEffect(() => {
+    if (!shouldRender || !isOpen) {
+      return undefined;
+    }
+
+    setDialogState('opening');
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      setDialogState('open');
+    });
+
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [isOpen, shouldRender]);
+
+  useEffect(() => {
+    if (!shouldRender) {
       return undefined;
     }
 
     triggerElementRef.current = document.activeElement;
     const unlockDocumentScroll = lockDocumentScroll();
 
-    window.requestAnimationFrame(() => {
+    const animationFrame = window.requestAnimationFrame(() => {
       closeButtonRef.current?.focus({ preventScroll: true });
     });
 
     return () => {
+      window.cancelAnimationFrame(animationFrame);
       unlockDocumentScroll();
 
       window.requestAnimationFrame(() => {
@@ -157,9 +233,11 @@ export function ResponsiveDialog({
         }
       });
     };
-  }, [isOpen]);
+  }, [shouldRender]);
 
-  if (!isOpen || typeof document === 'undefined') {
+  useEffect(() => () => clearCloseTimeout(), [clearCloseTimeout]);
+
+  if (!shouldRender || typeof document === 'undefined') {
     return null;
   }
 
@@ -167,6 +245,7 @@ export function ResponsiveDialog({
     <div
       className={styles.responsiveDialogLayer}
       data-responsive-dialog-layer="true"
+      data-responsive-dialog-state={dialogState}
     >
       <button
         aria-label={closeLabel}
@@ -175,6 +254,7 @@ export function ResponsiveDialog({
           backdropClassName,
         )}
         data-responsive-dialog-backdrop="true"
+        data-responsive-dialog-state={dialogState}
         type="button"
         onClick={onClose}
         {...backdropProps}
@@ -185,6 +265,7 @@ export function ResponsiveDialog({
         aria-modal="true"
         className={joinClassNames(styles.responsiveDialogPanel, panelClassName)}
         data-responsive-dialog-panel="true"
+        data-responsive-dialog-state={dialogState}
         onKeyDown={(event) =>
           handleDialogKeyDown({
             dialog: dialogRef.current,
@@ -192,10 +273,17 @@ export function ResponsiveDialog({
             onClose,
           })
         }
+        onTransitionEnd={(event) => {
+          onDialogTransitionEnd?.(event);
+
+          if (event.target === event.currentTarget) {
+            finishClosing();
+          }
+        }}
         ref={dialogRef}
         role="dialog"
         tabIndex={-1}
-        {...dialogProps}
+        {...resolvedDialogProps}
       >
         <header
           className={joinClassNames(

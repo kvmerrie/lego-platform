@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import { CatalogFeatureThemeIndex } from './catalog-feature-theme-index';
 import {
   CatalogFeatureFavoriteThemesRail,
@@ -53,7 +54,6 @@ const pickerThemeDirectoryItems: CatalogThemeDirectoryItem[] = [
     },
     visual: {
       backgroundColor: '#5f8a4b',
-      textColor: '#ffffff',
       tileImageUrl: 'https://images.example/minecraft-tile.jpg',
     },
   },
@@ -69,7 +69,6 @@ const pickerThemeDirectoryItems: CatalogThemeDirectoryItem[] = [
     },
     visual: {
       backgroundColor: '#6f8594',
-      textColor: '#ffffff',
       tileImageUrl: 'https://images.example/icons-tile.jpg',
     },
   },
@@ -457,7 +456,7 @@ describe('CatalogFeatureThemePage', () => {
     );
     expect(desktopFavoriteRule).toContain('display: inline;');
     expect(activeFavoriteRule).toContain(
-      '--lego-button-accent-background: var(\n    --catalog-hero-favorite-fill-background',
+      '--lego-button-accent-background: var(--catalog-hero-favorite-fill-background);',
     );
     expect(activeFavoriteRule).toContain(
       '--lego-button-accent-color: var(--catalog-hero-favorite-fill-foreground);',
@@ -497,7 +496,6 @@ describe('CatalogFeatureThemePage', () => {
           visual: {
             backgroundColor: '#e0b84f',
             imageUrl: 'https://images.example/editions.jpg',
-            textColor: '#171a22',
           },
           setCards: [
             {
@@ -514,7 +512,9 @@ describe('CatalogFeatureThemePage', () => {
     );
 
     expect(markup).toContain('--theme-page-surface:#e0b84f');
-    expect(markup).toContain('--theme-page-text:#171a22');
+    expect(markup).toContain(
+      `--theme-page-text:${getAccessibleForegroundColor('#e0b84f')}`,
+    );
     expect(markup).toContain('data-hero-button-tone="black"');
     expect(markup).toContain('interactiveSurfaceLight');
   });
@@ -533,7 +533,6 @@ describe('CatalogFeatureThemePage', () => {
           },
           visual: {
             backgroundColor: '#305b23',
-            textColor: '#ffffff',
           },
           setCards: [
             {
@@ -696,7 +695,6 @@ describe('CatalogFeatureFavoriteThemesRail', () => {
             backgroundColor: '#5f8a4b',
             imageUrl:
               'https://cdn.rebrickable.com/media/sets/21588-1/162591.jpg',
-            textColor: '#ffffff',
             tileImageUrl:
               'https://cdn.rebrickable.com/media/sets/21588-1/162591.jpg',
           },
@@ -1032,7 +1030,6 @@ describe('CatalogFeatureThemeIndex', () => {
       <CatalogFeatureThemeIndex
         visual={{
           backgroundColor: '#234bcd',
-          textColor: '#ffffff',
         }}
         themeDirectoryItems={[
           {

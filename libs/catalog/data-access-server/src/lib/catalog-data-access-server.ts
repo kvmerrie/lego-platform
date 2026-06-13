@@ -106,11 +106,9 @@ interface UserThemeFavoriteThemeRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   public_tile_image_url: string | null;
   slug: string;
   status: string;
@@ -206,10 +204,6 @@ function createFavoriteThemeDirectoryItem({
   const backgroundColor =
     normalizePublicThemeColor(theme.public_surface_color) ??
     normalizePublicThemeColor(theme.public_accent_color);
-  const textColor =
-    normalizePublicThemeColor(theme.public_surface_text_color) ??
-    normalizePublicThemeColor(theme.public_hero_text_color);
-
   return {
     favoritedAt: favorite.created_at,
     ...(imageUrl ? { imageUrl } : {}),
@@ -227,7 +221,6 @@ function createFavoriteThemeDirectoryItem({
     visual: {
       ...(backgroundColor ? { backgroundColor } : {}),
       ...(publicImageUrl ? { imageUrl: publicImageUrl } : {}),
-      ...(textColor ? { textColor } : {}),
       ...(publicTileImageUrl ? { tileImageUrl: publicTileImageUrl } : {}),
     },
   } satisfies UserThemeFavoriteItem;
@@ -315,7 +308,7 @@ export function createUserThemeFavoriteRepository(
         getSupabaseAdminClient()
           .from(CATALOG_THEMES_TABLE)
           .select(
-            'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, status, is_public',
+            'id, slug, display_name, public_display_name, public_description, public_image_url, public_tile_image_url, public_logo_url, public_accent_color, public_surface_color, status, is_public',
           )
           .in('id', themeIds),
         getSupabaseAdminClient()

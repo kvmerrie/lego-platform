@@ -14,7 +14,6 @@ import {
 import {
   type CatalogHomepageSetCard,
   type CatalogThemeLandingPage,
-  getCatalogThemeMutedTextColor,
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
@@ -23,6 +22,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { ActionLink } from '@lego-platform/shared/ui';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import styles from './catalog-feature-theme-page.module.css';
 
 export interface CatalogFeatureThemePageDealItem
@@ -96,24 +96,24 @@ export function CatalogFeatureThemePage({
         normalizedCurrentPage * normalizedPageSize,
       );
   const themePageHref = buildThemePath(themeSnapshot.slug);
-  const themePageStyle =
-    themeVisual?.backgroundColor || themeVisual?.textColor
-      ? ({
-          ...(themeVisual?.backgroundColor
-            ? {
-                '--theme-page-surface': themeVisual.backgroundColor,
-              }
-            : {}),
-          ...(themeVisual?.textColor
-            ? {
-                '--theme-page-text': themeVisual.textColor,
-                '--theme-page-muted': getCatalogThemeMutedTextColor(
-                  themeVisual.textColor,
-                ),
-              }
-            : {}),
-        } as CSSProperties)
-      : undefined;
+  const themeTextColor = getAccessibleForegroundColor(
+    themeVisual?.backgroundColor,
+  );
+  const themePageStyle = themeVisual?.backgroundColor
+    ? ({
+        ...(themeVisual?.backgroundColor
+          ? {
+              '--theme-page-surface': themeVisual.backgroundColor,
+            }
+          : {}),
+        ...(themeTextColor
+          ? {
+              '--theme-page-text': themeTextColor,
+              '--theme-page-muted': themeTextColor,
+            }
+          : {}),
+      } as CSSProperties)
+    : undefined;
 
   return (
     <div

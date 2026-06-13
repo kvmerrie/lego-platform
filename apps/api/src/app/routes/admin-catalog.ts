@@ -956,15 +956,11 @@ function readThemePresentationInput(
     publicAccentColor: readOptionalStringInput(record['publicAccentColor']),
     publicDescription: readOptionalStringInput(record['publicDescription']),
     publicDisplayName: readOptionalStringInput(record['publicDisplayName']),
-    publicHeroTextColor: readOptionalStringInput(record['publicHeroTextColor']),
     publicHomepageOrder: readOptionalNumberInput(record['publicHomepageOrder']),
     publicImageUrl: readOptionalStringInput(record['publicImageUrl']),
     publicLogoUrl: readOptionalStringInput(record['publicLogoUrl']),
     publicOrder: readOptionalNumberInput(record['publicOrder']),
     publicSurfaceColor: readOptionalStringInput(record['publicSurfaceColor']),
-    publicSurfaceTextColor: readOptionalStringInput(
-      record['publicSurfaceTextColor'],
-    ),
     publicTileImageUrl: readOptionalStringInput(record['publicTileImageUrl']),
     status: record['status'] === 'inactive' ? 'inactive' : 'active',
   };
@@ -984,15 +980,11 @@ function readCollectionPresentationInput(
     publicAccentColor: readOptionalStringInput(record['publicAccentColor']),
     publicDescription: readOptionalStringInput(record['publicDescription']),
     publicDisplayName: readOptionalStringInput(record['publicDisplayName']),
-    publicHeroTextColor: readOptionalStringInput(record['publicHeroTextColor']),
     publicHomepageOrder: readOptionalNumberInput(record['publicHomepageOrder']),
     publicImageUrl: readOptionalStringInput(record['publicImageUrl']),
     publicLogoUrl: readOptionalStringInput(record['publicLogoUrl']),
     publicOrder: readOptionalNumberInput(record['publicOrder']),
     publicSurfaceColor: readOptionalStringInput(record['publicSurfaceColor']),
-    publicSurfaceTextColor: readOptionalStringInput(
-      record['publicSurfaceTextColor'],
-    ),
     publicTileImageUrl: readOptionalStringInput(record['publicTileImageUrl']),
     status: record['status'] === 'inactive' ? 'inactive' : 'active',
   };

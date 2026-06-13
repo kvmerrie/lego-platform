@@ -104,7 +104,6 @@ describe('CatalogFeatureCollectionLandingPage', () => {
           visual: {
             backgroundColor: '#123047',
             imageUrl: 'https://images.example/dark-collection.jpg',
-            textColor: '#ffffff',
           },
         }}
         setCards={[]}

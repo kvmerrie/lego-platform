@@ -49,8 +49,6 @@ Preserved in production for existing `catalog_themes` rows:
 - `catalog_themes.public_image_url`
 - `catalog_themes.public_accent_color`
 - `catalog_themes.public_surface_color`
-- `catalog_themes.public_surface_text_color`
-- `catalog_themes.public_hero_text_color`
 - `catalog_themes.public_logo_url`
 - `catalog_themes.public_homepage_order`
 - `catalog_themes.public_order`
@@ -77,8 +75,6 @@ set
   public_image_url = values.public_image_url,
   public_accent_color = values.public_accent_color,
   public_surface_color = values.public_surface_color,
-  public_surface_text_color = values.public_surface_text_color,
-  public_hero_text_color = values.public_hero_text_color,
   public_display_name = values.public_display_name,
   public_description = values.public_description,
   public_logo_url = values.public_logo_url,
@@ -94,8 +90,6 @@ from (
       'https://cdn.example.com/mario-curated.jpg',
       '#e52521',
       '#d85a50',
-      '#ffffff',
-      '#ffffff',
       'LEGO Super Mario',
       'Production curated copy',
       null,
@@ -109,8 +103,6 @@ from (
   public_image_url,
   public_accent_color,
   public_surface_color,
-  public_surface_text_color,
-  public_hero_text_color,
   public_display_name,
   public_description,
   public_logo_url,

@@ -24,6 +24,7 @@ import { SelectableItemDialog } from './selectable-item-dialog';
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 afterEach(() => {
+  vi.useRealTimers();
   document.body.innerHTML = '';
   document.body.style.overflow = '';
   document.body.style.overscrollBehavior = '';
@@ -125,6 +126,44 @@ describe('Panel', () => {
     expect(markup).toContain('Waarom dit telt');
     expect(markup).toContain('Rustige hulp voor koopbeslissingen.');
     expect(markup).toContain('Panel body');
+    expect(markup).not.toContain('lucide-chevron-right');
+  });
+
+  it('renders optional heading actions with a chevron', () => {
+    const handleHeadingClick = vi.fn();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <Panel
+          headingActionLabel="Bekijk alle winkels"
+          headingOnClick={handleHeadingClick}
+          title="3 winkels"
+        >
+          <p>Panel body</p>
+        </Panel>,
+      );
+    });
+
+    const headingButton = container.querySelector(
+      'h2 button[aria-label="Bekijk alle winkels"]',
+    ) as HTMLButtonElement | null;
+
+    expect(headingButton).not.toBeNull();
+    expect(headingButton?.textContent).toContain('3 winkels');
+    expect(headingButton?.querySelector('svg')).not.toBeNull();
+
+    act(() => {
+      headingButton?.click();
+    });
+
+    expect(handleHeadingClick).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      root.unmount();
+    });
   });
 });
 
@@ -256,7 +295,7 @@ describe('ResponsiveDialog', () => {
     });
   });
 
-  it('locks document scroll while open and restores the previous scroll position on close', async () => {
+  it('locks document scroll until the close transition finishes', async () => {
     const container = document.createElement('div');
     const scrollTo = vi.fn();
     document.body.appendChild(container);
@@ -314,6 +353,29 @@ describe('ResponsiveDialog', () => {
       );
     });
 
+    const closingPanel = document.body.querySelector(
+      '[data-responsive-dialog-panel="true"]',
+    );
+    const closingLayer = document.body.querySelector(
+      '[data-responsive-dialog-layer="true"]',
+    );
+
+    expect(closingPanel).not.toBeNull();
+    expect(closingLayer?.getAttribute('data-responsive-dialog-state')).toBe(
+      'closing',
+    );
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.body.style.overflow).toBe('hidden');
+
+    await act(async () => {
+      closingPanel?.dispatchEvent(
+        new Event('transitionend', { bubbles: true }),
+      );
+    });
+
+    expect(
+      document.body.querySelector('[data-responsive-dialog-panel="true"]'),
+    ).toBeNull();
     expect(document.documentElement.style.overflow).toBe('');
     expect(document.documentElement.style.overscrollBehavior).toBe('');
     expect(document.body.style.overflow).toBe('');
@@ -354,6 +416,14 @@ describe('ResponsiveDialog', () => {
       '100dvh - var(--responsive-dialog-sheet-top-offset)',
     );
     expect(css).toContain('--responsive-dialog-sheet-top-offset: 64px;');
+    expect(css).toContain('--responsive-dialog-open-duration: 380ms;');
+    expect(css).toContain('--responsive-dialog-close-duration: 260ms;');
+    expect(css).toContain('cubic-bezier(0.32, 0.72, 0, 1)');
+    expect(css).toContain('cubic-bezier(0.32, 0, 0.67, 0)');
+    expect(css).toContain("data-responsive-dialog-state='open'");
+    expect(css).toContain("data-responsive-dialog-state='closing'");
+    expect(css).toContain('transform: translateY(100%);');
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
     expect(css).toContain('overscroll-behavior: contain;');
     expect(css).toContain('touch-action: none;');
   });

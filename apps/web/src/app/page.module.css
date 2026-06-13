@@ -3,58 +3,6 @@
   gap: var(--lego-page-section-gap, var(--lego-space-6));
 }
 
-.discoveryTileSection {
-  padding-block: var(--lego-space-5);
-}
-
-.discoveryTileHeading {
-  max-width: 42rem;
-}
-
-.discoveryTileViewport {
-  -webkit-overflow-scrolling: touch;
-  margin-inline: calc(
-    -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
-  );
-  overflow-x: auto;
-  padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
-    var(--lego-space-1);
-  overscroll-behavior-x: contain;
-  scroll-padding-inline: var(
-    --catalog-section-inline-padding,
-    var(--lego-space-4)
-  );
-  scrollbar-width: none;
-}
-
-.discoveryTileViewport::-webkit-scrollbar {
-  display: none;
-}
-
-.discoveryTileTrack {
-  display: flex;
-  gap: var(--lego-space-2);
-  margin: 0;
-  scroll-behavior: smooth;
-  scroll-snap-type: x proximity;
-  touch-action: pan-x pan-y;
-}
-
-.discoveryTileTrack::after {
-  content: '';
-  flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
-}
-
-.discoveryTileTrack > * {
-  flex: 0 0 min(10rem, calc(100% - var(--lego-space-6)));
-  min-width: 0;
-  scroll-snap-align: start;
-}
-
-.discoveryTile {
-  min-width: 0;
-}
-
 .valueSection {
   display: grid;
   gap: var(--lego-space-4);
@@ -108,28 +56,7 @@
 }
 
 @media (min-width: 48rem) {
-  .discoveryTileTrack > * {
-    flex-basis: min(13rem, calc(100% - var(--lego-space-6)));
-  }
-
   .valueGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 75rem) {
-  .discoveryTileViewport {
-    margin-inline: 0;
-    overflow: visible;
-    padding: 0;
-    scroll-padding-inline: 0;
-  }
-
-  .discoveryTileTrack > * {
-    flex: 1 1 0;
-  }
-
-  .discoveryTileTrack::after {
-    content: none;
   }
 }

@@ -4,6 +4,7 @@ import type {
   ImgHTMLAttributes,
   ReactNode,
 } from 'react';
+import { ChevronRight } from 'lucide-react';
 import {
   ActionLink,
   Breadcrumbs,
@@ -11,6 +12,7 @@ import {
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import styles from './catalog-ui.module.css';
 
 function joinClasses(
@@ -32,7 +34,6 @@ export type HeroButtonSurface = 'dark' | 'light';
 
 export interface HeroButtonToneInput {
   backgroundColor?: string;
-  textColor?: string;
 }
 
 export interface CatalogIntroPanelSection {
@@ -81,77 +82,12 @@ const catalogSectionShellBodySpacingClasses: Record<
   relaxed: styles.sectionShellBodyRelaxed,
 };
 
-function parseHeroHexColor(
-  color?: string,
-): [red: number, green: number, blue: number] | undefined {
-  const normalizedColor = color?.trim().toLowerCase();
-
-  if (!normalizedColor) {
-    return undefined;
-  }
-
-  const shortHexMatch = normalizedColor.match(
-    /^#([0-9a-f])([0-9a-f])([0-9a-f])$/u,
-  );
-
-  if (shortHexMatch) {
-    return [
-      parseInt(`${shortHexMatch[1]}${shortHexMatch[1]}`, 16),
-      parseInt(`${shortHexMatch[2]}${shortHexMatch[2]}`, 16),
-      parseInt(`${shortHexMatch[3]}${shortHexMatch[3]}`, 16),
-    ];
-  }
-
-  const hexMatch = normalizedColor.match(
-    /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/u,
-  );
-
-  if (!hexMatch) {
-    return undefined;
-  }
-
-  return [
-    parseInt(hexMatch[1], 16),
-    parseInt(hexMatch[2], 16),
-    parseInt(hexMatch[3], 16),
-  ];
-}
-
-function getHeroRelativeLuminance([red, green, blue]: [
-  red: number,
-  green: number,
-  blue: number,
-]): number {
-  const [linearRed, linearGreen, linearBlue] = [red, green, blue].map(
-    (channel) => {
-      const normalizedChannel = channel / 255;
-
-      return normalizedChannel <= 0.03928
-        ? normalizedChannel / 12.92
-        : ((normalizedChannel + 0.055) / 1.055) ** 2.4;
-    },
-  );
-
-  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
-}
-
 export function getHeroButtonTone({
   backgroundColor,
-  textColor,
 }: HeroButtonToneInput = {}): HeroActionVariant {
-  const foreground = parseHeroHexColor(textColor);
+  const foreground = getAccessibleForegroundColor(backgroundColor);
 
-  if (foreground) {
-    return getHeroRelativeLuminance(foreground) > 0.56 ? 'white' : 'black';
-  }
-
-  const background = parseHeroHexColor(backgroundColor);
-
-  if (!background) {
-    return 'black';
-  }
-
-  return getHeroRelativeLuminance(background) < 0.42 ? 'white' : 'black';
+  return foreground === '#ffffff' ? 'white' : 'black';
 }
 
 export function getHeroButtonSurface(
@@ -165,8 +101,12 @@ export function CatalogSectionHeader({
   actionClassName,
   className,
   description,
+  headingActionLabel,
   headingClassName,
+  headingHref,
+  headingOnClick,
   headingTone = 'default',
+  showHeadingChevron = true,
   signal,
   signalClassName,
   title,
@@ -181,8 +121,12 @@ export function CatalogSectionHeader({
   className?: string;
   description?: ReactNode;
   eyebrow?: string;
+  headingActionLabel?: string;
   headingClassName?: string;
+  headingHref?: string;
+  headingOnClick?: () => void;
   headingTone?: 'default' | 'display';
+  showHeadingChevron?: boolean;
   signal?: ReactNode;
   signalClassName?: string;
   title: ReactNode;
@@ -194,6 +138,45 @@ export function CatalogSectionHeader({
 }) {
   const hasAside = Boolean(signal || (utility && utilityPlacement === 'aside'));
   const TitleTag = titleAs;
+  const isInteractiveHeading = Boolean(headingHref || headingOnClick);
+  const titleContent = isInteractiveHeading ? (
+    headingHref ? (
+      <a
+        aria-label={headingActionLabel}
+        className={styles.sectionHeaderTitleAction}
+        href={headingHref}
+      >
+        <span>{title}</span>
+        {showHeadingChevron ? (
+          <ChevronRight
+            aria-hidden="true"
+            className={styles.sectionHeaderTitleActionIcon}
+            size={18}
+            strokeWidth={2.35}
+          />
+        ) : null}
+      </a>
+    ) : (
+      <button
+        aria-label={headingActionLabel}
+        className={styles.sectionHeaderTitleAction}
+        onClick={() => headingOnClick?.()}
+        type="button"
+      >
+        <span>{title}</span>
+        {showHeadingChevron ? (
+          <ChevronRight
+            aria-hidden="true"
+            className={styles.sectionHeaderTitleActionIcon}
+            size={18}
+            strokeWidth={2.35}
+          />
+        ) : null}
+      </button>
+    )
+  ) : (
+    title
+  );
 
   return (
     <div
@@ -213,7 +196,9 @@ export function CatalogSectionHeader({
           )}
         >
           <div className={styles.sectionHeaderTitleRow}>
-            <TitleTag className={styles.sectionHeaderTitle}>{title}</TitleTag>
+            <TitleTag className={styles.sectionHeaderTitle}>
+              {titleContent}
+            </TitleTag>
             {action ? (
               <div
                 className={joinClasses(
@@ -349,9 +334,13 @@ export function CatalogSectionShell({
   description,
   headerClassName,
   headerTone,
+  headingActionLabel,
   headingClassName,
+  headingHref,
+  headingOnClick,
   headingTone = 'default',
   padding = 'default',
+  showHeadingChevron,
   signal,
   signalClassName,
   spacing = 'default',
@@ -374,9 +363,13 @@ export function CatalogSectionShell({
   eyebrow?: string;
   headerClassName?: string;
   headerTone?: CatalogSectionHeaderTone;
+  headingActionLabel?: string;
   headingClassName?: string;
+  headingHref?: string;
+  headingOnClick?: () => void;
   headingTone?: 'default' | 'display';
   padding?: CatalogSectionShellPadding;
+  showHeadingChevron?: boolean;
   signal?: ReactNode;
   signalClassName?: string;
   spacing?: CatalogSectionShellSpacing;
@@ -395,8 +388,12 @@ export function CatalogSectionShell({
         actionClassName={actionClassName}
         className={headerClassName}
         description={description}
+        headingActionLabel={headingActionLabel}
         headingClassName={headingClassName}
+        headingHref={headingHref}
+        headingOnClick={headingOnClick}
         headingTone={headingTone}
+        showHeadingChevron={showHeadingChevron}
         signal={signal}
         signalClassName={signalClassName}
         title={title}

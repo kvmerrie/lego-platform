@@ -93,3 +93,101 @@ export function getThemeToggleLabel(mode: ThemeMode): string {
     ? 'Schakel naar lichte modus'
     : 'Schakel naar donkere modus';
 }
+
+const ACCESSIBLE_FOREGROUND_DARK = '#05070d';
+const ACCESSIBLE_FOREGROUND_LIGHT = '#ffffff';
+
+function parseHexColor(
+  color?: string,
+): [red: number, green: number, blue: number] | undefined {
+  const normalizedColor = color?.trim().toLowerCase();
+
+  if (!normalizedColor) {
+    return undefined;
+  }
+
+  const shortHexMatch = normalizedColor.match(
+    /^#([0-9a-f])([0-9a-f])([0-9a-f])$/u,
+  );
+
+  if (shortHexMatch) {
+    return [
+      parseInt(`${shortHexMatch[1]}${shortHexMatch[1]}`, 16),
+      parseInt(`${shortHexMatch[2]}${shortHexMatch[2]}`, 16),
+      parseInt(`${shortHexMatch[3]}${shortHexMatch[3]}`, 16),
+    ];
+  }
+
+  const hexMatch = normalizedColor.match(
+    /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/u,
+  );
+
+  if (!hexMatch) {
+    return undefined;
+  }
+
+  return [
+    parseInt(hexMatch[1], 16),
+    parseInt(hexMatch[2], 16),
+    parseInt(hexMatch[3], 16),
+  ];
+}
+
+function getRelativeLuminance([red, green, blue]: [
+  red: number,
+  green: number,
+  blue: number,
+]): number {
+  const [linearRed, linearGreen, linearBlue] = [red, green, blue].map(
+    (channel) => {
+      const normalizedChannel = channel / 255;
+
+      return normalizedChannel <= 0.03928
+        ? normalizedChannel / 12.92
+        : ((normalizedChannel + 0.055) / 1.055) ** 2.4;
+    },
+  );
+
+  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
+}
+
+export function getAccessibleForegroundColor(
+  backgroundColor?: string,
+): string | undefined {
+  const background = parseHexColor(backgroundColor);
+
+  if (!background) {
+    return undefined;
+  }
+
+  const backgroundLuminance = getRelativeLuminance(background);
+  const darkForeground = parseHexColor(ACCESSIBLE_FOREGROUND_DARK);
+  const lightForeground = parseHexColor(ACCESSIBLE_FOREGROUND_LIGHT);
+
+  if (!darkForeground || !lightForeground) {
+    return ACCESSIBLE_FOREGROUND_DARK;
+  }
+
+  const darkContrast = getContrastRatio(
+    getRelativeLuminance(darkForeground),
+    backgroundLuminance,
+  );
+  const lightContrast = getContrastRatio(
+    getRelativeLuminance(lightForeground),
+    backgroundLuminance,
+  );
+
+  return darkContrast >= lightContrast
+    ? ACCESSIBLE_FOREGROUND_DARK
+    : ACCESSIBLE_FOREGROUND_LIGHT;
+}
+
+function getContrastRatio(
+  foregroundLuminance: number,
+  backgroundLuminance: number,
+): number {
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}

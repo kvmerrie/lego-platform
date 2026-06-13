@@ -170,13 +170,11 @@ function mapFavoriteThemeToRailCard(
   const backgroundColor = normalizeFavoriteThemeText(
     favoriteTheme.visual?.backgroundColor,
   );
-  const textColor = normalizeFavoriteThemeText(favoriteTheme.visual?.textColor);
   const visual =
-    backgroundColor || textColor || imageUrl
+    backgroundColor || imageUrl
       ? {
           ...(backgroundColor ? { backgroundColor } : {}),
           ...(imageUrl ? { imageUrl, tileImageUrl: imageUrl } : {}),
-          ...(textColor ? { textColor } : {}),
         }
       : undefined;
 
@@ -445,8 +443,7 @@ function CatalogFeatureFavoriteThemesRailContent({
               themeItem.themeSnapshot.signatureSet,
               themeItem.themeSnapshot.slug,
             ].join(' '),
-            swatchColor:
-              themeItem.visual?.backgroundColor ?? themeItem.visual?.textColor,
+            swatchColor: themeItem.visual?.backgroundColor,
           },
         ];
       }),

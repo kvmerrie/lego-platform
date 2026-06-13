@@ -247,7 +247,6 @@ describe('CatalogFeatureSetList', () => {
               name: 'Star Wars',
               slug: 'star-wars',
               surfaceColor: '#171717',
-              surfaceTextColor: '#ffffff',
             },
             releaseYear: 2026,
             pieces: 0,

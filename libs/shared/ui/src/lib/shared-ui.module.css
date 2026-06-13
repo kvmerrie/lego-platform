@@ -997,6 +997,47 @@
     margin: 0;
   }
 
+  .sectionTitleAction {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-radius: var(--lego-radius-sm);
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: 0.22rem;
+    letter-spacing: inherit;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+    text-align: inherit;
+    text-decoration: none;
+    touch-action: manipulation;
+  }
+
+  .sectionTitleAction:hover {
+    color: var(--lego-link);
+  }
+
+  .sectionTitleAction:focus-visible {
+    outline: 3px solid var(--lego-focus-ring);
+    outline-offset: 4px;
+  }
+
+  .sectionTitleActionIcon {
+    flex: 0 0 auto;
+    transform: translateX(0);
+    transition: transform var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .sectionTitleAction:hover .sectionTitleActionIcon,
+  .sectionTitleAction:focus-visible .sectionTitleActionIcon {
+    transform: translateX(0.12rem);
+  }
+
   .sectionHeadingDisplay .sectionTitle {
     font-size: var(--lego-text-role-display-size);
     font-weight: var(--lego-text-role-display-weight);
@@ -1315,6 +1356,10 @@
   .responsiveDialogLayer {
     align-items: center;
     --responsive-dialog-sheet-top-offset: 64px;
+    --responsive-dialog-open-duration: 380ms;
+    --responsive-dialog-close-duration: 260ms;
+    --responsive-dialog-open-easing: cubic-bezier(0.32, 0.72, 0, 1);
+    --responsive-dialog-close-easing: cubic-bezier(0.32, 0, 0.67, 0);
     display: grid;
     inset: 0;
     justify-items: center;
@@ -1329,9 +1374,12 @@
     border: 0;
     cursor: pointer;
     inset: 0;
+    opacity: 0;
     padding: 0;
     position: fixed;
     touch-action: none;
+    transition: opacity var(--responsive-dialog-open-duration)
+      var(--responsive-dialog-open-easing);
   }
 
   .responsiveDialogPanel {
@@ -1344,9 +1392,43 @@
     max-block-size: min(82vh, 48rem);
     max-inline-size: min(42rem, 100%);
     min-inline-size: min(36rem, 100%);
+    opacity: 0;
     overflow: hidden;
     position: relative;
+    transform: translateY(0.75rem) scale(0.985);
+    transform-origin: center bottom;
+    transition:
+      transform var(--responsive-dialog-open-duration)
+        var(--responsive-dialog-open-easing),
+      opacity 180ms ease-out;
+    will-change: transform, opacity;
     width: 100%;
+  }
+
+  .responsiveDialogLayer[data-responsive-dialog-state='open']
+    .responsiveDialogBackdrop {
+    opacity: 1;
+  }
+
+  .responsiveDialogLayer[data-responsive-dialog-state='closing']
+    .responsiveDialogBackdrop {
+    opacity: 0;
+    transition-duration: var(--responsive-dialog-close-duration);
+    transition-timing-function: var(--responsive-dialog-close-easing);
+  }
+
+  .responsiveDialogLayer[data-responsive-dialog-state='open']
+    .responsiveDialogPanel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .responsiveDialogLayer[data-responsive-dialog-state='closing']
+    .responsiveDialogPanel {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.985);
+    transition-duration: var(--responsive-dialog-close-duration), 160ms;
+    transition-timing-function: var(--responsive-dialog-close-easing), ease-in;
   }
 
   .responsiveDialogHeader {
@@ -1535,6 +1617,20 @@
       max-block-size: calc(100dvh - var(--responsive-dialog-sheet-top-offset));
       max-inline-size: 100%;
       min-inline-size: 0;
+      opacity: 1;
+      transform: translateY(100%);
+      transform-origin: center bottom;
+    }
+
+    .responsiveDialogLayer[data-responsive-dialog-state='open']
+      .responsiveDialogPanel {
+      transform: translateY(0);
+    }
+
+    .responsiveDialogLayer[data-responsive-dialog-state='closing']
+      .responsiveDialogPanel {
+      opacity: 1;
+      transform: translateY(100%);
     }
 
     .responsiveDialogHeader {
@@ -1544,6 +1640,24 @@
     .responsiveDialogBody {
       overscroll-behavior: contain;
       padding: var(--lego-space-3) var(--lego-space-4) var(--lego-space-4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .responsiveDialogBackdrop,
+    .responsiveDialogPanel,
+    .responsiveDialogLayer[data-responsive-dialog-state='closing']
+      .responsiveDialogBackdrop,
+    .responsiveDialogLayer[data-responsive-dialog-state='closing']
+      .responsiveDialogPanel {
+      transition-duration: 1ms;
+      transition-timing-function: linear;
+    }
+
+    .responsiveDialogPanel,
+    .responsiveDialogLayer[data-responsive-dialog-state='closing']
+      .responsiveDialogPanel {
+      transform: none;
     }
   }
 

@@ -88,27 +88,21 @@ export interface CatalogCollectionLandingPageConfig {
 export const catalogDiscoveryVisualVariants = {
   adultCollectors: {
     backgroundColor: '#08636f',
-    textColor: '#ffffff',
   },
   deals: {
     backgroundColor: '#00a99d',
-    textColor: '#062927',
   },
   newReleases: {
     backgroundColor: '#3aaee8',
-    textColor: '#08243a',
   },
   popularThemes: {
     backgroundColor: '#8758d8',
-    textColor: '#ffffff',
   },
   retiringSoon: {
     backgroundColor: '#f28c28',
-    textColor: '#281400',
   },
   under50: {
     backgroundColor: '#35b765',
-    textColor: '#062817',
   },
 } as const satisfies Record<string, CatalogThemeVisual>;
 
@@ -362,17 +356,12 @@ export function applyCatalogCollectionPresentation({
   const imageUrl = presentation.publicImageUrl?.trim();
   const accentColor = presentation.publicAccentColor?.trim();
   const surfaceColor = presentation.publicSurfaceColor?.trim();
-  const surfaceTextColor = presentation.publicSurfaceTextColor?.trim();
-  const heroTextColor = presentation.publicHeroTextColor?.trim();
   const visual =
-    imageUrl || accentColor || surfaceColor || surfaceTextColor || heroTextColor
+    imageUrl || accentColor || surfaceColor
       ? {
           ...config.visual,
           ...(accentColor ? { accentColor } : {}),
           ...(surfaceColor ? { backgroundColor: surfaceColor } : {}),
-          ...((heroTextColor ?? surfaceTextColor)
-            ? { textColor: heroTextColor ?? surfaceTextColor }
-            : {}),
           ...(imageUrl ? { imageUrl } : {}),
         }
       : config.visual;

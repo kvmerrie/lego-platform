@@ -222,13 +222,11 @@ export interface CatalogCollectionPresentation {
   publicAccentColor?: string | null;
   publicDescription?: string | null;
   publicDisplayName?: string | null;
-  publicHeroTextColor?: string | null;
   publicHomepageOrder?: number | null;
   publicImageUrl?: string | null;
   publicLogoUrl?: string | null;
   publicOrder?: number | null;
   publicSurfaceColor?: string | null;
-  publicSurfaceTextColor?: string | null;
   publicTileImageUrl?: string | null;
   status: string;
   updatedAt?: string | null;
@@ -278,12 +276,10 @@ export interface CatalogThemeIdentity {
 
 export interface CatalogPublicThemeReference {
   accentColor?: string;
-  heroTextColor?: string;
   logoUrl?: string;
   name: string;
   slug: string;
   surfaceColor?: string;
-  surfaceTextColor?: string;
 }
 
 export interface CatalogSetDetail extends CatalogSetSummary {
@@ -661,7 +657,6 @@ export interface CatalogThemeSnapshot {
 export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
-  textColor?: string;
   tileImageUrl?: string;
 }
 
@@ -1417,25 +1412,6 @@ export function getCatalogThemeDefinition(
 ): CatalogThemeDefinition | undefined {
   void themeName;
   return undefined;
-}
-
-function usesLightCatalogThemeText(textColor?: string): boolean {
-  const normalizedTextColor = textColor?.trim().toLowerCase();
-
-  return Boolean(
-    normalizedTextColor &&
-      [
-        '#fff',
-        '#ffffff',
-        'white',
-        'rgb(255, 255, 255)',
-        'rgb(255,255,255)',
-      ].includes(normalizedTextColor),
-  );
-}
-
-export function getCatalogThemeMutedTextColor(textColor?: string): string {
-  return usesLightCatalogThemeText(textColor) ? '#f4f7fb' : '#425066';
 }
 
 export function getCatalogThemeSurfaceTone(

@@ -21,6 +21,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { ActionLink } from '@lego-platform/shared/ui';
+import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
 import styles from './catalog-feature-collection-landing.module.css';
 
 export interface CatalogCollectionLandingPageLink {
@@ -102,16 +103,19 @@ export function CatalogFeatureCollectionLandingPage({
   const hasSortOptions = config.sort.options.length > 1;
   const heroButtonTone = getHeroButtonTone(config.visual);
   const heroButtonSurface = getHeroButtonSurface(config.visual);
+  const introTextColor = getAccessibleForegroundColor(
+    config.visual?.backgroundColor,
+  );
   const introStyle = {
     ...(config.visual?.backgroundColor
       ? {
           '--collection-page-surface': config.visual.backgroundColor,
         }
       : {}),
-    ...(config.visual?.textColor
+    ...(introTextColor
       ? {
-          '--collection-page-muted': config.visual.textColor,
-          '--collection-page-text': config.visual.textColor,
+          '--collection-page-muted': introTextColor,
+          '--collection-page-text': introTextColor,
         }
       : {}),
   } as CSSProperties;

@@ -60,6 +60,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   }: {
     bestDeal?: {
       ctaLabel?: string;
+      ctaTone?: string;
       decisionLabel?: string;
       decisionTone?: string;
       merchantLabel?: string;
@@ -82,6 +83,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
     };
     offerList?: readonly {
       ctaLabel?: string;
+      isBest?: boolean;
       merchantLabel?: string;
       rankingLabel?: string;
     }[];
@@ -124,6 +126,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             },
             bestDeal.decisionLabel,
             bestDeal.rankingLabel,
+            bestDeal.ctaTone,
             bestDeal.ctaLabel,
             bestDeal.merchantLabel,
           )
@@ -135,7 +138,11 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             ...offerList.map((offer, index) =>
               createElement(
                 'li',
-                { key: index },
+                {
+                  'data-is-best': offer.isBest ? 'true' : 'false',
+                  'data-merchant': offer.merchantLabel,
+                  key: index,
+                },
                 offer.ctaLabel,
                 offer.merchantLabel,
                 offer.rankingLabel,
@@ -193,6 +200,8 @@ async function renderToStreamedMarkup(element: ReactElement) {
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: ({
     className,
+    headingActionLabel,
+    headingHref,
     railLayoutMode,
     setCards,
     style,
@@ -200,6 +209,8 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
     title,
   }: {
     className?: string;
+    headingActionLabel?: string;
+    headingHref?: string;
     railLayoutMode?: string;
     setCards: readonly { slug: string; name: string }[];
     style?: Record<string, string>;
@@ -215,7 +226,19 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
         'data-testid': 'set-list',
         style,
       },
-      title ? createElement('h2', null, title) : null,
+      title
+        ? createElement(
+            'h2',
+            null,
+            headingHref
+              ? createElement(
+                  'a',
+                  { 'aria-label': headingActionLabel, href: headingHref },
+                  title,
+                )
+              : title,
+          )
+        : null,
       ...setCards.map((setCard) =>
         createElement(
           'a',
@@ -409,7 +432,6 @@ describe('set detail static generation', () => {
         name: 'Star Wars',
         slug: 'star-wars',
         surfaceColor: '#112244',
-        surfaceTextColor: '#ffffff',
       },
       releaseYear: 2023,
       slug: 'x-wing-starfighter-75355',
@@ -491,7 +513,6 @@ describe('set detail static generation', () => {
             name: 'Star Wars',
             slug: 'star-wars',
             surfaceColor: '#112244',
-            surfaceTextColor: '#ffffff',
           },
           releaseYear: 2023,
           slug: 'x-wing-starfighter-75355',
@@ -511,6 +532,7 @@ describe('set detail static generation', () => {
     expect(railHtml).toContain('data-rail-layout-mode="default"');
     expect(railHtml).toContain('Verder ontdekken');
     expect(railHtml).toContain('href="/nieuwe-lego-sets"');
+    expect(railHtml).toContain('aria-label="Bekijk alle Star Wars-sets"');
     expect(railHtml).toContain('href="/themes/star-wars"');
     expect(railHtml).toContain('href="/lego-voor-volwassenen"');
     expect(railHtml).toContain('data-surface-variant="themed"');
@@ -521,6 +543,23 @@ describe('set detail static generation', () => {
     ).toHaveBeenCalledWith({
       setId: '75355',
     });
+  });
+
+  it('only builds related theme heading links for valid theme paths', async () => {
+    const pageModule = await import('./page');
+
+    expect(
+      pageModule.getSetDetailThemeHref({
+        publicTheme: { slug: '../star-wars' },
+        theme: 'Star Wars',
+      }),
+    ).toBe('/themes/star-wars');
+    expect(
+      pageModule.getSetDetailThemeHref({
+        publicTheme: { slug: '../star-wars' },
+        theme: '////',
+      }),
+    ).toBeUndefined();
   });
 
   it('keys set detail cache by Brickset gallery render mode', async () => {
@@ -548,7 +587,6 @@ describe('set detail static generation', () => {
         name: 'Icons',
         slug: 'icons',
         surfaceColor: '#112244',
-        surfaceTextColor: '#ffffff',
       },
       releaseYear: 2022,
       slug: 'eiffel-tower-10307',
@@ -1616,11 +1654,98 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('data-testid="best-deal"');
     expect(html).toContain('data-tone="positive"');
-    expect(html).toContain('Goede deal');
-    expect(html).toContain('€ 50,00 goedkoper dan de rest');
+    expect(html).toContain('Bespaar tot €50');
+    expect(html).toContain('€50 onder LEGO prijs');
+    expect(html).toContain('accent');
   });
 
-  it('keeps a cheaper excluded merchant as lowest price while recommending a trusted best deal', async () => {
+  it('uses the LEGO merchant offer price as hero deal reference when the snapshot reference is missing', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '76454',
+      imageUrl: 'https://cdn.example.com/76454.jpg',
+      name: 'Hogwarts Castle: The Main Tower',
+      pieces: 2135,
+      releaseYear: 2025,
+      slug: 'hogwarts-castle-the-main-tower-76454',
+      theme: 'Harry Potter',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-06-12T18:06:01.670Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'other',
+        merchantName: 'Coolblue',
+        merchantSlug: 'coolblue',
+        priceCents: 17900,
+        setId: '76454',
+        url: 'https://partner.example/76454-coolblue',
+      },
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-06-12T18:46:06.947Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        merchantSlug: 'rakuten-lego-eu',
+        priceCents: 24999,
+        setId: '76454',
+        url: 'https://partner.example/76454-lego',
+      },
+    ]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-06-12T18:06:01.670Z',
+            currency: 'EUR',
+            merchant: 'other',
+            merchantName: 'Coolblue',
+            merchantSlug: 'coolblue',
+            priceCents: 17900,
+            url: 'https://partner.example/76454-coolblue',
+          },
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-06-12T18:46:06.947Z',
+            currency: 'EUR',
+            merchant: 'lego',
+            merchantName: 'LEGO',
+            merchantSlug: 'rakuten-lego-eu',
+            priceCents: 24999,
+            url: 'https://partner.example/76454-lego',
+          },
+        ],
+        setId: '76454',
+      }),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'hogwarts-castle-the-main-tower-76454',
+        }),
+      }),
+    );
+
+    expect(html).toContain('data-testid="best-deal"');
+    expect(html).toContain('data-tone="positive"');
+    expect(html).toContain('Bespaar tot €70');
+    expect(html).toContain('€70 onder LEGO prijs');
+    expect(html).toContain('accent');
+  });
+
+  it('marks the cheaper offer-list merchant as best while keeping the trusted hero deal', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '60443',
       imageUrl: 'https://cdn.example.com/60443.jpg',
@@ -1695,8 +1820,12 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('Bekijk deal bij Lidl');
     expect(html).toContain('Bij Lidl');
+    expect(html).toContain('data-tone="neutral"');
+    expect(html).toContain('accent');
     expect(html).toContain('€ 3,59 boven laagste prijs');
     expect(html).toContain('Joybuy');
+    expect(html).toMatch(/data-is-best="true" data-merchant="Joybuy"/);
+    expect(html).toMatch(/data-is-best="false" data-merchant="Lidl"/);
     expect(html).toContain('Laagste prijs');
     expect(html).not.toContain('Zelfde prijs als de beste optie');
   });
@@ -1821,7 +1950,6 @@ describe('set detail page JSON-LD', () => {
         name: 'Star Wars',
         slug: 'star-wars',
         surfaceColor: '#171717',
-        surfaceTextColor: '#ffffff',
       },
       releaseYear: 2026,
       slug: 'darth-vader-bust-75439',
@@ -1884,6 +2012,7 @@ describe('set detail page JSON-LD', () => {
       'href="/sets/up-scaled-darth-vader-minifigure-75461"',
     );
     expect(html).toContain('href="/nieuwe-lego-sets"');
+    expect(html).toContain('aria-label="Bekijk alle Star Wars-sets"');
     expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('Recent bekeken LEGO sets');
     expect(html).toContain('data-rail-layout-mode="default"');

@@ -195,20 +195,41 @@ describe('Catalog commerce UI', () => {
         primaryOffer={{
           checkedLabel: 'Vandaag om 07:01',
           coverageLabel: '5 winkels nagekeken',
-          decisionHelper: 'We volgen deze set zodra er voorraad terugkomt.',
+          decisionHelper:
+            'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
           decisionLabel: 'Nog geen deal',
-          decisionTone: 'neutral',
-          merchantLabel: 'Nog geen deal',
+          decisionTone: 'warning',
+          merchantLabel: 'Prijsbeeld bouwt nog op',
           price: 'Nog geen actuele prijs',
-          stockLabel: 'Nog geen voorraad',
+          stockLabel: 'Prijsbeeld bouwt nog op',
         }}
       />,
     );
 
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Nog geen deal');
+    expect(markup).toContain('data-tone="warning"');
+    expect(markup).toContain(
+      'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
+    );
     expect(markup).not.toContain('target="_blank"');
     expect(markup).not.toContain('data-brickhunt-event="offer_click"');
+  });
+
+  it('renders the empty best-deal fallback as a warm follow-price card', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPanel
+        followAction={<button type="button">Volg prijs</button>}
+      />,
+    );
+
+    expect(markup).toContain('data-tone="warning"');
+    expect(markup).toContain('Nog geen deal');
+    expect(markup).toContain('Prijsbeeld bouwt nog op.');
+    expect(markup).toContain(
+      'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
+    );
+    expect(markup).toContain('Volg prijs');
   });
 
   it('renders a comparison fallback when only one reviewed offer is available', () => {
@@ -237,7 +258,7 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('1 winkel nagekeken · 2 apr om 09:00');
   });
 
-  it('renders a compact comparison rail with a view-all action', () => {
+  it('renders a compact comparison rail with an interactive heading action', () => {
     const markup = renderToStaticMarkup(
       <CatalogOfferComparison
         id="set-offers"
@@ -315,8 +336,8 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('offerRole');
     expect(markup).toContain('alternative');
     expect(markup).toContain('rankPosition');
-    expect(markup).toContain('Bekijk alle winkels');
     expect(markup).toContain('aria-label="Vergelijk alle 2 winkels"');
+    expect(markup).toContain('lucide-chevron-right');
   });
 
   it('shows all offers when the comparison has at most twenty shops', () => {
@@ -404,8 +425,8 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('Nu bij 8 winkels');
     expect(markup).not.toContain('Nu bij 8 van 8 winkels');
-    expect(markup).toContain('Bekijk alle winkels');
     expect(markup).toContain('aria-label="Vergelijk alle 8 winkels"');
+    expect(markup).toContain('lucide-chevron-right');
     expect(markup).toContain('LEGO');
     expect(markup).toContain('Top1Toys');
     expect(markup).toContain('MisterBricks');
@@ -436,8 +457,8 @@ describe('Catalog commerce UI', () => {
     );
 
     expect(markup).toContain('Nu bij 20 van 21 winkels');
-    expect(markup).toContain('Bekijk alle winkels');
     expect(markup).toContain('aria-label="Vergelijk alle 21 winkels"');
+    expect(markup).toContain('lucide-chevron-right');
     expect(markup).toContain('Shop 20');
     expect(markup).not.toContain('Shop 21');
   });
@@ -508,7 +529,7 @@ describe('Catalog commerce UI', () => {
     expect(fallbackPresentation.railCheckedTitle).toBe('Nagekeken onbekend');
   });
 
-  it('marks exact price ties as secondary alternatives', () => {
+  it('marks exact price ties as shared best deals', () => {
     const presentation = buildCompactOfferPresentation({
       comparisonContext: {
         bestPriceMinor: 104995,
@@ -527,11 +548,12 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.deltaLabel).toBe('Zelfde prijs');
-    expect(presentation.priceComparisonState).toBe('same');
+    expect(presentation.confidenceLabel).toBe('Laagste prijs');
+    expect(presentation.isBestDeal).toBe(true);
+    expect(presentation.priceComparisonState).toBe('best');
   });
 
-  it('keeps lowest-price alternatives distinct from recommended best deals', () => {
+  it('uses the lowest current price as the best deal instead of a recommended flag', () => {
     const comparisonContext = buildCompactOfferComparisonContext([
       {
         checkedLabel: 'Nagekeken 2 apr, 09:00',
@@ -579,10 +601,17 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(joybuyPresentation.deltaLabel).toBe('Laagste prijs');
-    expect(joybuyPresentation.priceComparisonState).toBe('same');
-    expect(lidlPresentation.confidenceLabel).toBe('€3,59 boven laagste prijs');
-    expect(lidlPresentation.priceComparisonState).toBe('best');
+    expect(joybuyPresentation.actionLabel).toBe('Bekijk deal');
+    expect(joybuyPresentation.confidenceLabel).toBe(
+      '€3,59 goedkoper dan de rest',
+    );
+    expect(joybuyPresentation.isBestDeal).toBe(true);
+    expect(joybuyPresentation.priceComparisonState).toBe('best');
+    expect(lidlPresentation.actionLabel).toBe('Naar winkel');
+    expect(lidlPresentation.confidenceLabel).toBeUndefined();
+    expect(lidlPresentation.deltaLabel).toBe('€3,59 duurder');
+    expect(lidlPresentation.isBestDeal).toBe(false);
+    expect(lidlPresentation.priceComparisonState).toBe('higher');
   });
 
   it('shows the savings versus the next-best reviewed offer on the best card without an extra label', () => {

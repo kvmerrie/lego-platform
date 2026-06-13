@@ -27,6 +27,7 @@ import {
   buildTrackedPriceSummary,
   DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
   getFeaturedSetPriceContext,
+  getHeroDealPresentation,
   getSetDealVerdict,
   getReviewedPriceSummary,
   listDealSpotlightPriceContexts,
@@ -245,6 +246,118 @@ describe('pricing data access', () => {
         label: 'Actuele prijzen binnen',
         tone: 'info',
       },
+    });
+  });
+
+  describe('getHeroDealPresentation', () => {
+    test('builds a warm card when reliable price data is missing', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: undefined,
+          referencePriceMinor: 19999,
+        }),
+      ).toEqual({
+        classification: 'missing_price',
+        ctaTone: 'secondary',
+        helper: 'Prijsbeeld bouwt nog op.',
+        label: 'Nog geen deal',
+        tone: 'warning',
+      });
+
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 15999,
+          hasReliableCurrentPrice: false,
+          referencePriceMinor: 19999,
+        }),
+      ).toMatchObject({
+        classification: 'missing_price',
+        ctaTone: 'secondary',
+        tone: 'warning',
+      });
+    });
+
+    test('keeps prices around LEGO/list price neutral', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 19999,
+          referencePriceMinor: 19999,
+        }),
+      ).toMatchObject({
+        classification: 'neutral',
+        ctaTone: 'accent',
+        helper: 'Laagste prijs die we nu vinden.',
+        label: 'Actuele prijs',
+        savingsMinor: 0,
+        savingsPercentage: 0,
+        tone: 'neutral',
+      });
+    });
+
+    test('keeps small discounts below the deal threshold neutral', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 19699,
+          referencePriceMinor: 19999,
+        }),
+      ).toMatchObject({
+        classification: 'neutral',
+        ctaTone: 'accent',
+        savingsMinor: 300,
+        tone: 'neutral',
+      });
+    });
+
+    test('classifies meaningful LEGO/list price discounts as green good deals', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 14499,
+          referencePriceMinor: 15999,
+        }),
+      ).toMatchObject({
+        classification: 'good_deal',
+        ctaTone: 'accent',
+        helper: 'Nu goedkoper dan bij LEGO.',
+        label: 'Goede deal',
+        rankingLabel: '€15 onder LEGO prijs',
+        savingsMinor: 1500,
+        tone: 'positive',
+      });
+    });
+
+    test('classifies a €70 LEGO/list price discount as a green great deal', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 12999,
+          referencePriceMinor: 19999,
+        }),
+      ).toMatchObject({
+        classification: 'great_deal',
+        ctaTone: 'accent',
+        helper: 'Nu goedkoper dan bij LEGO.',
+        label: 'Bespaar tot €70',
+        rankingLabel: '€70 onder LEGO prijs',
+        savingsMinor: 7000,
+        tone: 'positive',
+      });
+    });
+
+    test('uses the official LEGO offer price as a reference fallback', () => {
+      expect(
+        getHeroDealPresentation({
+          currentPriceMinor: 17900,
+          legoOfferPriceMinor: 24999,
+          referencePriceMinor: undefined,
+        }),
+      ).toMatchObject({
+        classification: 'great_deal',
+        ctaTone: 'accent',
+        helper: 'Nu goedkoper dan bij LEGO.',
+        label: 'Bespaar tot €70',
+        rankingLabel: '€70 onder LEGO prijs',
+        savingsMinor: 7099,
+        tone: 'positive',
+      });
     });
   });
 

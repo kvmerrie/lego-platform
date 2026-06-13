@@ -177,6 +177,20 @@ describe('ProductReviewsSection', () => {
     });
   }
 
+  async function finishResponsiveDialogClose() {
+    const dialog = document.body.querySelector(
+      '[data-responsive-dialog-panel="true"]',
+    );
+
+    expect(dialog?.getAttribute('data-responsive-dialog-state')).toBe(
+      'closing',
+    );
+
+    await act(async () => {
+      dialog?.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+  }
+
   it('renders the product-detail accordion layout instead of the old card header', () => {
     const markup = renderProductReviewsSection({
       reviews: [approvedReview],
@@ -425,6 +439,10 @@ describe('ProductReviewsSection', () => {
       reviewText: '',
       valueForMoneyRating: null,
     });
+    expect(document.body.textContent).toContain('Schrijf je recensie');
+
+    await finishResponsiveDialogClose();
+
     expect(document.body.textContent).not.toContain('Schrijf je recensie');
   });
 
@@ -610,10 +628,7 @@ describe('ProductReviewsSection', () => {
   });
 
   it('uses detail-section line styling instead of a large bordered card shell', () => {
-    const css = readFileSync(
-      'libs/reviews/ui/src/lib/reviews-ui.module.css',
-      'utf8',
-    );
+    const css = readFileSync('src/lib/reviews-ui.module.css', 'utf8');
     const sectionRule = css.match(/\.productReviewsSection\s*\{[^}]+}/)?.[0];
 
     expect(css).not.toContain('.productReviewsDisclosure');

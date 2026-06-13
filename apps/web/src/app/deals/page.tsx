@@ -11,6 +11,7 @@ import {
   CatalogSetCard,
   CatalogSetCardCollection,
   CatalogVisualTile,
+  CatalogVisualTileRail,
 } from '@lego-platform/catalog/ui';
 import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 import {
@@ -44,7 +45,6 @@ interface DealSortViewConfig {
   visual: {
     backgroundColor: string;
     imageUrl?: string;
-    textColor: string;
   };
 }
 
@@ -62,7 +62,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#3aaee8',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/76454-1/155297.jpg',
-      textColor: '#08243a',
     },
   },
   {
@@ -78,7 +77,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#35b765',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75416-1/154252.jpg',
-      textColor: '#062817',
     },
   },
   {
@@ -94,7 +92,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#00a99d',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/77071-1/143092.jpg',
-      textColor: '#062927',
     },
   },
   {
@@ -110,7 +107,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#f28c28',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/31165-1/149769.jpg',
-      textColor: '#281400',
     },
   },
   {
@@ -126,7 +122,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#8758d8',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/43269-1/155014.jpg',
-      textColor: '#ffffff',
     },
   },
   {
@@ -142,7 +137,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#f5c542',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/77244-1/148260.jpg',
-      textColor: '#2b2100',
     },
   },
   {
@@ -158,7 +152,6 @@ const dealSortViewConfigs = [
     visual: {
       backgroundColor: '#16213b',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10350-1/149051.jpg',
-      textColor: '#ffffff',
     },
   },
   {
@@ -173,7 +166,6 @@ const dealSortViewConfigs = [
     title: 'Beste LEGO prijs per steen',
     visual: {
       backgroundColor: '#00a99d',
-      textColor: '#062927',
     },
   },
   {
@@ -184,12 +176,11 @@ const dealSortViewConfigs = [
       'Bekijk LEGO deals met de grootste korting uit de actuele deal-snapshot.',
     metadataTitle: 'Grootste LEGO korting',
     sortKey: 'largest-discount',
-    tileTitle: 'Grootste korting',
+    tileTitle: 'Beste deal',
     title: 'Grootste LEGO korting',
     visual: {
       backgroundColor: '#35b765',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75416-1/154252.jpg',
-      textColor: '#062817',
     },
   },
 ] as const satisfies readonly DealSortViewConfig[];
@@ -457,41 +448,28 @@ export async function renderDealsPage({
 
         <CatalogSectionShell
           as="section"
-          className={styles.discoveryTileSection}
-          headingClassName={styles.discoveryTileHeading}
           title="Ontdek deals op jouw manier"
           titleAs="h2"
           tone="inverse"
         >
-          <nav
-            aria-label="Deal categorieen"
-            className={styles.discoveryTileViewport}
-          >
-            <div className={styles.discoveryTileTrack}>
-              {dealDiscoverySortKeys.map((dealSortKey) => {
-                const config = getDealSortConfig(dealSortKey);
-                const isActive = isDealDiscoverySortActive(
-                  dealSortKey,
-                  sortKey,
-                );
+          <CatalogVisualTileRail ariaLabel="Deal categorieen" as="nav">
+            {dealDiscoverySortKeys.map((dealSortKey) => {
+              const config = getDealSortConfig(dealSortKey);
+              const isActive = isDealDiscoverySortActive(dealSortKey, sortKey);
 
-                return (
-                  <CatalogVisualTile
-                    ariaCurrent={isActive ? 'page' : undefined}
-                    className={`${styles.discoveryTile}${
-                      isActive ? ` ${styles.discoveryTileActive}` : ''
-                    }`}
-                    dataTile={dealSortKey}
-                    href={getDealDiscoveryHref(dealSortKey)}
-                    key={dealSortKey}
-                    meta={isActive ? 'Actief' : config.label}
-                    title={config.tileTitle}
-                    visual={config.visual}
-                  />
-                );
-              })}
-            </div>
-          </nav>
+              return (
+                <CatalogVisualTile
+                  ariaCurrent={isActive ? 'page' : undefined}
+                  dataTile={dealSortKey}
+                  href={getDealDiscoveryHref(dealSortKey)}
+                  key={dealSortKey}
+                  meta={config.label}
+                  title={config.tileTitle}
+                  visual={config.visual}
+                />
+              );
+            })}
+          </CatalogVisualTileRail>
         </CatalogSectionShell>
 
         <CatalogSectionShell

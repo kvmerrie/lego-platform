@@ -57,13 +57,11 @@ interface CatalogBootstrapThemeRow {
   public_accent_color: string | null;
   public_description: string | null;
   public_display_name: string | null;
-  public_hero_text_color: string | null;
   public_homepage_order: number | null;
   public_image_url: string | null;
   public_logo_url: string | null;
   public_order: number | null;
   public_surface_color: string | null;
-  public_surface_text_color: string | null;
   slug: string;
   status: string;
   updated_at: string;
@@ -143,13 +141,11 @@ export interface CatalogBootstrapTheme {
   publicAccentColor?: string;
   publicDescription?: string;
   publicDisplayName?: string;
-  publicHeroTextColor?: string;
   publicHomepageOrder?: number;
   publicImageUrl?: string;
   publicLogoUrl?: string;
   publicOrder?: number;
   publicSurfaceColor?: string;
-  publicSurfaceTextColor?: string;
   slug: string;
   status: string;
   updatedAt: string;
@@ -375,11 +371,6 @@ function toBootstrapTheme(
           publicImageUrl: row.public_image_url,
         }
       : {}),
-    ...(row.public_hero_text_color
-      ? {
-          publicHeroTextColor: row.public_hero_text_color,
-        }
-      : {}),
     ...(typeof row.public_homepage_order === 'number'
       ? {
           publicHomepageOrder: row.public_homepage_order,
@@ -398,11 +389,6 @@ function toBootstrapTheme(
     ...(row.public_surface_color
       ? {
           publicSurfaceColor: row.public_surface_color,
-        }
-      : {}),
-    ...(row.public_surface_text_color
-      ? {
-          publicSurfaceTextColor: row.public_surface_text_color,
         }
       : {}),
     slug: row.slug,
@@ -718,13 +704,11 @@ function toTargetThemeRow(theme: CatalogBootstrapTheme) {
     public_accent_color: theme.publicAccentColor ?? null,
     public_description: theme.publicDescription ?? null,
     public_display_name: theme.publicDisplayName ?? null,
-    public_hero_text_color: theme.publicHeroTextColor ?? null,
     public_homepage_order: theme.publicHomepageOrder ?? null,
     public_image_url: theme.publicImageUrl ?? null,
     public_logo_url: theme.publicLogoUrl ?? null,
     public_order: theme.publicOrder ?? null,
     public_surface_color: theme.publicSurfaceColor ?? null,
-    public_surface_text_color: theme.publicSurfaceTextColor ?? null,
     slug: theme.slug,
     status: theme.status,
     updated_at: theme.updatedAt,
@@ -1182,7 +1166,7 @@ async function listCurrentThemes({
 }): Promise<CatalogBootstrapThemeRow[]> {
   return readOrderedBootstrapRows<CatalogBootstrapThemeRow>({
     columns:
-      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
+      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_logo_url, public_homepage_order, public_order, status, created_at, updated_at',
     orderBy: 'slug',
     supabaseClient,
     table: CURRENT_CATALOG_THEMES_TABLE,
