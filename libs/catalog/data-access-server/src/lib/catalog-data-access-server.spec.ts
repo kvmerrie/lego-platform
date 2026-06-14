@@ -59,20 +59,20 @@ function createCurrentOfferSnapshotRow(
 ) {
   return {
     best_availability: 'in_stock',
-    best_checked_at: '2026-05-19T09:00:00.000Z',
+    best_checked_at: '2026-06-14T09:00:00.000Z',
     best_commercial_unit_type: 'full_set',
     best_merchant_name: 'Goodbricks',
     best_merchant_slug: 'goodbricks',
     best_price_minor: 19995,
     best_product_url: 'https://goodbricks.example/lego-43300',
-    computed_at: '2026-05-19T10:00:00.000Z',
+    computed_at: '2026-06-14T10:00:00.000Z',
     condition: 'new',
     currency_code: 'EUR',
     offer_count: 1,
     offers: [
       {
         availability: 'in_stock',
-        checkedAt: '2026-05-19T09:00:00.000Z',
+        checkedAt: '2026-06-14T09:00:00.000Z',
         commercialUnitType: 'full_set',
         condition: 'new',
         currency: 'EUR',
@@ -1154,7 +1154,7 @@ describe('catalog data access server', () => {
     ]);
   });
 
-  test('prefers trusted production-feed current offers over near-equal strategic manual offers', async () => {
+  test('lets a lower current price beat trusted current-offer ranking', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       latestOfferRows: [
         {
@@ -1217,8 +1217,8 @@ describe('catalog data access server', () => {
 
     expect(result[0]).toMatchObject({
       bestOffer: {
-        merchantSlug: 'goodbricks',
-        priceCents: 20999,
+        merchantSlug: 'bol',
+        priceCents: 19999,
       },
       offers: [
         {

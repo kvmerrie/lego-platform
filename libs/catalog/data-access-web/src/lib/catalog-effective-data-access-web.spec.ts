@@ -11602,7 +11602,7 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('prefers trusted production-feed offers when strategic manual prices are near-equal', () => {
+  test('lets a lower current price beat trusted merchant ranking', () => {
     const liveOffers = [
       {
         availability: 'in_stock' as const,
@@ -11639,8 +11639,8 @@ describe('catalog effective data access web', () => {
     });
 
     expect(summary.bestOffer).toMatchObject({
-      merchantSlug: 'goodbricks',
-      priceCents: 20999,
+      merchantSlug: 'bol',
+      priceCents: 19999,
     });
     expect(summary.offers.map((offer) => offer.merchantSlug)).toEqual([
       'goodbricks',

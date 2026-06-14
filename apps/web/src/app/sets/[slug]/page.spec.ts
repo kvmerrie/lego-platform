@@ -3,6 +3,10 @@ import { createElement } from 'react';
 import type { ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renderToReadableStream } from 'react-dom/server.browser';
+import {
+  selectBestPurchasableOffer,
+  type CatalogOffer,
+} from '@lego-platform/affiliate/util';
 
 const setPageMocks = vi.hoisted(() => ({
   getCatalogPrimaryOfferAvailabilityStateBySetId: vi.fn(),
@@ -359,6 +363,114 @@ function createCurrentOfferSummaryMap({
     ],
   ]);
 }
+
+function createSetDetailOffer({
+  availability = 'in_stock',
+  checkedAt = '2026-06-14T12:00:00.000Z',
+  merchantName,
+  merchantSlug,
+  priceCents,
+}: {
+  availability?: CatalogOffer['availability'];
+  checkedAt?: string;
+  merchantName: string;
+  merchantSlug: string;
+  priceCents: number;
+}): CatalogOffer & { merchantSlug: string } {
+  return {
+    availability,
+    checkedAt,
+    condition: 'new',
+    currency: 'EUR',
+    market: 'NL',
+    merchant: 'other',
+    merchantName,
+    merchantSlug,
+    priceCents,
+    setId: '76454',
+    url: `https://partner.example/${merchantSlug}`,
+  };
+}
+
+describe('set detail best offer ranking', () => {
+  it('lets a strategic merchant win only on exact price ties', () => {
+    const coolblueOffer = createSetDetailOffer({
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17874,
+    });
+    const proshopOffer = createSetDetailOffer({
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17874,
+    });
+
+    expect(
+      selectBestPurchasableOffer([proshopOffer, coolblueOffer], {
+        strategicTieBreakerOffer: coolblueOffer,
+      }).offer?.merchantSlug,
+    ).toBe('coolblue');
+  });
+
+  it('lets a €0,01 lower current price beat strategic ranking', () => {
+    const coolblueOffer = createSetDetailOffer({
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17875,
+    });
+    const proshopOffer = createSetDetailOffer({
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17874,
+    });
+
+    expect(
+      selectBestPurchasableOffer([coolblueOffer, proshopOffer], {
+        strategicTieBreakerOffer: coolblueOffer,
+      }).offer?.merchantSlug,
+    ).toBe('proshop');
+  });
+
+  it('keeps stale strategic offers from beating fresh purchasable offers', () => {
+    const staleCoolblueOffer = createSetDetailOffer({
+      checkedAt: '2026-06-06T12:16:00.000Z',
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17870,
+    });
+    const proshopOffer = createSetDetailOffer({
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17874,
+    });
+
+    expect(
+      selectBestPurchasableOffer([staleCoolblueOffer, proshopOffer], {
+        now: new Date('2026-06-14T12:30:00.000Z'),
+        strategicTieBreakerOffer: staleCoolblueOffer,
+      }).offer?.merchantSlug,
+    ).toBe('proshop');
+  });
+
+  it('keeps out-of-stock lower prices from beating in-stock offers', () => {
+    const soldOutProshopOffer = createSetDetailOffer({
+      availability: 'out_of_stock',
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 10000,
+    });
+    const coolblueOffer = createSetDetailOffer({
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 12000,
+    });
+
+    expect(
+      selectBestPurchasableOffer([soldOutProshopOffer, coolblueOffer]).offer
+        ?.merchantSlug,
+    ).toBe('coolblue');
+  });
+});
 
 describe('set detail static generation', () => {
   it('prerenders a capped hot-set subset and leaves the rest for dynamic ISR', async () => {
@@ -1083,7 +1195,7 @@ describe('set detail metadata', () => {
       currentOfferSummary: {
         bestOffer: {
           availability: 'in_stock',
-          checkedAt: '2026-05-05T08:00:00.000Z',
+          checkedAt: '2026-06-14T08:00:00.000Z',
           currency: 'EUR',
           merchantName: 'MediaMarkt',
           merchantSlug: 'mediamarkt',
@@ -1093,7 +1205,7 @@ describe('set detail metadata', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-05T08:00:00.000Z',
+            checkedAt: '2026-06-14T08:00:00.000Z',
             currency: 'EUR',
             merchantName: 'MediaMarkt',
             merchantSlug: 'mediamarkt',
@@ -1102,7 +1214,7 @@ describe('set detail metadata', () => {
           },
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-05T08:00:00.000Z',
+            checkedAt: '2026-06-14T08:00:00.000Z',
             currency: 'EUR',
             merchantName: 'Alternate',
             merchantSlug: 'alternate',
@@ -1120,7 +1232,7 @@ describe('set detail metadata', () => {
         lowestMerchantId: 'mediamarkt',
         lowestMerchantName: 'MediaMarkt',
         merchantCount: 2,
-        observedAt: '2026-05-05T08:00:00.000Z',
+        observedAt: '2026-06-14T08:00:00.000Z',
         referencePriceMinor: 8999,
         regionCode: 'NL',
         setId: '43014',
@@ -1765,7 +1877,7 @@ describe('set detail page JSON-LD', () => {
 
     const proshopOffer = {
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-12T18:06:01.670Z',
+      checkedAt: '2026-06-14T12:06:01.670Z',
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
@@ -1776,9 +1888,22 @@ describe('set detail page JSON-LD', () => {
       setId: '76454',
       url: 'https://partner.example/76454-proshop',
     };
+    const staleCoolblueOffer = {
+      availability: 'in_stock' as const,
+      checkedAt: '2026-06-06T12:16:00.000Z',
+      condition: 'new',
+      currency: 'EUR' as const,
+      market: 'NL',
+      merchant: 'other' as const,
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17900,
+      setId: '76454',
+      url: 'https://partner.example/76454-coolblue',
+    };
     const legoOffer = {
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-12T18:46:06.947Z',
+      checkedAt: '2026-06-14T12:46:06.947Z',
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
@@ -1789,9 +1914,9 @@ describe('set detail page JSON-LD', () => {
       setId: '76454',
       url: 'https://partner.example/76454-lego',
     };
-    const alternativeOffers = Array.from({ length: 7 }, (_, index) => ({
+    const alternativeOffers = Array.from({ length: 6 }, (_, index) => ({
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-12T18:20:00.000Z',
+      checkedAt: '2026-06-14T12:20:00.000Z',
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
@@ -1802,7 +1927,12 @@ describe('set detail page JSON-LD', () => {
       setId: '76454',
       url: `https://partner.example/76454-shop-${index + 2}`,
     }));
-    const offers = [proshopOffer, ...alternativeOffers, legoOffer];
+    const offers = [
+      proshopOffer,
+      staleCoolblueOffer,
+      ...alternativeOffers,
+      legoOffer,
+    ];
 
     setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue(offers);
     setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
@@ -1816,10 +1946,16 @@ describe('set detail page JSON-LD', () => {
       },
     );
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      createCurrentOfferSummaryMap({
-        offers,
-        setId: '76454',
-      }),
+      new Map([
+        [
+          '76454',
+          {
+            bestOffer: staleCoolblueOffer,
+            offers: [staleCoolblueOffer, proshopOffer, ...alternativeOffers],
+            setId: '76454',
+          },
+        ],
+      ]),
     );
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
 
@@ -1837,13 +1973,16 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('Goede prijs');
     expect(html).toContain('Bij Proshop');
     expect(html).toContain('Bekijk deal bij Proshop');
+    expect(html).toMatch(/data-is-best="true" data-merchant="Proshop"/u);
+    expect(html).toMatch(/data-is-best="false" data-merchant="Coolblue"/u);
     expect(html).toMatch(/€7[01] goedkoper dan LEGO/u);
     expect(html).toContain('Op voorraad');
     expect(html).toContain('9 winkels nagekeken');
     expect(html).not.toContain('Prijsbeeld bouwt op');
+    expect(html).not.toContain('Bij Coolblue');
   });
 
-  it('marks the cheaper offer-list merchant as best while keeping the trusted hero deal', async () => {
+  it('uses the cheaper current offer as both hero deal and offer-list best deal', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '60443',
       imageUrl: 'https://cdn.example.com/60443.jpg',
@@ -1855,7 +1994,7 @@ describe('set detail page JSON-LD', () => {
     });
     const joybuyOffer = {
       availability: 'in_stock',
-      checkedAt: '2026-05-25T10:00:00.000Z',
+      checkedAt: '2026-06-14T10:00:00.000Z',
       condition: 'new',
       currency: 'EUR',
       market: 'NL',
@@ -1868,7 +2007,7 @@ describe('set detail page JSON-LD', () => {
     };
     const lidlOffer = {
       availability: 'in_stock',
-      checkedAt: '2026-05-25T10:00:00.000Z',
+      checkedAt: '2026-06-14T10:00:00.000Z',
       condition: 'new',
       currency: 'EUR',
       market: 'NL',
@@ -1916,11 +2055,11 @@ describe('set detail page JSON-LD', () => {
       }),
     );
 
-    expect(html).toContain('Bij Lidl');
-    expect(html).toContain('data-tone="warning"');
-    expect(html).toContain('Wachten kan lonen');
-    expect(html).not.toContain('Bekijk deal bij Lidl');
-    expect(html).toContain('€ 3,59 boven laagste prijs');
+    expect(html).toContain('Bij Joybuy');
+    expect(html).toContain('Bekijk deal bij Joybuy');
+    expect(html).not.toContain('Bij Lidl');
+    expect(html).not.toContain('Prijsbeeld bouwt op');
+    expect(html).not.toContain('€ 3,59 boven laagste prijs');
     expect(html).toContain('Joybuy');
     expect(html).toMatch(/data-is-best="true" data-merchant="Joybuy"/);
     expect(html).toMatch(/data-is-best="false" data-merchant="Lidl"/);

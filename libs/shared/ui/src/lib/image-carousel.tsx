@@ -91,6 +91,10 @@ type GalleryImageMediaKind =
   | 'overview'
   | 'thumbnail';
 type LightboxMode = 'overview' | 'viewer';
+type LightboxOverviewReturnTransition = {
+  imageIndex: number;
+  key: number;
+} | null;
 type LightboxPresentationState = 'closed' | 'opening' | 'open' | 'closing';
 type SwipeTarget = 'detail' | 'lightbox';
 type SwipePhase = 'idle' | 'dragging' | 'resetting' | 'settling';
@@ -585,6 +589,10 @@ export function ImageGallery({
     null,
   );
   const [lightboxMode, setLightboxMode] = useState<LightboxMode>('viewer');
+  const [
+    lightboxOverviewReturnTransition,
+    setLightboxOverviewReturnTransition,
+  ] = useState<LightboxOverviewReturnTransition>(null);
   const [lightboxPresentationState, setLightboxPresentationState] =
     useState<LightboxPresentationState>('closed');
   const overviewImageButtonRefs = useRef<
@@ -593,6 +601,7 @@ export function ImageGallery({
   const lightboxPrimaryButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxDialogRef = useRef<HTMLDivElement>(null);
   const lightboxMediaFrameRef = useRef<HTMLDivElement>(null);
+  const lightboxOverviewReturnKeyRef = useRef(0);
   const swipeStateRef = useRef<{
     mode: 'horizontal' | 'vertical' | null;
     pointerId: number | null;
@@ -839,6 +848,7 @@ export function ImageGallery({
     clearLightboxCloseFallbackTimer();
     setLightboxImageIndex(null);
     setLightboxMode('viewer');
+    setLightboxOverviewReturnTransition(null);
     setLightboxPresentationState('closed');
 
     window.requestAnimationFrame(() => {
@@ -852,6 +862,7 @@ export function ImageGallery({
       clearLightboxCloseFallbackTimer();
       setLightboxPresentationState('opening');
       setLightboxMode(mode);
+      setLightboxOverviewReturnTransition(null);
       setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
 
       lightboxOpenAnimationFrameRef.current = window.requestAnimationFrame(
@@ -903,6 +914,7 @@ export function ImageGallery({
     clearLightboxCloseFallbackTimer();
     resetLightboxZoom();
     setLightboxSwipeState(INITIAL_SWIPE_VISUAL_STATE);
+    setLightboxOverviewReturnTransition(null);
     setLightboxPresentationState('closing');
 
     const prefersReducedMotion =
@@ -1130,6 +1142,15 @@ export function ImageGallery({
     safeLightboxImageIndex === null
       ? null
       : resolvedImages[safeLightboxImageIndex];
+  const lightboxOverviewReturnImage =
+    lightboxOverviewReturnTransition === null
+      ? null
+      : resolvedImages[
+          clampIndex(
+            lightboxOverviewReturnTransition.imageIndex,
+            resolvedImages.length,
+          )
+        ];
   const hasMultipleImages = resolvedImages.length > 1;
   const visibleArticleImages =
     variant === 'article' && resolvedImages.length > 4
@@ -1185,6 +1206,7 @@ export function ImageGallery({
 
   function goToLightboxImage(nextIndex: number) {
     resetLightboxZoom();
+    setLightboxOverviewReturnTransition(null);
     setLightboxMode('viewer');
     setLightboxImageIndex(clampIndex(nextIndex, resolvedImages.length));
   }
@@ -1192,6 +1214,14 @@ export function ImageGallery({
   function returnToLightboxOverview() {
     pendingOverviewFocusIndexRef.current = safeLightboxImageIndex;
     resetLightboxZoom();
+    setLightboxOverviewReturnTransition(
+      safeLightboxImageIndex === null
+        ? null
+        : {
+            imageIndex: safeLightboxImageIndex,
+            key: (lightboxOverviewReturnKeyRef.current += 1),
+          },
+    );
     setLightboxMode('overview');
   }
 
@@ -2050,18 +2080,50 @@ export function ImageGallery({
     target: SwipeTarget;
   }) {
     const slideIndexes = [currentIndex - 1, currentIndex, currentIndex + 1];
+    const renderMediaImage = ({
+      image,
+      imageIndex,
+      isActiveLightboxImage = false,
+    }: {
+      image: GalleryImage;
+      imageIndex: number;
+      isActiveLightboxImage?: boolean;
+    }) => (
+      <span
+        className={joinClasses(
+          styles.swipeImageFrame,
+          kind === 'lightbox' &&
+            isActiveLightboxImage &&
+            styles.lightboxImageEnter,
+        )}
+        data-lightbox-image-enter={
+          kind === 'lightbox' && isActiveLightboxImage ? 'true' : undefined
+        }
+        key={
+          kind === 'lightbox' && isActiveLightboxImage
+            ? `lightbox-enter-${getGalleryImageKey(image, imageIndex)}`
+            : undefined
+        }
+      >
+        <GalleryImageMedia
+          image={image}
+          imageIndex={imageIndex}
+          kind={kind}
+          isFallbackVisible={Boolean(failedImageIndexes[imageIndex])}
+          onImageError={handleImageError}
+        />
+      </span>
+    );
 
     return (
       <>
         <span className={styles.swipeStaticMedia}>
           <span className={styles.swipeStaticFrame}>
-            <GalleryImageMedia
-              image={resolvedImages[currentIndex]}
-              imageIndex={currentIndex}
-              kind={kind}
-              isFallbackVisible={Boolean(failedImageIndexes[currentIndex])}
-              onImageError={handleImageError}
-            />
+            {renderMediaImage({
+              image: resolvedImages[currentIndex],
+              imageIndex: currentIndex,
+              isActiveLightboxImage: true,
+            })}
           </span>
         </span>
         <span className={styles.swipeViewport} aria-hidden="true">
@@ -2095,15 +2157,11 @@ export function ImageGallery({
                 >
                   {image ? (
                     <span className={styles.swipeSlideFrame}>
-                      <GalleryImageMedia
-                        image={image}
-                        imageIndex={imageIndex}
-                        kind={kind}
-                        isFallbackVisible={Boolean(
-                          failedImageIndexes[imageIndex],
-                        )}
-                        onImageError={handleImageError}
-                      />
+                      {renderMediaImage({
+                        image,
+                        imageIndex,
+                        isActiveLightboxImage: slideName === 'current',
+                      })}
                     </span>
                   ) : (
                     <span className={styles.swipeSlidePlaceholder} />
@@ -2180,7 +2238,44 @@ export function ImageGallery({
 
           {lightboxMode === 'overview' ? (
             <div className={styles.lightboxOverviewBody}>
-              <div className={styles.lightboxOverview}>
+              {lightboxOverviewReturnImage &&
+              lightboxOverviewReturnTransition ? (
+                <span
+                  aria-hidden="true"
+                  className={styles.lightboxOverviewReturnOverlay}
+                  data-lightbox-overview-return-image="true"
+                  key={`lightbox-overview-return-${lightboxOverviewReturnTransition.key}`}
+                >
+                  <span
+                    className={styles.lightboxOverviewReturnFrame}
+                    style={getGalleryImageFrameStyle(
+                      lightboxOverviewReturnImage,
+                    )}
+                  >
+                    <GalleryImageMedia
+                      image={lightboxOverviewReturnImage}
+                      imageIndex={lightboxOverviewReturnTransition.imageIndex}
+                      kind="lightbox"
+                      isFallbackVisible={Boolean(
+                        failedImageIndexes[
+                          lightboxOverviewReturnTransition.imageIndex
+                        ],
+                      )}
+                      onImageError={handleImageError}
+                    />
+                  </span>
+                </span>
+              ) : null}
+              <div
+                className={joinClasses(
+                  styles.lightboxOverview,
+                  lightboxOverviewReturnTransition &&
+                    styles.lightboxOverviewEnter,
+                )}
+                data-lightbox-overview-enter={
+                  lightboxOverviewReturnTransition ? 'true' : undefined
+                }
+              >
                 {getLightboxOverviewItems(resolvedImages).map(
                   ({
                     frameVariant,

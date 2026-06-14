@@ -124,7 +124,7 @@ describe('commerce current-offer snapshots', () => {
     });
   });
 
-  test('prefers trusted production feed offers when strategic manual prices are near equal', () => {
+  test('lets a lower current price beat trusted snapshot ranking', () => {
     const result = buildCommerceCurrentOfferSnapshots({
       now,
       syncSeeds: [
@@ -143,8 +143,8 @@ describe('commerce current-offer snapshots', () => {
       ],
     });
 
-    expect(result.snapshots[0]?.bestMerchantSlug).toBe('goodbricks');
-    expect(result.snapshots[0]?.bestPriceMinor).toBe(19995);
+    expect(result.snapshots[0]?.bestMerchantSlug).toBe('coppenswarenhuis');
+    expect(result.snapshots[0]?.bestPriceMinor).toBe(19895);
   });
 
   test('allows an extreme strategic manual price advantage to surface', () => {

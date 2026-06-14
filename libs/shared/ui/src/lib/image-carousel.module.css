@@ -159,6 +159,35 @@
   justify-content: center;
 }
 
+.swipeImageFrame {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.lightboxImageEnter {
+  animation: lightboxImageEnter 220ms ease-out forwards;
+  opacity: 0;
+  transform: scale(0.985);
+  transform-origin: center;
+  will-change: opacity, transform;
+}
+
+@keyframes lightboxImageEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .lightboxZoomSurface {
   transform-origin: center;
   transition: none;
@@ -603,6 +632,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
+  position: relative;
   width: 100%;
 }
 
@@ -616,6 +646,59 @@
   max-width: 980px;
   padding: 0 var(--lego-space-4) var(--lego-space-4);
   width: 100%;
+}
+
+.lightboxOverviewEnter {
+  animation: lightboxOverviewEnter 220ms ease-out both;
+}
+
+.lightboxOverviewReturnOverlay {
+  align-items: center;
+  animation: lightboxOverviewReturnOverlay 220ms ease-out forwards;
+  background: #f5f6f8;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  opacity: 1;
+  padding: 0 var(--lego-space-4) var(--lego-space-4);
+  pointer-events: none;
+  position: absolute;
+  transform: scale(1);
+  z-index: 2;
+}
+
+.lightboxOverviewReturnFrame {
+  display: block;
+  height: min(100%, 68vh);
+  max-width: 980px;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  width: min(100%, 980px);
+}
+
+@keyframes lightboxOverviewEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes lightboxOverviewReturnOverlay {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
 }
 
 .lightboxOverviewButton {
@@ -1176,6 +1259,12 @@
       max(var(--lego-space-2), env(safe-area-inset-left));
   }
 
+  .lightboxOverviewReturnOverlay {
+    padding: 0 max(var(--lego-space-2), env(safe-area-inset-right))
+      max(var(--lego-space-3), env(safe-area-inset-bottom))
+      max(var(--lego-space-2), env(safe-area-inset-left));
+  }
+
   .lightboxDialog[data-lightbox-variant='detail'] .lightboxViewport {
     padding: 0 max(var(--lego-space-2), env(safe-area-inset-right))
       max(var(--lego-space-2), env(safe-area-inset-bottom))
@@ -1196,6 +1285,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lightboxOverviewEnter,
+  .lightboxOverviewReturnOverlay {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .lightboxOverviewReturnOverlay {
+    opacity: 0;
+  }
+
+  .lightboxImageEnter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
   .lightboxBackdrop,
   .lightboxDialog,
   .lightboxBackdrop[data-lightbox-state='closing'],

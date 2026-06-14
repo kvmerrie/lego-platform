@@ -681,6 +681,11 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelectorAll(
+        '[data-lightbox-image-enter="true"] img[alt="LEGO Star Wars Grogu als leerling van de Mandalorian"]',
+      ),
+    ).toHaveLength(2);
     expect(document.body.textContent).toContain('1 / 3');
 
     act(() => {
@@ -696,6 +701,11 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelectorAll(
+        '[data-lightbox-image-enter="true"] img[alt="LEGO Star Wars The Razor Crest"]',
+      ),
+    ).toHaveLength(2);
 
     const previousButton = document.body.querySelector(
       'button[aria-label="Vorige afbeelding"]',
@@ -1990,6 +2000,14 @@ describe('ImageGallery', () => {
 
     expect(
       document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-overview-enter="true"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector(
+        '[data-lightbox-overview-return-image="true"] img[alt="Eiffeltoren detail 2"]',
+      ),
     ).not.toBeNull();
     await flushAnimationFrame();
     expect(document.activeElement).toBe(
@@ -3322,6 +3340,28 @@ describe('ImageGallery', () => {
     expect(css).toContain('.swipeViewport {');
     expect(css).toContain('.swipeTrack {');
     expect(css).toContain('.swipeSlideFrame,');
+    expect(css).toContain('.swipeImageFrame {');
+    expect(css).toContain('.lightboxImageEnter {');
+    expect(css).toContain(
+      'animation: lightboxImageEnter 220ms ease-out forwards;',
+    );
+    expect(css).toContain('@keyframes lightboxImageEnter');
+    expect(css).toContain('.lightboxOverviewEnter {');
+    expect(css).toContain(
+      'animation: lightboxOverviewEnter 220ms ease-out both;',
+    );
+    expect(css).toContain('.lightboxOverviewReturnOverlay {');
+    expect(css).toContain(
+      'animation: lightboxOverviewReturnOverlay 220ms ease-out forwards;',
+    );
+    expect(css).toContain('pointer-events: none;');
+    expect(css).toContain('@keyframes lightboxOverviewEnter');
+    expect(css).toContain('@keyframes lightboxOverviewReturnOverlay');
+    expect(css).toContain(
+      '@media (prefers-reduced-motion: reduce) {\n  .lightboxOverviewEnter,\n  .lightboxOverviewReturnOverlay {',
+    );
+    expect(css).toContain('  .lightboxImageEnter {');
+    expect(css).toContain('animation: none;');
     expect(css).toContain('.lightboxZoomSurface {');
     expect(css).toContain(".lightboxMediaFrame[data-lightbox-zoomed='true']");
     expect(css).toContain(".lightboxMediaFrame[data-lightbox-panning='true']");

@@ -8,6 +8,7 @@ import {
   getCommerceCommercialUnitComparisonGroup,
   getCommerceMerchantReliabilityTier,
   isCommerceCommercialUnitComparableForDeals,
+  selectBestPurchasableOffer,
   type CommerceCommercialUnitType,
   type CommerceMerchantReliabilityTier,
 } from '@lego-platform/shared/config';
@@ -223,12 +224,27 @@ function sortSnapshotOffers(
 function selectBestSnapshotOffer(
   offers: readonly CommerceCurrentOfferSnapshotOffer[],
 ): CommerceCurrentOfferSnapshotOffer | undefined {
-  return sortSnapshotOffers(offers).find(
-    (offer) =>
-      offer.availability === 'in_stock' &&
-      offer.priceMinor > 0 &&
-      offer.url.length > 0,
-  );
+  const sortedOffers = sortSnapshotOffers(offers);
+  const selectableOffers = sortedOffers.map((offer) => ({
+    availability: offer.availability,
+    checkedAt: offer.checkedAt,
+    commercialUnitType: offer.commercialUnitType,
+    condition: offer.condition,
+    currency: offer.currency,
+    market: offer.market,
+    merchant: 'other' as const,
+    merchantName: offer.merchantName,
+    merchantSlug: offer.merchantSlug,
+    priceCents: offer.priceMinor,
+    setId: offer.setId,
+    snapshotOffer: offer,
+    url: offer.url,
+  }));
+
+  return selectBestPurchasableOffer(selectableOffers, {
+    maxOfferAgeDays: Number.POSITIVE_INFINITY,
+    strategicTieBreakerOffer: selectableOffers[0] ?? null,
+  }).offer?.snapshotOffer;
 }
 
 function getComparableOffersForBestOffer({

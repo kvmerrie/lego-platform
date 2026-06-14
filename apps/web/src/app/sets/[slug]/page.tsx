@@ -1,4 +1,8 @@
 import {
+  dedupeCatalogOffersByPublicMerchant,
+  getCatalogOfferMerchantSlug,
+  getCatalogOfferPublicMerchantName,
+  selectBestPurchasableOffer,
   sortCatalogOffers,
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
@@ -71,7 +75,6 @@ import {
   getBricksetGalleryRenderMode,
   getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
-  resolvePublicMerchantDisplayName,
   webPathnames,
 } from '@lego-platform/shared/config';
 import {
@@ -903,9 +906,9 @@ function getNextBestOfferPriceDeltaMinor(
   offers: readonly CatalogOffer[],
   bestOffer: CatalogOffer,
 ): number | undefined {
-  const nextBestOffer = sortCatalogOffers(
-    dedupeCatalogOffersByPublicMerchant(offers),
-  ).find((catalogOffer) => catalogOffer.url !== bestOffer.url);
+  const nextBestOffer = selectBestPurchasableOffer(offers).rankedOffers.find(
+    (catalogOffer) => catalogOffer.url !== bestOffer.url,
+  );
   const deltaMinor = nextBestOffer
     ? nextBestOffer.priceCents - bestOffer.priceCents
     : undefined;
@@ -917,11 +920,12 @@ function getNextBestOfferPriceDeltaMinor(
 
 function getLowestComparableCatalogOffer(
   offers: readonly CatalogOffer[],
+  strategicTieBreakerOffer?: CatalogOffer | null,
 ): CatalogOffer | undefined {
-  return sortCatalogOffers(dedupeCatalogOffersByPublicMerchant(offers)).find(
-    (catalogOffer) =>
-      catalogOffer.availability === 'in_stock' ||
-      catalogOffer.availability === 'unknown',
+  return (
+    selectBestPurchasableOffer(offers, {
+      strategicTieBreakerOffer: strategicTieBreakerOffer ?? null,
+    }).offer ?? undefined
   );
 }
 
@@ -939,21 +943,10 @@ function isLowestComparableCatalogOffer({
   return (
     catalogOffer.currency === lowestOffer.currency &&
     catalogOffer.priceCents === lowestOffer.priceCents &&
+    catalogOffer.url === lowestOffer.url &&
     (catalogOffer.availability === 'in_stock' ||
       catalogOffer.availability === 'unknown')
   );
-}
-
-function getCatalogOfferMerchantSlug(
-  catalogOffer: CatalogOffer,
-): string | undefined {
-  const merchantSlug = (
-    catalogOffer as CatalogOffer & { merchantSlug?: unknown }
-  ).merchantSlug;
-
-  return typeof merchantSlug === 'string' && merchantSlug.trim()
-    ? merchantSlug.trim()
-    : undefined;
 }
 
 function toCatalogRuntimeOffer(
@@ -981,13 +974,6 @@ function summarizeSetDetailCurrentOffersFromLiveOffers({
     generatedOffers: [],
     liveOffers: liveOffers.map(toCatalogRuntimeOffer),
     setId,
-  });
-}
-
-function getCatalogOfferPublicMerchantName(catalogOffer: CatalogOffer): string {
-  return resolvePublicMerchantDisplayName({
-    merchantName: catalogOffer.merchantName,
-    merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
   });
 }
 
@@ -1039,62 +1025,6 @@ function withCatalogOfferPublicMerchantName(
         ...catalogOffer,
         merchantName,
       };
-}
-
-function getCatalogOfferPublicMerchantKey(catalogOffer: CatalogOffer): string {
-  return getCatalogOfferPublicMerchantName(catalogOffer)
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function compareCatalogOfferFreshnessDescending(
-  left: CatalogOffer,
-  right: CatalogOffer,
-): number {
-  return right.checkedAt.localeCompare(left.checkedAt);
-}
-
-function comparePublicMerchantDuplicatePreference(
-  left: CatalogOffer,
-  right: CatalogOffer,
-): number {
-  const leftMerchantSlug = getCatalogOfferMerchantSlug(left);
-  const rightMerchantSlug = getCatalogOfferMerchantSlug(right);
-  const leftIsRakutenLego = leftMerchantSlug === 'rakuten-lego-eu';
-  const rightIsRakutenLego = rightMerchantSlug === 'rakuten-lego-eu';
-
-  if (leftIsRakutenLego !== rightIsRakutenLego) {
-    return leftIsRakutenLego ? -1 : 1;
-  }
-
-  return (
-    compareCatalogOfferFreshnessDescending(left, right) ||
-    left.priceCents - right.priceCents ||
-    left.merchantName.localeCompare(right.merchantName)
-  );
-}
-
-function dedupeCatalogOffersByPublicMerchant(
-  catalogOffers: readonly CatalogOffer[],
-): CatalogOffer[] {
-  const selectedOfferByPublicMerchantKey = new Map<string, CatalogOffer>();
-
-  for (const catalogOffer of catalogOffers) {
-    const publicMerchantKey = getCatalogOfferPublicMerchantKey(catalogOffer);
-    const selectedOffer =
-      selectedOfferByPublicMerchantKey.get(publicMerchantKey);
-
-    if (
-      !selectedOffer ||
-      comparePublicMerchantDuplicatePreference(catalogOffer, selectedOffer) < 0
-    ) {
-      selectedOfferByPublicMerchantKey.set(publicMerchantKey, catalogOffer);
-    }
-  }
-
-  return [...selectedOfferByPublicMerchantKey.values()];
 }
 
 export function buildSetDetailMetadata({
@@ -1629,6 +1559,7 @@ function buildBestDeal({
   const effectiveMerchantCount = merchantCount ?? catalogOffers?.length ?? 1;
   const lowestComparableOffer = getLowestComparableCatalogOffer(
     catalogOffers ?? [catalogOffer],
+    catalogOffer,
   );
   const lowestPriceDeltaMinor =
     lowestComparableOffer && lowestComparableOffer.url !== catalogOffer.url
@@ -1718,7 +1649,7 @@ function buildOfferList(
   },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
-  const lowestOffer = getLowestComparableCatalogOffer(catalogOffers);
+  const lowestOffer = getLowestComparableCatalogOffer(catalogOffers, bestOffer);
 
   return sortCatalogOffers(
     dedupeCatalogOffersByPublicMerchant(catalogOffers),
@@ -2370,12 +2301,28 @@ export default async function SetDetailPage({
     load: () =>
       getRequestCachedSnapshotCurrentOfferSummaryBySetId(catalogSetDetail.id),
   });
-  const currentOfferSummary =
+  const sourceCurrentOfferSummary =
     snapshotCurrentOfferSummary ??
     summarizeSetDetailCurrentOffersFromLiveOffers({
       liveOffers: localizedSetDetailOffers,
       setId: catalogSetDetail.id,
     });
+  const offerRailBestOffer = selectBestPurchasableOffer(
+    localizedSetDetailOffers,
+    {
+      strategicTieBreakerOffer: sourceCurrentOfferSummary?.bestOffer ?? null,
+    },
+  ).offer;
+  const currentOfferSummary: CatalogCurrentOfferSummary | undefined =
+    offerRailBestOffer
+      ? {
+          bestOffer:
+            offerRailBestOffer as CatalogCurrentOfferSummary['bestOffer'],
+          offers:
+            localizedSetDetailOffers as CatalogCurrentOfferSummary['offers'],
+          setId: catalogSetDetail.id,
+        }
+      : sourceCurrentOfferSummary;
   const reviewPayload = await measureSetPageFetch({
     label: 'reviews',
     slug,

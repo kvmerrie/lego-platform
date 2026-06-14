@@ -1,3 +1,4 @@
+import { selectBestPurchasableOffer } from '@lego-platform/affiliate/util';
 import type {
   CatalogCurrentOfferSummary,
   CatalogDiscoverySignal,
@@ -14,6 +15,7 @@ import {
 } from '@lego-platform/pricing/util';
 import {
   getDefaultFormattingLocale,
+  getCommerceCommercialUnitComparisonGroup,
   isCommerceCommercialUnitComparableForDeals,
   resolvePublicMerchantDisplayName,
 } from '@lego-platform/shared/config';
@@ -27,8 +29,6 @@ const STRONG_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 2500;
 const STRONG_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.2;
 const TOP_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 4000;
 const TOP_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.3;
-const MAX_DEAL_CLAIM_OFFER_AGE_DAYS = 30;
-
 type DealQualityLabel = 'Goede deal' | 'Sterke deal' | 'Topdeal';
 type DealReferencePriceContext = Pick<
   FeaturedSetPriceContext,
@@ -96,73 +96,36 @@ function canBestOfferDriveDealClaims(
   );
 }
 
-function isOfferRecentEnough(
-  offer?: CatalogCurrentOfferSummary['bestOffer'],
-): boolean {
-  if (!offer?.checkedAt) {
-    return false;
-  }
-
-  const checkedAtTime = Date.parse(offer.checkedAt);
-
-  if (!Number.isFinite(checkedAtTime)) {
-    return false;
-  }
-
-  const ageMs = Date.now() - checkedAtTime;
-
-  if (ageMs < 0) {
-    return true;
-  }
-
-  return ageMs <= MAX_DEAL_CLAIM_OFFER_AGE_DAYS * 24 * 60 * 60 * 1000;
-}
-
-function isEligibleCurrentDealOffer(
-  offer?: CatalogCurrentOfferSummary['bestOffer'],
-): offer is NonNullable<CatalogCurrentOfferSummary['bestOffer']> {
-  return Boolean(
-    offer &&
-      offer.availability === 'in_stock' &&
-      offer.currency === 'EUR' &&
-      offer.priceCents > 0 &&
-      offer.url &&
-      isOfferRecentEnough(offer),
-  );
-}
-
 function getComparableInStockOffers(
   currentOfferSummary: CatalogCurrentOfferSummary,
 ): NonNullable<CatalogCurrentOfferSummary['bestOffer']>[] {
-  const offerByKey = new Map<
-    string,
-    NonNullable<CatalogCurrentOfferSummary['bestOffer']>
-  >();
+  const rankedOffers = selectBestPurchasableOffer(
+    [...currentOfferSummary.offers, currentOfferSummary.bestOffer].filter(
+      (offer): offer is NonNullable<CatalogCurrentOfferSummary['bestOffer']> =>
+        Boolean(offer),
+    ),
+    {
+      strategicTieBreakerOffer: currentOfferSummary.bestOffer ?? null,
+    },
+  ).rankedOffers;
+  const [bestOffer] = rankedOffers;
 
-  for (const offer of [
-    ...currentOfferSummary.offers,
-    currentOfferSummary.bestOffer,
-  ]) {
-    if (!isEligibleCurrentDealOffer(offer)) {
-      continue;
-    }
-
-    offerByKey.set(
-      [
-        'merchantSlug' in offer && typeof offer.merchantSlug === 'string'
-          ? offer.merchantSlug
-          : offer.merchant,
-        offer.url,
-        offer.priceCents,
-      ].join('|'),
-      offer,
-    );
+  if (!bestOffer) {
+    return [];
   }
 
-  return [...offerByKey.values()].sort(
-    (left, right) =>
-      left.priceCents - right.priceCents ||
-      right.checkedAt.localeCompare(left.checkedAt),
+  const bestComparisonGroup = getCommerceCommercialUnitComparisonGroup(
+    bestOffer.commercialUnitType,
+  );
+
+  if (bestComparisonGroup === 'unknown') {
+    return [bestOffer];
+  }
+
+  return rankedOffers.filter(
+    (offer) =>
+      getCommerceCommercialUnitComparisonGroup(offer.commercialUnitType) ===
+      bestComparisonGroup,
   );
 }
 

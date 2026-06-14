@@ -28,6 +28,7 @@ import {
   getRebrickableApiConfig,
   hasServerSupabaseConfig,
   resolvePublicMerchantDisplayName,
+  selectBestPurchasableOffer,
 } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -1089,11 +1090,11 @@ function sortLiveCatalogOffers<Offer extends CatalogLiveOffer>(
 function selectBestLiveCatalogOffer<Offer extends CatalogLiveOffer>(
   offers: readonly Offer[],
 ): Offer | undefined {
-  return sortLiveCatalogOffers(offers).find(
-    (offer) =>
-      offer.availability === 'in_stock' &&
-      offer.priceCents > 0 &&
-      offer.url.length > 0,
+  return (
+    selectBestPurchasableOffer(offers, {
+      maxOfferAgeDays: Number.POSITIVE_INFINITY,
+      strategicTieBreakerOffer: sortLiveCatalogOffers(offers)[0],
+    }).offer ?? undefined
   );
 }
 

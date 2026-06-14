@@ -2,6 +2,20 @@ import type {
   AppCurrencyCode,
   AppMarketCode,
 } from '@lego-platform/shared/config';
+import { selectBestPurchasableOffer as selectBestPurchasableOfferInternal } from '@lego-platform/shared/config';
+export {
+  DEFAULT_BEST_PURCHASABLE_OFFER_MAX_AGE_DAYS,
+  dedupeCommerceOffersByPublicMerchant as dedupeCatalogOffersByPublicMerchant,
+  getCommerceOfferMerchantSlug as getCatalogOfferMerchantSlug,
+  getCommerceOfferPublicMerchantName as getCatalogOfferPublicMerchantName,
+  selectBestPurchasableOffer,
+} from '@lego-platform/shared/config';
+export type {
+  BestPurchasableOfferDebugSignals,
+  BestPurchasableOfferResult,
+  BestPurchasableOfferSelectionReason,
+  SelectBestPurchasableOfferOptions,
+} from '@lego-platform/shared/config';
 
 export const DUTCH_AFFILIATE_REGION_CODE = 'NL';
 export const EURO_AFFILIATE_CURRENCY_CODE = 'EUR';
@@ -166,10 +180,7 @@ export function sortCatalogOffers(
 export function getBestOffer(
   catalogOffers: readonly CatalogOffer[],
 ): CatalogOffer | null {
-  const sortedOffers = sortCatalogOffers(catalogOffers);
-  const [bestOffer] = sortedOffers;
-
-  return bestOffer ?? null;
+  return selectBestPurchasableOfferInternal(catalogOffers).offer;
 }
 
 export function toCatalogOffer(

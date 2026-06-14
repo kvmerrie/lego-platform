@@ -75,6 +75,7 @@ import {
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
   resolvePublicMerchantDisplayName,
+  selectBestPurchasableOffer,
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_TABLE = 'catalog_sets';
@@ -3491,12 +3492,11 @@ function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
 function selectBestResolvedCatalogOffer<Offer extends CatalogResolvedOffer>(
   catalogOffers: readonly Offer[],
 ): Offer | undefined {
-  return sortResolvedCatalogOffers(catalogOffers).find(
-    (catalogOffer) =>
-      catalogOffer.availability === 'in_stock' &&
-      catalogOffer.priceCents > 0 &&
-      catalogOffer.url.length > 0 &&
-      isResolvedEuroCatalogOffer(catalogOffer),
+  return (
+    selectBestPurchasableOffer(catalogOffers, {
+      maxOfferAgeDays: Number.POSITIVE_INFINITY,
+      strategicTieBreakerOffer: sortResolvedCatalogOffers(catalogOffers)[0],
+    }).offer ?? undefined
   );
 }
 

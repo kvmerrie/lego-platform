@@ -4,6 +4,7 @@ import {
   getCatalogOfferComparisonInsight,
   getCatalogOfferMerchantName,
   renderAffiliateOfferSnapshotsModule,
+  selectBestPurchasableOffer,
   toCatalogOffers,
   type CatalogOffer,
 } from './affiliate-util';
@@ -17,7 +18,7 @@ const baseOffer: CatalogOffer = {
   currency: 'EUR',
   availability: 'in_stock',
   condition: 'new',
-  checkedAt: '2026-03-30T10:00:00.000Z',
+  checkedAt: '2026-06-14T10:00:00.000Z',
   market: 'NL',
 };
 
@@ -66,6 +67,149 @@ describe('affiliate util catalog offers', () => {
     ).toMatchObject({
       availability: 'unknown',
       priceCents: 20999,
+    });
+  });
+
+  test('selects the cheaper current purchasable offer over a strategic tiebreaker', () => {
+    const coolblueOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17_900,
+    };
+    const proshopOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17_874,
+    };
+
+    expect(
+      selectBestPurchasableOffer([coolblueOffer, proshopOffer], {
+        strategicTieBreakerOffer: coolblueOffer,
+      }),
+    ).toMatchObject({
+      offer: expect.objectContaining({
+        merchantSlug: 'proshop',
+        priceCents: 17_874,
+      }),
+      priceMinor: 17_874,
+      selectionReason: 'lowest_price',
+      debugSignals: expect.objectContaining({
+        winningMerchant: 'Proshop',
+        winningMerchantSlug: 'proshop',
+        winningPriceMinor: 17_874,
+      }),
+    });
+  });
+
+  test('filters stale strategic offers before ranking current purchasable offers', () => {
+    const staleCoolblueOffer = {
+      ...baseOffer,
+      checkedAt: '2026-06-06T12:16:00.000Z',
+      merchant: 'other' as const,
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17_870,
+    };
+    const proshopOffer = {
+      ...baseOffer,
+      checkedAt: '2026-06-14T12:06:01.670Z',
+      merchant: 'other' as const,
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17_874,
+    };
+
+    expect(
+      selectBestPurchasableOffer([staleCoolblueOffer, proshopOffer], {
+        now: new Date('2026-06-14T12:30:00.000Z'),
+        strategicTieBreakerOffer: staleCoolblueOffer,
+      }),
+    ).toMatchObject({
+      offer: expect.objectContaining({
+        merchantSlug: 'proshop',
+      }),
+      debugSignals: expect.objectContaining({
+        staleFilteredCount: 1,
+      }),
+    });
+  });
+
+  test('uses trusted and strategic ranking only as exact-price tiebreakers', () => {
+    const coolblueOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'Coolblue',
+      merchantSlug: 'coolblue',
+      priceCents: 17_874,
+    };
+    const proshopOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17_874,
+    };
+    const mediamarktOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'MediaMarkt',
+      merchantSlug: 'mediamarkt',
+      priceCents: 17_874,
+    };
+    const intertoysOffer = {
+      ...baseOffer,
+      merchant: 'other' as const,
+      merchantName: 'Intertoys',
+      merchantSlug: 'intertoys',
+      priceCents: 17_874,
+    };
+
+    expect(
+      selectBestPurchasableOffer([proshopOffer, coolblueOffer], {
+        strategicTieBreakerOffer: proshopOffer,
+      }).selectionReason,
+    ).toBe('trusted_tiebreak');
+    expect(
+      selectBestPurchasableOffer([proshopOffer, mediamarktOffer], {
+        strategicTieBreakerOffer: proshopOffer,
+      }).offer,
+    ).toMatchObject({
+      merchantSlug: 'mediamarkt',
+    });
+    expect(
+      selectBestPurchasableOffer([proshopOffer, intertoysOffer], {
+        strategicTieBreakerOffer: intertoysOffer,
+      }).selectionReason,
+    ).toBe('strategic_tiebreak');
+  });
+
+  test('does not let out-of-stock lower prices win over in-stock offers', () => {
+    expect(
+      selectBestPurchasableOffer([
+        {
+          ...baseOffer,
+          availability: 'out_of_stock',
+          merchantName: 'Proshop',
+          priceCents: 10_000,
+        },
+        {
+          ...baseOffer,
+          merchantName: 'Coolblue',
+          priceCents: 12_000,
+        },
+      ]),
+    ).toMatchObject({
+      offer: expect.objectContaining({
+        merchantName: 'Coolblue',
+        priceCents: 12_000,
+      }),
+      debugSignals: expect.objectContaining({
+        outOfStockFilteredCount: 1,
+      }),
     });
   });
 
