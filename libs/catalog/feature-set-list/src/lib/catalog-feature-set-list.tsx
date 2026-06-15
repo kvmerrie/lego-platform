@@ -4,6 +4,7 @@ import {
   CatalogSectionShell,
   CatalogRailActionLink,
   CatalogSetCard,
+  CatalogSetCardRail,
   type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
   type CatalogSetCardRailLayoutMode,
@@ -35,6 +36,7 @@ export function CatalogFeatureSetList({
   sectionId = 'featured-sets',
   setCards,
   showHeadingChevron,
+  showHeader = true,
   showSignal = true,
   signalText,
   style,
@@ -56,6 +58,7 @@ export function CatalogFeatureSetList({
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
   showHeadingChevron?: boolean;
+  showHeader?: boolean;
   showSignal?: boolean;
   signalText?: string;
   style?: CSSProperties;
@@ -105,6 +108,37 @@ export function CatalogFeatureSetList({
     showHeadingChevron,
     style,
   };
+  const railItems = homepageSets.map((catalogSetSummary, index) => ({
+    actions: catalogSetSummary.actions,
+    ctaMode: catalogSetSummary.ctaMode,
+    href: buildSetDetailPath(catalogSetSummary.slug),
+    id: catalogSetSummary.id,
+    imageFetchPriority:
+      prioritizeFirstImage && index === 0 ? 'high' : undefined,
+    imageLoading: prioritizeFirstImage && index === 0 ? 'eager' : undefined,
+    priceContext: catalogSetSummary.priceContext,
+    setSummary: catalogSetSummary,
+    trackingEvent: catalogSetSummary.trackingEvent,
+  }));
+
+  if (layout === 'rail' && !showHeader) {
+    return (
+      <section
+        aria-label={title}
+        className={[styles.section, className].filter(Boolean).join(' ')}
+        id={sectionId}
+        style={style}
+      >
+        <CatalogSetCardRail
+          ariaLabel={title}
+          items={railItems}
+          railLayoutMode={railLayoutMode}
+          showControls
+          variant="featured"
+        />
+      </section>
+    );
+  }
 
   return layout === 'grid' ? (
     <CatalogSectionShell {...sectionShellProps}>
@@ -137,18 +171,7 @@ export function CatalogFeatureSetList({
     <CatalogSetCardRailSection
       {...sectionShellProps}
       ariaLabel={title}
-      items={homepageSets.map((catalogSetSummary, index) => ({
-        actions: catalogSetSummary.actions,
-        ctaMode: catalogSetSummary.ctaMode,
-        href: buildSetDetailPath(catalogSetSummary.slug),
-        id: catalogSetSummary.id,
-        imageFetchPriority:
-          prioritizeFirstImage && index === 0 ? 'high' : undefined,
-        imageLoading: prioritizeFirstImage && index === 0 ? 'eager' : undefined,
-        priceContext: catalogSetSummary.priceContext,
-        setSummary: catalogSetSummary,
-        trackingEvent: catalogSetSummary.trackingEvent,
-      }))}
+      items={railItems}
       railLayoutMode={railLayoutMode}
       surfaceVariant={surfaceVariant}
       variant="featured"

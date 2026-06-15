@@ -7,12 +7,21 @@ import {
 } from '@lego-platform/affiliate/util';
 import { affiliateOfferSnapshots } from './affiliate-offers.generated';
 
+const affiliateOfferSnapshotsBySetId = new Map<
+  string,
+  AffiliateOfferSnapshot[]
+>();
+
+for (const affiliateOfferSnapshot of affiliateOfferSnapshots) {
+  const setOffers =
+    affiliateOfferSnapshotsBySetId.get(affiliateOfferSnapshot.setId) ?? [];
+
+  setOffers.push(affiliateOfferSnapshot);
+  affiliateOfferSnapshotsBySetId.set(affiliateOfferSnapshot.setId, setOffers);
+}
+
 export function listAffiliateOffers(setId: string): AffiliateOfferSnapshot[] {
-  return sortAffiliateOffers(
-    affiliateOfferSnapshots.filter(
-      (affiliateOfferSnapshot) => affiliateOfferSnapshot.setId === setId,
-    ),
-  );
+  return sortAffiliateOffers(affiliateOfferSnapshotsBySetId.get(setId) ?? []);
 }
 
 export function getBestAffiliateOffer(setId: string): CatalogOffer | null {

@@ -454,17 +454,81 @@ describe('commerce current-offer snapshots', () => {
     expect(upsert).toHaveBeenCalledWith(
       [
         expect.objectContaining({
+          best_availability: 'in_stock',
+          best_checked_at: '2026-05-19T08:00:00.000Z',
+          best_commercial_unit_type: 'full_set',
           best_merchant_slug: 'goodbricks',
+          best_offer_seed_id: 'seed-goodbricks-43300',
           best_price_minor: 19995,
+          comparable_offer_count: 1,
           condition: 'new',
           currency_code: 'EUR',
+          has_anomalous_spread: false,
+          next_best_price_minor: null,
+          offer_count: 1,
+          price_spread_minor: 0,
           region_code: 'NL',
           set_id: '43300',
+          strategic_manual_offer_count: 0,
+          trusted_offer_count: 1,
         }),
       ],
       {
         onConflict: 'set_id,region_code,currency_code,condition',
       },
     );
+  });
+
+  test('logs Supabase details when snapshot upsert fails', async () => {
+    const upsertError = {
+      code: '42703',
+      details: 'Column best_commercial_unit_type does not exist.',
+      hint: 'Check the commerce_current_offer_snapshots table schema.',
+      message: 'Could not find the column best_commercial_unit_type',
+    };
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const upsert = vi.fn().mockResolvedValue({ error: upsertError });
+    const from = vi.fn().mockReturnValue({ upsert });
+    const result = buildCommerceCurrentOfferSnapshots({
+      now,
+      syncSeeds: [buildSeed()],
+    });
+
+    await expect(
+      upsertCommerceCurrentOfferSnapshots({
+        snapshots: result.snapshots,
+        supabaseClient: { from } as never,
+      }),
+    ).rejects.toThrow(/best_commercial_unit_type/u);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[commerce-current-offer-snapshots] upsert_failed',
+      expect.objectContaining({
+        code: '42703',
+        details: 'Column best_commercial_unit_type does not exist.',
+        event: 'commerce_current_offer_snapshot_upsert_failed',
+        hint: 'Check the commerce_current_offer_snapshots table schema.',
+        message: 'Could not find the column best_commercial_unit_type',
+        samplePayloadShape: [
+          expect.objectContaining({
+            offersLength: 1,
+            setId: '43300',
+          }),
+        ],
+        sampleSnapshotKeys: [
+          {
+            condition: 'new',
+            currencyCode: 'EUR',
+            regionCode: 'NL',
+            setId: '43300',
+          },
+        ],
+        snapshotCount: 1,
+      }),
+    );
+
+    errorSpy.mockRestore();
   });
 });

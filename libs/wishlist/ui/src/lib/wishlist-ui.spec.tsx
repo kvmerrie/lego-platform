@@ -179,8 +179,15 @@ describe('WantedSetToggleCard', () => {
     expect(buttonBlock).toContain(
       'min-inline-size: var(--catalog-card-action-height, 2.75rem);',
     );
-    expect(idleBlock).toContain('background: var(--lego-surface-muted);');
-    expect(idleBlock).toContain('border-color: transparent;');
+    expect(idleBlock).toContain(
+      'background: var(--wishlist-button-background, var(--lego-surface-muted));',
+    );
+    expect(idleBlock).toContain(
+      'border-color: var(--wishlist-button-border-color, transparent);',
+    );
+    expect(idleBlock).toContain(
+      'color: var(--wishlist-button-color, var(--lego-text));',
+    );
   });
 
   it('uses a filled icon for followed inline price states so cards read faster at a glance', () => {
@@ -205,9 +212,50 @@ describe('WantedSetToggleCard', () => {
     const activeBlock =
       css.match(/\.inlineToggleButtonActive \{[^}]+\}/u)?.[0] ?? '';
 
-    expect(activeBlock).toContain('background: var(--lego-info-subtle);');
-    expect(activeBlock).toContain('border-color: transparent;');
-    expect(activeBlock).toContain('color: var(--lego-info);');
+    expect(activeBlock).toContain(
+      'background: var(--wishlist-button-active-background, var(--lego-info-subtle));',
+    );
+    expect(activeBlock).toContain(
+      'border-color: var(--wishlist-button-active-border-color, transparent);',
+    );
+    expect(activeBlock).toContain(
+      'color: var(--wishlist-button-active-color, var(--lego-info));',
+    );
+    expect(css).toContain('.inlineToggleButton.inlineToggleButtonActive {');
+    expect(css).toContain(
+      '.inlineToggleButton.inlineToggleButtonActive:hover {',
+    );
+    expect(css).toContain(
+      '.inlineToggleButton.inlineToggleButtonActive:active {',
+    );
+    expect(css).toContain('--wishlist-button-active-pressed-background');
+    expect(css).toContain('--wishlist-button-active-pressed-border-color');
+    expect(css).toContain('--wishlist-button-active-pressed-color');
+  });
+
+  it('keeps product price-follow buttons on the same defaults unless a hero passes variables', () => {
+    const css = readWishlistUiCss();
+    const idleBlock =
+      css.match(/\.productToggleButtonIdle \{[^}]+\}/u)?.[0] ?? '';
+    const activeBlock =
+      css.match(/\.productToggleButtonActive \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(idleBlock).toContain(
+      'background: var(--wishlist-button-background, var(--lego-surface-muted));',
+    );
+    expect(idleBlock).toContain(
+      'color: var(--wishlist-button-color, var(--lego-text));',
+    );
+    expect(activeBlock).toContain(
+      'background: var(--wishlist-button-active-background, var(--lego-info-subtle));',
+    );
+    expect(activeBlock).toContain(
+      'color: var(--wishlist-button-active-color, var(--lego-info));',
+    );
+    expect(css).toContain('.productToggleButton.productToggleButtonActive {');
+    expect(css).toContain(
+      '.productToggleButton.productToggleButtonActive:active {',
+    );
   });
 
   it('keeps the inline loading state compact instead of expanding to a long status label', () => {

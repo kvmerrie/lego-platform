@@ -34,6 +34,7 @@ import {
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
   getHomepageEditorialConfig,
+  getHomepageCommerceSnapshot,
   getCatalogSetBySlug,
   listCanonicalCatalogSets,
   listCatalogCurrentOfferCandidateSetIds,
@@ -8750,6 +8751,72 @@ describe('catalog effective data access web', () => {
     ).toEqual(['10311', '43247', '75446']);
   });
 
+  test('keeps official LEGO discount hard deals when reference signal is missing', () => {
+    const setCards = [
+      {
+        id: '76443',
+        imageUrl: undefined,
+        name: "Hagrid and Harry's Motorcycle Ride",
+        pieces: 617,
+        releaseYear: 2025,
+        slug: 'hagrid-and-harrys-motorcycle-ride-76443',
+        theme: 'Harry Potter',
+      },
+    ];
+    const partnerOffer = createCatalogOffer({
+      availability: 'in_stock',
+      commercialUnitType: 'full_set',
+      merchantName: 'lidl',
+      priceCents: 3499,
+      setId: '76443',
+      url: 'https://www.lidl.nl/p/lego-76443',
+    });
+    const legoOffer = {
+      ...createCatalogOffer({
+        availability: 'in_stock',
+        commercialUnitType: 'full_set',
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        priceCents: 4999,
+        setId: '76443',
+        url: 'https://www.lego.com/nl-nl/product/76443',
+      }),
+      merchantSlug: 'rakuten-lego-eu',
+    };
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '76443',
+        {
+          bestOffer: partnerOffer,
+          offers: [partnerOffer, legoOffer],
+          setId: '76443',
+        },
+      ],
+    ]);
+    const discoverySignalBySetId = new Map([
+      [
+        '76443',
+        createCatalogDiscoverySignal({
+          bestPriceMinor: 3499,
+          merchantCount: 2,
+          priceSpreadMinor: 0,
+          referenceDeltaMinor: undefined,
+        }),
+      ],
+    ]);
+
+    const result = rankCatalogBestDealSetCards({
+      currentOfferSummaryBySetId,
+      getCatalogDiscoverySignalFn: (setId) => discoverySignalBySetId.get(setId),
+      limit: 6,
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76443',
+    ]);
+  });
+
   test('excludes 71050-like unknown unit and unknown verdict cards from primary deal quality rails', () => {
     const setCards = [
       {
@@ -12220,11 +12287,76 @@ describe('catalog effective data access web', () => {
     expect(selectedTables).toContain('commerce_current_offer_snapshots');
     expect(summaries.get('77244')).toMatchObject({
       bestOffer: {
+        commercialUnitType: 'full_set',
         merchantName: 'LEGO®',
         merchantSlug: 'rakuten-lego-eu',
         priceCents: 2699,
       },
+      offers: [
+        expect.objectContaining({
+          commercialUnitType: 'full_set',
+        }),
+      ],
       setId: '77244',
+    });
+  });
+
+  test('classifies current-offer snapshot units from set id and URL when snapshot unit fields are missing', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      snapshotRows: [
+        {
+          best_availability: 'in_stock',
+          best_checked_at: '2026-05-26T08:00:00.000Z',
+          best_commercial_unit_type: null,
+          best_merchant_name: 'Alternate',
+          best_merchant_slug: 'alternate',
+          best_price_minor: 1999,
+          best_product_url:
+            'https://www.alternate.nl/LEGO/Speed-Champions-77244/html/product/100076500',
+          computed_at: new Date().toISOString(),
+          condition: 'new',
+          currency_code: 'EUR',
+          offer_count: 1,
+          offers: [
+            {
+              availability: 'in_stock',
+              checkedAt: '2026-05-26T08:00:00.000Z',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchantName: 'Alternate',
+              merchantSlug: 'alternate',
+              priceMinor: 1999,
+              setId: '77244',
+              url: 'https://www.alternate.nl/LEGO/Speed-Champions-77244/html/product/100076500',
+            },
+          ],
+          region_code: 'NL',
+          set_id: '77244',
+        },
+      ],
+    });
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['77244'],
+      supabaseClient,
+    });
+
+    expect(summaries.get('77244')).toMatchObject({
+      bestOffer: {
+        commercialUnitType: 'full_set',
+        merchantSlug: 'alternate',
+        priceCents: 1999,
+      },
+      offers: [
+        expect.objectContaining({
+          commercialUnitType: 'full_set',
+        }),
+      ],
     });
   });
 
@@ -13390,5 +13522,96 @@ describe('catalog effective data access web', () => {
 
     expect(result.validPrimaryOfferCount).toBe(1);
     expect(result.primarySeedCount).toBe(1);
+  });
+});
+
+describe('homepage commerce snapshot data access', () => {
+  test('loads and normalizes the compact homepage commerce snapshot row', async () => {
+    const selectedTables: string[] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [
+        {
+          collection_slug: 'homepage-commerce',
+          generated_at: '2026-06-15T08:00:00.000Z',
+          items_json: {
+            generatedAt: '2026-06-15T08:00:00.000Z',
+            buyRail: {
+              bestDeals: [
+                {
+                  setId: '10316',
+                  slug: 'the-lord-of-the-rings-rivendell-10316',
+                  name: 'Rivendell',
+                  imageUrl: 'https://img.example/10316.jpg',
+                  currentPriceMinor: 42999,
+                  merchantName: 'Toy Shop',
+                  ctaUrl: 'https://merchant.example/10316',
+                  offers: [{ priceMinor: 42999 }],
+                },
+              ],
+              popularThisWeek: [],
+              giftsUnder100: [],
+            },
+            followRail: {
+              smartToFollow: [],
+              biggestPriceDrops: [],
+              waitCanPayOff: [],
+            },
+            debug: {
+              candidateCount: 999,
+            },
+          },
+          page: 1,
+          page_size: 1,
+          sort_key: 'intent-v1',
+          total_count: 1,
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      onSelect: (table) => selectedTables.push(table),
+    });
+
+    const snapshot = await getHomepageCommerceSnapshot({
+      supabaseClient,
+    });
+
+    expect(selectedTables).toEqual(['collection_page_snapshots']);
+    expect(snapshot?.buyRail.bestDeals).toEqual([
+      {
+        setId: '10316',
+        slug: 'the-lord-of-the-rings-rivendell-10316',
+        name: 'Rivendell',
+        imageUrl: 'https://img.example/10316.jpg',
+        currentPriceMinor: 42999,
+        merchantName: 'Toy Shop',
+        ctaUrl: 'https://merchant.example/10316',
+      },
+    ]);
+    expect(JSON.stringify(snapshot)).not.toContain('offers');
+    expect(JSON.stringify(snapshot)).not.toContain('candidateCount');
+  });
+
+  test('returns undefined when the dedicated homepage commerce row is missing', async () => {
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+    });
+
+    await expect(
+      getHomepageCommerceSnapshot({
+        supabaseClient,
+      }),
+    ).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[homepage-commerce-snapshot] missing',
+    );
+
+    warnSpy.mockRestore();
   });
 });

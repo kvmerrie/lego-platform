@@ -782,6 +782,38 @@ describe('commerce sync server', () => {
       summaryByCollectionSlug: {},
       upsertedCount: 0,
     });
+    const syncHomepageCommerceSnapshotFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-11T10:00:00.000Z',
+      snapshot: {
+        generatedAt: '2026-05-11T10:00:00.000Z',
+        buyRail: {
+          bestDeals: [],
+          giftsUnder100: [],
+          popularThisWeek: [],
+        },
+        followRail: {
+          biggestPriceDrops: [],
+          smartToFollow: [],
+          waitCanPayOff: [],
+        },
+      },
+      summary: {
+        buyRailSetCount: 0,
+        followRailSetCount: 0,
+        overlapRemovedCount: 0,
+        payloadBytes: 512,
+        tabCounts: {
+          bestDeals: 0,
+          biggestPriceDrops: 0,
+          giftsUnder100: 0,
+          popularThisWeek: 0,
+          smartToFollow: 0,
+          waitCanPayOff: 0,
+        },
+      },
+      upsertedCount: 1,
+    });
 
     const result = await runCommerceSync({
       dependencies: {
@@ -814,6 +846,7 @@ describe('commerce sync server', () => {
           }),
         ),
         syncCollectionPageSnapshotsFn,
+        syncHomepageCommerceSnapshotFn,
         upsertCommerceCurrentOfferSnapshotsFn,
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
           .fn()
@@ -882,6 +915,18 @@ describe('commerce sync server', () => {
       dryRun: false,
       pageSize: 40,
     });
+    expect(syncHomepageCommerceSnapshotFn).toHaveBeenCalledWith({
+      collectionSnapshots: [],
+      dryRun: false,
+      now: undefined,
+      tabLimit: 20,
+    });
+    expect(
+      upsertCommerceCurrentOfferSnapshotsFn.mock.invocationCallOrder[0],
+    ).toBeLessThan(syncHomepageCommerceSnapshotFn.mock.invocationCallOrder[0]);
+    expect(result.homepageCommerceSnapshotCount).toBe(1);
+    expect(result.homepageCommerceSnapshotsUpsertedCount).toBe(1);
+    expect(result.homepageCommerceSnapshotPayloadBytes).toBe(512);
     expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
   });
 

@@ -67,12 +67,18 @@ interface CatalogSetCardRailGestureState {
 
 export type CatalogSetCardRailLayoutMode = 'default' | 'stable-square';
 
+export interface CatalogSetCardRailRenderProps {
+  controls: ReactNode;
+  rail: ReactNode;
+}
+
 interface CatalogSetCardRailProps {
   ariaLabel: string;
   items: readonly CatalogSetCardRailItem[];
   railLayoutMode?: CatalogSetCardRailLayoutMode;
   mobileOverflowBleed?: boolean;
   mobileOverflowBleedUntil?: 'mobile' | 'page' | 'tablet';
+  render?: (props: CatalogSetCardRailRenderProps) => ReactNode;
   showControls?: boolean;
   variant?: 'compact' | 'featured';
 }
@@ -390,11 +396,13 @@ function CatalogSetCardRailViewport({
       return;
     }
 
+    const currentScrollLeft = railElement.scrollLeft;
+
     railElement.scrollTo?.({
       behavior: 'auto',
-      left: railElement.scrollLeft,
+      left: currentScrollLeft,
     });
-    railElement.scrollLeft = railElement.scrollLeft;
+    railElement.scrollLeft = currentScrollLeft;
   }
 
   function handleRailPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -715,6 +723,7 @@ export function CatalogSetCardRail({
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
   railLayoutMode = 'stable-square',
+  render,
   showControls = false,
   variant = 'featured',
 }: CatalogSetCardRailProps) {
@@ -726,7 +735,9 @@ export function CatalogSetCardRail({
       mobileOverflowBleedUntil={mobileOverflowBleedUntil}
       railLayoutMode={railLayoutMode}
       render={({ controls, rail }) =>
-        showControls && controls ? (
+        render ? (
+          render({ controls, rail })
+        ) : showControls && controls ? (
           <div className={styles.setCardRailInline}>
             <div className={styles.setCardRailInlineControls}>{controls}</div>
             {rail}

@@ -8,6 +8,7 @@ import {
   CatalogKeyFacts,
   CatalogOfferComparison,
   CatalogPriceDecisionPanel,
+  CatalogPriceDecisionPrimary,
   CatalogTrustPanel,
 } from './catalog-commerce-ui';
 
@@ -126,14 +127,18 @@ describe('Catalog commerce UI', () => {
       <CatalogPriceDecisionPanel
         followAction={<button type="button">Volg prijs</button>}
         heroSideAction={
-          <button aria-label="Aan verlanglijst toevoegen" type="button">
+          <button
+            aria-label="Aan verlanglijst toevoegen"
+            className="inlineToggleButtonActive"
+            type="button"
+          >
             ♥
           </button>
         }
         primaryOffer={{
           affiliateNote:
             'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
-          checkedLabel: '2 apr om 09:00',
+          checkedLabel: 'Recent gecontroleerd',
           coverageLabel: '3 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
           ctaLabel: 'Bekijk deal bij bol',
@@ -141,7 +146,14 @@ describe('Catalog commerce UI', () => {
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Goede deal',
           decisionTone: 'positive',
-          merchantLabel: 'Bij bol',
+          evidence: [
+            '€ 30,00 goedkoper dan LEGO',
+            'Recent gecontroleerd',
+            '3 winkels nagekeken',
+          ],
+          merchantLabel: 'bol',
+          merchantName: 'bol',
+          merchantSlug: 'bol',
           price: '€ 469,99',
           rankingLabel: '€ 30,00 goedkoper dan de rest',
           stockLabel: 'Op voorraad',
@@ -167,12 +179,36 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('Goede deal');
     expect(markup).not.toContain('Beste prijs nu');
-    expect(markup).toContain('Bij bol');
-    expect(markup).toContain('€ 30,00 goedkoper dan de rest');
+    expect(markup).toContain('aria-label="Bij bol"');
+    expect(markup).toContain('aria-label="Bekijk winkel bol"');
+    expect(markup).toContain('href="/winkels/bol"');
+    expect(markup).toContain('src="/merchant-favicons/bol.ico"');
+    expect(markup).toContain('€ 30,00 goedkoper dan LEGO');
+    expect(markup).toContain('data-hero-commerce-slot="evidence"');
+    expect(markup).toContain('bestDealEvidenceText');
+    expect(markup).not.toContain('bestDealEvidencePill');
+    expect(markup).not.toContain('bestDealEvidenceSupportList');
+    expect(markup).not.toContain('€ 30,00 goedkoper dan de rest');
+    expect(markup).not.toContain('3 winkels nagekeken');
+    expect(markup).toContain('data-hero-commerce-slot="advice"');
+    expect(markup).toContain('bestDealAdvice');
+    expect(markup).not.toContain('bestDealRanking');
+    expect(markup).toContain('data-hero-commerce-slot="trust"');
+    expect(markup).toContain('bestDealTrustList');
+    expect(markup).toContain('Op voorraad');
+    expect(markup).toContain('Beste prijs van 3 winkels');
+    expect(markup).toContain('Recent gecontroleerd');
     expect(markup).toContain('Bekijk deal bij bol');
+    expect(markup).toContain('data-hero-commerce-cta-tone="accent"');
     expect(markup).toContain('bestDealActionRow');
+    expect(markup).toContain('data-action-layout="merchant-follow"');
+    expect(markup).toContain('data-commerce-cta-tone="accent"');
     expect(markup).toContain('bestDealSideAction');
+    expect(markup).toContain('bestDealFollowIconButton');
+    expect(markup).toContain('data-hero-follow-action="true"');
+    expect(markup).not.toContain('data-hero-follow-tone');
     expect(markup).toContain('Aan verlanglijst toevoegen');
+    expect(markup).toContain('inlineToggleButtonActive');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('data-brickhunt-event="offer_click"');
@@ -186,6 +222,62 @@ describe('Catalog commerce UI', () => {
       'Nog niet klaar? Dan houdt Brickhunt dit moment vast.',
     );
     expect(markup).toContain('Waarom nu');
+    expect(markup.indexOf('data-hero-commerce-slot="evidence"')).toBeLessThan(
+      markup.indexOf('data-hero-commerce-slot="advice"'),
+    );
+    expect(markup.indexOf('data-hero-commerce-slot="advice"')).toBeLessThan(
+      markup.indexOf('data-hero-commerce-slot="merchant"'),
+    );
+    expect(markup.indexOf('data-hero-commerce-slot="merchant"')).toBeLessThan(
+      markup.indexOf('data-hero-commerce-slot="cta"'),
+    );
+    expect(markup.indexOf('data-hero-commerce-slot="cta"')).toBeLessThan(
+      markup.indexOf('data-hero-commerce-slot="trust"'),
+    );
+    expect(markup.indexOf('Recent gecontroleerd')).toBeGreaterThan(
+      markup.indexOf('data-hero-commerce-slot="cta"'),
+    );
+  });
+
+  it('keeps warning merchant offers visible with calmer CTA tone', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPrimary
+        heroSideAction={
+          <button aria-label="Aan verlanglijst toevoegen" type="button">
+            ♥
+          </button>
+        }
+        primaryOffer={{
+          checkedLabel: 'Eergisteren om 20:06',
+          coverageLabel: '9 winkels nagekeken',
+          ctaHref: 'https://example.com/proshop',
+          ctaLabel: 'Bekijk deal bij Proshop',
+          ctaTone: 'accent',
+          decisionHelper:
+            'De prijs lag recent lager. Volgen is waarschijnlijk slimmer dan nu kopen.',
+          decisionLabel: 'Wachten kan lonen',
+          decisionTone: 'warning',
+          evidence: ['Recent goedkoper gezien'],
+          merchantLabel: 'Proshop',
+          merchantName: 'Proshop',
+          merchantSlug: 'proshop',
+          price: '€ 193,22',
+          stockLabel: 'Op voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Wachten kan lonen');
+    expect(markup).toContain('Bekijk deal bij Proshop');
+    expect(markup).toContain('data-hero-commerce-cta-tone="secondary"');
+    expect(markup).toContain('data-commerce-cta-tone="secondary"');
+    expect(markup).toContain('bestDealSideAction');
+    expect(markup).toContain('bestDealFollowIconButton');
+    expect(markup).toContain('data-hero-follow-action="true"');
+    expect(markup).not.toContain('data-hero-follow-tone');
+    expect(markup).toContain('Aan verlanglijst toevoegen');
+    expect(markup).toContain('Recent goedkoper gezien');
+    expect(markup).toContain('Beste prijs van 9 winkels');
   });
 
   it('leads no-offer states with the follow-price action', () => {
@@ -216,6 +308,67 @@ describe('Catalog commerce UI', () => {
     expect(markup).not.toContain('data-brickhunt-event="offer_click"');
   });
 
+  it('renders no-offer primary follow without a duplicate compact heart action', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPrimary
+        followAction={<button type="button">Volg prijs</button>}
+        heroSideAction={
+          <button aria-label="Volg prijs compact" type="button">
+            ♥
+          </button>
+        }
+        primaryOffer={{
+          checkedLabel: 'Vandaag om 07:01',
+          coverageLabel: '5 winkels nagekeken',
+          decisionHelper:
+            'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
+          decisionLabel: 'Nog geen deal',
+          decisionTone: 'warning',
+          merchantLabel: 'Prijsbeeld bouwt nog op',
+          price: 'Nog geen actuele prijs',
+          stockLabel: 'Prijsbeeld bouwt nog op',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('data-commerce-state="follow"');
+    expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('bestDealFollowAction');
+    expect(markup).toContain('data-hero-follow-action="primary"');
+    expect(markup).not.toContain('data-hero-follow-tone');
+    expect(markup).not.toContain('bestDealSideAction');
+    expect(markup).not.toContain('bestDealFollowIconButton');
+    expect(markup).not.toContain('data-hero-follow-action="true"');
+    expect(markup).not.toContain('Volg prijs compact');
+    expect(markup).not.toContain('data-commerce-cta-tone=');
+  });
+
+  it('marks neutral no-data primary follow actions with the neutral hero hook', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPrimary
+        followAction={<button type="button">Volg prijs</button>}
+        primaryOffer={{
+          checkedLabel: 'Vandaag om 07:01',
+          coverageLabel: '5 winkels nagekeken',
+          decisionHelper:
+            'Bij de winkels die Brickhunt volgt zien we nu geen nieuwe voorraad.',
+          decisionLabel: 'Geen actuele voorraad gevonden',
+          decisionTone: 'neutral',
+          merchantLabel: 'Geen actuele voorraad gevonden',
+          price: 'Geen actuele voorraad gevonden',
+          stockLabel: 'Geen actuele voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('data-commerce-state="follow"');
+    expect(markup).toContain('data-tone="neutral"');
+    expect(markup).toContain('data-hero-follow-action="primary"');
+    expect(markup).not.toContain('data-hero-follow-tone');
+    expect(markup).not.toContain('bestDealSideAction');
+    expect(markup).not.toContain('bestDealFollowIconButton');
+  });
+
   it('renders the empty best-deal fallback as a warm follow-price card', () => {
     const markup = renderToStaticMarkup(
       <CatalogPriceDecisionPanel
@@ -225,11 +378,64 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('data-tone="warning"');
     expect(markup).toContain('Nog geen deal');
-    expect(markup).toContain('Prijsbeeld bouwt nog op.');
+    expect(markup).toContain('Nog geen actuele prijs');
     expect(markup).toContain(
       'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
     );
     expect(markup).toContain('Volg prijs');
+  });
+
+  it('keeps every hero commerce state on the same structural slots', () => {
+    const states = [
+      'Uitzonderlijke deal',
+      'Sterke deal',
+      'Goede prijs',
+      'Normale prijs',
+      'Wachten kan lonen',
+      'Prijsbeeld bouwt op',
+      'Geen betrouwbare prijs',
+    ];
+
+    for (const stateLabel of states) {
+      const markup = renderToStaticMarkup(
+        <CatalogPriceDecisionPrimary
+          followAction={<button type="button">Volg prijs</button>}
+          primaryOffer={{
+            checkedLabel: 'Vandaag om 09:00',
+            coverageLabel: '4 winkels nagekeken',
+            decisionHelper: 'Korte onderbouwing voor deze status.',
+            decisionLabel: stateLabel,
+            decisionTone:
+              stateLabel === 'Wachten kan lonen'
+                ? 'warning'
+                : stateLabel === 'Normale prijs'
+                  ? 'info'
+                  : stateLabel === 'Prijsbeeld bouwt op' ||
+                      stateLabel === 'Geen betrouwbare prijs'
+                    ? 'neutral'
+                    : 'positive',
+            merchantLabel: 'Alternate',
+            merchantName: 'Alternate',
+            merchantSlug: 'alternate',
+            price:
+              stateLabel === 'Prijsbeeld bouwt op'
+                ? 'Nog geen actuele prijs'
+                : '€ 74,90',
+            stockLabel: 'Op voorraad',
+          }}
+        />,
+      );
+
+      expect(markup).toContain('data-hero-commerce-card="true"');
+      expect(markup).toContain('data-hero-commerce-slot="status"');
+      expect(markup).toContain('data-hero-commerce-slot="price"');
+      expect(markup).toContain('data-hero-commerce-slot="evidence"');
+      expect(markup).toContain('data-hero-commerce-slot="advice"');
+      expect(markup).toContain('data-hero-commerce-slot="merchant"');
+      expect(markup).toContain('data-hero-commerce-slot="trust"');
+      expect(markup).toContain('data-hero-commerce-slot="cta"');
+      expect(markup).toContain('data-hero-commerce-slot="disclosure"');
+    }
   });
 
   it('renders a comparison fallback when only one reviewed offer is available', () => {

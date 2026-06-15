@@ -506,12 +506,11 @@
   display: flex;
   inset: 0;
   justify-content: center;
-  opacity: 0;
+  opacity: 1;
   overscroll-behavior: contain;
   padding: var(--lego-space-4);
   position: fixed;
-  transition: opacity var(--gallery-lightbox-open-duration)
-    var(--gallery-lightbox-open-easing);
+  transition: none;
   z-index: 1400;
 }
 
@@ -527,15 +526,10 @@
   max-height: min(100%, calc(100vh - (var(--lego-space-4) * 2)));
   max-width: min(90vw, 92rem);
   min-height: 0;
-  opacity: 0;
+  opacity: 1;
   padding: 0;
-  transform: translateY(0.75rem) scale(0.985);
-  transition:
-    transform var(--gallery-lightbox-open-duration)
-      var(--gallery-lightbox-open-easing),
-    opacity var(--gallery-lightbox-open-duration)
-      var(--gallery-lightbox-open-easing);
-  will-change: transform, opacity;
+  transform: none;
+  transition: none;
   width: 90vw;
 }
 
@@ -544,21 +538,17 @@
 }
 
 .lightboxBackdrop[data-lightbox-state='closing'] {
-  opacity: 0;
-  transition-duration: var(--gallery-lightbox-close-duration);
-  transition-timing-function: var(--gallery-lightbox-close-easing);
+  opacity: 1;
 }
 
 .lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none;
 }
 
 .lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {
-  opacity: 0;
-  transform: translateY(0.75rem) scale(0.985);
-  transition-duration: var(--gallery-lightbox-close-duration);
-  transition-timing-function: var(--gallery-lightbox-close-easing);
+  opacity: 1;
+  transform: none;
 }
 
 .lightboxDialog[data-lightbox-variant='detail'] {
@@ -1207,7 +1197,10 @@
 
   .lightboxBackdrop {
     align-items: flex-end;
+    opacity: 0;
     padding: 0;
+    transition: opacity var(--gallery-lightbox-open-duration)
+      var(--gallery-lightbox-open-easing);
   }
 
   .lightboxDialog {
@@ -1219,7 +1212,18 @@
     transform: translateY(100%);
     transition: transform var(--gallery-lightbox-open-duration)
       var(--gallery-lightbox-open-easing);
+    will-change: transform;
     width: 100vw;
+  }
+
+  .lightboxBackdrop[data-lightbox-state='open'] {
+    opacity: 1;
+  }
+
+  .lightboxBackdrop[data-lightbox-state='closing'] {
+    opacity: 0;
+    transition-duration: var(--gallery-lightbox-close-duration);
+    transition-timing-function: var(--gallery-lightbox-close-easing);
   }
 
   .lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {

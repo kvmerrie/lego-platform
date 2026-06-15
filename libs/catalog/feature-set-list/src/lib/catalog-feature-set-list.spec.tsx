@@ -173,6 +173,33 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('Buyable set 20');
   });
 
+  it('can render the rail without its own visual header for tabbed sections', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        actionHref="/deals"
+        actionLabel="Bekijk alle deals"
+        sectionId="best-current-deals-best-deals"
+        setCards={[
+          {
+            id: '10316',
+            slug: 'rivendell-10316',
+            name: 'Rivendell',
+            theme: 'Icons',
+            releaseYear: 2023,
+            pieces: 6167,
+          },
+        ]}
+        showHeader={false}
+        title="Beste deals"
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Beste deals"');
+    expect(markup).toContain('Rivendell');
+    expect(markup).not.toContain('Bekijk alle deals');
+    expect(markup).not.toContain('>Beste deals<');
+  });
+
   it('renders all provided homepage rail items without an experimental cap', () => {
     const setCards = Array.from({ length: 20 }, (_, index) => {
       const setId = String(45_000 + index);

@@ -402,6 +402,57 @@ describe('CatalogSetCardRail', () => {
     ).not.toBeNull();
   });
 
+  it('exposes controls and rail content to a custom renderer', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Homepage kooprail"
+          items={[
+            {
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+            {
+              id: '76269',
+              setSummary: {
+                id: '76269',
+                slug: 'avengers-tower-76269',
+                name: 'Avengers Tower',
+                theme: 'Marvel',
+                releaseYear: 2023,
+                pieces: 5202,
+                imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+          ]}
+          render={({ controls, rail }) => (
+            <section>
+              <div data-custom-rail-header>{controls}</div>
+              <div data-custom-rail-body>{rail}</div>
+            </section>
+          )}
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-custom-rail-header]')).not.toBeNull();
+    expect(container.querySelector('[data-custom-rail-body]')).not.toBeNull();
+    expect(
+      container.querySelector('[class*="setCardRailHeadingControls"]'),
+    ).not.toBeNull();
+    expect(container.textContent).toContain('Rivendell');
+    expect(container.textContent).toContain('Avengers Tower');
+  });
+
   it('does not show set numbers on no-price rail set cards', () => {
     act(() => {
       root.render(
@@ -1086,7 +1137,7 @@ describe('CatalogSetCardRail', () => {
         /\.sectionShellInverse \.setCardRailTrack > \.setCard \{[^}]+\}/u,
       )?.[0] ?? '';
     const railHoverRule =
-      css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\n {4}\.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
     const focusRule =
       css.match(
         /\.setCard:has\(\.setCardClickLayer:focus-visible\) \{[^}]+\}/u,
@@ -1245,9 +1296,9 @@ describe('CatalogSetCardRail', () => {
       'utf-8',
     );
     const railTrackRule =
-      css.match(/\n  \.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\n {2}\.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
     const skeletonTrackRule =
-      css.match(/\n  \.setCardRailSkeletonTrack \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\n {2}\.setCardRailSkeletonTrack \{[^}]+\}/u)?.[0] ?? '';
     const railCardShellRule =
       css.match(/\.setCardCollectionRail > \.setCardCompact \{[^}]+\}/u)?.[0] ??
       '';
@@ -1275,8 +1326,9 @@ describe('CatalogSetCardRail', () => {
       css.match(
         /\.setCardRailStableSquare\s+\.setCardCollectionRail\s+> \.setCardCompact\s+> \.setCardLink\s+> \.setVisual\s+\.setImage \{[^}]+\}/u,
       )?.[0] ?? '';
-    const baseVisualRule = css.match(/\n  \.cardVisual \{[^}]+\}/u)?.[0] ?? '';
-    const baseImageRule = css.match(/\n  \.setImage \{[^}]+\}/u)?.[0] ?? '';
+    const baseVisualRule =
+      css.match(/\n {2}\.cardVisual \{[^}]+\}/u)?.[0] ?? '';
+    const baseImageRule = css.match(/\n {2}\.setImage \{[^}]+\}/u)?.[0] ?? '';
 
     expect(css).not.toContain('--set-card-rail-card-width');
     expect(css).not.toContain('--set-card-rail-image-size');
@@ -1343,7 +1395,7 @@ describe('CatalogSetCardRail', () => {
       'utf-8',
     );
     const railTrackRule =
-      css.match(/\n  \.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\n {2}\.setCardRailTrack \{[^}]+\}/u)?.[0] ?? '';
     const railCardRule =
       css.match(/\.setCardRailTrack > \.setCard \{[^}]+\}/u)?.[0] ?? '';
     const railCardShellRule =

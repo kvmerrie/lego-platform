@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react';
-import { BellRing, Clock3, Package2, Store } from 'lucide-react';
+import { BellRing, Check, Clock3 } from 'lucide-react';
 import {
   ActionLink,
   Badge,
@@ -14,6 +14,7 @@ import {
 } from '@lego-platform/shared/util';
 import styles from './catalog-ui.module.css';
 import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
+import { CatalogMerchantBrand } from './catalog-merchant-brand';
 
 export interface CatalogDecisionVerdict {
   explanation: string;
@@ -33,15 +34,18 @@ export interface CatalogDecisionOffer {
   decisionHelper?: string;
   decisionLabel?: string;
   decisionTone?: ComponentProps<typeof Badge>['tone'];
+  evidence?: readonly string[];
   eyebrow?: string;
   merchantId?: string;
   merchantKey?: string;
   merchantLabel: string;
+  merchantName?: string;
   merchantSlug?: string;
   price: string;
   rankingLabel?: string;
   stockLabel: string;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
+  trustSignals?: readonly string[];
 }
 
 export type CatalogSetDetailBestDeal = CatalogDecisionOffer;
@@ -98,6 +102,377 @@ interface CatalogPriceDecisionPanelProps {
   verdictTone?: CatalogDecisionVerdict['tone'];
 }
 
+function getUniqueHeroLines(lines: Array<string | null | undefined>): string[] {
+  const seenLines = new Set<string>();
+
+  return lines
+    .map((line) => line?.replace(/[ \t\r\n]+/g, ' ').trim())
+    .filter((line): line is string => Boolean(line))
+    .filter((line) => {
+      const key = line.toLowerCase();
+
+      if (seenLines.has(key)) {
+        return false;
+      }
+
+      seenLines.add(key);
+      return true;
+    });
+}
+
+function stripHeroMerchantPrefix(merchantLabel: string): string {
+  return merchantLabel
+    .replace(/^(?:bij|laagst bij|nu het laagst bij|actuele prijs bij)\s+/iu, '')
+    .trim();
+}
+
+function getHeroMerchantDisplayName(offer: CatalogDecisionOffer): string {
+  return (
+    offer.merchantName?.trim() ||
+    stripHeroMerchantPrefix(offer.merchantLabel) ||
+    offer.merchantLabel
+  );
+}
+
+function getHeroCoverageTrustLabel({
+  coverageLabel,
+  hasCommerceAction,
+}: {
+  coverageLabel?: string;
+  hasCommerceAction: boolean;
+}): string | undefined {
+  if (!coverageLabel) {
+    return undefined;
+  }
+
+  const merchantCountMatch = coverageLabel.match(
+    /^(\d+)\s+winkel(?:s)?\s+nagekeken$/iu,
+  );
+
+  if (!merchantCountMatch || !hasCommerceAction) {
+    return coverageLabel;
+  }
+
+  const merchantCount = Number.parseInt(merchantCountMatch[1] ?? '', 10);
+
+  if (!Number.isFinite(merchantCount) || merchantCount <= 1) {
+    return coverageLabel;
+  }
+
+  return `Beste prijs van ${merchantCount} winkels`;
+}
+
+function getHeroCheckedTrustLabel(checkedLabel: string): string {
+  const normalizedLabel = checkedLabel.replace(/\s+/g, ' ').trim();
+
+  if (!normalizedLabel) {
+    return normalizedLabel;
+  }
+
+  if (/gecontroleerd|nagekeken/iu.test(normalizedLabel)) {
+    return normalizedLabel;
+  }
+
+  return `${normalizedLabel} gecontroleerd`;
+}
+
+function isHeroTrustLikeEvidence(line: string): boolean {
+  const normalizedLine = line.trim();
+
+  if (
+    /^\d+\s+winkel(?:s)?\s+(?:vergeleken|nagekeken)$/iu.test(normalizedLine)
+  ) {
+    return true;
+  }
+
+  if (!/(?:gecontroleerd|nagekeken)/iu.test(normalizedLine)) {
+    return false;
+  }
+
+  return !/(?:goedkoper|duurder|laagste|beste prijs|onder|boven|korting|referentie|lego)/iu.test(
+    normalizedLine,
+  );
+}
+
+function getHeroEvidenceLines(offer: CatalogDecisionOffer): string[] {
+  return getUniqueHeroLines([
+    ...(offer.evidence ?? []),
+    offer.rankingLabel,
+  ]).filter((line) => !isHeroTrustLikeEvidence(line));
+}
+
+function getHeroMerchantHref(merchantSlug?: string): string | undefined {
+  const normalizedSlug = merchantSlug?.trim();
+
+  return normalizedSlug
+    ? `/winkels/${encodeURIComponent(normalizedSlug)}`
+    : undefined;
+}
+
+function getHeroTrustSignals({
+  hasCommerceAction,
+  offer,
+}: {
+  hasCommerceAction: boolean;
+  offer: CatalogDecisionOffer;
+}): string[] {
+  return getUniqueHeroLines([
+    ...(offer.trustSignals ?? []),
+    offer.stockLabel,
+    getHeroCoverageTrustLabel({
+      coverageLabel: offer.coverageLabel,
+      hasCommerceAction,
+    }),
+    getHeroCheckedTrustLabel(offer.checkedLabel),
+  ]).slice(0, 3);
+}
+
+function getHeroPriceKind(price: string): 'fallback' | 'price' {
+  return /(?:€|\d)/u.test(price) && !/geen|nog niet|prijsbeeld/iu.test(price)
+    ? 'price'
+    : 'fallback';
+}
+
+function getHeroMerchantActionTone(
+  offer: CatalogDecisionOffer,
+): 'accent' | 'secondary' {
+  if (offer.ctaTone === 'secondary') {
+    return 'secondary';
+  }
+
+  return offer.decisionTone === 'positive' ? 'accent' : 'secondary';
+}
+
+function getFallbackHeroOffer(): CatalogDecisionOffer {
+  return {
+    checkedLabel: 'Recent gecontroleerd',
+    decisionHelper:
+      'Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment wordt.',
+    decisionLabel: 'Nog geen deal',
+    decisionTone: 'warning',
+    merchantLabel: 'Prijsbeeld bouwt nog op',
+    price: 'Nog geen actuele prijs',
+    stockLabel: 'Prijsbeeld bouwt nog op',
+  };
+}
+
+export function CatalogHeroCommerceCard({
+  children,
+  commerceState,
+  tone,
+}: {
+  children: ReactNode;
+  commerceState: 'buy' | 'follow';
+  tone?: ComponentProps<typeof Badge>['tone'];
+}) {
+  return (
+    <section
+      className={styles.bestDealCard}
+      data-commerce-state={commerceState}
+      data-hero-commerce-card="true"
+      data-testid="best-deal"
+      data-tone={tone ?? 'neutral'}
+    >
+      {children}
+    </section>
+  );
+}
+
+export function CatalogHeroStatusBadge({
+  label,
+  tone,
+}: {
+  label?: string;
+  tone?: ComponentProps<typeof Badge>['tone'];
+}) {
+  return (
+    <div className={styles.bestDealStateSlot} data-hero-commerce-slot="status">
+      {label ? <Badge tone={tone ?? 'neutral'}>{label}</Badge> : null}
+    </div>
+  );
+}
+
+export function CatalogHeroPriceBlock({ price }: { price: string }) {
+  return (
+    <div className={styles.bestDealPriceBlock} data-hero-commerce-slot="price">
+      <p
+        className={styles.bestDealPrice}
+        data-price-kind={getHeroPriceKind(price)}
+      >
+        {price}
+      </p>
+    </div>
+  );
+}
+
+export function CatalogHeroDealEvidence({
+  evidence,
+}: {
+  evidence: readonly string[];
+}) {
+  const [primaryEvidence] = evidence;
+
+  return (
+    <div
+      className={styles.bestDealEvidenceSlot}
+      data-empty={evidence.length === 0 ? 'true' : 'false'}
+      data-hero-commerce-slot="evidence"
+    >
+      {primaryEvidence ? (
+        <p className={styles.bestDealEvidenceText}>{primaryEvidence}</p>
+      ) : null}
+    </div>
+  );
+}
+
+export function CatalogHeroAdvice({ advice }: { advice?: string }) {
+  return (
+    <div
+      className={styles.bestDealAdviceSlot}
+      data-empty={advice ? 'false' : 'true'}
+      data-hero-commerce-slot="advice"
+    >
+      {advice ? <p className={styles.bestDealAdvice}>{advice}</p> : null}
+    </div>
+  );
+}
+
+export function CatalogHeroMerchantBrand({
+  merchant,
+}: {
+  merchant?: {
+    merchantId?: string;
+    merchantKey?: string;
+    merchantLabel: string;
+    merchantName?: string;
+    merchantSlug?: string;
+  };
+}) {
+  return (
+    <div
+      className={styles.bestDealMerchantSlot}
+      data-empty={merchant ? 'false' : 'true'}
+      data-hero-commerce-slot="merchant"
+    >
+      {merchant ? (
+        <p
+          aria-label={`Bij ${merchant.merchantLabel}`}
+          className={styles.bestDealMerchant}
+        >
+          <span className={styles.bestDealMerchantPrefix}>Bij</span>
+          {getHeroMerchantHref(merchant.merchantSlug) ? (
+            <a
+              aria-label={`Bekijk winkel ${merchant.merchantLabel}`}
+              className={styles.bestDealMerchantLink}
+              href={getHeroMerchantHref(merchant.merchantSlug)}
+            >
+              <CatalogMerchantBrand
+                className={styles.bestDealMerchantBrand}
+                merchant={merchant}
+              />
+            </a>
+          ) : (
+            <CatalogMerchantBrand
+              className={styles.bestDealMerchantBrand}
+              merchant={merchant}
+            />
+          )}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function CatalogHeroTrustSignals({
+  trustSignals,
+}: {
+  trustSignals: readonly string[];
+}) {
+  return (
+    <div
+      className={styles.bestDealTrustSlot}
+      data-empty={trustSignals.length === 0 ? 'true' : 'false'}
+      data-hero-commerce-slot="trust"
+    >
+      {trustSignals.length > 0 ? (
+        <ul className={styles.bestDealTrustList}>
+          {trustSignals.map((trustSignal) => (
+            <li className={styles.bestDealTrustItem} key={trustSignal}>
+              <Check aria-hidden="true" size={15} strokeWidth={2.4} />
+              <span>{trustSignal}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+export function CatalogHeroActionRow({
+  commerceAction,
+  commerceTone,
+  followAction,
+  heroSideAction,
+}: {
+  commerceAction?: ReactNode;
+  commerceTone?: 'accent' | 'secondary';
+  followAction?: ReactNode;
+  heroSideAction?: ReactNode;
+}) {
+  return (
+    <div className={styles.bestDealActionSlot} data-hero-commerce-slot="cta">
+      {commerceAction ? (
+        <div
+          className={styles.bestDealActionRow}
+          data-action-layout={heroSideAction ? 'merchant-follow' : 'merchant'}
+          data-commerce-cta-tone={commerceTone}
+        >
+          {commerceAction}
+          {heroSideAction ? (
+            <CatalogHeroFollowIconButtonSlot>
+              {heroSideAction}
+            </CatalogHeroFollowIconButtonSlot>
+          ) : null}
+        </div>
+      ) : followAction ? (
+        <div
+          className={styles.bestDealFollowAction}
+          data-hero-follow-action="primary"
+        >
+          {followAction}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function CatalogHeroFollowIconButtonSlot({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={`${styles.bestDealSideAction} ${styles.bestDealFollowIconButton}`}
+      data-hero-follow-action="true"
+    >
+      {children}
+    </div>
+  );
+}
+
+export function CatalogHeroDisclosure({ note }: { note?: string }) {
+  return (
+    <div
+      className={styles.bestDealDisclosureSlot}
+      data-empty={note ? 'false' : 'true'}
+      data-hero-commerce-slot="disclosure"
+    >
+      {note ? <p className={styles.bestDealAffiliateNote}>{note}</p> : null}
+    </div>
+  );
+}
+
 function CatalogDecisionOfferCard({
   followAction,
   heroSideAction,
@@ -107,97 +482,68 @@ function CatalogDecisionOfferCard({
   heroSideAction?: ReactNode;
   offer?: CatalogDecisionOffer;
 }) {
-  if (!offer) {
-    return (
-      <section
-        className={styles.bestDealCard}
-        data-commerce-state="follow"
-        data-tone="warning"
-      >
-        <p className={styles.bestDealFallbackValue}>Nog geen deal</p>
-        <p className={styles.bestDealMeta}>Prijsbeeld bouwt nog op.</p>
-        <p className={styles.bestDealDecision}>
-          Volg deze prijs en krijg sneller inzicht wanneer dit een goed moment
-          wordt.
-        </p>
-        {followAction ? (
-          <div className={styles.bestDealFollowAction}>{followAction}</div>
-        ) : null}
-      </section>
-    );
-  }
-
-  const hasCommerceAction = Boolean(offer.ctaHref && offer.ctaLabel);
+  const resolvedOffer = offer ?? getFallbackHeroOffer();
+  const hasCommerceAction = Boolean(
+    resolvedOffer.ctaHref && resolvedOffer.ctaLabel,
+  );
+  const merchantActionTone = getHeroMerchantActionTone(resolvedOffer);
   const commerceAction =
-    hasCommerceAction && offer.ctaHref && offer.ctaLabel ? (
+    hasCommerceAction && resolvedOffer.ctaHref && resolvedOffer.ctaLabel ? (
       <ActionLink
         className={styles.bestDealAction}
-        href={offer.ctaHref}
+        data-hero-commerce-cta-tone={merchantActionTone}
+        href={resolvedOffer.ctaHref}
         rel="noopener noreferrer sponsored"
         target="_blank"
-        tone={offer.ctaTone ?? 'accent'}
-        {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
+        tone={merchantActionTone}
+        {...buildBrickhuntAnalyticsAttributes(resolvedOffer.trackingEvent)}
       >
-        {offer.ctaLabel}
+        {resolvedOffer.ctaLabel}
       </ActionLink>
     ) : null;
+  const merchantName = hasCommerceAction
+    ? getHeroMerchantDisplayName(resolvedOffer)
+    : undefined;
 
   return (
-    <section
-      className={styles.bestDealCard}
-      data-commerce-state={hasCommerceAction ? 'buy' : 'follow'}
-      data-tone={offer.decisionTone ?? 'neutral'}
+    <CatalogHeroCommerceCard
+      commerceState={hasCommerceAction ? 'buy' : 'follow'}
+      tone={resolvedOffer.decisionTone ?? 'neutral'}
     >
-      <div className={styles.bestDealHeader}>
-        {offer.decisionLabel ? (
-          <Badge tone={offer.decisionTone ?? 'neutral'}>
-            {offer.decisionLabel}
-          </Badge>
-        ) : null}
-      </div>
-      <p className={styles.bestDealPrice}>{offer.price}</p>
-      {offer.rankingLabel ? (
-        <p className={styles.bestDealRanking}>{offer.rankingLabel}</p>
-      ) : null}
-      {offer.decisionHelper ? (
-        <p className={styles.bestDealDecision}>{offer.decisionHelper}</p>
-      ) : null}
-      <p className={styles.bestDealMeta}>{offer.merchantLabel}</p>
-      <div className={styles.bestDealSignals}>
-        <MetaSignal
-          icon={<Package2 aria-hidden="true" size={16} strokeWidth={2.2} />}
-        >
-          {offer.stockLabel}
-        </MetaSignal>
-        {offer.coverageLabel ? (
-          <MetaSignal
-            icon={<Store aria-hidden="true" size={16} strokeWidth={2.2} />}
-          >
-            {offer.coverageLabel}
-          </MetaSignal>
-        ) : null}
-        <MetaSignal
-          icon={<Clock3 aria-hidden="true" size={16} strokeWidth={2.2} />}
-        >
-          {offer.checkedLabel}
-        </MetaSignal>
-      </div>
-      {commerceAction ? (
-        heroSideAction ? (
-          <div className={styles.bestDealActionRow}>
-            {commerceAction}
-            <div className={styles.bestDealSideAction}>{heroSideAction}</div>
-          </div>
-        ) : (
-          commerceAction
-        )
-      ) : followAction ? (
-        <div className={styles.bestDealFollowAction}>{followAction}</div>
-      ) : null}
-      {offer.affiliateNote ? (
-        <p className={styles.bestDealAffiliateNote}>{offer.affiliateNote}</p>
-      ) : null}
-    </section>
+      <CatalogHeroStatusBadge
+        label={resolvedOffer.decisionLabel}
+        tone={resolvedOffer.decisionTone ?? 'neutral'}
+      />
+      <CatalogHeroPriceBlock price={resolvedOffer.price} />
+      <CatalogHeroDealEvidence evidence={getHeroEvidenceLines(resolvedOffer)} />
+      <CatalogHeroAdvice advice={resolvedOffer.decisionHelper} />
+      <CatalogHeroMerchantBrand
+        merchant={
+          merchantName
+            ? {
+                merchantId: resolvedOffer.merchantId,
+                merchantKey: resolvedOffer.merchantKey,
+                merchantLabel: merchantName,
+                merchantName,
+                merchantSlug: resolvedOffer.merchantSlug,
+              }
+            : undefined
+        }
+      />
+      <CatalogHeroActionRow
+        commerceAction={commerceAction}
+        commerceTone={hasCommerceAction ? merchantActionTone : undefined}
+        followAction={hasCommerceAction ? undefined : followAction}
+        heroSideAction={hasCommerceAction ? heroSideAction : undefined}
+      />
+      <CatalogHeroTrustSignals
+        trustSignals={getHeroTrustSignals({
+          hasCommerceAction,
+          offer: resolvedOffer,
+        })}
+      />
+      <CatalogHeroDisclosure note={resolvedOffer.affiliateNote} />
+    </CatalogHeroCommerceCard>
   );
 }
 

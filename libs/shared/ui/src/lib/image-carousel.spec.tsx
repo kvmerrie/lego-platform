@@ -368,6 +368,36 @@ describe('ImageGallery', () => {
     await flushAnimationFrame();
   }
 
+  function setMobileLightboxSheetViewport(matches: boolean) {
+    const originalMatchMedia = window.matchMedia;
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        addEventListener: vi.fn(),
+        addListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+        matches: query === '(max-width: 47.99rem)' ? matches : false,
+        media: query,
+        onchange: null,
+        removeEventListener: vi.fn(),
+        removeListener: vi.fn(),
+      })),
+    });
+
+    return () => {
+      if (originalMatchMedia) {
+        Object.defineProperty(window, 'matchMedia', {
+          configurable: true,
+          value: originalMatchMedia,
+        });
+        return;
+      }
+
+      delete (window as { matchMedia?: typeof window.matchMedia }).matchMedia;
+    };
+  }
+
   function renderOverviewButtons(images: readonly CarouselImage[]) {
     act(() => {
       root.render(<ImageGallery images={images} variant="detail" />);
@@ -683,7 +713,7 @@ describe('ImageGallery', () => {
     ).not.toBeNull();
     expect(
       document.body.querySelectorAll(
-        '[data-lightbox-image-enter="true"] img[alt="LEGO Star Wars Grogu als leerling van de Mandalorian"]',
+        '[data-lightbox-image-enter="true"][data-lightbox-image-transition-reason="open"] img[alt="LEGO Star Wars Grogu als leerling van de Mandalorian"]',
       ),
     ).toHaveLength(2);
     expect(document.body.textContent).toContain('1 / 3');
@@ -702,8 +732,11 @@ describe('ImageGallery', () => {
       document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
     expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
+    expect(
       document.body.querySelectorAll(
-        '[data-lightbox-image-enter="true"] img[alt="LEGO Star Wars The Razor Crest"]',
+        '[data-lightbox-image-transition-reason="navigate_next_prev"] img[alt="LEGO Star Wars The Razor Crest"]',
       ),
     ).toHaveLength(2);
 
@@ -724,6 +757,9 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
 
     const firstThumbnail = document.body.querySelector(
       'button[aria-label="Bekijk afbeelding 1"][data-active="false"]',
@@ -742,6 +778,9 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
 
     const thirdThumbnail = document.body.querySelector(
       'button[aria-label="Bekijk afbeelding 3"]',
@@ -765,6 +804,45 @@ describe('ImageGallery', () => {
         '[data-lightbox-thumb-index="2"][data-active="true"]',
       ),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowLeft',
+        }),
+      );
+    });
+
+    expect(document.body.textContent).toContain('2 / 3');
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'ArrowRight',
+        }),
+      );
+    });
+
+    expect(document.body.textContent).toContain('3 / 3');
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
 
     const closeButton = document.body.querySelector(
       'button[aria-label="Sluit galerij"]',
@@ -916,15 +994,6 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
-    expect(
-      document.body
-        .querySelector('[data-lightbox-backdrop="true"]')
-        ?.getAttribute('data-lightbox-state'),
-    ).toBe('closing');
-
-    await finishLightboxClose();
-
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     act(() => {
@@ -947,11 +1016,81 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
-
-    await finishLightboxClose();
-
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('keeps the mobile bottom sheet close transition while desktop closes instantly', async () => {
+    const restoreViewport = setMobileLightboxSheetViewport(true);
+
+    try {
+      act(() => {
+        root.render(
+          <ImageGallery
+            images={[
+              {
+                alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
+                src: '/articles/star-wars-day-2026/grogu.jpg',
+              },
+              {
+                alt: 'LEGO Star Wars The Razor Crest',
+                src: '/articles/star-wars-day-2026/razor-crest.png',
+              },
+            ]}
+            variant="article"
+          />,
+        );
+      });
+
+      act(() => {
+        container
+          .querySelector<HTMLButtonElement>(
+            'button[aria-label^="Open LEGO Star Wars Grogu als leerling van de Mandalorian"]',
+          )
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      await flushAnimationFrame();
+
+      const backdrop = document.body.querySelector(
+        '[data-lightbox-backdrop="true"]',
+      );
+      const dialog = document.body.querySelector('[role="dialog"]');
+
+      expect(backdrop?.getAttribute('data-lightbox-motion')).toBe('sheet');
+      expect(dialog?.getAttribute('data-lightbox-motion')).toBe('sheet');
+      expect(dialog?.getAttribute('data-lightbox-state')).toBe('open');
+
+      act(() => {
+        document.body
+          .querySelector<HTMLButtonElement>(
+            'button[aria-label="Sluit galerij"]',
+          )
+          ?.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+      });
+
+      expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+      expect(
+        document.body
+          .querySelector('[data-lightbox-backdrop="true"]')
+          ?.getAttribute('data-lightbox-state'),
+      ).toBe('closing');
+
+      await finishLightboxClose();
+
+      expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    } finally {
+      restoreViewport();
+    }
   });
 
   it('renders the fullscreen viewer in a portal, locks scroll, traps focus, and restores focus to the trigger', async () => {
@@ -1003,9 +1142,11 @@ describe('ImageGallery', () => {
 
     expect(backdrop).not.toBeNull();
     expect(backdrop?.parentElement).toBe(document.body);
+    expect(backdrop?.getAttribute('data-lightbox-motion')).toBe('instant');
     expect(backdrop?.getAttribute('data-lightbox-state')).toBe('open');
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(dialog?.getAttribute('data-lightbox-motion')).toBe('instant');
     expect(dialog?.getAttribute('data-lightbox-state')).toBe('open');
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.documentElement.style.overflow).toBe('hidden');
@@ -1055,15 +1196,10 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
-    expect(document.body.style.overflow).toBe('hidden');
-    expect(document.documentElement.style.overflow).toBe('hidden');
-
-    await finishLightboxClose();
-
     expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe('');
     expect(document.documentElement.style.overflow).toBe('');
+    await flushAnimationFrame();
     expect(document.activeElement).toBe(openButton);
   });
 
@@ -1936,6 +2072,11 @@ describe('ImageGallery', () => {
       document.body.querySelector('[data-lightbox-media-surface="light"]'),
     ).not.toBeNull();
     expect(
+      document.body.querySelectorAll(
+        '[data-lightbox-image-enter="true"][data-lightbox-image-transition-reason="open"] img[alt="Eiffeltoren detail 2"]',
+      ),
+    ).toHaveLength(2);
+    expect(
       document.body.querySelector('[data-lightbox-thumb-index]'),
     ).toBeNull();
     expect(
@@ -1966,6 +2107,9 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="3"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
 
     act(() => {
       document.body
@@ -1984,6 +2128,9 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="2"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-image-enter="true"]'),
+    ).toBeNull();
 
     act(() => {
       document.body
@@ -3286,6 +3433,18 @@ describe('ImageGallery', () => {
       ),
       'utf-8',
     );
+    const desktopBackdropBlock =
+      css.match(/\.lightboxBackdrop \{[^}]+\}/u)?.[0] ?? '';
+    const desktopDialogBlock =
+      css.match(/\.lightboxDialog \{[^}]+\}/u)?.[0] ?? '';
+    const mobileBackdropBlock =
+      css.match(
+        /@media \(max-width: 47\.99rem\) \{[\s\S]+?\.lightboxBackdrop \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const mobileDialogBlock =
+      css.match(
+        /@media \(max-width: 47\.99rem\) \{[\s\S]+?\.lightboxDialog \{[^}]+\}/u,
+      )?.[0] ?? '';
 
     expect(css).toContain('.detailMainFrame {\n  aspect-ratio: 1 / 1;');
     expect(css).toContain('.detailMainFrame,\n.detailThumbFrame {');
@@ -3407,14 +3566,21 @@ describe('ImageGallery', () => {
     expect(css).toContain('position: fixed;');
     expect(css).toContain('inset: 0;');
     expect(css).toContain('z-index: 1400;');
+    expect(desktopBackdropBlock).toContain('opacity: 1;');
+    expect(desktopBackdropBlock).toContain('transition: none;');
+    expect(desktopDialogBlock).toContain('opacity: 1;');
+    expect(desktopDialogBlock).toContain('transform: none;');
+    expect(desktopDialogBlock).toContain('transition: none;');
+    expect(mobileBackdropBlock).toContain('opacity: 0;');
+    expect(mobileBackdropBlock).toContain(
+      'transition: opacity var(--gallery-lightbox-open-duration)',
+    );
+    expect(mobileDialogBlock).toContain('transform: translateY(100%);');
+    expect(mobileDialogBlock).toContain(
+      'transition: transform var(--gallery-lightbox-open-duration)',
+    );
     expect(css).toContain(".lightboxBackdrop[data-lightbox-state='open'] {");
     expect(css).toContain(".lightboxBackdrop[data-lightbox-state='closing'] {");
-    expect(css).toContain(
-      ".lightboxBackdrop[data-lightbox-state='open'] .lightboxDialog {",
-    );
-    expect(css).toContain(
-      ".lightboxBackdrop[data-lightbox-state='closing'] .lightboxDialog {",
-    );
     expect(css).toContain('height: 92vh;');
     expect(css).toContain('width: 90vw;');
     expect(css).toContain('transform: translateY(100%);');

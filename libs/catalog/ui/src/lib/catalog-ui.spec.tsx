@@ -475,7 +475,7 @@ describe('CatalogSetCard', () => {
       )?.[0] ?? '';
     const compactBrowseActionBlock =
       css.match(
-        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n  \}/u,
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n {2}\}/u,
       )?.[0] ?? '';
     const compactBrowseActionIconBlock =
       css.match(
@@ -487,7 +487,7 @@ describe('CatalogSetCard', () => {
       )?.[0] ?? '';
     const desktopCompactBrowseActionBlock =
       css.match(
-        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n    \}/u,
+        /@media \(min-width: 48rem\) \{[\s\S]+?\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n {4}\}/u,
       )?.[0] ?? '';
     const desktopCompactBrowseActionLabelBlock =
       css.match(
@@ -550,7 +550,7 @@ describe('CatalogSetCard', () => {
       css.match(
         /\.setCard:has\(\.setCardClickLayer:focus-visible\)::after \{[^}]+\}/u,
       )?.[0] ?? '';
-    const hoverBlock = css.match(/\n    \.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
+    const hoverBlock = css.match(/\n {4}\.setCard:hover \{[^}]+\}/u)?.[0] ?? '';
 
     expect(compactCardBlock).toContain(
       '--rail-card-border: color-mix(\n      in srgb,\n      var(--lego-border-subtle) 86%,\n      transparent\n    );',
@@ -590,9 +590,9 @@ describe('CatalogSetCard', () => {
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
-    const setCardBlock = css.match(/\n  \.setCard \{[^}]+\}/u)?.[0] ?? '';
+    const setCardBlock = css.match(/\n {2}\.setCard \{[^}]+\}/u)?.[0] ?? '';
     const compactActionBlock =
-      css.match(/\n  \.cardCompactAction \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\n {2}\.cardCompactAction \{[^}]+\}/u)?.[0] ?? '';
     const transitionDeclarations =
       css.match(/transition(?:-property)?:[^;]+;/gu) ?? [];
     const layoutTransitionPattern =
@@ -1369,7 +1369,7 @@ describe('CatalogSetCard', () => {
       css.match(/\.cardCompactSecondaryAction \{[^}]+\}/u)?.[0] ?? '';
     const compactBrowseActionBlock =
       css.match(
-        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n  \}/u,
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\]\s+\.cardCompactActionBrowse,[\s\S]+?\.cardCompactActionPending:visited \{[\s\S]+?\n {2}\}/u,
       )?.[0] ?? '';
     const pendingActionBlock =
       css.match(
@@ -1442,7 +1442,7 @@ describe('CatalogSetCard', () => {
       'background: color-mix(in srgb, var(--lego-accent) 9%, transparent);',
     );
     expect(css).toContain('.sectionHeaderAction');
-    expect(css).not.toMatch(/^  \.sectionHeaderWithAside \{/mu);
+    expect(css).not.toMatch(/^ {2}\.sectionHeaderWithAside \{/mu);
     expect(css).toMatch(
       /@media \(min-width: 56rem\) \{[\s\S]*?\.sectionHeaderWithAside \{\s*gap: var\(--lego-space-3\);/u,
     );
@@ -2486,10 +2486,85 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.bestDealAffiliateNote {');
     expect(css).toContain('.bestDealCard {');
     expect(css).toContain('border-radius: var(--lego-radius-md);');
+    expect(css).toContain('.bestDealEvidenceText {');
+    expect(css).not.toContain('.bestDealEvidencePill {');
+    expect(css).not.toContain('.bestDealEvidenceSupportList {');
+    expect(css).toContain(
+      ".bestDealCard[data-tone='warning'] .bestDealEvidenceText",
+    );
+    expect(css).toContain('.bestDealAdvice {');
+    expect(css).toContain('.bestDealTrustList {');
+    expect(css).toContain('.bestDealTrustItem:nth-child(n + 3) {');
+    expect(css).toContain('.bestDealMerchant {');
+    expect(css).toContain('.bestDealMerchantLink {');
+    expect(css).toContain('.merchantBrandInline {');
+    expect(css).toContain('display: inline-flex;');
+    expect(css).toContain('gap: 0.38rem;');
+    expect(css).not.toContain('.bestDealRanking {');
     expect(css).toContain('.bestDealActionRow {');
     expect(css).toContain('--catalog-card-action-height: 3.35rem;');
+    expect(css).toContain("data-action-layout='merchant'");
     expect(css).toContain('flex: 1 1 auto;');
     expect(css).toContain('flex: 0 0 var(--catalog-card-action-height);');
+    expect(css).toContain('.bestDealFollowIconButton {');
+    expect(css).toContain(
+      '--catalog-hero-side-action-background: transparent;',
+    );
+    expect(css).not.toContain('data-hero-follow-tone');
+    expect(css).not.toContain('.bestDealFollowIconButton[data-hero-follow');
+    expect(css).not.toContain('.bestDealFollowAction[data-hero-follow');
+    expect(css).toContain('--catalog-hero-side-action-background');
+    expect(css).toContain('--catalog-hero-side-action-border-color');
+    expect(css).toContain('--wishlist-button-background: var(');
+    expect(css).toContain('--wishlist-button-border-color: var(');
+    expect(css).toContain('--wishlist-button-color: var(');
+    expect(css).toContain('--wishlist-button-active-background: var(');
+    expect(css).toContain('--wishlist-button-active-border-color: var(');
+    expect(css).toContain('--wishlist-button-active-color: var(');
+    expect(css).toContain('--wishlist-button-active-hover-color: var(');
+    expect(css).toContain('--wishlist-button-active-pressed-background: var(');
+    expect(css).toContain(
+      '--wishlist-button-active-pressed-border-color: var(',
+    );
+    expect(css).toContain('--wishlist-button-active-pressed-color: var(');
+    expect(css).toContain('--lego-button-secondary-background');
+    expect(css).toContain('--lego-button-secondary-border-color');
+    expect(css).toContain('--lego-button-secondary-color');
+    expect(css).toContain('--lego-button-accent-background');
+    expect(css).toContain('--lego-button-accent-hover-background');
+    expect(css).toContain('--lego-button-accent-active-background');
+    expect(css).toContain('--lego-button-accent-color');
+    expect(css).toContain('--lego-button-accent-hover-color');
+    expect(css).toContain('--lego-button-accent-active-color');
+    expect(css).toContain('#ffffff');
+    expect(css).not.toContain("[class*='inlineToggleButtonActive']");
+    expect(css).toContain('--catalog-hero-side-action-active-background');
+    expect(css).toContain('--catalog-hero-side-action-active-border-color');
+    expect(css).toContain('box-shadow: 0 0 0 4px var(--lego-focus-ring);');
+    expect(css).toContain(
+      'min-inline-size: var(--catalog-card-action-height, 3.35rem);',
+    );
+    const heroFollowVariableBlock =
+      css.match(
+        /\.bestDealSideAction,\s*\n\s*\.bestDealFollowAction \{[\s\S]+?\n\s*\}/u,
+      )?.[0] ?? '';
+    expect(heroFollowVariableBlock).toContain(
+      '--catalog-hero-side-action-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-secondary-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-secondary-border-color',
+    );
+    expect(heroFollowVariableBlock).toContain('--lego-button-secondary-color');
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-accent-background',
+    );
+    expect(heroFollowVariableBlock).toContain('--lego-button-accent-color');
+    expect(heroFollowVariableBlock).toContain('#ffffff');
+    expect(heroFollowVariableBlock).not.toContain('--lego-positive');
+    expect(heroFollowVariableBlock).not.toContain('--lego-commerce');
     expect(css).toContain('.alertCard {');
     expect(css).toContain('.detailDecisionSupport {');
     expect(css).toContain('.offerListCard {');

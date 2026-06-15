@@ -18,6 +18,7 @@ export * from './lib/commerce-merchant-page-snapshot-server';
 export * from './lib/commerce-sync-server';
 export * from './lib/collection-page-snapshot-server';
 export * from './lib/deal-page-snapshot-server';
+export * from './lib/homepage-commerce-snapshot-server';
 export * from './lib/set-detail-related-theme-snapshot-server';
 export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';

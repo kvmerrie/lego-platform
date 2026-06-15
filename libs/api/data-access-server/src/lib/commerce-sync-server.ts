@@ -46,6 +46,7 @@ import {
 import { buildCommerceMerchantPageSnapshots } from './commerce-merchant-page-snapshot-server';
 import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { syncDealPageSnapshots } from './deal-page-snapshot-server';
+import { syncHomepageCommerceSnapshot } from './homepage-commerce-snapshot-server';
 import { syncSetDetailRelatedThemeSnapshots } from './set-detail-related-theme-snapshot-server';
 import {
   revalidatePublicCatalogPaths,
@@ -79,6 +80,9 @@ export interface CommerceSyncRunResult {
   merchantPageSnapshotsUpsertedCount: number;
   dealPageSnapshotCount: number;
   dealPageSnapshotsUpsertedCount: number;
+  homepageCommerceSnapshotCount: number;
+  homepageCommerceSnapshotPayloadBytes: number;
+  homepageCommerceSnapshotsUpsertedCount: number;
   setDetailRelatedThemeSnapshotCount: number;
   setDetailRelatedThemeSnapshotsUpsertedCount: number;
   collectionPageSnapshotCount: number;
@@ -123,6 +127,7 @@ export interface CommerceSyncDependencies {
   upsertCommerceCurrentOfferSnapshotsFn?: typeof upsertCommerceCurrentOfferSnapshots;
   syncCollectionPageSnapshotsFn?: typeof syncCollectionPageSnapshots;
   syncDealPageSnapshotsFn?: typeof syncDealPageSnapshots;
+  syncHomepageCommerceSnapshotFn?: typeof syncHomepageCommerceSnapshot;
   syncSetDetailRelatedThemeSnapshotsFn?: typeof syncSetDetailRelatedThemeSnapshots;
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
@@ -598,6 +603,43 @@ export async function runCommerceSync({
       summaryBySortKey: {},
       upsertedCount: 0,
     });
+  const skipInjectedHomepageCommerceSnapshotSync: typeof syncHomepageCommerceSnapshot =
+    async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => {
+      const generatedAt = snapshotNow.toISOString();
+
+      return {
+        dryRun,
+        generatedAt,
+        snapshot: {
+          generatedAt,
+          buyRail: {
+            bestDeals: [],
+            popularThisWeek: [],
+            giftsUnder100: [],
+          },
+          followRail: {
+            smartToFollow: [],
+            biggestPriceDrops: [],
+            waitCanPayOff: [],
+          },
+        },
+        summary: {
+          buyRailSetCount: 0,
+          followRailSetCount: 0,
+          overlapRemovedCount: 0,
+          payloadBytes: 0,
+          tabCounts: {
+            bestDeals: 0,
+            popularThisWeek: 0,
+            giftsUnder100: 0,
+            smartToFollow: 0,
+            biggestPriceDrops: 0,
+            waitCanPayOff: 0,
+          },
+        },
+        upsertedCount: 0,
+      };
+    };
   const skipInjectedSetDetailRelatedThemeSnapshotSync: typeof syncSetDetailRelatedThemeSnapshots =
     async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => ({
       dryRun,
@@ -637,6 +679,9 @@ export async function runCommerceSync({
     syncDealPageSnapshotsFn = dependenciesInjected
       ? skipInjectedDealPageSnapshotSync
       : syncDealPageSnapshots,
+    syncHomepageCommerceSnapshotFn = dependenciesInjected
+      ? skipInjectedHomepageCommerceSnapshotSync
+      : syncHomepageCommerceSnapshot,
     syncSetDetailRelatedThemeSnapshotsFn = dependenciesInjected
       ? skipInjectedSetDetailRelatedThemeSnapshotSync
       : syncSetDetailRelatedThemeSnapshots,
@@ -898,6 +943,21 @@ export async function runCommerceSync({
           summaryBySortKey: {},
           upsertedCount: 0,
         };
+  const homepageCommerceSnapshotResult =
+    mode === 'write'
+      ? await syncHomepageCommerceSnapshotFn({
+          collectionSnapshots: collectionPageSnapshotResult.snapshots,
+          dryRun: false,
+          ...(dealPageSnapshotResult.snapshots.length
+            ? { dealSnapshots: dealPageSnapshotResult.snapshots }
+            : {}),
+          now,
+          tabLimit: 20,
+        })
+      : await skipInjectedHomepageCommerceSnapshotSync({
+          dryRun: true,
+          now,
+        });
   const setDetailRelatedThemeSnapshotStartedAt = Date.now();
   const setDetailRelatedThemeSnapshotResult =
     mode === 'write'
@@ -946,6 +1006,12 @@ export async function runCommerceSync({
       snapshots_built: dealPageSnapshotResult.snapshots.length,
       snapshots_upserted: dealPageSnapshotResult.upsertedCount,
       summary_by_sort_key: dealPageSnapshotResult.summaryBySortKey,
+    });
+    console.info('[commerce-sync] homepage_commerce_snapshot', {
+      payload_bytes: homepageCommerceSnapshotResult.summary.payloadBytes,
+      snapshot_built: homepageCommerceSnapshotResult.snapshot ? 1 : 0,
+      snapshot_upserted: homepageCommerceSnapshotResult.upsertedCount,
+      summary: homepageCommerceSnapshotResult.summary,
     });
   }
 
@@ -1096,7 +1162,8 @@ export async function runCommerceSync({
   } else if (
     mode === 'write' &&
     (collectionPageSnapshotResult.upsertedCount > 0 ||
-      dealPageSnapshotResult.upsertedCount > 0)
+      dealPageSnapshotResult.upsertedCount > 0 ||
+      homepageCommerceSnapshotResult.upsertedCount > 0)
   ) {
     try {
       await revalidatePublicCatalogPathsFn({
@@ -1108,7 +1175,7 @@ export async function runCommerceSync({
           cacheTags.prices(),
         ],
         includeDeals: false,
-        includeHome: false,
+        includeHome: homepageCommerceSnapshotResult.upsertedCount > 0,
         includeThemeDirectory: false,
         reason: 'commerce_sync_collection_snapshots',
         targets: [],
@@ -1199,6 +1266,13 @@ export async function runCommerceSync({
       merchantPageSnapshotResult.upsertedCount,
     dealPageSnapshotCount: dealPageSnapshotResult.snapshots.length,
     dealPageSnapshotsUpsertedCount: dealPageSnapshotResult.upsertedCount,
+    homepageCommerceSnapshotCount: homepageCommerceSnapshotResult.snapshot
+      ? 1
+      : 0,
+    homepageCommerceSnapshotPayloadBytes:
+      homepageCommerceSnapshotResult.summary.payloadBytes,
+    homepageCommerceSnapshotsUpsertedCount:
+      homepageCommerceSnapshotResult.upsertedCount,
     setDetailRelatedThemeSnapshotCount:
       setDetailRelatedThemeSnapshotResult.snapshots.length,
     setDetailRelatedThemeSnapshotsUpsertedCount:

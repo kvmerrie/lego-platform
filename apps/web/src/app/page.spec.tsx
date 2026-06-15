@@ -1,23 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { HomepageCommerceSnapshot } from '@lego-platform/catalog/util';
 
 const pageMocks = vi.hoisted(() => ({
+  cachedPayload: undefined as unknown,
   catalogFeatureSetList: vi.fn(),
+  catalogSetCardRail: vi.fn(),
   catalogFeatureThemeList: vi.fn(),
   catalogFeatureThemeSpotlight: vi.fn(),
-  getHomepagePage: vi.fn(),
+  catalogSectionShell: vi.fn(),
+  catalogVisualTile: vi.fn(),
+  getCachedPublicLandingPageData: vi.fn(),
+  getHomepageCommerceSnapshot: vi.fn(),
   getHomepageEditorialConfig: vi.fn(),
-  getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
-  getCatalogHomepageDealQualityDiagnostics: vi.fn(),
-  getCatalogPartnerOfferRailDiagnostics: vi.fn(),
+  getHomepagePage: vi.fn(),
   listCatalogCurrentOfferCandidateSetIds: vi.fn(),
-  listCatalogCurrentOfferSummaries: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
-  listCatalogSetCards: vi.fn(),
   listCatalogSetCardsByIds: vi.fn(),
   listDiscoverBestDealSetCards: vi.fn(),
   listDiscoverNowInterestingSetCards: vi.fn(),
@@ -25,10 +25,7 @@ const pageMocks = vi.hoisted(() => ({
   listHomepageSetCards: vi.fn(),
   listHomepageThemeDirectoryItems: vi.fn(),
   listHomepageThemeSpotlightItems: vi.fn(),
-  getCachedPublicLandingPageData: vi.fn(),
   rankCatalogPartnerOfferSetCards: vi.fn(),
-  resolveHomepageFollowRailDiagnostics: vi.fn(),
-  selectCatalogFirstCommerceRailSetCards: vi.fn(),
 }));
 
 vi.mock('next/headers', () => ({
@@ -36,21 +33,14 @@ vi.mock('next/headers', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  getHomepageCommerceSnapshot: pageMocks.getHomepageCommerceSnapshot,
   getHomepageEditorialConfig: pageMocks.getHomepageEditorialConfig,
-  getCatalogCommerceRailRuntimeDiagnostics:
-    pageMocks.getCatalogCommerceRailRuntimeDiagnostics,
-  getCatalogHomepageDealQualityDiagnostics:
-    pageMocks.getCatalogHomepageDealQualityDiagnostics,
-  getCatalogPartnerOfferRailDiagnostics:
-    pageMocks.getCatalogPartnerOfferRailDiagnostics,
   listCatalogCurrentOfferCandidateSetIds:
     pageMocks.listCatalogCurrentOfferCandidateSetIds,
-  listCatalogCurrentOfferSummaries: pageMocks.listCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummariesBySetIds:
     pageMocks.listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId:
     pageMocks.listCatalogDiscoverySignalsBySetId,
-  listCatalogSetCards: pageMocks.listCatalogSetCards,
   listCatalogSetCardsByIds: pageMocks.listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards: pageMocks.listDiscoverBestDealSetCards,
   listDiscoverNowInterestingSetCards:
@@ -60,32 +50,33 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listHomepageThemeDirectoryItems: pageMocks.listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems: pageMocks.listHomepageThemeSpotlightItems,
   rankCatalogPartnerOfferSetCards: pageMocks.rankCatalogPartnerOfferSetCards,
-  resolveHomepageFollowRailDiagnostics:
-    pageMocks.resolveHomepageFollowRailDiagnostics,
-  selectCatalogFirstCommerceRailSetCards:
-    pageMocks.selectCatalogFirstCommerceRailSetCards,
 }));
 
 vi.mock('@lego-platform/catalog/feature-set-list', () => ({
   CatalogFeatureSetList: (props: unknown) => {
     pageMocks.catalogFeatureSetList(props);
     const typedProps = props as {
-      railLayoutMode?: string;
       sectionId?: string;
-      surfaceVariant?: string;
+      setCards?: readonly {
+        name: string;
+        priceContext?: { currentPrice: string };
+      }[];
+      showHeader?: boolean;
       title?: string;
-      tone?: string;
     };
 
     return React.createElement(
       'section',
       {
         'data-homepage-set-list': typedProps.sectionId ?? typedProps.title,
-        'data-rail-layout-mode': typedProps.railLayoutMode ?? 'default',
-        'data-surface-variant': typedProps.surfaceVariant ?? 'default',
-        'data-tone': typedProps.tone ?? 'muted',
       },
-      typedProps.title,
+      [
+        typedProps.showHeader === false ? '' : typedProps.title,
+        ...(typedProps.setCards ?? []).flatMap((card) => [
+          card.name,
+          card.priceContext?.currentPrice ?? '',
+        ]),
+      ].join(' '),
     );
   },
 }));
@@ -93,14 +84,11 @@ vi.mock('@lego-platform/catalog/feature-set-list', () => ({
 vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
   CatalogFeatureThemeList: (props: unknown) => {
     pageMocks.catalogFeatureThemeList(props);
-    const typedProps = props as { title?: string; tone?: string };
+    const typedProps = props as { title?: string };
 
     return React.createElement(
       'section',
-      {
-        'data-homepage-theme-list': 'explore-themes',
-        'data-tone': typedProps.tone ?? 'default',
-      },
+      { 'data-homepage-theme-list': 'explore-themes' },
       typedProps.title ?? 'Fantasy, Star Wars of strak design?',
     );
   },
@@ -110,13 +98,70 @@ vi.mock('@lego-platform/catalog/feature-theme-list', () => ({
 
     return React.createElement(
       'section',
-      {
-        'data-homepage-theme-spotlight': 'theme-spotlight',
-        'data-tone': 'plain',
-      },
+      { 'data-homepage-theme-spotlight': 'theme-spotlight' },
       typedProps.title ?? 'Botanicals, kunst of modulaire straten?',
     );
   },
+}));
+
+vi.mock('@lego-platform/catalog/ui', () => ({
+  CatalogSetCardRail: (props: unknown) => {
+    pageMocks.catalogSetCardRail(props);
+    const typedProps = props as {
+      items: readonly {
+        id: string;
+        priceContext?: { currentPrice: string };
+        setSummary: { name: string };
+      }[];
+      render: (props: {
+        controls: React.ReactNode;
+        rail: React.ReactNode;
+      }) => React.ReactNode;
+    };
+
+    return typedProps.render({
+      controls: React.createElement(
+        'div',
+        { 'data-rail-controls': true },
+        'Controls',
+      ),
+      rail: React.createElement(
+        'section',
+        { 'data-homepage-set-list': true },
+        typedProps.items
+          .flatMap((item) => [
+            item.setSummary.name,
+            item.priceContext?.currentPrice ?? '',
+          ])
+          .join(' '),
+      ),
+    });
+  },
+  CatalogSectionShell: ({
+    children,
+    id,
+    title,
+  }: {
+    children?: React.ReactNode;
+    id?: string;
+    title?: string;
+  }) => {
+    pageMocks.catalogSectionShell({ id, title });
+
+    return React.createElement('section', { id }, [title, children]);
+  },
+  CatalogVisualTile: (props: unknown) => {
+    pageMocks.catalogVisualTile(props);
+    const typedProps = props as { href: string; title: string };
+
+    return React.createElement(
+      'a',
+      { href: typedProps.href },
+      typedProps.title,
+    );
+  },
+  CatalogVisualTileRail: ({ children }: { children?: React.ReactNode }) =>
+    React.createElement('div', { 'data-visual-tile-rail': true }, children),
 }));
 
 vi.mock('@lego-platform/content/data-access', () => ({
@@ -129,23 +174,36 @@ vi.mock('@lego-platform/content/feature-page-renderer', () => ({
   }: {
     editorialPage: {
       sections?: readonly {
+        body?: string;
         ctaHref?: string;
         ctaLabel?: string;
         id: string;
+        title?: string;
       }[];
     };
   }) => {
     const heroSection = editorialPage.sections?.[0];
 
-    return heroSection?.ctaHref && heroSection.ctaLabel
-      ? React.createElement(
-          'a',
-          {
-            'data-testid': 'homepage-hero-cta',
-            href: heroSection.ctaHref,
-          },
-          heroSection.ctaLabel,
-        )
+    return heroSection
+      ? React.createElement('section', { 'data-testid': 'homepage-hero' }, [
+          heroSection.title
+            ? React.createElement('h1', { key: 'title' }, heroSection.title)
+            : null,
+          heroSection.body
+            ? React.createElement('p', { key: 'body' }, heroSection.body)
+            : null,
+          heroSection.ctaHref && heroSection.ctaLabel
+            ? React.createElement(
+                'a',
+                {
+                  'data-testid': 'homepage-hero-cta',
+                  href: heroSection.ctaHref,
+                  key: 'cta',
+                },
+                heroSection.ctaLabel,
+              )
+            : null,
+        ])
       : null;
   },
 }));
@@ -154,88 +212,99 @@ vi.mock('./lib/public-landing-page-cache', () => ({
   getCachedPublicLandingPageData: pageMocks.getCachedPublicLandingPageData,
 }));
 
-vi.mock('@lego-platform/pricing/data-access', () => ({
-  buildSetDecisionPresentation: () => ({
-    cardLabel: 'Actuele prijzen binnen',
-    verdict: {
-      tone: 'neutral',
-    },
-  }),
-  getFeaturedSetPriceContext: () => undefined,
-}));
-
 vi.mock('@lego-platform/shell/web', () => ({
-  ShellWeb: ({ children }: { children?: unknown }) => children ?? null,
+  ShellWeb: ({ children }: { children?: React.ReactNode }) => children ?? null,
 }));
 
 vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
-  WishlistFeatureWishlistToggle: () => null,
+  WishlistFeatureWishlistToggle: () =>
+    React.createElement('span', { 'data-wishlist-toggle': true }),
 }));
 
 const defaultHomepageDiscoveryTiles = [
   {
     href: '/nieuwe-lego-sets',
     id: 'new-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg',
+    imageUrl: 'https://cdn.example/new.jpg',
     referenceType: 'collection',
     title: 'Nieuwe sets',
-    visual: {
-      backgroundColor: '#3aaee8',
-    },
-  },
-  {
-    href: '/lego-voor-volwassenen',
-    id: 'adult-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg',
-    referenceType: 'collection',
-    title: 'LEGO voor volwassenen',
-    visual: {
-      backgroundColor: '#08636f',
-    },
-  },
-  {
-    href: '/lego-sets-onder-50-euro',
-    id: 'budget-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg',
-    referenceType: 'collection',
-    title: 'LEGO sets onder EUR 50',
-    visual: {
-      backgroundColor: '#35b765',
-    },
-  },
-  {
-    href: '/laatste-kans-lego-sets',
-    id: 'retiring-sets',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg',
-    referenceType: 'collection',
-    title: 'Binnenkort uit handel',
-    visual: {
-      backgroundColor: '#f28c28',
-    },
   },
   {
     href: '/deals',
     id: 'deals',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg',
+    imageUrl: 'https://cdn.example/deals.jpg',
     referenceType: 'custom',
     title: 'Interessante deals',
-    visual: {
-      backgroundColor: '#00a99d',
-    },
-  },
-  {
-    href: '/themes',
-    id: 'themes',
-    imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg',
-    referenceType: 'custom',
-    title: 'Populaire thema’s',
-    visual: {
-      backgroundColor: '#8758d8',
-    },
   },
 ] as const;
 
-function setupHomepageRenderMocks() {
+function homepageCommerceSnapshot(
+  patch: Partial<HomepageCommerceSnapshot> = {},
+): HomepageCommerceSnapshot {
+  return {
+    generatedAt: '2026-06-15T08:00:00.000Z',
+    buyRail: {
+      bestDeals: [
+        {
+          setId: '10316',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+          name: 'Rivendell',
+          imageUrl: 'https://cdn.example/10316.jpg',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6167,
+          currentPriceMinor: 42999,
+          merchantName: 'Toy Shop',
+          dealLabel: 'Sterke deal',
+          confidenceLabel: '3 vergeleken winkels',
+          ctaUrl: 'https://merchant.example/10316',
+        },
+      ],
+      popularThisWeek: [],
+      giftsUnder100: [
+        {
+          setId: '31170',
+          slug: 'wild-animals-pink-flamingo-31170',
+          name: 'Wild Animals: Pink Flamingo',
+          imageUrl: 'https://cdn.example/31170.jpg',
+          currentPriceMinor: 2499,
+          merchantName: 'Toy Shop',
+          ctaUrl: 'https://merchant.example/31170',
+        },
+      ],
+    },
+    followRail: {
+      smartToFollow: [
+        {
+          setId: '75355',
+          slug: 'ucs-x-wing-starfighter-75355',
+          name: 'UCS X-wing Starfighter',
+          imageUrl: 'https://cdn.example/75355.jpg',
+          currentPriceMinor: 22999,
+          dealLabel: 'Slim om te volgen',
+          followRecommended: true,
+        },
+      ],
+      biggestPriceDrops: [],
+      waitCanPayOff: [],
+    },
+    ...patch,
+  };
+}
+
+function setupHomepageRenderMocks(
+  options: {
+    snapshot?: HomepageCommerceSnapshot | undefined;
+  } = {},
+) {
+  const resolvedSnapshot = Object.prototype.hasOwnProperty.call(
+    options,
+    'snapshot',
+  )
+    ? options.snapshot
+    : homepageCommerceSnapshot();
+
+  pageMocks.cachedPayload = undefined;
   pageMocks.getHomepagePage.mockResolvedValue({
     sections: [],
     seo: {
@@ -245,853 +314,304 @@ function setupHomepageRenderMocks() {
     },
   });
   pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
-  pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
+  pageMocks.getHomepageCommerceSnapshot.mockResolvedValue(resolvedSnapshot);
   pageMocks.listHomepageDiscoveryTiles.mockResolvedValue(
     defaultHomepageDiscoveryTiles,
   );
   pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
   pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-  pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
-  pageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
-  pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-    new Map(),
+  pageMocks.getCachedPublicLandingPageData.mockImplementation(
+    async ({ load, ...cacheOptions }) => {
+      const payload = await load();
+
+      pageMocks.cachedPayload = payload;
+
+      return JSON.parse(
+        JSON.stringify({
+          ...payload,
+          __cacheOptions: cacheOptions,
+        }),
+      );
+    },
   );
-  pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
-  pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-  pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
-  pageMocks.listHomepageSetCards.mockResolvedValue([]);
-  pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
 }
 
-describe('home metadata', () => {
+describe('homepage commerce snapshot runtime', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    pageMocks.getHomepageEditorialConfig.mockResolvedValue(undefined);
-    pageMocks.getCachedPublicLandingPageData.mockImplementation(
-      async ({ load, ...cacheOptions }) =>
-        JSON.parse(
-          JSON.stringify({
-            ...(await load()),
-            __cacheOptions: cacheOptions,
-          }),
-        ),
-    );
-    pageMocks.listHomepageDiscoveryTiles.mockResolvedValue(
-      defaultHomepageDiscoveryTiles,
-    );
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([]);
-    pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
-    );
+    vi.resetModules();
+    setupHomepageRenderMocks();
   });
 
-  it.each([
-    ['undefined config', undefined],
-    ['null config', null],
-    ['empty config', { sections: [] }],
-  ])('renders curated homepage fallback for %s', async (_label, config) => {
-    setupHomepageRenderMocks();
-    pageMocks.getHomepageEditorialConfig.mockResolvedValue(config);
-
+  it('renders discovery, buy intent, and follow intent from the snapshot', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
-    expect(pageMocks.listHomepageThemeDirectoryItems).toHaveBeenCalledWith({
-      homepageEditorialConfig: undefined,
-    });
+    expect(markup).toContain('Slim kopen');
+    expect(markup).toContain('Beste deals');
+    expect(markup).toContain('Onder €100');
+    expect(markup).toContain('Slim volgen');
+    expect(markup).toContain('Prijsalerts');
+    expect(markup).not.toContain('Onder EUR 100');
+    expect(markup).not.toContain('Beste koopkansen van dit moment');
+    expect(markup).not.toContain('Prijs slim volgen');
+    expect(markup).toContain('Rivendell');
+    expect(markup).toContain('Vanaf');
+    expect(markup).not.toContain('Eerst de sets waar kopen nu logisch is');
+    expect(markup).not.toContain('Niet alles hoef je vandaag te kopen');
   });
 
-  it('does not import or mount the favorite themes rail on the homepage', () => {
-    const source = readFileSync(
-      resolve(process.cwd(), 'apps/web/src/app/page.tsx'),
-      'utf-8',
-    );
-
-    expect(source).not.toContain('CatalogFeatureFavoriteThemesRail');
-    expect(source).not.toContain('NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL');
-  });
-
-  it('renders the homepage even when the former favorite rail flag is enabled', async () => {
-    setupHomepageRenderMocks();
-    const previousFlag = process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'];
-    process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'] = 'true';
-
-    try {
-      const pageModule = await import('./page');
-      const markup = renderToStaticMarkup(await pageModule.default());
-
-      expect(markup).toContain('Ontdek LEGO op jouw manier');
-      expect(markup).not.toContain('Jouw favoriete thema’s');
-    } finally {
-      if (previousFlag === undefined) {
-        delete process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'];
-      } else {
-        process.env['NEXT_PUBLIC_ENABLE_THEME_FAVORITES_RAIL'] = previousFlag;
-      }
-    }
-  });
-
-  it('logs and renders curated fallback when homepage CMS fetch fails', async () => {
-    setupHomepageRenderMocks();
-    const warnSpy = vi
-      .spyOn(console, 'warn')
-      .mockImplementation(() => undefined);
-    const cmsError = new Error('public_page_sections does not exist');
-    pageMocks.getHomepageEditorialConfig.mockRejectedValue(cmsError);
-
+  it('renders buy and follow commerce as one active tabbed section each', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default());
 
-    expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(warnSpy).toHaveBeenCalledWith(
-      '[homepage-cms] Falling back to curated homepage defaults.',
-      cmsError,
-    );
-  });
-
-  it('renders populated homepage CMS copy when config is available', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
-      sections: [
-        {
-          enabled: true,
-          items: [],
-          pageKey: 'homepage',
-          sectionKey: 'discovery_routes',
-          sortOrder: 10,
-          subtitle: 'Kies de route die bij je plank past.',
-          title: 'Kies je LEGO route',
-        },
-        {
-          enabled: true,
-          items: [],
-          pageKey: 'homepage',
-          sectionKey: 'theme_rail',
-          sortOrder: 20,
-          title: 'Draken, Death Stars of displaystukken?',
-        },
-        {
-          enabled: true,
-          items: [],
-          pageKey: 'homepage',
-          sectionKey: 'theme_spotlight',
-          sortOrder: 60,
-          title: 'Meer werelden voor je kast',
-        },
-      ],
-    });
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('Kies je LEGO route');
-    expect(markup).toContain('Draken, Death Stars of displaystukken?');
-    expect(markup).toContain('Meer werelden voor je kast');
-    expect(pageMocks.listHomepageThemeDirectoryItems).toHaveBeenCalledWith({
-      homepageEditorialConfig: expect.objectContaining({
-        sections: expect.any(Array),
+    expect(markup).toContain('role="tablist"');
+    expect(pageMocks.catalogSetCardRail).toHaveBeenCalledTimes(2);
+    expect(pageMocks.catalogSetCardRail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ariaLabel: 'Beste deals',
       }),
-    });
+    );
+    expect(pageMocks.catalogSetCardRail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ariaLabel: 'Prijsalerts',
+      }),
+    );
+    expect(pageMocks.catalogSetCardRail).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        ariaLabel: 'Onder €100',
+      }),
+    );
+    expect(markup).toContain('Onder €100');
+    expect(markup).not.toContain('Wild Animals: Pink Flamingo');
   });
 
-  it('renders discovery route CMS tiles returned by catalog data-access', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.listHomepageDiscoveryTiles.mockResolvedValue([
-      {
-        alt: 'Rivendell displayset',
-        href: '/lego-voor-volwassenen',
-        id: 'cms-adult-sets',
-        imageUrl: 'https://example.test/rivendell.jpg',
-        referenceId: 'lego-voor-volwassenen',
-        referenceType: 'collection',
-        title: 'Displaysets voor je plank',
-        visual: {
-          backgroundColor: '#123456',
-        },
-      },
-    ]);
-
+  it('maps current snapshot prices to homepage card price contexts', async () => {
     const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
 
-    expect(markup).toContain('data-visual-tile="cms-adult-sets"');
-    expect(markup).toContain('href="/lego-voor-volwassenen"');
-    expect(markup).toContain('Displaysets voor je plank');
-    expect(markup).toContain('src="https://example.test/rivendell.jpg"');
-    expect(markup).toContain('alt="Rivendell displayset"');
-    expect(markup).toContain('--theme-surface:#123456');
-  });
-
-  it('passes resolved homepage theme portrait card images to the theme rail', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([
-      {
-        imageUrl: '/images/sets/42172/card.webp',
-        themeSnapshot: {
-          intro: 'Technic voor display en techniek.',
-          momentum: 'Kies deze als de McLaren P1 je plank mag pakken.',
-          name: 'Technic',
-          setCount: 44,
-          signatureSet: 'McLaren P1',
-          slug: 'technic',
-        },
-        visual: {
-          imageUrl: '/images/sets/42172/card.webp',
-        },
-      },
-    ]);
-
-    const pageModule = await import('./page');
     renderToStaticMarkup(await pageModule.default());
 
-    expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
+    expect(pageMocks.catalogSetCardRail).toHaveBeenCalledWith(
       expect.objectContaining({
-        themeItems: [
+        items: expect.arrayContaining([
           expect.objectContaining({
-            imageUrl: '/images/sets/42172/card.webp',
-            visual: expect.objectContaining({
-              imageUrl: '/images/sets/42172/card.webp',
+            ctaMode: 'commerce',
+            id: '10316',
+            priceContext: expect.objectContaining({
+              currentPrice: 'Vanaf € 429,99',
+              primaryActionHref: 'https://merchant.example/10316',
             }),
           }),
-        ],
+        ]),
       }),
     );
   });
 
-  it('passes theme spotlight CMS items to the spotlight renderer', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([
-      {
-        description: 'Kies deze als Hogwarts je kast in mag.',
-        href: '/themes/harry-potter',
-        id: 'cms-harry-potter',
-        imageUrl: 'https://example.test/hogwarts.jpg',
-        referenceId: 'harry-potter',
-        referenceType: 'theme',
-        title: 'Hogwarts en Goudgrijp',
-      },
-    ]);
-
+  it('does not run homepage commerce ranking or offer hydration at runtime', async () => {
     const pageModule = await import('./page');
+
     renderToStaticMarkup(await pageModule.default());
 
-    expect(pageMocks.catalogFeatureThemeSpotlight).toHaveBeenCalledWith(
-      expect.objectContaining({
-        themeItems: [
-          expect.objectContaining({
-            href: '/themes/harry-potter',
-            id: 'cms-harry-potter',
-            title: 'Hogwarts en Goudgrijp',
-          }),
-        ],
-      }),
-    );
-  });
-
-  it('falls back per missing homepage CMS section when config is partial', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
-      sections: [
-        {
-          enabled: true,
-          items: [],
-          pageKey: 'homepage',
-          sectionKey: 'theme_rail',
-          sortOrder: 20,
-          title: 'Alleen deze rail komt uit CMS',
-        },
-      ],
-    });
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain('Alleen deze rail komt uit CMS');
-    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
-  });
-
-  it('ignores malformed homepage CMS rows and renders fallback sections', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.getHomepageEditorialConfig.mockResolvedValue({
-      sections: [
-        null,
-        {},
-        {
-          enabled: false,
-          items: [],
-          pageKey: 'homepage',
-          sectionKey: 'discovery_routes',
-          sortOrder: 10,
-          title: 'Deze uitgeschakelde rij mag niet renderen',
-        },
-      ],
-    });
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
-    expect(markup).not.toContain('Deze uitgeschakelde rij mag niet renderen');
-  });
-
-  it('renders current offer rail when hard and soft deal gates are empty', async () => {
-    pageMocks.getHomepagePage.mockResolvedValue({
-      sections: [],
-      seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        noIndex: false,
-        title: 'Brickhunt',
-      },
-    });
-    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-      '75355',
-    ]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map([
-        [
-          '42177',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T08:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'Goodbricks',
-              priceCents: 19999,
-              url: 'https://example.com/42177',
-            },
-            offers: [{ merchantName: 'Goodbricks' }],
-            setId: '42177',
-          },
-        ],
-        [
-          '75355',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T09:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'MisterBricks',
-              priceCents: 23999,
-              url: 'https://example.com/75355',
-            },
-            offers: [{ merchantName: 'MisterBricks' }],
-            setId: '75355',
-          },
-        ],
-      ]),
-    );
-    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([
-      {
-        id: '42177',
-        name: 'Mercedes-AMG F1 W14 E Performance',
-        pieces: 1642,
-        releaseYear: 2024,
-        slug: 'mercedes-amg-f1-w14-e-performance-42177',
-        theme: 'Technic',
-      },
-      {
-        id: '75355',
-        name: 'X-wing Starfighter',
-        pieces: 1949,
-        releaseYear: 2023,
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([
-      {
-        id: '42177',
-        name: 'Mercedes-AMG F1 W14 E Performance',
-        pieces: 1642,
-        releaseYear: 2024,
-        slug: 'mercedes-amg-f1-w14-e-performance-42177',
-        theme: 'Technic',
-      },
-      {
-        id: '75355',
-        name: 'X-wing Starfighter',
-        pieces: 1949,
-        releaseYear: 2023,
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([]);
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain(
-      'data-homepage-theme-list="explore-themes" data-tone="inverse"',
-    );
-    expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
-    expect(markup).toContain(
-      'data-homepage-theme-spotlight="theme-spotlight" data-tone="plain"',
-    );
-    expect(markup).toContain('Waarom Brickhunt');
-    const whyBrickhuntMarkup = markup.slice(
-      Math.max(0, markup.indexOf('Waarom Brickhunt') - 500),
-      markup.indexOf('Waarom Brickhunt') + 500,
-    );
-    expect(whyBrickhuntMarkup).toContain('surfaceMuted');
-    const discoveryMarkup = markup.slice(
-      Math.max(0, markup.indexOf('Ontdek LEGO op jouw manier') - 500),
-      markup.indexOf('data-visual-tile="new-sets"'),
-    );
-    expect(discoveryMarkup).toContain('sectionShellInverse');
-    expect(discoveryMarkup).toContain('sectionHeaderInverse');
-    expect(markup).toContain('data-visual-tile="new-sets"');
-    expect(markup).toContain('--theme-surface:#3aaee8');
-    expect(markup).toContain('--theme-surface:#08636f');
-    expect(markup).toContain('--theme-surface:#35b765');
-    expect(markup).toContain('--theme-surface:#f28c28');
-    expect(markup).toContain('--theme-surface:#00a99d');
-    expect(markup).toContain('--theme-surface:#8758d8');
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/43019-1/167522.jpg"',
-    );
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/10360-1/155899.jpg"',
-    );
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/77256-1/162075.jpg"',
-    );
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/75355-1/119795.jpg"',
-    );
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/42207-1/148295.jpg"',
-    );
-    expect(markup).toContain(
-      'src="https://cdn.rebrickable.com/media/sets/72037-1/153296.jpg"',
-    );
-    expect(markup).toContain('href="/nieuwe-lego-sets"');
-    expect(markup).toContain('href="/lego-voor-volwassenen"');
-    expect(markup).toContain('href="/lego-sets-onder-50-euro"');
-    expect(markup).toContain('href="/laatste-kans-lego-sets"');
-    expect(markup).toContain('href="/themes"');
-    expect(markup).not.toContain(
-      'Net uit: schepen, auto’s en displaymodellen.',
-    );
-    expect(markup).not.toContain(
-      'Begin bij Star Wars, Icons, Technic of je vaste thema.',
-    );
-    expect(markup).not.toContain('#d9e4f2');
-    expect(markup).not.toContain('#e7d4b5');
-    expect(markup).not.toContain('#c9e2de');
-    expect(markup).not.toContain('#dde0e5');
-    expect(markup).not.toContain('#dbe8bf');
-    expect(markup).not.toContain('#d8d1ee');
-    expect(markup).not.toContain('#00a8e8');
-    expect(markup).not.toContain('#6d28d9');
-    expect(markup).not.toContain('#e43d12');
-    expect(markup).not.toContain('--theme-surface:#5573b5');
-    expect(markup).not.toContain('--theme-surface:#171717');
-    expect(markup).not.toContain('--theme-surface:#e0b84f');
-    expect(markup).not.toContain('--theme-surface:#d85a50');
-    expect(markup).not.toContain('--theme-surface:#6bbf59');
-    expect(markup).not.toContain('--theme-surface:#234bcd');
-    expect(markup).not.toContain('--theme-surface:#79b7d8');
-    expect(markup).not.toContain('--theme-surface:#202b3d');
-    expect(markup).not.toContain('--theme-surface:#4fa37a');
-    expect(markup).not.toContain('--theme-surface:#b96b36');
-    expect(markup).not.toContain('--theme-surface:#247f6d');
-    expect(markup).not.toContain('--theme-surface:#6a5a9f');
-    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Nu te vergelijken',
-        tone: 'default',
-      }),
-    );
-    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Populair om te volgen',
-        tone: 'default',
-      }),
-    );
-    const setListProps = pageMocks.catalogFeatureSetList.mock.calls.map(
-      ([props]) =>
-        props as {
-          sectionId?: string;
-          railLayoutMode?: string;
-          surfaceVariant?: string;
-          title?: string;
-          tone?: string;
-        },
-    );
-    const normalRailSetListProps = setListProps.filter((props) =>
-      ['Nu te vergelijken', 'Populair om te volgen'].includes(
-        props.title ?? '',
-      ),
-    );
-    expect(normalRailSetListProps).toEqual([
-      expect.objectContaining({
-        title: 'Nu te vergelijken',
-        tone: 'default',
-      }),
-      expect.objectContaining({
-        title: 'Populair om te volgen',
-        tone: 'default',
-      }),
-    ]);
     expect(
-      normalRailSetListProps.map((props) => props.surfaceVariant ?? 'default'),
-    ).toEqual(['default', 'default']);
-    expect(normalRailSetListProps.map((props) => props.railLayoutMode)).toEqual(
-      ['stable-square', 'stable-square'],
-    );
-    expect(pageMocks.rankCatalogPartnerOfferSetCards).toHaveBeenCalledTimes(1);
-    expect(pageMocks.catalogFeatureThemeList).toHaveBeenCalledWith(
-      expect.objectContaining({
-        tone: 'inverse',
-      }),
-    );
-    expect(pageMocks.getCachedPublicLandingPageData).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: 'homepage',
-        params: ['delivery'],
-        revalidateSeconds: false,
-        tags: ['homepage', 'catalog', 'sets', 'themes', 'prices', 'deals'],
-      }),
-    );
-  });
-
-  it('keeps rendering when cached homepage data predates current-offer snapshot fields', async () => {
-    setupHomepageRenderMocks();
-    pageMocks.getCachedPublicLandingPageData.mockImplementation(
-      async ({ load, ...cacheOptions }) => {
-        const snapshot = JSON.parse(
-          JSON.stringify({
-            ...(await load()),
-            __cacheOptions: cacheOptions,
-          }),
-        );
-        delete snapshot.homepageCurrentOfferCandidateSetCards;
-        delete snapshot.commerceRailRotationSeed;
-
-        return snapshot;
-      },
-    );
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('Ontdek LEGO op jouw manier');
-    expect(markup).toContain('Populair om te volgen');
-  });
-
-  it('points the hero CTA to the hard deal rail when it is rendered', async () => {
-    pageMocks.getHomepagePage.mockResolvedValue({
-      sections: [
-        {
-          body: 'Ontdek welke sets nu opvallen.',
-          ctaHref: '#best-current-deals',
-          ctaLabel: 'Ontdek sets',
-          eyebrow: 'Brickhunt',
-          id: 'home-hero',
-          title: 'Welke set wil je?',
-          type: 'hero',
-        },
-      ],
-      seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        noIndex: false,
-        title: 'Brickhunt',
-      },
-    });
-    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-      '75355',
-    ]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map([
-        [
-          '42177',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T08:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'Goodbricks',
-              priceCents: 19999,
-              url: 'https://example.com/42177',
-            },
-            offers: [{ merchantName: 'Goodbricks' }],
-            setId: '42177',
-          },
-        ],
-        [
-          '75355',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T09:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'MisterBricks',
-              priceCents: 23999,
-              url: 'https://example.com/75355',
-            },
-            offers: [{ merchantName: 'MisterBricks' }],
-            setId: '75355',
-          },
-        ],
-      ]),
-    );
-    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([
-      {
-        id: '42177',
-        name: 'Mercedes-AMG F1 W14 E Performance',
-        pieces: 1642,
-        releaseYear: 2024,
-        slug: 'mercedes-amg-f1-w14-e-performance-42177',
-        theme: 'Technic',
-      },
-      {
-        id: '75355',
-        name: 'X-wing Starfighter',
-        pieces: 1949,
-        releaseYear: 2023,
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map([
-        ['42177', { setId: '42177' }],
-        ['75355', { setId: '75355' }],
-      ]),
-    );
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([
-      {
-        id: '42177',
-        name: 'Mercedes-AMG F1 W14 E Performance',
-        pieces: 1642,
-        releaseYear: 2024,
-        slug: 'mercedes-amg-f1-w14-e-performance-42177',
-        theme: 'Technic',
-      },
-      {
-        id: '75355',
-        name: 'X-wing Starfighter',
-        pieces: 1949,
-        releaseYear: 2023,
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([]);
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('href="/#best-current-deals"');
-    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
-      expect.objectContaining({
-        railLayoutMode: 'stable-square',
-        sectionId: 'best-current-deals',
-        title: 'Beste deals nu',
-      }),
-    );
-  });
-
-  it('points the hero CTA to an existing fallback rail when hard deals are not rendered', async () => {
-    pageMocks.getHomepagePage.mockResolvedValue({
-      sections: [
-        {
-          body: 'Ontdek welke sets nu opvallen.',
-          ctaHref: '#best-current-deals',
-          ctaLabel: 'Ontdek sets',
-          eyebrow: 'Brickhunt',
-          id: 'home-hero',
-          title: 'Welke set wil je?',
-          type: 'hero',
-        },
-      ],
-      seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        noIndex: false,
-        title: 'Brickhunt',
-      },
-    });
-    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([]);
-    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
-    );
-    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    pageMocks.listDiscoverNowInterestingSetCards.mockResolvedValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([
-      {
-        id: '10316',
-        name: 'The Lord of the Rings: Rivendell',
-        pieces: 6167,
-        releaseYear: 2023,
-        slug: 'lord-of-the-rings-rivendell-10316',
-        theme: 'Icons',
-      },
-    ]);
-
-    const pageModule = await import('./page');
-    const markup = renderToStaticMarkup(await pageModule.default());
-
-    expect(markup).toContain('href="/#popular-to-follow"');
-    expect(pageMocks.catalogFeatureSetList).toHaveBeenCalledWith(
-      expect.objectContaining({
-        railLayoutMode: 'stable-square',
-        sectionId: 'popular-to-follow',
-        title: 'Populair om te volgen',
-      }),
-    );
-  });
-
-  it('scopes homepage discovery signals to rendered catalog and commerce cards', async () => {
-    pageMocks.getHomepagePage.mockResolvedValue({
-      sections: [],
-      seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        noIndex: false,
-        title: 'Brickhunt',
-      },
-    });
-    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-    ]);
-    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([{ id: '42177' }]);
-    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    pageMocks.rankCatalogPartnerOfferSetCards.mockReturnValue([]);
-    pageMocks.selectCatalogFirstCommerceRailSetCards.mockReturnValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
-    );
-
-    const pageModule = await import('./page');
-    await pageModule.default();
-
-    expect(pageMocks.listCatalogDiscoverySignalsBySetId).toHaveBeenCalledWith({
-      cacheOptions: {
-        revalidateSeconds: false,
-        tags: ['homepage', 'prices'],
-      },
-      setIds: ['10316', '42177'],
-    });
-  });
-
-  it('loads targeted current offers for selected follow rail cards', async () => {
-    pageMocks.getHomepagePage.mockResolvedValue({
-      sections: [],
-      seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        noIndex: false,
-        title: 'Brickhunt',
-      },
-    });
-    pageMocks.listCatalogSetCards.mockResolvedValue([{ id: '10316' }]);
-    pageMocks.listHomepageThemeDirectoryItems.mockResolvedValue([]);
-    pageMocks.listHomepageThemeSpotlightItems.mockResolvedValue([]);
-    pageMocks.listCatalogCurrentOfferCandidateSetIds.mockResolvedValue([
-      '42177',
-    ]);
-    pageMocks.listCatalogSetCardsByIds.mockResolvedValue([{ id: '42177' }]);
-    pageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(new Map());
-    pageMocks.listDiscoverBestDealSetCards.mockResolvedValue([]);
-    pageMocks.listHomepageSetCards.mockResolvedValue([
-      {
-        id: '75355',
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    pageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map([
-        [
-          '75355',
-          {
-            bestOffer: {
-              availability: 'in_stock',
-              checkedAt: '2026-05-18T08:00:00.000Z',
-              currency: 'EUR',
-              merchantName: 'Goodbricks',
-              priceCents: 19995,
-              url: 'https://example.com/deal',
-            },
-            offers: [],
-            setId: '75355',
-          },
-        ],
-      ]),
-    );
-
-    const pageModule = await import('./page');
-    await pageModule.default();
-
+      pageMocks.listCatalogCurrentOfferCandidateSetIds,
+    ).not.toHaveBeenCalled();
     expect(
       pageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).toHaveBeenCalledWith({
-      cacheOptions: {
-        revalidateSeconds: false,
-        tags: ['homepage', 'prices', 'set:75355'],
-      },
-      setIds: ['75355'],
-    });
+    ).not.toHaveBeenCalled();
+    expect(pageMocks.listCatalogDiscoverySignalsBySetId).not.toHaveBeenCalled();
+    expect(pageMocks.listCatalogSetCardsByIds).not.toHaveBeenCalled();
+    expect(pageMocks.listDiscoverBestDealSetCards).not.toHaveBeenCalled();
+    expect(pageMocks.listDiscoverNowInterestingSetCards).not.toHaveBeenCalled();
+    expect(pageMocks.listHomepageSetCards).not.toHaveBeenCalled();
+    expect(pageMocks.rankCatalogPartnerOfferSetCards).not.toHaveBeenCalled();
   });
 
-  it('renders representative canonical launch metadata', async () => {
+  it('keeps the cached homepage commerce payload compact', async () => {
+    const pageModule = await import('./page');
+
+    renderToStaticMarkup(await pageModule.default());
+
+    expect(pageMocks.cachedPayload).toHaveProperty('homepageCommerceSnapshot');
+    expect(pageMocks.cachedPayload).not.toHaveProperty(
+      'currentOfferSummaryEntries',
+    );
+    expect(pageMocks.cachedPayload).not.toHaveProperty(
+      'catalogDiscoverySignalEntries',
+    );
+    expect(pageMocks.cachedPayload).not.toHaveProperty(
+      'commerceCandidateSetCards',
+    );
+    expect(
+      Buffer.byteLength(JSON.stringify(pageMocks.cachedPayload)),
+    ).toBeLessThan(2_000_000);
+    expect(pageMocks.getCachedPublicLandingPageData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        params: [
+          'delivery',
+          'homepage-commerce-snapshot-v1',
+          'homepage-editorial-v2',
+        ],
+      }),
+    );
+  });
+
+  it('renders without runtime offer hydration when the snapshot is missing', async () => {
+    setupHomepageRenderMocks({
+      snapshot: undefined,
+    });
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).not.toContain('Slim kopen');
+    expect(markup).not.toContain('Slim volgen');
+    expect(
+      pageMocks.listCatalogCurrentOfferCandidateSetIds,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('renders the commerce-focused hero copy while keeping the CTA anchored to the buy rail', async () => {
     pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: 'Vergelijk prijzen, ontdek de beste deals en zie wanneer wachten slimmer is.',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Bekijk beste deals',
+          id: 'hero',
+          title: 'Welke set wil je?',
+          type: 'hero',
+        },
+      ],
       seo: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
+        description: 'Homepage',
         noIndex: false,
         title: 'Brickhunt',
       },
     });
 
-    const { generateMetadata } = await import('./page');
-    const metadata = await generateMetadata();
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
 
-    expect(metadata).toMatchObject({
-      title: 'Brickhunt',
-      description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-      alternates: {
-        canonical: 'https://www.brickhunt.nl/',
-      },
-      openGraph: {
-        description: 'Vind LEGO sets die echt iets toevoegen aan je collectie.',
-        siteName: 'Brickhunt',
+    expect(markup).toContain('Welke set wil je?');
+    expect(markup).toContain(
+      'Vergelijk prijzen, ontdek de beste deals en zie wanneer wachten slimmer is.',
+    );
+    expect(markup).toContain('Bekijk beste deals');
+    expect(markup).toContain('href="/#best-current-deals"');
+    expect(markup).not.toContain('Ontdek sets');
+    expect(markup).not.toContain(
+      'Ontdek welke sets het waard zijn en of dit een slim moment is om te kopen.',
+    );
+  });
+
+  it('retargets the hero CTA to buy, then follow, then discovery', async () => {
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: '',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Bekijk beste deals',
+          id: 'hero',
+          title: 'Brickhunt',
+          type: 'hero',
+        },
+      ],
+      seo: {
+        description: 'Homepage',
+        noIndex: false,
         title: 'Brickhunt',
-        type: 'website',
-        url: 'https://www.brickhunt.nl/',
       },
     });
-    expect(metadata.robots).toBeUndefined();
+    const pageModule = await import('./page');
+    const buyMarkup = renderToStaticMarkup(await pageModule.default());
+
+    expect(buyMarkup).toContain('href="/#best-current-deals"');
+
+    setupHomepageRenderMocks({
+      snapshot: homepageCommerceSnapshot({
+        buyRail: {
+          bestDeals: [],
+          popularThisWeek: [],
+          giftsUnder100: [],
+        },
+      }),
+    });
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: '',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Bekijk beste deals',
+          id: 'hero',
+          title: 'Brickhunt',
+          type: 'hero',
+        },
+      ],
+      seo: {
+        description: 'Homepage',
+        noIndex: false,
+        title: 'Brickhunt',
+      },
+    });
+    vi.resetModules();
+    const followPageModule = await import('./page');
+    const followMarkup = renderToStaticMarkup(await followPageModule.default());
+
+    expect(followMarkup).toContain('href="/#price-smart-follow"');
+
+    setupHomepageRenderMocks({
+      snapshot: homepageCommerceSnapshot({
+        buyRail: {
+          bestDeals: [],
+          popularThisWeek: [],
+          giftsUnder100: [],
+        },
+        followRail: {
+          smartToFollow: [],
+          biggestPriceDrops: [],
+          waitCanPayOff: [],
+        },
+      }),
+    });
+    pageMocks.getHomepagePage.mockResolvedValue({
+      sections: [
+        {
+          body: '',
+          ctaHref: '#best-current-deals',
+          ctaLabel: 'Bekijk beste deals',
+          id: 'hero',
+          title: 'Brickhunt',
+          type: 'hero',
+        },
+      ],
+      seo: {
+        description: 'Homepage',
+        noIndex: false,
+        title: 'Brickhunt',
+      },
+    });
+    vi.resetModules();
+    const discoveryPageModule = await import('./page');
+    const discoveryMarkup = renderToStaticMarkup(
+      await discoveryPageModule.default(),
+    );
+
+    expect(discoveryMarkup).toContain('href="/#ontdek-lego-op-jouw-manier"');
+  });
+
+  it('hides the popular tab when genuine popularity data is absent', async () => {
+    setupHomepageRenderMocks({
+      snapshot: homepageCommerceSnapshot({
+        buyRail: {
+          bestDeals: [],
+          popularThisWeek: [],
+          giftsUnder100: [],
+        },
+      }),
+    });
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).not.toContain('Populair');
   });
 });

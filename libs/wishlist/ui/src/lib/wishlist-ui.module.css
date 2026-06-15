@@ -98,30 +98,115 @@
 }
 
 .productToggleButtonIdle {
-  background: var(--lego-surface-muted);
-  color: var(--lego-text);
+  background: var(--wishlist-button-background, var(--lego-surface-muted));
+  border-color: var(--wishlist-button-border-color, transparent);
+  color: var(--wishlist-button-color, var(--lego-text));
 }
 
 .productToggleButtonIdle:hover {
-  background: color-mix(
-    in srgb,
-    var(--lego-surface-muted) 76%,
-    var(--lego-border-subtle) 24%
+  background: var(
+    --wishlist-button-hover-background,
+    color-mix(
+      in srgb,
+      var(--lego-surface-muted) 76%,
+      var(--lego-border-subtle) 24%
+    )
   );
-  border-color: transparent;
-  color: var(--lego-text);
+  border-color: var(--wishlist-button-hover-border-color, transparent);
+  color: var(
+    --wishlist-button-hover-color,
+    var(--wishlist-button-color, var(--lego-text))
+  );
 }
 
 .productToggleButtonActive {
-  background: var(--lego-info-subtle);
-  border-color: transparent;
-  color: var(--lego-info);
+  background: var(--wishlist-button-active-background, var(--lego-info-subtle));
+  border-color: var(--wishlist-button-active-border-color, transparent);
+  color: var(--wishlist-button-active-color, var(--lego-info));
 }
 
 .productToggleButtonActive:hover {
-  background: var(--lego-info-subtle);
-  border-color: transparent;
-  color: var(--lego-info);
+  background: var(
+    --wishlist-button-active-hover-background,
+    var(--wishlist-button-active-background, var(--lego-info-subtle))
+  );
+  border-color: var(
+    --wishlist-button-active-hover-border-color,
+    var(--wishlist-button-active-border-color, transparent)
+  );
+  color: var(
+    --wishlist-button-active-hover-color,
+    var(--wishlist-button-active-color, var(--lego-info))
+  );
+}
+
+.productToggleButtonActive:active {
+  background: var(
+    --wishlist-button-active-pressed-background,
+    var(
+      --wishlist-button-active-hover-background,
+      var(--wishlist-button-active-background, var(--lego-info-subtle))
+    )
+  );
+  border-color: var(
+    --wishlist-button-active-pressed-border-color,
+    var(
+      --wishlist-button-active-hover-border-color,
+      var(--wishlist-button-active-border-color, transparent)
+    )
+  );
+  color: var(
+    --wishlist-button-active-pressed-color,
+    var(
+      --wishlist-button-active-hover-color,
+      var(--wishlist-button-active-color, var(--lego-info))
+    )
+  );
+}
+
+.productToggleButton.productToggleButtonActive {
+  background: var(--wishlist-button-active-background, var(--lego-info-subtle));
+  border-color: var(--wishlist-button-active-border-color, transparent);
+  color: var(--wishlist-button-active-color, var(--lego-info));
+}
+
+.productToggleButton.productToggleButtonActive:hover {
+  background: var(
+    --wishlist-button-active-hover-background,
+    var(--wishlist-button-active-background, var(--lego-info-subtle))
+  );
+  border-color: var(
+    --wishlist-button-active-hover-border-color,
+    var(--wishlist-button-active-border-color, transparent)
+  );
+  color: var(
+    --wishlist-button-active-hover-color,
+    var(--wishlist-button-active-color, var(--lego-info))
+  );
+}
+
+.productToggleButton.productToggleButtonActive:active {
+  background: var(
+    --wishlist-button-active-pressed-background,
+    var(
+      --wishlist-button-active-hover-background,
+      var(--wishlist-button-active-background, var(--lego-info-subtle))
+    )
+  );
+  border-color: var(
+    --wishlist-button-active-pressed-border-color,
+    var(
+      --wishlist-button-active-hover-border-color,
+      var(--wishlist-button-active-border-color, transparent)
+    )
+  );
+  color: var(
+    --wishlist-button-active-pressed-color,
+    var(
+      --wishlist-button-active-hover-color,
+      var(--wishlist-button-active-color, var(--lego-info))
+    )
+  );
 }
 
 .inlineToggleButton {
@@ -143,27 +228,111 @@
 }
 
 .inlineToggleButtonIdle {
-  background: var(--lego-surface-muted);
-  border-color: transparent;
-  color: var(--lego-text);
+  background: var(--wishlist-button-background, var(--lego-surface-muted));
+  border-color: var(--wishlist-button-border-color, transparent);
+  color: var(--wishlist-button-color, var(--lego-text));
 }
 
 .inlineToggleButtonIdle:hover {
-  background: var(--lego-surface-subtle);
-  border-color: transparent;
-  color: var(--lego-text);
+  background: var(
+    --wishlist-button-hover-background,
+    var(--lego-surface-subtle)
+  );
+  border-color: var(--wishlist-button-hover-border-color, transparent);
+  color: var(
+    --wishlist-button-hover-color,
+    var(--wishlist-button-color, var(--lego-text))
+  );
 }
 
 .inlineToggleButtonActive {
-  background: var(--lego-info-subtle);
-  border-color: transparent;
-  color: var(--lego-info);
+  background: var(--wishlist-button-active-background, var(--lego-info-subtle));
+  border-color: var(--wishlist-button-active-border-color, transparent);
+  color: var(--wishlist-button-active-color, var(--lego-info));
 }
 
 .inlineToggleButtonActive:hover {
-  background: var(--lego-info-subtle);
-  border-color: transparent;
-  color: var(--lego-info);
+  background: var(
+    --wishlist-button-active-hover-background,
+    var(--wishlist-button-active-background, var(--lego-info-subtle))
+  );
+  border-color: var(
+    --wishlist-button-active-hover-border-color,
+    var(--wishlist-button-active-border-color, transparent)
+  );
+  color: var(
+    --wishlist-button-active-hover-color,
+    var(--wishlist-button-active-color, var(--lego-info))
+  );
+}
+
+.inlineToggleButtonActive:active {
+  background: var(
+    --wishlist-button-active-pressed-background,
+    var(
+      --wishlist-button-active-hover-background,
+      var(--wishlist-button-active-background, var(--lego-info-subtle))
+    )
+  );
+  border-color: var(
+    --wishlist-button-active-pressed-border-color,
+    var(
+      --wishlist-button-active-hover-border-color,
+      var(--wishlist-button-active-border-color, transparent)
+    )
+  );
+  color: var(
+    --wishlist-button-active-pressed-color,
+    var(
+      --wishlist-button-active-hover-color,
+      var(--wishlist-button-active-color, var(--lego-info))
+    )
+  );
+}
+
+.inlineToggleButton.inlineToggleButtonActive {
+  background: var(--wishlist-button-active-background, var(--lego-info-subtle));
+  border-color: var(--wishlist-button-active-border-color, transparent);
+  color: var(--wishlist-button-active-color, var(--lego-info));
+}
+
+.inlineToggleButton.inlineToggleButtonActive:hover {
+  background: var(
+    --wishlist-button-active-hover-background,
+    var(--wishlist-button-active-background, var(--lego-info-subtle))
+  );
+  border-color: var(
+    --wishlist-button-active-hover-border-color,
+    var(--wishlist-button-active-border-color, transparent)
+  );
+  color: var(
+    --wishlist-button-active-hover-color,
+    var(--wishlist-button-active-color, var(--lego-info))
+  );
+}
+
+.inlineToggleButton.inlineToggleButtonActive:active {
+  background: var(
+    --wishlist-button-active-pressed-background,
+    var(
+      --wishlist-button-active-hover-background,
+      var(--wishlist-button-active-background, var(--lego-info-subtle))
+    )
+  );
+  border-color: var(
+    --wishlist-button-active-pressed-border-color,
+    var(
+      --wishlist-button-active-hover-border-color,
+      var(--wishlist-button-active-border-color, transparent)
+    )
+  );
+  color: var(
+    --wishlist-button-active-pressed-color,
+    var(
+      --wishlist-button-active-hover-color,
+      var(--wishlist-button-active-color, var(--lego-info))
+    )
+  );
 }
 
 .inlineToggleIcon {

@@ -721,6 +721,98 @@ function toCommerceCurrentOfferSnapshotRow(
   };
 }
 
+function getSnapshotRowInvalidReason(
+  row: CommerceCurrentOfferSnapshotRow,
+): string | undefined {
+  if (!row.set_id.trim()) {
+    return 'missing_set_id';
+  }
+
+  if (row.region_code !== DUTCH_REGION_CODE) {
+    return 'invalid_region_code';
+  }
+
+  if (row.currency_code !== EURO_CURRENCY_CODE) {
+    return 'invalid_currency_code';
+  }
+
+  if (row.condition !== NEW_OFFER_CONDITION) {
+    return 'invalid_condition';
+  }
+
+  if (!row.computed_at || Number.isNaN(Date.parse(row.computed_at))) {
+    return 'invalid_computed_at';
+  }
+
+  if (row.offer_count !== row.offers.length) {
+    return 'offer_count_mismatch';
+  }
+
+  return undefined;
+}
+
+function createCurrentOfferSnapshotUpsertDiagnostics({
+  error,
+  rows,
+}: {
+  error: unknown;
+  rows: readonly CommerceCurrentOfferSnapshotRow[];
+}) {
+  const errorRecord =
+    error && typeof error === 'object'
+      ? (error as {
+          code?: unknown;
+          details?: unknown;
+          hint?: unknown;
+          message?: unknown;
+        })
+      : {};
+  const firstInvalidRow = rows.find((row) => getSnapshotRowInvalidReason(row));
+  const sampleRows = rows.slice(0, 3);
+
+  return {
+    code: errorRecord.code,
+    details: errorRecord.details,
+    firstInvalidRow: firstInvalidRow
+      ? {
+          reason: getSnapshotRowInvalidReason(firstInvalidRow),
+          row: {
+            best_availability: firstInvalidRow.best_availability,
+            best_commercial_unit_type:
+              firstInvalidRow.best_commercial_unit_type,
+            best_merchant_slug: firstInvalidRow.best_merchant_slug,
+            best_price_minor: firstInvalidRow.best_price_minor,
+            condition: firstInvalidRow.condition,
+            currency_code: firstInvalidRow.currency_code,
+            offer_count: firstInvalidRow.offer_count,
+            offers_length: firstInvalidRow.offers.length,
+            region_code: firstInvalidRow.region_code,
+            set_id: firstInvalidRow.set_id,
+          },
+        }
+      : undefined,
+    hint: errorRecord.hint,
+    message:
+      typeof errorRecord.message === 'string'
+        ? errorRecord.message
+        : error instanceof Error
+          ? error.message
+          : String(error),
+    samplePayloadShape: sampleRows.map((row) => ({
+      keys: Object.keys(row).sort(),
+      offersLength: row.offers.length,
+      setId: row.set_id,
+    })),
+    sampleSnapshotKeys: sampleRows.map((row) => ({
+      condition: row.condition,
+      currencyCode: row.currency_code,
+      regionCode: row.region_code,
+      setId: row.set_id,
+    })),
+    snapshotCount: rows.length,
+  };
+}
+
 export async function upsertCommerceCurrentOfferSnapshots({
   snapshots,
   supabaseClient = getServerSupabaseAdminClient(),
@@ -734,14 +826,29 @@ export async function upsertCommerceCurrentOfferSnapshots({
     };
   }
 
+  const rows = snapshots.map(toCommerceCurrentOfferSnapshotRow);
   const { error } = await supabaseClient
     .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
-    .upsert(snapshots.map(toCommerceCurrentOfferSnapshotRow), {
+    .upsert(rows, {
       onConflict: 'set_id,region_code,currency_code,condition',
     });
 
   if (error) {
-    throw new Error('Unable to upsert commerce current-offer snapshots.');
+    const diagnostics = createCurrentOfferSnapshotUpsertDiagnostics({
+      error,
+      rows,
+    });
+
+    console.error('[commerce-current-offer-snapshots] upsert_failed', {
+      ...diagnostics,
+      event: 'commerce_current_offer_snapshot_upsert_failed',
+    });
+
+    throw new Error(
+      `Unable to upsert commerce current-offer snapshots. ${JSON.stringify(
+        diagnostics,
+      )}`,
+    );
   }
 
   return {

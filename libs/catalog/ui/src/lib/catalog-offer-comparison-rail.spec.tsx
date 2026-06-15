@@ -7,10 +7,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogOfferItem } from './catalog-commerce-ui';
-import {
-  CatalogOfferComparisonRail,
-  getMerchantFaviconUrl,
-} from './catalog-offer-comparison-rail';
+import { getMerchantFaviconUrl } from './catalog-merchant-brand';
+import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
 
 vi.mock('next/link', () => ({
   default: ({

@@ -96,6 +96,13 @@ type LightboxOverviewReturnTransition = {
   key: number;
 } | null;
 type LightboxPresentationState = 'closed' | 'opening' | 'open' | 'closing';
+type LightboxImageTransitionReason =
+  | 'open'
+  | 'return_to_gallery'
+  | 'single_dialog_initial'
+  | 'navigate_next_prev'
+  | null;
+type LightboxMotionMode = 'instant' | 'sheet';
 type SwipeTarget = 'detail' | 'lightbox';
 type SwipePhase = 'idle' | 'dragging' | 'resetting' | 'settling';
 
@@ -116,6 +123,7 @@ const LIGHTBOX_MOMENTUM_FRICTION = 0.92;
 const LIGHTBOX_MOMENTUM_MIN_VELOCITY_PX_PER_MS = 0.018;
 const LIGHTBOX_CLOSE_ANIMATION_MS = 320;
 const LIGHTBOX_REDUCED_MOTION_CLOSE_ANIMATION_MS = 40;
+const MOBILE_LIGHTBOX_SHEET_QUERY = '(max-width: 47.99rem)';
 
 const INITIAL_SWIPE_VISUAL_STATE = {
   delta: 0,
@@ -183,6 +191,18 @@ function getGalleryImageAspectRatio(image: GalleryImage): number | undefined {
   }
 
   return undefined;
+}
+
+function getLightboxMotionMode(): LightboxMotionMode {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia(MOBILE_LIGHTBOX_SHEET_QUERY).matches
+  ) {
+    return 'sheet';
+  }
+
+  return 'instant';
 }
 
 function getGalleryImageOrientation(
@@ -595,6 +615,10 @@ export function ImageGallery({
   ] = useState<LightboxOverviewReturnTransition>(null);
   const [lightboxPresentationState, setLightboxPresentationState] =
     useState<LightboxPresentationState>('closed');
+  const [lightboxImageTransitionReason, setLightboxImageTransitionReason] =
+    useState<LightboxImageTransitionReason>(null);
+  const [lightboxMotionMode, setLightboxMotionMode] =
+    useState<LightboxMotionMode>('instant');
   const overviewImageButtonRefs = useRef<
     Record<number, HTMLButtonElement | null>
   >({});
@@ -848,7 +872,9 @@ export function ImageGallery({
     clearLightboxCloseFallbackTimer();
     setLightboxImageIndex(null);
     setLightboxMode('viewer');
+    setLightboxMotionMode('instant');
     setLightboxOverviewReturnTransition(null);
+    setLightboxImageTransitionReason(null);
     setLightboxPresentationState('closed');
 
     window.requestAnimationFrame(() => {
@@ -857,13 +883,31 @@ export function ImageGallery({
   }, [clearLightboxCloseFallbackTimer, clearLightboxOpenAnimationFrame]);
 
   const beginLightboxOpen = useCallback(
-    ({ imageIndex, mode }: { imageIndex: number; mode: LightboxMode }) => {
+    ({
+      imageIndex,
+      mode,
+      transitionReason,
+    }: {
+      imageIndex: number;
+      mode: LightboxMode;
+      transitionReason: Exclude<LightboxImageTransitionReason, null>;
+    }) => {
+      const nextMotionMode = getLightboxMotionMode();
+
       clearLightboxOpenAnimationFrame();
       clearLightboxCloseFallbackTimer();
-      setLightboxPresentationState('opening');
+      setLightboxPresentationState(
+        nextMotionMode === 'sheet' ? 'opening' : 'open',
+      );
+      setLightboxMotionMode(nextMotionMode);
       setLightboxMode(mode);
       setLightboxOverviewReturnTransition(null);
+      setLightboxImageTransitionReason(transitionReason);
       setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
+
+      if (nextMotionMode === 'instant') {
+        return;
+      }
 
       lightboxOpenAnimationFrameRef.current = window.requestAnimationFrame(
         () => {
@@ -915,6 +959,12 @@ export function ImageGallery({
     resetLightboxZoom();
     setLightboxSwipeState(INITIAL_SWIPE_VISUAL_STATE);
     setLightboxOverviewReturnTransition(null);
+
+    if (lightboxMotionMode === 'instant') {
+      finishLightboxClose();
+      return;
+    }
+
     setLightboxPresentationState('closing');
 
     const prefersReducedMotion =
@@ -934,6 +984,7 @@ export function ImageGallery({
     clearSwipeSettleTimer,
     finishLightboxClose,
     lightboxImageIndex,
+    lightboxMotionMode,
     lightboxPresentationState,
     resetLightboxZoom,
   ]);
@@ -942,6 +993,8 @@ export function ImageGallery({
     if (!resolvedImages.length) {
       setDetailImageIndex(0);
       setLightboxImageIndex(null);
+      setLightboxMotionMode('instant');
+      setLightboxImageTransitionReason(null);
       setLightboxPresentationState('closed');
       return;
     }
@@ -966,6 +1019,8 @@ export function ImageGallery({
     beginLightboxOpen({
       imageIndex: lightboxRequest.index,
       mode: 'viewer',
+      transitionReason:
+        resolvedImages.length <= 1 ? 'single_dialog_initial' : 'open',
     });
   }, [
     beginLightboxOpen,
@@ -1049,6 +1104,7 @@ export function ImageGallery({
       if (event.key === 'ArrowRight') {
         event.preventDefault();
         resetLightboxZoom();
+        setLightboxImageTransitionReason('navigate_next_prev');
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -1059,6 +1115,7 @@ export function ImageGallery({
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
         resetLightboxZoom();
+        setLightboxImageTransitionReason('navigate_next_prev');
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -1195,18 +1252,25 @@ export function ImageGallery({
 
     rememberLightboxTrigger(trigger);
     resetLightboxZoom();
+    const lightboxOpenMode =
+      variant === 'detail' && resolvedImages.length > 1 ? 'overview' : 'viewer';
+
     beginLightboxOpen({
       imageIndex,
-      mode:
-        variant === 'detail' && resolvedImages.length > 1
-          ? 'overview'
-          : 'viewer',
+      mode: lightboxOpenMode,
+      transitionReason:
+        lightboxOpenMode === 'viewer' && resolvedImages.length <= 1
+          ? 'single_dialog_initial'
+          : 'open',
     });
   }
 
   function goToLightboxImage(nextIndex: number) {
     resetLightboxZoom();
     setLightboxOverviewReturnTransition(null);
+    setLightboxImageTransitionReason(
+      lightboxMode === 'overview' ? 'open' : 'navigate_next_prev',
+    );
     setLightboxMode('viewer');
     setLightboxImageIndex(clampIndex(nextIndex, resolvedImages.length));
   }
@@ -1222,6 +1286,7 @@ export function ImageGallery({
             key: (lightboxOverviewReturnKeyRef.current += 1),
           },
     );
+    setLightboxImageTransitionReason('return_to_gallery');
     setLightboxMode('overview');
   }
 
@@ -1243,6 +1308,7 @@ export function ImageGallery({
   ) {
     if (
       event.target === event.currentTarget &&
+      lightboxMotionMode === 'sheet' &&
       lightboxPresentationState === 'closing'
     ) {
       finishLightboxClose();
@@ -1856,6 +1922,7 @@ export function ImageGallery({
         );
       } else {
         resetLightboxZoom();
+        setLightboxImageTransitionReason('navigate_next_prev');
         setLightboxImageIndex((currentIndex) =>
           currentIndex === null
             ? 0
@@ -2088,32 +2155,45 @@ export function ImageGallery({
       image: GalleryImage;
       imageIndex: number;
       isActiveLightboxImage?: boolean;
-    }) => (
-      <span
-        className={joinClasses(
-          styles.swipeImageFrame,
-          kind === 'lightbox' &&
+    }) => {
+      const shouldAnimateLightboxImageEnter =
+        kind === 'lightbox' &&
+        isActiveLightboxImage &&
+        (lightboxImageTransitionReason === 'open' ||
+          lightboxImageTransitionReason === 'single_dialog_initial');
+
+      return (
+        <span
+          className={joinClasses(
+            styles.swipeImageFrame,
+            shouldAnimateLightboxImageEnter && styles.lightboxImageEnter,
+          )}
+          data-lightbox-image-enter={
+            shouldAnimateLightboxImageEnter ? 'true' : undefined
+          }
+          data-lightbox-image-transition-reason={
+            kind === 'lightbox' &&
             isActiveLightboxImage &&
-            styles.lightboxImageEnter,
-        )}
-        data-lightbox-image-enter={
-          kind === 'lightbox' && isActiveLightboxImage ? 'true' : undefined
-        }
-        key={
-          kind === 'lightbox' && isActiveLightboxImage
-            ? `lightbox-enter-${getGalleryImageKey(image, imageIndex)}`
-            : undefined
-        }
-      >
-        <GalleryImageMedia
-          image={image}
-          imageIndex={imageIndex}
-          kind={kind}
-          isFallbackVisible={Boolean(failedImageIndexes[imageIndex])}
-          onImageError={handleImageError}
-        />
-      </span>
-    );
+            lightboxImageTransitionReason
+              ? lightboxImageTransitionReason
+              : undefined
+          }
+          key={
+            shouldAnimateLightboxImageEnter
+              ? `lightbox-enter-${lightboxImageTransitionReason}-${getGalleryImageKey(image, imageIndex)}`
+              : undefined
+          }
+        >
+          <GalleryImageMedia
+            image={image}
+            imageIndex={imageIndex}
+            kind={kind}
+            isFallbackVisible={Boolean(failedImageIndexes[imageIndex])}
+            onImageError={handleImageError}
+          />
+        </span>
+      );
+    };
 
     return (
       <>
@@ -2181,6 +2261,7 @@ export function ImageGallery({
         className={styles.lightboxBackdrop}
         data-lightbox-backdrop="true"
         data-lightbox-mode={lightboxMode}
+        data-lightbox-motion={lightboxMotionMode}
         data-lightbox-state={lightboxPresentationState}
         data-lightbox-variant={variant}
         onClick={closeLightbox}
@@ -2192,6 +2273,7 @@ export function ImageGallery({
           className={styles.lightboxDialog}
           data-lightbox-active-index={safeLightboxImageIndex}
           data-lightbox-mode={lightboxMode}
+          data-lightbox-motion={lightboxMotionMode}
           data-lightbox-state={lightboxPresentationState}
           data-lightbox-variant={variant}
           onClick={(event) => event.stopPropagation()}

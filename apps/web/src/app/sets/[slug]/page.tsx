@@ -1602,7 +1602,10 @@ function buildBestDeal({
     decisionHelper: heroDealPresentation.advice,
     decisionLabel: heroDealPresentation.title,
     decisionTone: getHeroDealDecisionTone(heroDealPresentation.state),
-    merchantLabel: `Bij ${merchantName}`,
+    evidence: heroDealPresentation.evidence,
+    merchantLabel: merchantName,
+    merchantName,
+    merchantSlug,
     price: formatOfferPrice(catalogOffer),
     rankingLabel:
       heroDealPresentation.evidence[0] ??

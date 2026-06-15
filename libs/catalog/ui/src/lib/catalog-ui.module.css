@@ -1901,8 +1901,7 @@
     line-height: 1.2;
   }
 
-  .detailHero .bestDealPrice,
-  .detailHero .bestDealFallbackValue {
+  .detailHero .bestDealPrice {
     letter-spacing: -0.04em;
   }
 
@@ -2212,16 +2211,26 @@
     background: var(--lego-commerce-subtle);
   }
 
-  .bestDealHeader {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--lego-space-2);
-    justify-content: space-between;
+  .bestDealStateSlot,
+  .bestDealPriceBlock,
+  .bestDealEvidenceSlot,
+  .bestDealAdviceSlot,
+  .bestDealMerchantSlot,
+  .bestDealTrustSlot,
+  .bestDealActionSlot,
+  .bestDealDisclosureSlot {
+    min-width: 0;
   }
 
-  .bestDealPrice,
-  .bestDealFallbackValue {
+  .bestDealEvidenceSlot[data-empty='true'],
+  .bestDealAdviceSlot[data-empty='true'],
+  .bestDealMerchantSlot[data-empty='true'],
+  .bestDealTrustSlot[data-empty='true'],
+  .bestDealDisclosureSlot[data-empty='true'] {
+    display: none;
+  }
+
+  .bestDealPrice {
     font-family: var(--lego-font-family-heading);
     font-size: clamp(2.35rem, 8vw, 3.45rem);
     font-weight: var(--lego-text-role-hero-weight);
@@ -2230,64 +2239,127 @@
     margin: 0;
   }
 
-  .bestDealFallbackValue {
+  .bestDealPrice[data-price-kind='fallback'] {
     font-size: clamp(1.55rem, 6vw, 2.25rem);
     letter-spacing: 0;
-    line-height: 1;
+    line-height: 1.04;
   }
 
-  .bestDealMeta,
-  .bestDealRanking,
-  .bestDealDecision,
-  .bestDealChecked,
+  .bestDealEvidenceText,
+  .bestDealTrustList,
+  .bestDealAdvice,
   .alertCopy,
   .offerMeta,
   .trustValue {
     margin: 0;
   }
 
-  .bestDealMeta {
-    color: var(--lego-text);
-    font-size: 1.08rem;
-    font-weight: var(--lego-font-weight-bold);
-    line-height: 1.2;
+  .bestDealEvidenceSlot {
+    display: grid;
+    justify-items: start;
   }
 
-  .bestDealRanking {
-    background: var(--lego-surface-default);
-    border-radius: var(--lego-radius-xs);
+  .bestDealEvidenceText {
+    color: var(--lego-positive);
+    font-size: clamp(1rem, 2.8vw, 1.08rem);
+    font-weight: var(--lego-font-weight-semibold);
+    line-height: 1.28;
+  }
+
+  .bestDealCard[data-tone='warning'] .bestDealEvidenceText {
+    color: var(--lego-commerce);
+  }
+
+  .bestDealCard[data-tone='info'] .bestDealEvidenceText,
+  .bestDealCard[data-tone='neutral'] .bestDealEvidenceText {
+    color: var(--lego-text);
+  }
+
+  .bestDealAdvice {
+    color: var(--lego-text);
+    font-size: 0.96rem;
+    font-weight: var(--lego-font-weight-regular);
+    line-height: 1.42;
+  }
+
+  .bestDealMerchant {
+    align-items: center;
     color: var(--lego-text);
     display: inline-flex;
-    font-size: 0.94rem;
-    font-weight: var(--lego-font-weight-bold);
-    line-height: 1.25;
-    padding: 0.38rem 0.58rem;
-    width: fit-content;
+    font-size: 1rem;
+    font-weight: var(--lego-font-weight-semibold);
+    gap: 0.44rem;
+    line-height: 1.2;
+    margin: 0;
+    max-width: 100%;
+    min-width: 0;
   }
 
-  .bestDealDecision {
-    color: var(--lego-text);
-    font-size: 0.98rem;
-    line-height: 1.38;
+  .bestDealMerchantPrefix {
+    color: var(--lego-text-muted);
+    flex: 0 0 auto;
+    font-weight: var(--lego-font-weight-semibold);
   }
 
-  .bestDealSignals {
+  .bestDealMerchantLink {
     align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    border-radius: var(--lego-radius-xs);
+    color: inherit;
+    display: inline-flex;
+    min-width: 0;
+    text-decoration: none;
   }
 
-  .bestDealChecked,
+  .bestDealMerchantLink:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+  }
+
+  .bestDealMerchantLink:focus-visible {
+    box-shadow: 0 0 0 3px var(--lego-focus-ring);
+    outline: none;
+  }
+
+  .bestDealMerchantBrand {
+    min-width: 0;
+  }
+
+  .bestDealTrustList {
+    color: var(--lego-text-muted);
+    display: grid;
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-regular);
+    gap: 0.26rem;
+    line-height: 1.35;
+    list-style: none;
+    padding: 0;
+  }
+
+  .bestDealTrustItem {
+    align-items: start;
+    display: grid;
+    gap: 0.36rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 0;
+    min-width: 0;
+  }
+
+  .bestDealTrustItem svg {
+    color: var(--lego-positive);
+    margin-top: 0.08rem;
+  }
+
+  @media (max-width: 30rem) {
+    .bestDealTrustItem:nth-child(n + 3) {
+      display: none;
+    }
+  }
+
   .offerMeta,
   .alertCopy,
   .trustValue {
     color: var(--lego-text-muted);
     line-height: 1.35;
-  }
-
-  .bestDealChecked {
-    font-size: var(--lego-text-role-meta-size);
   }
 
   .metaSignal {
@@ -2333,11 +2405,115 @@
     overflow: visible;
   }
 
+  .bestDealActionRow[data-action-layout='merchant'] {
+    display: grid;
+  }
+
+  .bestDealSideAction,
+  .bestDealFollowAction {
+    --catalog-hero-side-action-active-background: var(
+      --lego-button-accent-background,
+      var(--lego-accent)
+    );
+    --catalog-hero-side-action-active-border-color: var(
+      --lego-button-accent-background,
+      var(--lego-accent)
+    );
+    --catalog-hero-side-action-active-color: var(
+      --lego-button-accent-color,
+      #ffffff
+    );
+    --catalog-hero-side-action-active-hover-background: var(
+      --lego-button-accent-hover-background,
+      var(--catalog-hero-side-action-active-background)
+    );
+    --catalog-hero-side-action-active-hover-border-color: var(
+      --lego-button-accent-hover-background,
+      var(--catalog-hero-side-action-active-border-color)
+    );
+    --catalog-hero-side-action-active-hover-color: var(
+      --lego-button-accent-hover-color,
+      var(--catalog-hero-side-action-active-color)
+    );
+    --catalog-hero-side-action-background: var(
+      --lego-button-secondary-background,
+      var(--lego-surface-default)
+    );
+    --catalog-hero-side-action-border-color: var(
+      --lego-button-secondary-border-color,
+      var(--lego-border)
+    );
+    --catalog-hero-side-action-color: var(
+      --lego-button-secondary-color,
+      var(--lego-text)
+    );
+    --catalog-hero-side-action-hover-background: var(
+      --lego-button-secondary-hover-background,
+      var(--lego-surface-subtle)
+    );
+    --catalog-hero-side-action-hover-border-color: var(
+      --lego-button-secondary-hover-border-color,
+      var(--lego-text)
+    );
+    --catalog-hero-side-action-hover-color: var(
+      --lego-button-secondary-hover-color,
+      var(--lego-text)
+    );
+    --wishlist-button-active-background: var(
+      --catalog-hero-side-action-active-background
+    );
+    --wishlist-button-active-border-color: var(
+      --catalog-hero-side-action-active-border-color
+    );
+    --wishlist-button-active-color: var(
+      --catalog-hero-side-action-active-color
+    );
+    --wishlist-button-active-hover-background: var(
+      --catalog-hero-side-action-active-hover-background
+    );
+    --wishlist-button-active-hover-border-color: var(
+      --catalog-hero-side-action-active-hover-border-color
+    );
+    --wishlist-button-active-hover-color: var(
+      --catalog-hero-side-action-active-hover-color
+    );
+    --wishlist-button-background: var(--catalog-hero-side-action-background);
+    --wishlist-button-border-color: var(
+      --catalog-hero-side-action-border-color
+    );
+    --wishlist-button-color: var(--catalog-hero-side-action-color);
+    --wishlist-button-hover-background: var(
+      --catalog-hero-side-action-hover-background
+    );
+    --wishlist-button-hover-border-color: var(
+      --catalog-hero-side-action-hover-border-color
+    );
+    --wishlist-button-hover-color: var(--catalog-hero-side-action-hover-color);
+  }
+
   .bestDealSideAction {
     display: grid;
     flex: 0 0 var(--catalog-card-action-height);
     min-inline-size: var(--catalog-card-action-height);
     overflow: visible;
+  }
+
+  .bestDealFollowIconButton {
+    --wishlist-button-active-pressed-background: var(
+      --lego-button-accent-active-background,
+      var(--catalog-hero-side-action-active-hover-background)
+    );
+    --wishlist-button-active-pressed-border-color: var(
+      --lego-button-accent-active-background,
+      var(--catalog-hero-side-action-active-hover-border-color)
+    );
+    --wishlist-button-active-pressed-color: var(
+      --lego-button-accent-active-color,
+      var(--catalog-hero-side-action-active-hover-color)
+    );
+    --catalog-hero-side-action-background: transparent;
+    --catalog-hero-follow-action-radius: var(--lego-radius-sm);
+    align-self: stretch;
   }
 
   .bestDealSideAction > * {
@@ -2347,21 +2523,66 @@
 
   .bestDealSideAction :where(button, a),
   .bestDealFollowAction :where(button, a) {
-    background: var(--lego-surface-default);
-    border-color: var(--lego-border-subtle);
-    box-shadow: 0 0.38rem 0.9rem rgba(17, 24, 39, 0.12);
-    color: var(--lego-text);
+    background: var(
+      --catalog-hero-side-action-background,
+      var(--lego-surface-default)
+    );
+    border-color: var(
+      --catalog-hero-side-action-border-color,
+      var(--lego-border-subtle)
+    );
+    box-shadow: none;
+    color: var(--catalog-hero-side-action-color, var(--lego-text));
+    min-height: var(--catalog-card-action-height, 3.35rem);
+    transition:
+      background-color 160ms ease-out,
+      border-color 160ms ease-out,
+      color 160ms ease-out,
+      transform 160ms ease-out;
+  }
+
+  .bestDealSideAction :where(button, a) {
+    inline-size: 100%;
+    min-inline-size: var(--catalog-card-action-height, 3.35rem);
+    padding: 0;
   }
 
   .bestDealSideAction :where(button, a):hover,
   .bestDealFollowAction :where(button, a):hover {
-    background: var(--lego-text);
-    border-color: var(--lego-text);
-    box-shadow: 0 0.42rem 1rem rgba(17, 24, 39, 0.18);
-    color: var(--lego-surface-default);
+    background: var(
+      --catalog-hero-side-action-hover-background,
+      var(--lego-surface-subtle)
+    );
+    border-color: var(
+      --catalog-hero-side-action-hover-border-color,
+      var(--lego-border)
+    );
+    color: var(--catalog-hero-side-action-hover-color, var(--lego-text));
+  }
+
+  .bestDealSideAction :where(button, a):active {
+    transform: translateY(1px);
+  }
+
+  .bestDealSideAction :where(button, a):focus-visible,
+  .bestDealFollowAction :where(button, a):focus-visible {
+    box-shadow: 0 0 0 4px var(--lego-focus-ring);
+    outline: none;
+  }
+
+  .bestDealSideAction :where(button, a):disabled,
+  .bestDealSideAction :where(button, a)[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+  }
+
+  .bestDealFollowIconButton :where(button, a) {
+    border-radius: var(--catalog-hero-follow-action-radius);
   }
 
   .bestDealFollowAction {
+    --catalog-card-action-height: 3.35rem;
     display: grid;
   }
 
@@ -2619,7 +2840,12 @@
   }
 
   .merchantBrandInline {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.38rem;
     max-width: 100%;
+    min-width: 0;
+    vertical-align: middle;
   }
 
   .merchantBrandFavicon {
@@ -5030,7 +5256,7 @@
       line-height: 0.96;
     }
 
-    .detailHero .bestDealFallbackValue {
+    .detailHero .bestDealPrice[data-price-kind='fallback'] {
       font-size: clamp(1.4rem, 4.8vw, 2rem);
       line-height: 1.04;
     }

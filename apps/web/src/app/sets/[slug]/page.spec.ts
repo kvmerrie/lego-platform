@@ -70,6 +70,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       decisionLabel?: string;
       decisionTone?: string;
       merchantLabel?: string;
+      merchantName?: string;
       rankingLabel?: string;
       stockLabel?: string;
     };
@@ -135,7 +136,9 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             bestDeal.rankingLabel,
             bestDeal.ctaTone,
             bestDeal.ctaLabel,
-            bestDeal.merchantLabel,
+            bestDeal.merchantName
+              ? `Bij ${bestDeal.merchantName}`
+              : bestDeal.merchantLabel,
             bestDeal.stockLabel,
             bestDeal.coverageLabel,
             bestDeal.checkedLabel,

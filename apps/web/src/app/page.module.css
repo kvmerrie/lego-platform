@@ -35,9 +35,102 @@
   max-width: 36ch;
 }
 
-.sectionGroup {
+.intentRail {
+  --catalog-section-inline-padding: var(
+    --lego-section-inline-padding,
+    var(--lego-space-3)
+  );
+  --catalog-section-padding-block: var(--lego-space-4);
+  display: grid;
+  gap: var(--lego-space-1);
+  padding-block: var(--catalog-section-padding-block);
+  padding-inline: var(--catalog-section-inline-padding);
+}
+
+.intentTop {
+  align-items: start;
   display: grid;
   gap: var(--lego-space-3);
+}
+
+.intentMain {
+  display: grid;
+  gap: var(--lego-space-1);
+  min-width: 0;
+}
+
+.intentTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.45rem, 1.28rem + 0.7vw, 1.75rem);
+  font-weight: var(--lego-text-role-section-weight);
+  letter-spacing: -0.03em;
+  line-height: var(--lego-text-role-section-line-height);
+  margin: 0;
+}
+
+.intentTabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--lego-space-4);
+  margin-inline: calc(-1 * var(--catalog-section-inline-padding));
+  overflow-x: auto;
+  padding: 0 var(--catalog-section-inline-padding);
+  scrollbar-width: none;
+}
+
+.intentTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.intentTab {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--lego-text-role-body-size);
+  font-weight: 650;
+  justify-content: center;
+  line-height: 1;
+  min-height: 2.75rem;
+  padding: var(--lego-space-1) 0 calc(var(--lego-space-2) - 3px);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.intentTab:hover,
+.intentTab:focus-visible {
+  color: var(--lego-text);
+}
+
+.intentTab:focus-visible {
+  outline: 3px solid var(--lego-focus-ring);
+  outline-offset: -3px;
+}
+
+.intentTabActive {
+  border-bottom-color: var(--lego-text);
+  color: var(--lego-text);
+  font-weight: 800;
+}
+
+.intentTabActive:hover,
+.intentTabActive:focus-visible {
+  border-bottom-color: var(--lego-text);
+  color: var(--lego-text);
+}
+
+.intentControls {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.intentTabPanel {
+  min-width: 0;
 }
 
 .supportingLinkRow {
@@ -56,7 +149,31 @@
 }
 
 @media (min-width: 48rem) {
+  .intentRail {
+    --catalog-section-padding-block: var(--lego-space-5);
+    gap: var(--lego-space-3);
+  }
+
   .valueGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .intentTop {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .intentTabs {
+    flex-wrap: wrap;
+    justify-content: start;
+    margin-inline: 0;
+    overflow-x: visible;
+    padding: 0;
+  }
+}
+
+@media (min-width: 72rem) {
+  .intentRail {
+    --catalog-section-padding-block: var(--lego-space-6);
   }
 }

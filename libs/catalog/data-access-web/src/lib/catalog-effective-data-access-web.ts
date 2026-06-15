@@ -23,6 +23,8 @@ import type {
   CatalogThemeSearchMatch,
   CatalogThemeSnapshot,
   CatalogThemeVisual,
+  HomepageCommerceCard,
+  HomepageCommerceSnapshot,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
@@ -37,6 +39,10 @@ import {
   getCanonicalCatalogSetId,
   getCatalogThemeDisplayName,
   getCatalogReleaseYear,
+  HOMEPAGE_COMMERCE_SNAPSHOT_COLLECTION_SLUG,
+  HOMEPAGE_COMMERCE_SNAPSHOT_PAGE,
+  HOMEPAGE_COMMERCE_SNAPSHOT_PAGE_SIZE,
+  HOMEPAGE_COMMERCE_SNAPSHOT_SORT_KEY,
   isCatalogBrowsablePrimaryTheme,
   isCatalogCollectionPageSnapshotSlug,
   matchesCatalogMinifigureCollectionSignals,
@@ -57,6 +63,7 @@ import {
   buildThemePath,
   cacheTags,
   classifyCommerceCommercialUnitType,
+  commerceCommercialUnitTypes,
   canStrategicManualOfferBeatProductionFeed,
   commerceProductionFeedMerchantSlugs,
   compareCommerceCommercialUnitPreference,
@@ -1169,6 +1176,15 @@ function normalizeCatalogOfferAvailability(
   return 'unknown';
 }
 
+function normalizeCommerceCommercialUnitType(
+  value: unknown,
+): CommerceCommercialUnitType | undefined {
+  return typeof value === 'string' &&
+    commerceCommercialUnitTypes.includes(value as CommerceCommercialUnitType)
+    ? (value as CommerceCommercialUnitType)
+    : undefined;
+}
+
 function normalizeCatalogOfferMerchant(
   value: unknown,
   merchantSlug?: string,
@@ -1255,6 +1271,17 @@ function normalizeCatalogResolvedOfferRecord(
     'updatedAt',
     'updated_at',
   ]);
+  const commercialUnitType =
+    normalizeCommerceCommercialUnitType(
+      readCatalogOfferStringField(value, [
+        'commercialUnitType',
+        'commercial_unit_type',
+      ]),
+    ) ??
+    classifyCommerceCommercialUnitType({
+      productUrl: url,
+      setId,
+    });
 
   if (
     !setId ||
@@ -1275,6 +1302,7 @@ function normalizeCatalogResolvedOfferRecord(
     ),
     checkedAt,
     condition: 'new',
+    commercialUnitType,
     currency: 'EUR',
     market: 'NL',
     merchant: normalizeCatalogOfferMerchant(value['merchant'], merchantSlug),
@@ -4589,6 +4617,173 @@ export async function getCatalogDealPageSnapshot({
   };
 }
 
+function normalizeHomepageCommerceCard(
+  value: unknown,
+): HomepageCommerceCard | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const candidate = value as Partial<HomepageCommerceCard>;
+
+  if (
+    typeof candidate.setId !== 'string' ||
+    typeof candidate.slug !== 'string' ||
+    typeof candidate.name !== 'string' ||
+    typeof candidate.imageUrl !== 'string'
+  ) {
+    return undefined;
+  }
+
+  return {
+    setId: candidate.setId,
+    slug: candidate.slug,
+    name: candidate.name,
+    imageUrl: candidate.imageUrl,
+    ...(typeof candidate.theme === 'string' ? { theme: candidate.theme } : {}),
+    ...(typeof candidate.releaseYear === 'number'
+      ? { releaseYear: candidate.releaseYear }
+      : {}),
+    ...(typeof candidate.pieces === 'number'
+      ? { pieces: candidate.pieces }
+      : {}),
+    ...(typeof candidate.currentPriceMinor === 'number'
+      ? { currentPriceMinor: candidate.currentPriceMinor }
+      : {}),
+    ...(typeof candidate.merchantName === 'string'
+      ? { merchantName: candidate.merchantName }
+      : {}),
+    ...(typeof candidate.merchantSlug === 'string'
+      ? { merchantSlug: candidate.merchantSlug }
+      : {}),
+    ...(typeof candidate.dealLabel === 'string'
+      ? { dealLabel: candidate.dealLabel }
+      : {}),
+    ...(typeof candidate.confidenceLabel === 'string'
+      ? { confidenceLabel: candidate.confidenceLabel }
+      : {}),
+    ...(typeof candidate.ctaUrl === 'string'
+      ? { ctaUrl: candidate.ctaUrl }
+      : {}),
+    ...(candidate.followRecommended === true
+      ? { followRecommended: true }
+      : {}),
+  };
+}
+
+function normalizeHomepageCommerceCards(
+  values: unknown,
+): HomepageCommerceCard[] {
+  if (!Array.isArray(values)) {
+    return [];
+  }
+
+  return values
+    .map(normalizeHomepageCommerceCard)
+    .filter((card): card is HomepageCommerceCard => card !== undefined);
+}
+
+function normalizeHomepageCommerceSnapshot({
+  generatedAt,
+  itemsJson,
+}: {
+  generatedAt?: string | null;
+  itemsJson: unknown;
+}): HomepageCommerceSnapshot | undefined {
+  if (!itemsJson || typeof itemsJson !== 'object' || Array.isArray(itemsJson)) {
+    return undefined;
+  }
+
+  const candidate = itemsJson as {
+    buyRail?: {
+      bestDeals?: unknown;
+      giftsUnder100?: unknown;
+      popularThisWeek?: unknown;
+    };
+    followRail?: {
+      biggestPriceDrops?: unknown;
+      smartToFollow?: unknown;
+      waitCanPayOff?: unknown;
+    };
+    generatedAt?: unknown;
+  };
+  const snapshotGeneratedAt =
+    typeof candidate.generatedAt === 'string'
+      ? candidate.generatedAt
+      : generatedAt;
+
+  if (!snapshotGeneratedAt) {
+    return undefined;
+  }
+
+  return {
+    generatedAt: snapshotGeneratedAt,
+    buyRail: {
+      bestDeals: normalizeHomepageCommerceCards(candidate.buyRail?.bestDeals),
+      popularThisWeek: normalizeHomepageCommerceCards(
+        candidate.buyRail?.popularThisWeek,
+      ),
+      giftsUnder100: normalizeHomepageCommerceCards(
+        candidate.buyRail?.giftsUnder100,
+      ),
+    },
+    followRail: {
+      smartToFollow: normalizeHomepageCommerceCards(
+        candidate.followRail?.smartToFollow,
+      ),
+      biggestPriceDrops: normalizeHomepageCommerceCards(
+        candidate.followRail?.biggestPriceDrops,
+      ),
+      waitCanPayOff: normalizeHomepageCommerceCards(
+        candidate.followRail?.waitCanPayOff,
+      ),
+    },
+  };
+}
+
+export async function getHomepageCommerceSnapshot({
+  supabaseClient,
+}: {
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<HomepageCommerceSnapshot | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    console.warn('[homepage-commerce-snapshot] missing Supabase client');
+
+    return undefined;
+  }
+
+  const { data, error } = await activeSupabaseClient
+    .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
+    .select(
+      'collection_slug, sort_key, page, page_size, total_count, items_json, generated_at',
+    )
+    .eq('collection_slug', HOMEPAGE_COMMERCE_SNAPSHOT_COLLECTION_SLUG)
+    .eq('sort_key', HOMEPAGE_COMMERCE_SNAPSHOT_SORT_KEY)
+    .eq('page', HOMEPAGE_COMMERCE_SNAPSHOT_PAGE)
+    .eq('page_size', HOMEPAGE_COMMERCE_SNAPSHOT_PAGE_SIZE)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load homepage commerce snapshot.');
+  }
+
+  const snapshot = data as CatalogCollectionPageSnapshotRow | null;
+
+  if (!snapshot) {
+    console.warn('[homepage-commerce-snapshot] missing');
+
+    return undefined;
+  }
+
+  return normalizeHomepageCommerceSnapshot({
+    generatedAt: snapshot.generated_at,
+    itemsJson: snapshot.items_json,
+  });
+}
+
 const catalogAdultCollectorThemeSlugs = new Set([
   'architecture',
   'art',
@@ -5810,18 +6005,21 @@ function canCatalogOfferDrivePrimaryDealClaims(
 function getCatalogPrimaryDealEligibleOffers(
   currentOfferSummary?: CatalogCurrentOfferSummary,
 ): CatalogResolvedOffer[] {
-  return [
+  const eligibleOffers = [
     ...(currentOfferSummary?.offers ?? []),
     currentOfferSummary?.bestOffer,
-  ]
-    .filter((catalogOffer): catalogOffer is CatalogResolvedOffer =>
-      canCatalogOfferDrivePrimaryDealClaims(catalogOffer),
-    )
-    .sort(
-      (left, right) =>
-        left.priceCents - right.priceCents ||
-        compareCatalogOfferCheckedAtDescending(left, right),
-    );
+  ].filter((catalogOffer): catalogOffer is CatalogResolvedOffer =>
+    canCatalogOfferDrivePrimaryDealClaims(catalogOffer),
+  );
+
+  return selectBestPurchasableOffer(eligibleOffers, {
+    maxOfferAgeDays: Number.POSITIVE_INFINITY,
+    strategicTieBreakerOffer:
+      currentOfferSummary?.bestOffer &&
+      canCatalogOfferDrivePrimaryDealClaims(currentOfferSummary.bestOffer)
+        ? currentOfferSummary.bestOffer
+        : sortResolvedCatalogOffers(eligibleOffers)[0],
+  }).rankedOffers;
 }
 
 function getCatalogPrimaryDealBestOffer(
@@ -7392,7 +7590,8 @@ export function rankCatalogBestDealSetCards({
       !catalogDiscoverySignal ||
       catalogDiscoverySignal.merchantCount <
         HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT ||
-      !isCatalogBestDealCandidate(catalogDiscoverySignal) ||
+      (!currentOfferSummaryBySetId &&
+        !isCatalogBestDealCandidate(catalogDiscoverySignal)) ||
       (currentOfferSummaryBySetId &&
         !isCatalogPrimaryDealCandidate({
           catalogDiscoverySignal,
