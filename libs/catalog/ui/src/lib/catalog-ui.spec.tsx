@@ -655,22 +655,47 @@ describe('CatalogSetCard', () => {
     expect(dealRailSource).not.toContain('surfaceVariant="themed"');
   });
 
-  it('keeps the theme detail deal rail skeleton on the inverse editorial tone', () => {
+  it('keeps the theme detail route free of streamed deal rail skeletons', () => {
     const themeRouteSource = readFileSync(
       resolve(process.cwd(), 'apps/web/src/app/themes/[slug]/page.tsx'),
       'utf-8',
     );
-    const fallbackStart = themeRouteSource.indexOf(
-      '<CatalogSetCardRailSkeletonSection',
-    );
-    const fallbackEnd = themeRouteSource.indexOf('/>', fallbackStart);
-    const fallbackSource = themeRouteSource.slice(fallbackStart, fallbackEnd);
 
-    expect(fallbackSource).not.toContain('eyebrow=');
-    expect(fallbackSource).toContain('itemCount={5}');
-    expect(fallbackSource).toContain('tone="inverse"');
-    expect(fallbackSource).not.toContain('tone="default"');
-    expect(fallbackSource).not.toContain('surfaceVariant="themed"');
+    expect(themeRouteSource).not.toContain('CatalogSetCardRailSkeletonSection');
+    expect(themeRouteSource).not.toContain('<Suspense');
+    expect(themeRouteSource).toContain('dealSetCards={dealSetCards}');
+    expect(themeRouteSource).toContain('relatedArticles={relatedArticles}');
+  });
+
+  it('reserves stable compact browse card image, price and action slots', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const visualRule =
+      css.match(
+        /\.setCardCompact\[data-catalog-set-card-variant='compact'\][\s\S]*?> \.setCardLink[\s\S]*?> \.setVisual \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const priceRule =
+      css.match(/\.cardCompactBrowsePrice \{[^}]+\}/u)?.[0] ?? '';
+    const decisionZoneRule =
+      css.match(/\.cardCompactDecisionZone \{[^}]+\}/u)?.[0] ?? '';
+    const secondaryActionRule =
+      css.match(/\.cardCompactSecondaryAction \{[^}]+\}/u)?.[0] ?? '';
+    const browseSubgridRule =
+      css.match(
+        /\.setCardCollectionBrowse\.setCardCollectionCompact[\s\S]*?> \.setCardCompact[\s\S]*?grid-row: span 5;[\s\S]*?\}/u,
+      )?.[0] ?? '';
+
+    expect(visualRule).toContain('aspect-ratio: 1 / 1.08;');
+    expect(visualRule).toContain('min-height: 11.65rem;');
+    expect(priceRule).toContain('min-block-size: 2rem;');
+    expect(decisionZoneRule).toContain('display: flex;');
+    expect(secondaryActionRule).toContain(
+      '--catalog-card-action-height: 2.75rem;',
+    );
+    expect(secondaryActionRule).toContain('flex: 0 0 auto;');
+    expect(browseSubgridRule).toContain('grid-row: span 5;');
   });
 
   it('keeps compact visual badge positioning untouched', () => {
@@ -2507,54 +2532,25 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('flex: 1 1 auto;');
     expect(css).toContain('flex: 0 0 var(--catalog-card-action-height);');
     expect(css).toContain('.bestDealFollowIconButton {');
-    expect(css).toContain(
-      '--catalog-hero-side-action-background: transparent;',
-    );
     expect(css).not.toContain('data-hero-follow-tone');
     expect(css).not.toContain('.bestDealFollowIconButton[data-hero-follow');
     expect(css).not.toContain('.bestDealFollowAction[data-hero-follow');
-    expect(css).toContain('--catalog-hero-side-action-background');
-    expect(css).toContain('--catalog-hero-side-action-border-color');
-    expect(css).toContain('--wishlist-button-background: var(');
-    expect(css).toContain('--wishlist-button-border-color: var(');
-    expect(css).toContain('--wishlist-button-color: var(');
-    expect(css).toContain('--wishlist-button-active-background: var(');
-    expect(css).toContain(
-      '--wishlist-button-active-border-color: transparent;',
+    expect(css).not.toContain('--catalog-hero-side-action-background');
+    expect(css).not.toContain('--catalog-hero-side-action-border-color');
+    expect(css).not.toContain('--catalog-hero-side-action-color');
+    expect(css).not.toContain('--wishlist-button-background: var(');
+    expect(css).not.toContain('--wishlist-button-border-color: var(');
+    expect(css).not.toContain('--wishlist-button-color: var(');
+    expect(css).not.toContain('--wishlist-button-hover-background: var(');
+    expect(css).not.toContain('--wishlist-button-hover-border-color: var(');
+    expect(css).not.toContain('--wishlist-button-hover-color: var(');
+    expect(css).not.toContain('--wishlist-button-active-background: var(');
+    expect(css).not.toContain(
+      '--wishlist-button-active-hover-background: var(',
     );
-    expect(css).toContain('--wishlist-button-active-color: var(');
-    expect(css).toContain('--wishlist-button-active-hover-background: var(');
-    expect(css).toContain(
-      '--wishlist-button-active-hover-border-color: transparent;',
+    expect(css).not.toContain(
+      '--wishlist-button-active-pressed-background: var(',
     );
-    expect(css).toContain('--wishlist-button-active-hover-color: var(');
-    expect(css).toContain('--wishlist-button-active-pressed-background: var(');
-    expect(css).toContain(
-      '--wishlist-button-active-pressed-border-color: transparent;',
-    );
-    expect(css).toContain('--wishlist-button-active-pressed-color: var(');
-    expect(css).toContain('--wishlist-button-hover-background: var(');
-    expect(css).toContain('--wishlist-button-hover-border-color: var(');
-    expect(css).toContain('--wishlist-button-hover-color: var(');
-    expect(css).toContain('--wishlist-button-pressed-background: var(');
-    expect(css).toContain('--wishlist-button-pressed-border-color: var(');
-    expect(css).toContain('--wishlist-button-pressed-color: var(');
-    expect(css).toContain('--lego-button-secondary-background');
-    expect(css).toContain('--lego-button-secondary-border-color');
-    expect(css).toContain('--lego-button-secondary-color');
-    expect(css).toContain('--lego-button-secondary-hover-background');
-    expect(css).toContain('--lego-button-secondary-hover-border-color');
-    expect(css).toContain('--lego-button-secondary-hover-color');
-    expect(css).toContain('--lego-button-secondary-active-background');
-    expect(css).toContain('--lego-button-secondary-active-border-color');
-    expect(css).toContain('--lego-button-secondary-active-color');
-    expect(css).toContain('--lego-button-accent-background');
-    expect(css).toContain('--lego-button-accent-hover-background');
-    expect(css).toContain('--lego-button-accent-active-background');
-    expect(css).toContain('--lego-button-accent-color');
-    expect(css).toContain('--lego-button-accent-hover-color');
-    expect(css).toContain('--lego-button-accent-active-color');
-    expect(css).toContain('#ffffff');
     expect(css).not.toContain("[class*='inlineToggleButtonActive']");
     expect(css).not.toContain('--catalog-hero-side-action-active-background');
     expect(css).not.toContain('--catalog-hero-side-action-active-border-color');
@@ -2566,39 +2562,9 @@ describe('CatalogSetCard', () => {
     expect(css).toContain(
       'min-inline-size: var(--catalog-card-action-height, 3.35rem);',
     );
-    const heroFollowVariableBlock =
-      css.match(
-        /\.bestDealSideAction,\s*\n\s*\.bestDealFollowAction \{[\s\S]+?\n\s*\}/u,
-      )?.[0] ?? '';
-    expect(heroFollowVariableBlock).toContain(
-      '--catalog-hero-side-action-background',
+    expect(css).not.toMatch(
+      /\.bestDealSideAction,\s*\n\s*\.bestDealFollowAction \{/u,
     );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-secondary-background',
-    );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-secondary-border-color',
-    );
-    expect(heroFollowVariableBlock).toContain('--lego-button-secondary-color');
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-secondary-hover-background',
-    );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-secondary-active-background',
-    );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-accent-background',
-    );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-accent-hover-background',
-    );
-    expect(heroFollowVariableBlock).toContain(
-      '--lego-button-accent-active-background',
-    );
-    expect(heroFollowVariableBlock).toContain('--lego-button-accent-color');
-    expect(heroFollowVariableBlock).toContain('#ffffff');
-    expect(heroFollowVariableBlock).not.toContain('--lego-positive');
-    expect(heroFollowVariableBlock).not.toContain('--lego-commerce');
     expect(css).toContain('.alertCard {');
     expect(css).toContain('.detailDecisionSupport {');
     expect(css).toContain('.offerListCard {');

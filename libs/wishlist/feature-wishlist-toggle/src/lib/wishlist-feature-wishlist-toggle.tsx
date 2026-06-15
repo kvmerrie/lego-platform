@@ -11,10 +11,12 @@ import { WantedSetState } from '@lego-platform/wishlist/util';
 
 export function WishlistFeatureWishlistToggle({
   analyticsContext,
+  appearance = 'default',
   productIntent = 'wishlist',
   setId,
   variant = 'default',
 }: {
+  appearance?: 'default' | 'hero-action';
   analyticsContext?: BrickhuntAnalyticsProperties;
   productIntent?: 'price-alert' | 'wishlist';
   setId: string;
@@ -274,9 +276,10 @@ export function WishlistFeatureWishlistToggle({
 
   return (
     <WantedSetToggleCard
-      errorMessage={errorMessage}
       alertsEnabled={alertsEnabled}
       analyticsContext={analyticsContext}
+      appearance={appearance}
+      errorMessage={errorMessage}
       followedSetCount={followedSetCount}
       hasResolvedState={Boolean(wantedSetState)}
       isAuthenticated={isAuthenticated}

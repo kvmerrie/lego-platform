@@ -38,6 +38,7 @@ export function WishlistItemCard({
 }
 
 export function WantedSetToggleCard({
+  appearance = 'default',
   alertsEnabled,
   analyticsContext,
   errorMessage,
@@ -53,6 +54,7 @@ export function WantedSetToggleCard({
   successMessage,
   variant = 'default',
 }: {
+  appearance?: 'default' | 'hero-action';
   alertsEnabled?: boolean;
   analyticsContext?: BrickhuntAnalyticsProperties;
   errorMessage?: string;
@@ -206,6 +208,7 @@ export function WantedSetToggleCard({
     const InlineActionIcon = isInlineLoading ? LoaderCircle : Heart;
     const inlineActionLabel =
       isWanted && !isUnavailable ? 'Ontvolg set' : 'Volg set';
+    const usesHeroActionAppearance = appearance === 'hero-action';
 
     return (
       <article className={styles.inlineToggle}>
@@ -221,15 +224,25 @@ export function WantedSetToggleCard({
         ) : null}
         <Button
           aria-label={inlineActionLabel}
-          className={`${styles.inlineToggleButton} ${
-            isWanted
-              ? styles.inlineToggleButtonActive
-              : styles.inlineToggleButtonIdle
-          }`}
+          className={[
+            styles.inlineToggleButton,
+            usesHeroActionAppearance
+              ? styles.inlineToggleButtonHeroAction
+              : isWanted
+                ? styles.inlineToggleButtonActive
+                : styles.inlineToggleButtonIdle,
+          ].join(' ')}
           disabled={isUnavailable}
           isLoading={Boolean(isLoading || isPending)}
           tone="ghost"
           type="button"
+          variant={
+            usesHeroActionAppearance
+              ? isWanted
+                ? 'icon'
+                : 'icon-secondary'
+              : undefined
+          }
           onClick={onToggle}
         >
           <InlineActionIcon

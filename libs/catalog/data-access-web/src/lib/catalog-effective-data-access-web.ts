@@ -25,6 +25,9 @@ import type {
   CatalogThemeVisual,
   HomepageCommerceCard,
   HomepageCommerceSnapshot,
+  ThemeBrowsePriceContext,
+  ThemeCommerceCard,
+  ThemeCommerceSnapshot,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
@@ -43,6 +46,7 @@ import {
   HOMEPAGE_COMMERCE_SNAPSHOT_PAGE,
   HOMEPAGE_COMMERCE_SNAPSHOT_PAGE_SIZE,
   HOMEPAGE_COMMERCE_SNAPSHOT_SORT_KEY,
+  buildThemeCommerceSnapshotCollectionSlug,
   isCatalogBrowsablePrimaryTheme,
   isCatalogCollectionPageSnapshotSlug,
   matchesCatalogMinifigureCollectionSignals,
@@ -54,6 +58,9 @@ import {
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
   sortCatalogSetSummaries,
+  THEME_COMMERCE_SNAPSHOT_PAGE,
+  THEME_COMMERCE_SNAPSHOT_PAGE_SIZE,
+  THEME_COMMERCE_SNAPSHOT_SORT_KEY,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogCurrentOfferSummariesApiPath,
@@ -4781,6 +4788,253 @@ export async function getHomepageCommerceSnapshot({
   return normalizeHomepageCommerceSnapshot({
     generatedAt: snapshot.generated_at,
     itemsJson: snapshot.items_json,
+  });
+}
+
+function normalizeThemeBrowsePriceContext(
+  value: unknown,
+): ThemeBrowsePriceContext | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const candidate = value as Partial<ThemeBrowsePriceContext>;
+
+  return {
+    ...(typeof candidate.priceLabel === 'string'
+      ? { priceLabel: candidate.priceLabel }
+      : {}),
+    ...(typeof candidate.currentPriceMinor === 'number'
+      ? { currentPriceMinor: candidate.currentPriceMinor }
+      : {}),
+    ...(typeof candidate.merchantName === 'string'
+      ? { merchantName: candidate.merchantName }
+      : {}),
+    ...(typeof candidate.merchantSlug === 'string'
+      ? { merchantSlug: candidate.merchantSlug }
+      : {}),
+    ...(typeof candidate.ctaUrl === 'string'
+      ? { ctaUrl: candidate.ctaUrl }
+      : {}),
+    ...(typeof candidate.dealLabel === 'string'
+      ? { dealLabel: candidate.dealLabel }
+      : {}),
+    ...(typeof candidate.confidenceLabel === 'string'
+      ? { confidenceLabel: candidate.confidenceLabel }
+      : {}),
+  };
+}
+
+function normalizeThemeBrowsePriceContextBySetId(
+  value: unknown,
+): Record<string, ThemeBrowsePriceContext> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).flatMap(
+      ([setId, priceContext]) => {
+        const normalizedPriceContext =
+          normalizeThemeBrowsePriceContext(priceContext);
+
+        return normalizedPriceContext ? [[setId, normalizedPriceContext]] : [];
+      },
+    ),
+  );
+}
+
+function normalizeThemeCommerceCard(
+  value: unknown,
+): ThemeCommerceCard | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const candidate = value as Partial<ThemeCommerceCard>;
+
+  if (
+    typeof candidate.setId !== 'string' ||
+    typeof candidate.slug !== 'string' ||
+    typeof candidate.name !== 'string' ||
+    typeof candidate.imageUrl !== 'string'
+  ) {
+    return undefined;
+  }
+
+  return {
+    setId: candidate.setId,
+    slug: candidate.slug,
+    name: candidate.name,
+    imageUrl: candidate.imageUrl,
+    ...(candidate.publicTheme &&
+    typeof candidate.publicTheme === 'object' &&
+    !Array.isArray(candidate.publicTheme)
+      ? { publicTheme: candidate.publicTheme }
+      : {}),
+    ...(typeof candidate.theme === 'string' ? { theme: candidate.theme } : {}),
+    ...(typeof candidate.releaseYear === 'number'
+      ? { releaseYear: candidate.releaseYear }
+      : {}),
+    ...(typeof candidate.pieces === 'number'
+      ? { pieces: candidate.pieces }
+      : {}),
+    ...(typeof candidate.currentPriceMinor === 'number'
+      ? { currentPriceMinor: candidate.currentPriceMinor }
+      : {}),
+    ...(typeof candidate.merchantName === 'string'
+      ? { merchantName: candidate.merchantName }
+      : {}),
+    ...(typeof candidate.merchantSlug === 'string'
+      ? { merchantSlug: candidate.merchantSlug }
+      : {}),
+    ...(typeof candidate.ctaUrl === 'string'
+      ? { ctaUrl: candidate.ctaUrl }
+      : {}),
+    ...(typeof candidate.dealLabel === 'string'
+      ? { dealLabel: candidate.dealLabel }
+      : {}),
+    ...(typeof candidate.confidenceLabel === 'string'
+      ? { confidenceLabel: candidate.confidenceLabel }
+      : {}),
+    ...(candidate.followRecommended === true
+      ? { followRecommended: true }
+      : {}),
+  };
+}
+
+function normalizeThemeCommerceCards(value: unknown): ThemeCommerceCard[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(normalizeThemeCommerceCard)
+    .filter((card): card is ThemeCommerceCard => card !== undefined);
+}
+
+function normalizeThemeCommerceSnapshot({
+  generatedAt,
+  itemsJson,
+  themeSlug,
+}: {
+  generatedAt?: string | null;
+  itemsJson: unknown;
+  themeSlug: string;
+}): ThemeCommerceSnapshot | undefined {
+  if (!itemsJson || typeof itemsJson !== 'object' || Array.isArray(itemsJson)) {
+    return undefined;
+  }
+
+  const candidate = itemsJson as Partial<ThemeCommerceSnapshot>;
+  const snapshotGeneratedAt =
+    typeof candidate.generatedAt === 'string'
+      ? candidate.generatedAt
+      : generatedAt;
+
+  if (!snapshotGeneratedAt) {
+    return undefined;
+  }
+
+  const snapshotThemeSlug =
+    typeof candidate.themeSlug === 'string' ? candidate.themeSlug : themeSlug;
+  const sourceVersion =
+    typeof candidate.sourceVersion === 'string'
+      ? candidate.sourceVersion
+      : snapshotGeneratedAt;
+  const featuredDeals = normalizeThemeCommerceCards(candidate.featuredDeals);
+  const browsePriceContextBySetId = normalizeThemeBrowsePriceContextBySetId(
+    candidate.browsePriceContextBySetId,
+  );
+  const stats =
+    candidate.stats &&
+    typeof candidate.stats === 'object' &&
+    !Array.isArray(candidate.stats)
+      ? candidate.stats
+      : undefined;
+  const totalSetCount =
+    typeof stats?.totalSetCount === 'number' ? stats.totalSetCount : 0;
+  const pricedSetCount =
+    typeof stats?.pricedSetCount === 'number'
+      ? stats.pricedSetCount
+      : Object.keys(browsePriceContextBySetId).length;
+  const featuredDealCount =
+    typeof stats?.featuredDealCount === 'number'
+      ? stats.featuredDealCount
+      : featuredDeals.length;
+  const snapshotHealth =
+    stats?.snapshotHealth === 'healthy' ||
+    stats?.snapshotHealth === 'partial' ||
+    stats?.snapshotHealth === 'empty'
+      ? stats.snapshotHealth
+      : pricedSetCount > 0
+        ? 'partial'
+        : 'empty';
+
+  return {
+    themeSlug: snapshotThemeSlug,
+    generatedAt: snapshotGeneratedAt,
+    sourceVersion,
+    featuredDeals,
+    browsePriceContextBySetId,
+    stats: {
+      totalSetCount,
+      pricedSetCount,
+      featuredDealCount,
+      snapshotHealth,
+    },
+  };
+}
+
+export async function getThemeCommerceSnapshot({
+  slug,
+  supabaseClient,
+}: {
+  slug: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<ThemeCommerceSnapshot | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    console.warn('[theme-commerce-snapshot] missing Supabase client', {
+      theme_slug: slug,
+    });
+
+    return undefined;
+  }
+
+  const snapshotSlug = buildThemeCommerceSnapshotCollectionSlug(slug);
+  const { data, error } = await activeSupabaseClient
+    .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
+    .select(
+      'collection_slug, sort_key, page, page_size, total_count, items_json, generated_at',
+    )
+    .eq('collection_slug', snapshotSlug)
+    .eq('sort_key', THEME_COMMERCE_SNAPSHOT_SORT_KEY)
+    .eq('page', THEME_COMMERCE_SNAPSHOT_PAGE)
+    .eq('page_size', THEME_COMMERCE_SNAPSHOT_PAGE_SIZE)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load theme commerce snapshot.');
+  }
+
+  const snapshot = data as CatalogCollectionPageSnapshotRow | null;
+
+  if (!snapshot) {
+    console.warn('[theme-commerce-snapshot] missing', {
+      collection_slug: snapshotSlug,
+      theme_slug: slug,
+    });
+
+    return undefined;
+  }
+
+  return normalizeThemeCommerceSnapshot({
+    generatedAt: snapshot.generated_at,
+    itemsJson: snapshot.items_json,
+    themeSlug: slug,
   });
 }
 

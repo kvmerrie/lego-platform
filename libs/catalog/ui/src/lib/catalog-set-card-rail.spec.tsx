@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CatalogSetCardRail,
@@ -331,6 +332,76 @@ describe('CatalogSetCardRail', () => {
     expect(skeletonImageRule).not.toContain('block-size: clamp(');
     expect(skeletonImageRule).toContain('overflow: hidden;');
     expect(loadedRailCardRule).toContain('min-width: 0;');
+  });
+
+  it('renders rail control and scrollbar shells in server markup before overflow measurement', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCardRailSection
+        ariaLabel="Theme deals"
+        items={[
+          {
+            id: '10316',
+            setSummary: {
+              id: '10316',
+              slug: 'rivendell-10316',
+              name: 'Rivendell',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 6167,
+              imageUrl: 'https://images.example/rivendell.jpg',
+            },
+          },
+          {
+            id: '76269',
+            setSummary: {
+              id: '76269',
+              slug: 'avengers-tower-76269',
+              name: 'Avengers Tower',
+              theme: 'Marvel',
+              releaseYear: 2023,
+              pieces: 5202,
+              imageUrl: 'https://images.example/avengers-tower.jpg',
+            },
+          },
+        ]}
+        showControls
+        title="Hier wil je nu als eerste kijken"
+      />,
+    );
+
+    expect(markup).toContain('setCardRailHeadingControls');
+    expect(markup).toContain('data-visible="false"');
+    expect(markup).toContain('setCardRailScrollbar');
+    expect(markup).toContain('setCardRailScrollbarThumb');
+  });
+
+  it('keeps hidden rail controls and scrollbar non-layout-mutating', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const hiddenControlsRule =
+      css.match(
+        /\.setCardRailHeadingControls\[data-visible='false'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const hiddenScrollbarRule =
+      css.match(
+        /\.setCardRailScrollbar\[data-visible='false'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const scrollbarRule =
+      css.match(/\.setCardRailScrollbar \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(hiddenControlsRule).toContain('opacity: 0;');
+    expect(hiddenControlsRule).toContain('pointer-events: none;');
+    expect(hiddenControlsRule).toContain('visibility: hidden;');
+    expect(hiddenControlsRule).not.toContain('display: none;');
+    expect(hiddenScrollbarRule).toContain('opacity: 0;');
+    expect(hiddenScrollbarRule).toContain('pointer-events: none;');
+    expect(hiddenScrollbarRule).toContain('visibility: hidden;');
+    expect(hiddenScrollbarRule).not.toContain('display: none;');
+    expect(scrollbarRule).toContain(
+      'height: var(--catalog-rail-scrollbar-height);',
+    );
   });
 
   it('keeps inverse skeleton rails on the inverse section treatment', () => {

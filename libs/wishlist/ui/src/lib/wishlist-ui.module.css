@@ -263,6 +263,11 @@
   );
 }
 
+.inlineToggleButtonHeroAction {
+  border: var(--lego-action-border-width, var(--lego-button-border-width)) solid
+    var(--lego-action-border-color, currentColor);
+}
+
 .inlineToggleButtonActive {
   background: var(--wishlist-button-active-background, var(--lego-info-subtle));
   border-color: var(--wishlist-button-active-border-color, transparent);

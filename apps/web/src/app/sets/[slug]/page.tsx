@@ -2547,6 +2547,7 @@ export default async function SetDetailPage({
               setId: catalogSetDetail.id,
               theme: catalogSetDetail.theme,
             }}
+            appearance="hero-action"
             productIntent="price-alert"
             setId={catalogSetDetail.id}
             variant="inline"

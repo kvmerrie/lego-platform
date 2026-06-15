@@ -35,6 +35,7 @@ import {
   getCatalogThemePageBySlug,
   getHomepageEditorialConfig,
   getHomepageCommerceSnapshot,
+  getThemeCommerceSnapshot,
   getCatalogSetBySlug,
   listCanonicalCatalogSets,
   listCatalogCurrentOfferCandidateSetIds,
@@ -13611,6 +13612,121 @@ describe('homepage commerce snapshot data access', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       '[homepage-commerce-snapshot] missing',
     );
+
+    warnSpy.mockRestore();
+  });
+});
+
+describe('theme commerce snapshot data access', () => {
+  test('loads and normalizes the compact theme commerce snapshot row', async () => {
+    const selectedTables: string[] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [
+        {
+          collection_slug: 'theme-commerce:star-wars',
+          generated_at: '2026-06-15T08:00:00.000Z',
+          items_json: {
+            themeSlug: 'star-wars',
+            generatedAt: '2026-06-15T08:00:00.000Z',
+            sourceVersion: '2026-06-15T08:00:00.000Z',
+            featuredDeals: [
+              {
+                setId: '75355',
+                slug: 'x-wing-starfighter-75355',
+                name: 'X-wing Starfighter',
+                imageUrl: 'https://img.example/75355.jpg',
+                theme: 'Star Wars',
+                releaseYear: 2023,
+                pieces: 1949,
+                currentPriceMinor: 19_999,
+                merchantName: 'Brickshop',
+                ctaUrl: 'https://merchant.example/75355',
+                offers: [{ priceMinor: 19_999 }],
+              },
+            ],
+            browsePriceContextBySetId: {
+              '75355': {
+                priceLabel: 'Vanaf € 199,99',
+                currentPriceMinor: 19_999,
+                merchantName: 'Brickshop',
+                ctaUrl: 'https://merchant.example/75355',
+                debug: {
+                  candidateCount: 1,
+                },
+              },
+            },
+            stats: {
+              totalSetCount: 1,
+              pricedSetCount: 1,
+              featuredDealCount: 1,
+              snapshotHealth: 'healthy',
+            },
+          },
+          page: 1,
+          page_size: 1,
+          sort_key: 'intent-v1',
+          total_count: 1,
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      onSelect: (table) => selectedTables.push(table),
+    });
+
+    const snapshot = await getThemeCommerceSnapshot({
+      slug: 'star-wars',
+      supabaseClient,
+    });
+
+    expect(selectedTables).toEqual(['collection_page_snapshots']);
+    expect(snapshot).toMatchObject({
+      themeSlug: 'star-wars',
+      featuredDeals: [
+        {
+          setId: '75355',
+          slug: 'x-wing-starfighter-75355',
+          name: 'X-wing Starfighter',
+          imageUrl: 'https://img.example/75355.jpg',
+          currentPriceMinor: 19_999,
+          merchantName: 'Brickshop',
+          ctaUrl: 'https://merchant.example/75355',
+        },
+      ],
+      browsePriceContextBySetId: {
+        '75355': {
+          priceLabel: 'Vanaf € 199,99',
+          currentPriceMinor: 19_999,
+          merchantName: 'Brickshop',
+          ctaUrl: 'https://merchant.example/75355',
+        },
+      },
+    });
+    expect(JSON.stringify(snapshot)).not.toContain('offers');
+    expect(JSON.stringify(snapshot)).not.toContain('candidateCount');
+  });
+
+  test('returns undefined when the dedicated theme commerce row is missing', async () => {
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+    });
+
+    await expect(
+      getThemeCommerceSnapshot({
+        slug: 'star-wars',
+        supabaseClient,
+      }),
+    ).resolves.toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith('[theme-commerce-snapshot] missing', {
+      collection_slug: 'theme-commerce:star-wars',
+      theme_slug: 'star-wars',
+    });
 
     warnSpy.mockRestore();
   });

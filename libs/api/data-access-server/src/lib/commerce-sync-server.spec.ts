@@ -814,6 +814,45 @@ describe('commerce sync server', () => {
       },
       upsertedCount: 1,
     });
+    const syncThemeCommerceSnapshotsFn = vi.fn().mockResolvedValue({
+      dryRun: false,
+      generatedAt: '2026-05-11T10:00:00.000Z',
+      snapshots: [
+        {
+          themeSlug: 'icons',
+          generatedAt: '2026-05-11T10:00:00.000Z',
+          sourceVersion: '2026-05-11T10:00:00.000Z',
+          featuredDeals: [],
+          browsePriceContextBySetId: {},
+          stats: {
+            totalSetCount: 1,
+            pricedSetCount: 0,
+            featuredDealCount: 0,
+            snapshotHealth: 'empty',
+          },
+        },
+      ],
+      summary: {
+        healthCounts: {
+          empty: 1,
+          healthy: 0,
+          partial: 0,
+        },
+        payloadBytes: 256,
+        payloadSizeSamples: [
+          {
+            bytes: 256,
+            themeSlug: 'icons',
+          },
+        ],
+        sampleSlugs: ['icons'],
+        snapshotCount: 1,
+        themeCount: 1,
+        totalFeaturedDealCount: 0,
+        totalPricedSetCount: 0,
+      },
+      upsertedCount: 1,
+    });
 
     const result = await runCommerceSync({
       dependencies: {
@@ -847,6 +886,7 @@ describe('commerce sync server', () => {
         ),
         syncCollectionPageSnapshotsFn,
         syncHomepageCommerceSnapshotFn,
+        syncThemeCommerceSnapshotsFn,
         upsertCommerceCurrentOfferSnapshotsFn,
         upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
           .fn()
@@ -924,9 +964,19 @@ describe('commerce sync server', () => {
     expect(
       upsertCommerceCurrentOfferSnapshotsFn.mock.invocationCallOrder[0],
     ).toBeLessThan(syncHomepageCommerceSnapshotFn.mock.invocationCallOrder[0]);
+    expect(syncThemeCommerceSnapshotsFn).toHaveBeenCalledWith({
+      dryRun: false,
+      now: undefined,
+    });
+    expect(
+      upsertCommerceCurrentOfferSnapshotsFn.mock.invocationCallOrder[0],
+    ).toBeLessThan(syncThemeCommerceSnapshotsFn.mock.invocationCallOrder[0]);
     expect(result.homepageCommerceSnapshotCount).toBe(1);
     expect(result.homepageCommerceSnapshotsUpsertedCount).toBe(1);
     expect(result.homepageCommerceSnapshotPayloadBytes).toBe(512);
+    expect(result.themeCommerceSnapshotCount).toBe(1);
+    expect(result.themeCommerceSnapshotsUpsertedCount).toBe(1);
+    expect(result.themeCommerceSnapshotPayloadBytes).toBe(256);
     expect(result.currentOfferSnapshotBestOfferMismatchCount).toBe(0);
   });
 

@@ -178,17 +178,6 @@ export function CatalogFeatureThemePage({
             </span>
           </ActionLink>
           {renderedThemeFavoriteAction}
-          {dealSetCards.length ? (
-            <ActionLink
-              className={styles.introSecondaryAction}
-              href={`#${dealSectionId}`}
-              size="hero"
-              surface={themeHeroButtonSurface}
-              tone="secondary"
-            >
-              Bekijk beste deals
-            </ActionLink>
-          ) : null}
         </div>
       </CatalogPageIntro>
 

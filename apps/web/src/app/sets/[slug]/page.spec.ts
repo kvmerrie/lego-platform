@@ -22,6 +22,7 @@ const setPageMocks = vi.hoisted(() => ({
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
   getCatalogSetReviewsPublicPayload: vi.fn(),
   unstableCache: vi.fn((callback: () => unknown) => callback),
+  wishlistToggle: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -54,6 +55,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
     bestDeal,
     catalogSetDetail,
+    heroCtaSideAction,
     offerList,
     recentlyViewedRail,
     productReviewsSlot,
@@ -74,6 +76,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       rankingLabel?: string;
       stockLabel?: string;
     };
+    heroCtaSideAction?: unknown;
     catalogSetDetail?: {
       displayTitle?: string;
       imageUrl?: string;
@@ -144,6 +147,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             bestDeal.checkedLabel,
           )
         : null,
+      heroCtaSideAction,
       offerList?.length
         ? createElement(
             'ul',
@@ -305,8 +309,11 @@ vi.mock('@lego-platform/shell/web', () => ({
 }));
 
 vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
-  WishlistFeatureWishlistToggle: () =>
-    createElement('button', { type: 'button' }, 'wishlist'),
+  WishlistFeatureWishlistToggle: (props: unknown) => {
+    setPageMocks.wishlistToggle(props);
+
+    return createElement('button', { type: 'button' }, 'wishlist');
+  },
 }));
 
 beforeEach(() => {
@@ -1983,6 +1990,14 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('9 winkels nagekeken');
     expect(html).not.toContain('Prijsbeeld bouwt op');
     expect(html).not.toContain('Bij Coolblue');
+    expect(setPageMocks.wishlistToggle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appearance: 'hero-action',
+        productIntent: 'price-alert',
+        setId: '76454',
+        variant: 'inline',
+      }),
+    );
   });
 
   it('uses the cheaper current offer as both hero deal and offer-list best deal', async () => {

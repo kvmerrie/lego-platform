@@ -1,45 +1,36 @@
 import {
-  listCatalogCurrentOfferSummariesBySetIds,
-  listCatalogDiscoverySignalsBySetId,
   getCatalogThemeMetadataBySlug,
   getCatalogThemePageBySlug,
+  getThemeCommerceSnapshot,
   listCatalogThemePageSlugs,
-  rankCatalogComparisonDiscoverySetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CATALOG_BROWSE_PAGE_SIZE,
+  type ThemeBrowsePriceContext,
+  type ThemeCommerceCard,
+  type ThemeCommerceSnapshot,
   normalizeTheme,
 } from '@lego-platform/catalog/util';
 import {
   CatalogFeatureThemeFavoriteToggle,
   CatalogFeatureThemePage,
-  CatalogFeatureThemeDealRail,
-  CatalogFeatureThemeRelatedArticles,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
-import { CatalogSetCardRailSkeletonSection } from '@lego-platform/catalog/ui';
+import { type CatalogSetCardPriceContext } from '@lego-platform/catalog/ui';
 import { listPublishedArticles } from '@lego-platform/content/data-access';
-import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
-import {
-  type BrickhuntAnalyticsEventDescriptor,
-  getBrickhuntAnalyticsPriceVerdictFromDelta,
-} from '@lego-platform/shared/util';
+import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildCanonicalUrl,
   buildArticlePath,
   buildThemePath,
   buildPublicBrowseThemeCacheTags,
-  cacheTags,
 } from '@lego-platform/shared/config';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import React, { Suspense } from 'react';
-import {
-  buildBrowseSetCardPriceContextBySetId,
-  buildCurrentSetCardPriceContextBySetId,
-} from '../../lib/current-set-card-price-context';
+import React from 'react';
+import { buildBrowseSetCardPriceContext } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import { getCachedPublicBrowsePageData } from '../../lib/public-browse-page-cache';
 import {
@@ -49,17 +40,12 @@ import {
 
 export const dynamicParams = true;
 export const revalidate = false;
-const THEME_DISCOVERY_RAIL_LIMIT = 6;
 const THEME_SET_PAGE_SIZE = CATALOG_BROWSE_PAGE_SIZE;
 const THEME_RELATED_ARTICLE_LIMIT = 3;
 const THEME_NON_CRITICAL_TIMEOUT_MS = 350;
 const THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
 const THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
 let themePagePerfLogCount = 0;
-
-function getPublicMerchandisingRotationSeed(): number {
-  return Math.floor(Date.now() / (1000 * 60 * 60 * 6));
-}
 
 function isThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
@@ -278,30 +264,6 @@ function buildThemeCanonicalPath({
   return page > 1 ? `${themePath}?page=${page}` : themePath;
 }
 
-function toThemeDealSetCards({
-  currentOfferSummaryBySetId,
-  setCards,
-}: {
-  currentOfferSummaryBySetId: Awaited<
-    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
-  >;
-  setCards: readonly CatalogFeatureThemePageDealItem[];
-}): CatalogFeatureThemePageDealItem[] {
-  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
-    currentOfferSummaryBySetId,
-    setCards,
-  });
-
-  return setCards.flatMap((setCard) => {
-    return [
-      {
-        ...setCard,
-        priceContext: priceContextBySetId.get(setCard.id),
-      },
-    ];
-  });
-}
-
 async function loadThemeRelatedArticles({ slug }: { slug: string }): Promise<
   {
     date?: string;
@@ -331,125 +293,123 @@ async function loadThemeRelatedArticles({ slug }: { slug: string }): Promise<
     }));
 }
 
-async function loadThemeDealSetCards({
-  slug,
-  themePage,
+function buildThemeDealCardPriceContext(
+  card: ThemeCommerceCard,
+): CatalogSetCardPriceContext | undefined {
+  if (
+    typeof card.currentPriceMinor !== 'number' ||
+    card.currentPriceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel: card.confidenceLabel ?? 'Actuele prijs gevonden',
+    currentPrice: `Vanaf ${formatPriceMinor({
+      currencyCode: 'EUR',
+      minorUnits: card.currentPriceMinor,
+    })}`,
+    decisionLabel: card.dealLabel ?? 'Beste prijs',
+    merchantLabel: card.merchantName
+      ? `Laagst bij ${card.merchantName}`
+      : 'Laagste bekende prijs',
+    ...(card.ctaUrl ? { primaryActionHref: card.ctaUrl } : {}),
+    pricePositionLabel: card.dealLabel ?? 'Beste prijs',
+    pricePositionTone: 'positive',
+    reviewedLabel: 'Snapshot bijgewerkt',
+  };
+}
+
+function buildThemeBrowseCardPriceContext(
+  priceContext?: ThemeBrowsePriceContext,
+): CatalogSetCardPriceContext | undefined {
+  if (!priceContext) {
+    return undefined;
+  }
+
+  const basePriceContext = buildBrowseSetCardPriceContext({
+    merchantName: priceContext.merchantName,
+    priceMinor: priceContext.currentPriceMinor,
+  });
+
+  if (!basePriceContext && !priceContext.priceLabel) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel:
+      priceContext.confidenceLabel ??
+      basePriceContext?.coverageLabel ??
+      'Actuele prijs gevonden',
+    currentPrice:
+      priceContext.priceLabel ??
+      basePriceContext?.currentPrice ??
+      'Prijs volgt',
+    decisionLabel:
+      priceContext.dealLabel ??
+      basePriceContext?.decisionLabel ??
+      'Beste prijs',
+    merchantLabel: priceContext.merchantName
+      ? `Laagst bij ${priceContext.merchantName}`
+      : (basePriceContext?.merchantLabel ?? 'Laagste bekende prijs'),
+    ...(priceContext.ctaUrl ? { primaryActionHref: priceContext.ctaUrl } : {}),
+    reviewedLabel: basePriceContext?.reviewedLabel ?? 'Snapshot bijgewerkt',
+  };
+}
+
+function toThemeDealSetCards({
+  snapshot,
+  themeName,
 }: {
-  slug: string;
-  themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
-}): Promise<CatalogFeatureThemePageDealItem[]> {
-  const catalogDiscoverySignalBySetId = await measureThemePageFetch({
-    label: 'discovery-signals',
-    slug,
-    load: () =>
-      listCatalogDiscoverySignalsBySetId({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [cacheTags.theme(slug), cacheTags.prices()],
-        },
-        setIds: themePage.setCards.map((setCard) => setCard.id),
-      }),
-  });
+  snapshot?: ThemeCommerceSnapshot;
+  themeName: string;
+}): CatalogFeatureThemePageDealItem[] {
+  return (snapshot?.featuredDeals ?? []).flatMap((card) => {
+    if (
+      typeof card.releaseYear !== 'number' ||
+      typeof card.pieces !== 'number'
+    ) {
+      return [];
+    }
 
-  if (!catalogDiscoverySignalBySetId.size) {
-    return [];
-  }
+    const theme = card.theme ?? themeName;
+    const priceContext = buildThemeDealCardPriceContext(card);
 
-  const themeDiscoverySetCards = rankCatalogComparisonDiscoverySetCards({
-    getCatalogDiscoverySignalFn: (setId) =>
-      catalogDiscoverySignalBySetId.get(setId),
-    limit: THEME_DISCOVERY_RAIL_LIMIT,
-    rotationSeed: getPublicMerchandisingRotationSeed(),
-    setCards: themePage.setCards,
-  });
-
-  if (!themeDiscoverySetCards.length) {
-    return [];
-  }
-
-  const currentOfferSummaryBySetId = await measureThemePageFetch({
-    label: 'current-offers',
-    slug,
-    load: () =>
-      listCatalogCurrentOfferSummariesBySetIds({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [
-            cacheTags.theme(slug),
-            cacheTags.prices(),
-            ...themeDiscoverySetCards.map((setCard) =>
-              cacheTags.set(setCard.id),
-            ),
-          ],
-        },
-        setIds: themeDiscoverySetCards.map((setCard) => setCard.id),
-      }),
-  });
-  const dealSetCards = toThemeDealSetCards({
-    currentOfferSummaryBySetId,
-    setCards: themeDiscoverySetCards,
-  });
-
-  return dealSetCards.map((dealSetCard, index) => {
-    const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);
-    const currentOfferSummary = currentOfferSummaryBySetId.get(dealSetCard.id);
-    const bestCurrentOffer = currentOfferSummary?.bestOffer;
-    const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
-      featuredSetPriceContext?.deltaMinor,
-    );
-    const primaryActionTrackingEvent:
-      | BrickhuntAnalyticsEventDescriptor
-      | undefined = bestCurrentOffer
-      ? {
-          event: 'offer_click',
-          properties: {
-            merchantCount: currentOfferSummary?.offers.length,
-            merchantName: bestCurrentOffer?.merchantName,
-            offerPlacement: 'card_primary_cta',
-            offerRole: 'best',
-            pageSurface: 'theme_page',
-            priceVerdict,
-            rankPosition: index + 1,
-            sectionId: 'theme-best-deals',
-            setId: dealSetCard.id,
-            theme: dealSetCard.theme,
-          },
-        }
-      : undefined;
-
-    return {
-      ...dealSetCard,
-      actions: (
-        <WishlistFeatureWishlistToggle
-          analyticsContext={{
-            merchantCount: currentOfferSummary?.offers.length,
-            pageSurface: 'theme_page',
-            priceVerdict,
-            sectionId: 'theme-best-deals',
-            setId: dealSetCard.id,
-            theme: dealSetCard.theme,
-          }}
-          productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
-          setId={dealSetCard.id}
-          variant="inline"
-        />
-      ),
-      ctaMode: 'default' as const,
-      priceContext: dealSetCard.priceContext
-        ? {
-            ...dealSetCard.priceContext,
-            primaryActionTrackingEvent,
-          }
-        : undefined,
-    };
+    return [
+      {
+        id: card.setId,
+        slug: card.slug,
+        name: card.name,
+        imageUrl: card.imageUrl,
+        ...(card.publicTheme ? { publicTheme: card.publicTheme } : {}),
+        theme,
+        releaseYear: card.releaseYear,
+        pieces: card.pieces,
+        actions: (
+          <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              pageSurface: 'theme_page',
+              sectionId: 'theme-best-deals',
+              setId: card.setId,
+              theme,
+            }}
+            productIntent={priceContext ? 'price-alert' : 'wishlist'}
+            setId={card.setId}
+            variant="inline"
+          />
+        ),
+        ctaMode: card.ctaUrl ? 'commerce' : 'default',
+        ...(priceContext ? { priceContext } : {}),
+      },
+    ];
   });
 }
 
 async function withThemeBrowsePriceContexts({
-  slug,
+  themeCommerceSnapshot,
   themePage,
 }: {
-  slug: string;
+  themeCommerceSnapshot?: ThemeCommerceSnapshot;
   themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
 }): Promise<
   NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>
@@ -458,32 +418,12 @@ async function withThemeBrowsePriceContexts({
     return themePage;
   }
 
-  const currentOfferSummaryBySetId = await measureThemePageFetch({
-    label: 'browse-current-offers',
-    slug,
-    load: () =>
-      listCatalogCurrentOfferSummariesBySetIds({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [
-            cacheTags.theme(slug),
-            cacheTags.prices(),
-            ...themePage.setCards.map((setCard) => cacheTags.set(setCard.id)),
-          ],
-        },
-        liveFallbackSetIdLimit: 0,
-        setIds: themePage.setCards.map((setCard) => setCard.id),
-      }),
-  });
-  const priceContextBySetId = buildBrowseSetCardPriceContextBySetId({
-    currentOfferSummaryBySetId,
-    setCards: themePage.setCards,
-  });
-
   return {
     ...themePage,
     setCards: themePage.setCards.map((setCard) => {
-      const priceContext = priceContextBySetId.get(setCard.id);
+      const priceContext = buildThemeBrowseCardPriceContext(
+        themeCommerceSnapshot?.browsePriceContextBySetId[setCard.id],
+      );
 
       return {
         ...setCard,
@@ -570,16 +510,23 @@ export default async function ThemePage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const currentPage = readThemePageParam(resolvedSearchParams?.page);
-  const themePage = await measureThemePageFetch({
-    label: 'theme-page',
-    slug,
-    load: () =>
-      getCachedCatalogThemePageBySlug({
-        limit: THEME_SET_PAGE_SIZE,
-        offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
-        slug,
-      }),
-  });
+  const [themePage, themeCommerceSnapshot] = await Promise.all([
+    measureThemePageFetch({
+      label: 'theme-page',
+      slug,
+      load: () =>
+        getCachedCatalogThemePageBySlug({
+          limit: THEME_SET_PAGE_SIZE,
+          offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
+          slug,
+        }),
+    }),
+    measureThemePageFetch({
+      label: 'theme-commerce-snapshot',
+      slug,
+      load: () => getThemeCommerceSnapshot({ slug }),
+    }),
+  ]);
 
   if (!themePage) {
     notFound();
@@ -594,10 +541,23 @@ export default async function ThemePage({
     notFound();
   }
 
-  const pricedThemePage = await withThemeBrowsePriceContexts({
+  const relatedArticlesPromise = withThemePageOptionalTimeout({
+    fallback: [] as Awaited<ReturnType<typeof loadThemeRelatedArticles>>,
+    label: 'related-articles',
+    promise: loadThemeRelatedArticles({
+      slug,
+    }),
     slug,
+  });
+  const pricedThemePage = await withThemeBrowsePriceContexts({
+    themeCommerceSnapshot,
     themePage,
   });
+  const dealSetCards = toThemeDealSetCards({
+    snapshot: themeCommerceSnapshot,
+    themeName: pricedThemePage.themeSnapshot.name,
+  });
+  const relatedArticles = await relatedArticlesPromise;
   const canonicalUrl = buildCanonicalUrl(
     buildThemeCanonicalPath({
       page: currentPage,
@@ -641,30 +601,9 @@ export default async function ThemePage({
       <JsonLdScript data={jsonLd} />
       <CatalogFeatureThemePage
         currentPage={currentPage}
-        dealRail={
-          <Suspense
-            fallback={
-              <CatalogSetCardRailSkeletonSection
-                ariaLabel={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name} laden`}
-                description={`We halen actuele ${themePage.themeSnapshot.name}-prijzen op voor deze rail.`}
-                itemCount={5}
-                title={`Hier wil je nu als eerste kijken in ${themePage.themeSnapshot.name}`}
-                tone="inverse"
-              />
-            }
-          >
-            <ThemeDealRailSlot slug={slug} themePage={themePage} />
-          </Suspense>
-        }
+        dealSetCards={dealSetCards}
         pageSize={THEME_SET_PAGE_SIZE}
-        relatedArticlesRail={
-          <Suspense fallback={null}>
-            <ThemeRelatedArticlesSlot
-              slug={slug}
-              themeName={themePage.themeSnapshot.name}
-            />
-          </Suspense>
-        }
+        relatedArticles={relatedArticles}
         themeFavoriteAction={
           pricedThemePage.themeSnapshot.id
             ? ({ buttonSurface }) => (
@@ -679,49 +618,5 @@ export default async function ThemePage({
         themePage={pricedThemePage}
       />
     </ShellWeb>
-  );
-}
-
-async function ThemeDealRailSlot({
-  slug,
-  themePage,
-}: {
-  slug: string;
-  themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
-}) {
-  const dealSetCards = await loadThemeDealSetCards({
-    slug,
-    themePage,
-  });
-
-  return (
-    <CatalogFeatureThemeDealRail
-      dealSetCards={dealSetCards}
-      themeName={themePage.themeSnapshot.name}
-    />
-  );
-}
-
-async function ThemeRelatedArticlesSlot({
-  slug,
-  themeName,
-}: {
-  slug: string;
-  themeName: string;
-}) {
-  const relatedArticles = await withThemePageOptionalTimeout({
-    fallback: [] as Awaited<ReturnType<typeof loadThemeRelatedArticles>>,
-    label: 'related-articles',
-    promise: loadThemeRelatedArticles({
-      slug,
-    }),
-    slug,
-  });
-
-  return (
-    <CatalogFeatureThemeRelatedArticles
-      relatedArticles={relatedArticles}
-      themeName={themeName}
-    />
   );
 }

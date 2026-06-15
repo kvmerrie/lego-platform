@@ -1109,13 +1109,6 @@
       var(--catalog-hero-surface) 72%,
       var(--lego-contrast-white) 28%
     );
-    --catalog-hero-favorite-fill-background: var(--lego-contrast-ink);
-    --catalog-hero-favorite-fill-hover-background: var(
-      --lego-contrast-ink-strong
-    );
-    --catalog-hero-favorite-fill-foreground: var(
-      --catalog-hero-button-fill-foreground
-    );
     --lego-button-accent-background: var(--catalog-hero-button-fill-background);
     --lego-button-accent-hover-background: var(
       --catalog-hero-button-fill-hover-background
@@ -1164,13 +1157,6 @@
       in srgb,
       var(--catalog-hero-surface) 78%,
       var(--lego-contrast-ink) 22%
-    );
-    --catalog-hero-favorite-fill-background: var(--lego-contrast-white);
-    --catalog-hero-favorite-fill-hover-background: var(
-      --lego-contrast-white-muted
-    );
-    --catalog-hero-favorite-fill-foreground: var(
-      --catalog-hero-button-fill-foreground
     );
     --lego-button-focus-ring-color: var(--lego-button-focus-ring-color-inverse);
     --lego-button-accent-background: var(--catalog-hero-button-fill-background);
@@ -2409,75 +2395,6 @@
     display: grid;
   }
 
-  .bestDealSideAction,
-  .bestDealFollowAction {
-    --wishlist-button-active-background: var(
-      --lego-button-accent-background,
-      var(--lego-accent)
-    );
-    --wishlist-button-active-border-color: transparent;
-    --wishlist-button-active-color: var(--lego-button-accent-color, #ffffff);
-    --wishlist-button-active-hover-background: var(
-      --lego-button-accent-hover-background,
-      var(--wishlist-button-active-background)
-    );
-    --wishlist-button-active-hover-border-color: transparent;
-    --wishlist-button-active-hover-color: var(
-      --lego-button-accent-hover-color,
-      var(--wishlist-button-active-color)
-    );
-    --wishlist-button-active-pressed-background: var(
-      --lego-button-accent-active-background,
-      var(--wishlist-button-active-hover-background)
-    );
-    --wishlist-button-active-pressed-border-color: transparent;
-    --wishlist-button-active-pressed-color: var(
-      --lego-button-accent-active-color,
-      var(--wishlist-button-active-hover-color)
-    );
-    --catalog-hero-side-action-background: var(
-      --lego-button-secondary-background,
-      var(--lego-surface-default)
-    );
-    --catalog-hero-side-action-border-color: var(
-      --lego-button-secondary-border-color,
-      var(--lego-border)
-    );
-    --catalog-hero-side-action-color: var(
-      --lego-button-secondary-color,
-      var(--lego-text)
-    );
-    --wishlist-button-background: var(--catalog-hero-side-action-background);
-    --wishlist-button-border-color: var(
-      --catalog-hero-side-action-border-color
-    );
-    --wishlist-button-color: var(--catalog-hero-side-action-color);
-    --wishlist-button-hover-background: var(
-      --lego-button-secondary-hover-background,
-      var(--lego-surface-subtle)
-    );
-    --wishlist-button-hover-border-color: var(
-      --lego-button-secondary-hover-border-color,
-      var(--lego-border)
-    );
-    --wishlist-button-hover-color: var(
-      --lego-button-secondary-hover-color,
-      var(--lego-text)
-    );
-    --wishlist-button-pressed-background: var(
-      --lego-button-secondary-active-background,
-      var(--wishlist-button-hover-background)
-    );
-    --wishlist-button-pressed-border-color: var(
-      --lego-button-secondary-active-border-color,
-      var(--wishlist-button-hover-border-color)
-    );
-    --wishlist-button-pressed-color: var(
-      --lego-button-secondary-active-color,
-      var(--wishlist-button-hover-color)
-    );
-  }
-
   .bestDealSideAction {
     display: grid;
     flex: 0 0 var(--catalog-card-action-height);
@@ -2486,7 +2403,6 @@
   }
 
   .bestDealFollowIconButton {
-    --catalog-hero-side-action-background: transparent;
     --catalog-hero-follow-action-radius: var(--lego-radius-sm);
     align-self: stretch;
   }
@@ -2498,16 +2414,7 @@
 
   .bestDealSideAction :where(button, a),
   .bestDealFollowAction :where(button, a) {
-    background: var(
-      --catalog-hero-side-action-background,
-      var(--lego-surface-default)
-    );
-    border-color: var(
-      --catalog-hero-side-action-border-color,
-      var(--lego-border-subtle)
-    );
     box-shadow: none;
-    color: var(--catalog-hero-side-action-color, var(--lego-text));
     min-height: var(--catalog-card-action-height, 3.35rem);
     transition:
       background-color 160ms ease-out,
@@ -3603,6 +3510,12 @@
     display: none;
   }
 
+  .setCardRailHeadingControls[data-visible='false'] {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
   .setCardRailHeadingButton {
     --lego-button-secondary-active-background: transparent;
     --lego-button-secondary-active-border-color: currentColor;
@@ -4016,7 +3929,9 @@
   }
 
   .setCardRailScrollbar[data-visible='false'] {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
   }
 
   .setCardRailScrollbarThumb {

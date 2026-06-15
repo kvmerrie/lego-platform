@@ -48,6 +48,7 @@ import { syncCollectionPageSnapshots } from './collection-page-snapshot-server';
 import { syncDealPageSnapshots } from './deal-page-snapshot-server';
 import { syncHomepageCommerceSnapshot } from './homepage-commerce-snapshot-server';
 import { syncSetDetailRelatedThemeSnapshots } from './set-detail-related-theme-snapshot-server';
+import { syncThemeCommerceSnapshots } from './theme-commerce-snapshot-server';
 import {
   revalidatePublicCatalogPaths,
   revalidatePublicWeb,
@@ -83,6 +84,9 @@ export interface CommerceSyncRunResult {
   homepageCommerceSnapshotCount: number;
   homepageCommerceSnapshotPayloadBytes: number;
   homepageCommerceSnapshotsUpsertedCount: number;
+  themeCommerceSnapshotCount: number;
+  themeCommerceSnapshotPayloadBytes: number;
+  themeCommerceSnapshotsUpsertedCount: number;
   setDetailRelatedThemeSnapshotCount: number;
   setDetailRelatedThemeSnapshotsUpsertedCount: number;
   collectionPageSnapshotCount: number;
@@ -129,6 +133,7 @@ export interface CommerceSyncDependencies {
   syncDealPageSnapshotsFn?: typeof syncDealPageSnapshots;
   syncHomepageCommerceSnapshotFn?: typeof syncHomepageCommerceSnapshot;
   syncSetDetailRelatedThemeSnapshotsFn?: typeof syncSetDetailRelatedThemeSnapshots;
+  syncThemeCommerceSnapshotsFn?: typeof syncThemeCommerceSnapshots;
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
@@ -652,6 +657,27 @@ export async function runCommerceSync({
       },
       upsertedCount: 0,
     });
+  const skipInjectedThemeCommerceSnapshotSync: typeof syncThemeCommerceSnapshots =
+    async ({ dryRun = true, now: snapshotNow = new Date() } = {}) => ({
+      dryRun,
+      generatedAt: snapshotNow.toISOString(),
+      snapshots: [],
+      summary: {
+        healthCounts: {
+          empty: 0,
+          healthy: 0,
+          partial: 0,
+        },
+        payloadBytes: 0,
+        payloadSizeSamples: [],
+        sampleSlugs: [],
+        snapshotCount: 0,
+        themeCount: 0,
+        totalFeaturedDealCount: 0,
+        totalPricedSetCount: 0,
+      },
+      upsertedCount: 0,
+    });
   const skipInjectedMerchantPageSnapshotSync: typeof buildCommerceMerchantPageSnapshots =
     async ({ dryRun = true } = {}) => ({
       changedMerchantSlugs: [],
@@ -685,6 +711,9 @@ export async function runCommerceSync({
     syncSetDetailRelatedThemeSnapshotsFn = dependenciesInjected
       ? skipInjectedSetDetailRelatedThemeSnapshotSync
       : syncSetDetailRelatedThemeSnapshots,
+    syncThemeCommerceSnapshotsFn = dependenciesInjected
+      ? skipInjectedThemeCommerceSnapshotSync
+      : syncThemeCommerceSnapshots,
     upsertCommerceCurrentOfferSnapshotsFn = upsertCommerceCurrentOfferSnapshots,
     upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
@@ -958,6 +987,27 @@ export async function runCommerceSync({
           dryRun: true,
           now,
         });
+  const themeCommerceSnapshotStartedAt = Date.now();
+  const themeCommerceSnapshotResult =
+    mode === 'write'
+      ? await syncThemeCommerceSnapshotsFn({
+          dryRun: false,
+          now,
+        }).catch((error: unknown) => {
+          console.error('[commerce-sync] theme_commerce_snapshots_failed', {
+            duration_ms: Date.now() - themeCommerceSnapshotStartedAt,
+            event: 'theme_commerce_snapshots_failed',
+            error: error instanceof Error ? error.message : 'unknown',
+          });
+
+          throw error;
+        })
+      : await skipInjectedThemeCommerceSnapshotSync({
+          dryRun: true,
+          now,
+        });
+  phaseTimings.theme_commerce_snapshots =
+    Date.now() - themeCommerceSnapshotStartedAt;
   const setDetailRelatedThemeSnapshotStartedAt = Date.now();
   const setDetailRelatedThemeSnapshotResult =
     mode === 'write'
@@ -1012,6 +1062,26 @@ export async function runCommerceSync({
       snapshot_built: homepageCommerceSnapshotResult.snapshot ? 1 : 0,
       snapshot_upserted: homepageCommerceSnapshotResult.upsertedCount,
       summary: homepageCommerceSnapshotResult.summary,
+    });
+    console.info('[commerce-sync] theme_commerce_snapshots', {
+      duration_ms: phaseTimings.theme_commerce_snapshots,
+      empty_count: themeCommerceSnapshotResult.summary.healthCounts.empty ?? 0,
+      event: 'theme_commerce_snapshots_built',
+      healthy_count:
+        themeCommerceSnapshotResult.summary.healthCounts.healthy ?? 0,
+      partial_count:
+        themeCommerceSnapshotResult.summary.healthCounts.partial ?? 0,
+      payload_bytes: themeCommerceSnapshotResult.summary.payloadBytes,
+      payload_size_samples:
+        themeCommerceSnapshotResult.summary.payloadSizeSamples,
+      sample_slugs: themeCommerceSnapshotResult.summary.sampleSlugs,
+      snapshots_built: themeCommerceSnapshotResult.snapshots.length,
+      snapshots_upserted: themeCommerceSnapshotResult.upsertedCount,
+      theme_count: themeCommerceSnapshotResult.summary.themeCount,
+      total_featured_deal_count:
+        themeCommerceSnapshotResult.summary.totalFeaturedDealCount,
+      total_priced_set_count:
+        themeCommerceSnapshotResult.summary.totalPricedSetCount,
     });
   }
 
@@ -1115,15 +1185,36 @@ export async function runCommerceSync({
     });
   }
 
+  const themeCommerceSnapshotPaths =
+    themeCommerceSnapshotResult.upsertedCount > 0
+      ? themeCommerceSnapshotResult.snapshots.map(
+          (snapshot) => `/themes/${snapshot.themeSlug}`,
+        )
+      : [];
+  const themeCommerceSnapshotTags =
+    themeCommerceSnapshotResult.upsertedCount > 0
+      ? [
+          cacheTags.themes(),
+          ...themeCommerceSnapshotResult.snapshots.map((snapshot) =>
+            cacheTags.theme(snapshot.themeSlug),
+          ),
+        ]
+      : [];
+
   if (mode === 'write' && revalidationCatalogSetSummaries.length > 0) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
+        additionalPaths: [
+          ...commerceSyncCollectionSnapshotPaths,
+          '/deals',
+          ...themeCommerceSnapshotPaths,
+        ],
         additionalTags: [
           cacheTags.collections(),
           ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
+          ...themeCommerceSnapshotTags,
         ],
         reason: scoped ? 'commerce_sync_scoped' : 'commerce_sync',
         targets: revalidationCatalogSetSummaries.map((catalogSetSummary) => ({
@@ -1141,12 +1232,17 @@ export async function runCommerceSync({
   } else if (aggregateArtifactsChanged) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
+        additionalPaths: [
+          ...commerceSyncCollectionSnapshotPaths,
+          '/deals',
+          ...themeCommerceSnapshotPaths,
+        ],
         additionalTags: [
           cacheTags.collections(),
           ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
+          ...themeCommerceSnapshotTags,
         ],
         includeThemeDirectory: false,
         reason: 'commerce_sync_aggregate',
@@ -1163,16 +1259,22 @@ export async function runCommerceSync({
     mode === 'write' &&
     (collectionPageSnapshotResult.upsertedCount > 0 ||
       dealPageSnapshotResult.upsertedCount > 0 ||
-      homepageCommerceSnapshotResult.upsertedCount > 0)
+      homepageCommerceSnapshotResult.upsertedCount > 0 ||
+      themeCommerceSnapshotResult.upsertedCount > 0)
   ) {
     try {
       await revalidatePublicCatalogPathsFn({
-        additionalPaths: [...commerceSyncCollectionSnapshotPaths, '/deals'],
+        additionalPaths: [
+          ...commerceSyncCollectionSnapshotPaths,
+          '/deals',
+          ...themeCommerceSnapshotPaths,
+        ],
         additionalTags: [
           cacheTags.collections(),
           ...commerceSyncCollectionSnapshotTags,
           cacheTags.deals(),
           cacheTags.prices(),
+          ...themeCommerceSnapshotTags,
         ],
         includeDeals: false,
         includeHome: homepageCommerceSnapshotResult.upsertedCount > 0,
@@ -1273,6 +1375,11 @@ export async function runCommerceSync({
       homepageCommerceSnapshotResult.summary.payloadBytes,
     homepageCommerceSnapshotsUpsertedCount:
       homepageCommerceSnapshotResult.upsertedCount,
+    themeCommerceSnapshotCount: themeCommerceSnapshotResult.snapshots.length,
+    themeCommerceSnapshotPayloadBytes:
+      themeCommerceSnapshotResult.summary.payloadBytes,
+    themeCommerceSnapshotsUpsertedCount:
+      themeCommerceSnapshotResult.upsertedCount,
     setDetailRelatedThemeSnapshotCount:
       setDetailRelatedThemeSnapshotResult.snapshots.length,
     setDetailRelatedThemeSnapshotsUpsertedCount:

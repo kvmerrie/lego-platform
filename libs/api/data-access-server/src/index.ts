@@ -20,6 +20,7 @@ export * from './lib/collection-page-snapshot-server';
 export * from './lib/deal-page-snapshot-server';
 export * from './lib/homepage-commerce-snapshot-server';
 export * from './lib/set-detail-related-theme-snapshot-server';
+export * from './lib/theme-commerce-snapshot-server';
 export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';
 export * from './lib/rakuten-lego-catalog-auto-import-server';

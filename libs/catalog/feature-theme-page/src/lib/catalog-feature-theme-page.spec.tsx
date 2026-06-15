@@ -215,26 +215,24 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('data-testid="theme-favorite-icon"');
     expect(markup).not.toContain('Bewaar thema');
     expect(markup).toContain('data-button-surface="light"');
-    expect(markup).toContain('Bekijk beste deals');
+    expect(markup).not.toContain('Bekijk beste deals');
     expect(markup).toContain('Themacontext');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="#theme-browse"');
-    expect(markup).toContain('href="#theme-deals"');
     expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).not.toContain('_introVisualStage_');
     expect(markup).not.toContain('Klaar voor themabeeld');
     expect(markup.indexOf('href="#theme-browse"')).toBeLessThan(
       markup.indexOf('data-testid="theme-favorite-icon"'),
     );
-    expect(markup.indexOf('data-testid="theme-favorite-icon"')).toBeLessThan(
-      markup.indexOf('href="#theme-deals"'),
-    );
     expect(markup.indexOf('<h1')).toBeLessThan(
       markup.indexOf('href="#theme-browse"'),
     );
     expect(markup).toContain('Bekijk alle sets');
     expect(markup).toContain('Hier wil je nu als eerste kijken in');
-    expect(markup).not.toContain(
+    expect(markup).toContain('setCardRailHeadingControls');
+    expect(markup).toContain('data-visible="false"');
+    expect(markup).toContain(
       'Scroll Hier wil je nu als eerste kijken in Marvel naar rechts',
     );
     expect(markup).not.toContain(
@@ -388,21 +386,11 @@ describe('CatalogFeatureThemePage', () => {
       'utf-8',
     );
     const ctaRule = css.match(/\.introActions \{[^}]+\}/u)?.[0] ?? '';
-    const favoriteRule =
-      Array.from(css.matchAll(/^\.introFavoriteAction \{[^}]+\}/gmu))
-        .map((match) => match[0])
-        .find((rule) =>
-          rule.includes('--lego-button-secondary-border-color'),
-        ) ?? '';
     const favoriteLabelRule =
       css.match(/^\.introFavoriteLabel \{[^}]+\}/mu)?.[0] ?? '';
     const desktopFavoriteRule =
       css.match(
         /@media \(min-width: 48rem\) \{[\s\S]*?\.introFavoriteLabel \{[^}]+\}/u,
-      )?.[0] ?? '';
-    const activeFavoriteRule =
-      css.match(
-        /^\.introFavoriteAction\[aria-pressed='true'\],\n\.introFavoriteAction\.introFavoriteActionActive,\n\.introFavoriteAction\.introFavoriteActionActive\[aria-pressed='true'\] \{[^}]+\}/mu,
       )?.[0] ?? '';
     const primaryActionRule =
       css.match(/\.introPrimaryAction \{[^}]+\}/u)?.[0] ?? '';
@@ -416,17 +404,19 @@ describe('CatalogFeatureThemePage', () => {
     expect(ctaRule).toContain('grid-template-columns: minmax(0, 1fr) auto;');
     expect(primaryActionRule).toContain('width: 100%;');
     expect(source).toContain(
-      "variant={favoriteContext.isFavorited ? 'icon' : 'icon-secondary'}",
+      "variant={favoriteContext.isFavorited ? 'primary' : 'secondary'}",
     );
     expect(source).toContain('size="lg"');
+    expect(source).not.toContain('favoriteActiveStyle');
+    expect(source).not.toContain('introFavoriteActionActive');
     expect(css).not.toContain('inline-size: 2.75rem;');
     expect(css).not.toContain('min-block-size: 2.75rem;');
     expect(css).not.toContain('min-inline-size: 2.75rem;');
-    expect(favoriteRule).toContain('--lego-button-secondary-border-color');
-    expect(favoriteRule).toContain('--lego-button-secondary-color');
-    expect(favoriteRule).toContain(
-      '--lego-button-secondary-hover-border-color',
-    );
+    expect(css).not.toContain('--catalog-hero-favorite-fill-background');
+    expect(css).not.toContain('--catalog-hero-favorite-fill-hover-background');
+    expect(css).not.toContain('--catalog-hero-favorite-fill-foreground');
+    expect(css).not.toContain('--lego-button-secondary-hover-border-color');
+    expect(css).not.toContain('--lego-button-accent-hover-background');
     expect(favoriteLabelRule).toContain('display: none;');
     expect(favoriteLabelRule).toContain('font-size: inherit;');
     expect(favoriteLabelRule).toContain('font-weight: inherit;');
@@ -455,24 +445,6 @@ describe('CatalogFeatureThemePage', () => {
       'padding-inline: var(--lego-action-padding-inline);',
     );
     expect(desktopFavoriteRule).toContain('display: inline;');
-    expect(activeFavoriteRule).toContain(
-      '--lego-button-accent-background: var(--catalog-hero-favorite-fill-background);',
-    );
-    expect(activeFavoriteRule).toContain(
-      '--lego-button-accent-color: var(--catalog-hero-favorite-fill-foreground);',
-    );
-    expect(activeFavoriteRule).toContain(
-      'background-color: var(--catalog-hero-favorite-fill-background);',
-    );
-    expect(activeFavoriteRule).toContain(
-      'border-color: var(--catalog-hero-favorite-fill-background);',
-    );
-    expect(activeFavoriteRule).toContain(
-      'color: var(--catalog-hero-favorite-fill-foreground);',
-    );
-    expect(css).toContain(
-      ".introFavoriteAction[aria-pressed='true']:hover,\n.introFavoriteAction.introFavoriteActionActive:hover,\n.introFavoriteAction.introFavoriteActionActive[aria-pressed='true']:hover",
-    );
     expect(css).not.toContain('--theme-page-favorite-fill-background');
     expect(css).not.toContain('--theme-page-button-fill');
     expect(css).toContain('@media (min-width: 36rem)');
@@ -574,16 +546,11 @@ describe('CatalogFeatureThemeFavoriteToggle', () => {
     expect(container.querySelector('svg')?.getAttribute('fill')).toBe(
       'currentColor',
     );
-    expect(button?.className).toContain('buttonIcon');
-    expect(button?.className).not.toContain('buttonIconSecondary');
+    expect(button?.className).toContain('buttonAccent');
+    expect(button?.className).not.toContain('buttonSecondary');
     expect(button?.className).toContain('interactiveSizeHero');
-    expect(button?.className).toContain('introFavoriteActionActive');
-    expect(button?.getAttribute('style')).toContain(
-      '--lego-button-accent-background: var(--catalog-hero-favorite-fill-background);',
-    );
-    expect(button?.getAttribute('style')).toContain(
-      'background-color: var(--catalog-hero-favorite-fill-background);',
-    );
+    expect(button?.className).not.toContain('introFavoriteActionActive');
+    expect(button?.getAttribute('style')).toBeNull();
 
     await act(async () => {
       root.unmount();
@@ -604,7 +571,8 @@ describe('CatalogFeatureThemeFavoriteToggle', () => {
     expect(button?.getAttribute('aria-pressed')).toBe('false');
     expect(button?.textContent).toContain('Volg thema');
     expect(container.querySelector('svg')?.getAttribute('fill')).toBe('none');
-    expect(button?.className).toContain('buttonIconSecondary');
+    expect(button?.className).toContain('buttonSecondary');
+    expect(button?.className).not.toContain('buttonAccent');
     expect(button?.className).not.toContain('introFavoriteActionActive');
     expect(button?.getAttribute('style')).toBeNull();
 

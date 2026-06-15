@@ -210,12 +210,11 @@ function CatalogSetCardRailHeadingControls({
   onPrevious: () => void;
   railId: string;
 }) {
-  if (!hasOverflow) {
-    return null;
-  }
-
   return (
-    <div className={styles.setCardRailHeadingControls}>
+    <div
+      className={styles.setCardRailHeadingControls}
+      data-visible={hasOverflow ? 'true' : 'false'}
+    >
       <Button
         aria-controls={railId}
         aria-label={`Scroll ${ariaLabel} naar links`}
@@ -636,14 +635,14 @@ function CatalogSetCardRailViewport({
   const thumbOffsetPercent = railMetrics.hasOverflow
     ? railMetrics.progress * (100 - railMetrics.thumbWidthPercent)
     : 0;
-  const hasDesktopControls = items.length > 1 && railMetrics.hasOverflow;
+  const shouldRenderControls = items.length > 1;
   const shouldRenderScrollbar = items.length > 1;
-  const controls = hasDesktopControls ? (
+  const controls = shouldRenderControls ? (
     <CatalogSetCardRailHeadingControls
       ariaLabel={ariaLabel}
       canScrollNext={railMetrics.canScrollNext}
       canScrollPrevious={railMetrics.canScrollPrevious}
-      hasOverflow={hasDesktopControls}
+      hasOverflow={railMetrics.hasOverflow}
       onNext={() => scrollRail('next')}
       onPrevious={() => scrollRail('previous')}
       railId={railId}

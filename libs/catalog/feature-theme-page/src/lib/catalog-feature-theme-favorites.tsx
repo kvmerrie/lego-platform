@@ -2,7 +2,6 @@
 
 import {
   Component,
-  type CSSProperties,
   type ErrorInfo,
   type ReactNode,
   useCallback,
@@ -320,24 +319,6 @@ export function CatalogFeatureThemeFavoriteToggle({
     }
   }, [favoriteContext, isPending, themeId]);
 
-  const favoriteActiveStyle = favoriteContext.isFavorited
-    ? ({
-        '--lego-button-accent-active-background':
-          'var(--catalog-hero-favorite-fill-background)',
-        '--lego-button-accent-background':
-          'var(--catalog-hero-favorite-fill-background)',
-        '--lego-button-accent-color':
-          'var(--catalog-hero-favorite-fill-foreground)',
-        '--lego-button-accent-hover-background':
-          'var(--catalog-hero-favorite-fill-hover-background)',
-        '--lego-button-accent-hover-color':
-          'var(--catalog-hero-favorite-fill-foreground)',
-        backgroundColor: 'var(--catalog-hero-favorite-fill-background)',
-        borderColor: 'var(--catalog-hero-favorite-fill-background)',
-        color: 'var(--catalog-hero-favorite-fill-foreground)',
-      } as CSSProperties)
-    : undefined;
-
   return (
     <>
       <Button
@@ -345,18 +326,13 @@ export function CatalogFeatureThemeFavoriteToggle({
           favoriteContext.isFavorited ? 'Thema opgeslagen' : 'Thema bewaren'
         }
         aria-pressed={favoriteContext.isFavorited}
-        className={[
-          styles.introFavoriteAction,
-          favoriteContext.isFavorited && styles.introFavoriteActionActive,
-          className,
-        ]
+        className={[styles.introFavoriteAction, className]
           .filter(Boolean)
           .join(' ')}
         disabled={!themeId}
         isLoading={isPending}
         ref={triggerButtonRef}
         size="lg"
-        style={favoriteActiveStyle}
         surface={buttonSurface}
         title={
           favoriteContext.isFavorited
@@ -364,7 +340,7 @@ export function CatalogFeatureThemeFavoriteToggle({
             : `${themeName} bewaren`
         }
         tone="secondary"
-        variant={favoriteContext.isFavorited ? 'icon' : 'icon-secondary'}
+        variant={favoriteContext.isFavorited ? 'primary' : 'secondary'}
         onClick={handleToggle}
       >
         <Heart

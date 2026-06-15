@@ -23,6 +23,7 @@ const DUTCH_REGION_CODE = 'NL';
 const EURO_CURRENCY_CODE = 'EUR';
 const NEW_OFFER_CONDITION = 'new';
 const SNAPSHOT_SOURCE = 'commerce_sync';
+const CURRENT_OFFER_SNAPSHOT_UPSERT_CHUNK_SIZE = 100;
 
 type CommerceCurrentOfferSnapshotSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -752,11 +753,17 @@ function getSnapshotRowInvalidReason(
 }
 
 function createCurrentOfferSnapshotUpsertDiagnostics({
+  chunkCount,
+  chunkIndex,
   error,
   rows,
+  snapshotCount = rows.length,
 }: {
+  chunkCount?: number;
+  chunkIndex?: number;
   error: unknown;
   rows: readonly CommerceCurrentOfferSnapshotRow[];
+  snapshotCount?: number;
 }) {
   const errorRecord =
     error && typeof error === 'object'
@@ -772,6 +779,9 @@ function createCurrentOfferSnapshotUpsertDiagnostics({
 
   return {
     code: errorRecord.code,
+    chunkCount,
+    chunkIndex,
+    chunkSize: rows.length,
     details: errorRecord.details,
     firstInvalidRow: firstInvalidRow
       ? {
@@ -809,8 +819,26 @@ function createCurrentOfferSnapshotUpsertDiagnostics({
       regionCode: row.region_code,
       setId: row.set_id,
     })),
-    snapshotCount: rows.length,
+    snapshotCount,
   };
+}
+
+function chunkCurrentOfferSnapshotRows(
+  rows: readonly CommerceCurrentOfferSnapshotRow[],
+): readonly (readonly CommerceCurrentOfferSnapshotRow[])[] {
+  const chunks: CommerceCurrentOfferSnapshotRow[][] = [];
+
+  for (
+    let index = 0;
+    index < rows.length;
+    index += CURRENT_OFFER_SNAPSHOT_UPSERT_CHUNK_SIZE
+  ) {
+    chunks.push(
+      rows.slice(index, index + CURRENT_OFFER_SNAPSHOT_UPSERT_CHUNK_SIZE),
+    );
+  }
+
+  return chunks;
 }
 
 export async function upsertCommerceCurrentOfferSnapshots({
@@ -826,32 +854,56 @@ export async function upsertCommerceCurrentOfferSnapshots({
     };
   }
 
+  const startedAt = Date.now();
   const rows = snapshots.map(toCommerceCurrentOfferSnapshotRow);
-  const { error } = await supabaseClient
-    .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
-    .upsert(rows, {
-      onConflict: 'set_id,region_code,currency_code,condition',
-    });
+  const chunks = chunkCurrentOfferSnapshotRows(rows);
+  let upsertedCount = 0;
 
-  if (error) {
-    const diagnostics = createCurrentOfferSnapshotUpsertDiagnostics({
-      error,
-      rows,
-    });
+  for (const [chunkIndex, chunk] of chunks.entries()) {
+    const { error } = await supabaseClient
+      .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
+      .upsert(chunk, {
+        onConflict: 'set_id,region_code,currency_code,condition',
+      });
 
-    console.error('[commerce-current-offer-snapshots] upsert_failed', {
-      ...diagnostics,
-      event: 'commerce_current_offer_snapshot_upsert_failed',
-    });
+    if (error) {
+      const diagnostics = createCurrentOfferSnapshotUpsertDiagnostics({
+        chunkCount: chunks.length,
+        chunkIndex,
+        error,
+        rows: chunk,
+        snapshotCount: rows.length,
+      });
 
-    throw new Error(
-      `Unable to upsert commerce current-offer snapshots. ${JSON.stringify(
-        diagnostics,
-      )}`,
-    );
+      console.error('[commerce-current-offer-snapshots] upsert_failed', {
+        ...diagnostics,
+        event: 'commerce_current_offer_snapshot_upsert_failed',
+      });
+
+      throw new Error(
+        `Unable to upsert commerce current-offer snapshots. ${JSON.stringify(
+          diagnostics,
+        )}`,
+      );
+    }
+
+    upsertedCount += chunk.length;
+
+    console.info('[commerce-current-offer-snapshots] upsert_progress', {
+      chunkCount: chunks.length,
+      chunkIndex,
+      chunkSize: chunk.length,
+      upsertedSoFar: upsertedCount,
+    });
   }
 
+  console.info('[commerce-current-offer-snapshots] upsert_complete', {
+    chunkCount: chunks.length,
+    duration_ms: Date.now() - startedAt,
+    snapshotCount: snapshots.length,
+  });
+
   return {
-    upsertedCount: snapshots.length,
+    upsertedCount,
   };
 }

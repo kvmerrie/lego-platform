@@ -1,12 +1,15 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { renderToReadableStream } from 'react-dom/server.browser';
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATALOG_BROWSE_PAGE_SIZE } from '@lego-platform/catalog/util';
 
 const themePageMocks = vi.hoisted(() => ({
+  catalogFeatureThemeDealRail: vi.fn(),
   getCatalogThemeMetadataBySlug: vi.fn(),
   getCatalogThemePageBySlug: vi.fn(),
+  getThemeCommerceSnapshot: vi.fn(),
   getCachedPublicBrowsePageData: vi.fn(),
   catalogFeatureThemePage: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
@@ -19,6 +22,7 @@ const themePageMocks = vi.hoisted(() => ({
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   getCatalogThemeMetadataBySlug: themePageMocks.getCatalogThemeMetadataBySlug,
   getCatalogThemePageBySlug: themePageMocks.getCatalogThemePageBySlug,
+  getThemeCommerceSnapshot: themePageMocks.getThemeCommerceSnapshot,
   listCatalogCurrentOfferSummariesBySetIds:
     themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId:
@@ -30,28 +34,28 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 
 vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
   CatalogFeatureThemePage: (props: {
-    dealRail?: React.ReactNode;
-    relatedArticlesRail?: React.ReactNode;
+    dealSetCards?: readonly unknown[];
+    relatedArticles?: readonly unknown[];
     themePage?: unknown;
   }) => {
     themePageMocks.catalogFeatureThemePage(props);
+    if (props.dealSetCards?.length) {
+      themePageMocks.catalogFeatureThemeDealRail({
+        dealSetCards: props.dealSetCards,
+      });
+    }
 
     return (
       <div data-testid="theme-page">
-        {props.dealRail}
-        {props.relatedArticlesRail}
+        {props.dealSetCards?.length ? (
+          <section data-testid="theme-deal-rail" />
+        ) : null}
+        {props.relatedArticles?.length ? (
+          <section data-testid="theme-related-articles" />
+        ) : null}
       </div>
     );
   },
-  CatalogFeatureThemeDealRail: ({
-    dealSetCards,
-  }: {
-    dealSetCards: readonly unknown[];
-  }) =>
-    dealSetCards.length ? <section data-testid="theme-deal-rail" /> : null,
-  CatalogFeatureThemeRelatedArticles: () => (
-    <section data-testid="theme-related-articles" />
-  ),
 }));
 
 vi.mock('../../lib/public-browse-page-cache', () => ({
@@ -60,10 +64,6 @@ vi.mock('../../lib/public-browse-page-cache', () => ({
 
 vi.mock('@lego-platform/content/data-access', () => ({
   listPublishedArticles: themePageMocks.listPublishedArticles,
-}));
-
-vi.mock('@lego-platform/pricing/data-access', () => ({
-  getFeaturedSetPriceContext: () => undefined,
 }));
 
 vi.mock('@lego-platform/shared/config', async (importOriginal) => {
@@ -94,43 +94,26 @@ vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
 }));
 
-async function renderToStreamedMarkup(element: React.ReactElement) {
-  const stream = await renderToReadableStream(element);
-
-  await stream.allReady;
-
-  return new Response(stream).text();
-}
-
-function createCurrentOfferSummary({
-  checkedAt = '2026-05-31T09:00:00.000Z',
-  merchantName = 'Brickshop',
-  priceCents = 6_400,
-  setId = '75355',
+function createThemeCommerceSnapshot({
+  browsePriceContextBySetId = {},
+  featuredDeals = [],
 }: {
-  checkedAt?: string;
-  merchantName?: string;
-  priceCents?: number;
-  setId?: string;
+  browsePriceContextBySetId?: Record<string, unknown>;
+  featuredDeals?: readonly unknown[];
 } = {}) {
-  const bestOffer = {
-    availability: 'in_stock',
-    checkedAt,
-    condition: 'new',
-    commercialUnitType: 'full_set',
-    currency: 'EUR',
-    market: 'NL',
-    merchant: merchantName.toLowerCase(),
-    merchantName,
-    priceCents,
-    setId,
-    url: 'https://example.com/deal',
-  };
-
   return {
-    bestOffer,
-    offers: [bestOffer],
-    setId,
+    themeSlug: 'star-wars',
+    generatedAt: '2026-06-15T08:00:00.000Z',
+    sourceVersion: '2026-06-15T08:00:00.000Z',
+    featuredDeals,
+    browsePriceContextBySetId,
+    stats: {
+      totalSetCount: 1,
+      pricedSetCount: Object.keys(browsePriceContextBySetId).length,
+      featuredDealCount: featuredDeals.length,
+      snapshotHealth:
+        Object.keys(browsePriceContextBySetId).length > 0 ? 'partial' : 'empty',
+    },
   };
 }
 
@@ -140,9 +123,23 @@ describe('theme page JSON-LD', () => {
     themePageMocks.getCachedPublicBrowsePageData.mockImplementation(
       async ({ load }) => load(),
     );
+    themePageMocks.getThemeCommerceSnapshot.mockResolvedValue(undefined);
     themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map(),
     );
+    themePageMocks.listPublishedArticles.mockResolvedValue([]);
+  });
+
+  it('does not stream skeleton fallbacks when theme commerce snapshot data is available', () => {
+    const routeSource = readFileSync(
+      resolve(process.cwd(), 'apps/web/src/app/themes/[slug]/page.tsx'),
+      'utf-8',
+    );
+
+    expect(routeSource).not.toContain('CatalogSetCardRailSkeletonSection');
+    expect(routeSource).not.toContain('<Suspense');
+    expect(routeSource).toContain('dealSetCards={dealSetCards}');
+    expect(routeSource).toContain('relatedArticles={relatedArticles}');
   });
 
   it('renders representative canonical theme metadata', async () => {
@@ -288,12 +285,6 @@ describe('theme page JSON-LD', () => {
         backgroundColor: '#1f4f7a',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
-    );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
     const pageModule = await import('./page');
@@ -341,13 +332,15 @@ describe('theme page JSON-LD', () => {
         }),
       }),
     );
+    expect(themePageMocks.getThemeCommerceSnapshot).toHaveBeenCalledWith({
+      slug: 'star-wars',
+    });
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).not.toHaveBeenCalled();
     expect(themePageMocks.listPublishedArticles).toHaveBeenCalledWith(
       expect.objectContaining({
         limit: 3,
@@ -379,12 +372,6 @@ describe('theme page JSON-LD', () => {
         backgroundColor: '#1f4f7a',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
-    );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
     const pageModule = await import('./page');
@@ -427,11 +414,19 @@ describe('theme page JSON-LD', () => {
         slug: 'star-wars',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map([['75355', createCurrentOfferSummary()]]),
+    themePageMocks.getThemeCommerceSnapshot.mockResolvedValue(
+      createThemeCommerceSnapshot({
+        browsePriceContextBySetId: {
+          '75355': {
+            priceLabel: 'Vanaf € 64,00',
+            currentPriceMinor: 6_400,
+            merchantName: 'Brickshop',
+            ctaUrl: 'https://example.com/deal',
+            dealLabel: 'Beste prijs',
+            confidenceLabel: '1 vergeleken winkel',
+          },
+        },
+      }),
     );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
@@ -446,12 +441,10 @@ describe('theme page JSON-LD', () => {
 
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        liveFallbackSetIdLimit: 0,
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
+    expect(
+      themePageMocks.listCatalogDiscoverySignalsBySetId,
+    ).not.toHaveBeenCalled();
     expect(themePageMocks.catalogFeatureThemePage).toHaveBeenCalledWith(
       expect.objectContaining({
         themePage: expect.objectContaining({
@@ -490,11 +483,8 @@ describe('theme page JSON-LD', () => {
         slug: 'star-wars',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
-      new Map(),
-    );
-    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
+    themePageMocks.getThemeCommerceSnapshot.mockResolvedValue(
+      createThemeCommerceSnapshot(),
     );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
@@ -518,9 +508,15 @@ describe('theme page JSON-LD', () => {
         }),
       }),
     );
+    expect(
+      themePageMocks.listCatalogDiscoverySignalsBySetId,
+    ).not.toHaveBeenCalled();
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).not.toHaveBeenCalled();
   });
 
-  it('does not block the first HTML on optional deal or article rails', async () => {
+  it('keeps optional articles bounded without streamed theme rail fallbacks', async () => {
     themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
       setCards: [
         {
@@ -540,9 +536,6 @@ describe('theme page JSON-LD', () => {
         slug: 'star-wars',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockImplementation(
-      () => new Promise(() => undefined),
-    );
     themePageMocks.listPublishedArticles.mockImplementation(
       () => new Promise(() => undefined),
     );
@@ -557,27 +550,18 @@ describe('theme page JSON-LD', () => {
     );
 
     expect(html).toContain('data-testid="theme-page"');
+    expect(themePageMocks.getThemeCommerceSnapshot).toHaveBeenCalledWith({
+      slug: 'star-wars',
+    });
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).toHaveBeenCalledTimes(1);
-    expect(
-      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        liveFallbackSetIdLimit: 0,
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
   });
 
-  it('streams the deal rail after slow discovery resolves on client navigation', async () => {
+  it('renders theme-wide featured deals from the commerce snapshot', async () => {
     themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
       setCards: [
         {
@@ -597,43 +581,30 @@ describe('theme page JSON-LD', () => {
         slug: 'star-wars',
       },
     });
-    themePageMocks.listCatalogDiscoverySignalsBySetId.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(
-            () =>
-              resolve(
-                new Map([
-                  [
-                    '75355',
-                    {
-                      latestPriceMinor: 19999,
-                    },
-                  ],
-                ]),
-              ),
-            450,
-          );
-        }),
-    );
-    themePageMocks.rankCatalogComparisonDiscoverySetCards.mockReturnValue([
-      {
-        id: '75355',
-        imageUrl: 'https://cdn.example.com/75355.jpg',
-        name: 'X-wing Starfighter',
-        pieces: 1949,
-        releaseYear: 2023,
-        slug: 'x-wing-starfighter-75355',
-        theme: 'Star Wars',
-      },
-    ]);
-    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
+    themePageMocks.getThemeCommerceSnapshot.mockResolvedValue(
+      createThemeCommerceSnapshot({
+        featuredDeals: [
+          {
+            setId: '75355',
+            imageUrl: 'https://cdn.example.com/75355.jpg',
+            name: 'X-wing Starfighter',
+            pieces: 1949,
+            releaseYear: 2023,
+            slug: 'x-wing-starfighter-75355',
+            theme: 'Star Wars',
+            currentPriceMinor: 19_999,
+            merchantName: 'Brickshop',
+            ctaUrl: 'https://example.com/deal',
+            dealLabel: 'Sterke deal',
+            confidenceLabel: '3 vergeleken winkels',
+          },
+        ],
+      }),
     );
     themePageMocks.listPublishedArticles.mockResolvedValue([]);
 
     const pageModule = await import('./page');
-    const html = await renderToStreamedMarkup(
+    const html = renderToStaticMarkup(
       await pageModule.default({
         params: Promise.resolve({
           slug: 'star-wars',
@@ -642,19 +613,27 @@ describe('theme page JSON-LD', () => {
     );
 
     expect(html).toContain('data-testid="theme-deal-rail"');
+    expect(themePageMocks.catalogFeatureThemeDealRail).toHaveBeenCalledWith({
+      dealSetCards: [
+        expect.objectContaining({
+          ctaMode: 'commerce',
+          id: '75355',
+          priceContext: expect.objectContaining({
+            currentPrice: 'Vanaf € 199,99',
+            decisionLabel: 'Sterke deal',
+            primaryActionHref: 'https://example.com/deal',
+          }),
+        }),
+      ],
+    });
+    expect(
+      themePageMocks.rankCatalogComparisonDiscoverySetCards,
+    ).not.toHaveBeenCalled();
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        setIds: ['75355'],
-      }),
-    );
+    ).not.toHaveBeenCalled();
   });
 });

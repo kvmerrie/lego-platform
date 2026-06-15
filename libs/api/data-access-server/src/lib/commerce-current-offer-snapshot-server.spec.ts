@@ -78,6 +78,18 @@ function buildSeed({
   };
 }
 
+function buildSnapshotSeeds(count: number): CommerceRefreshSeed[] {
+  return Array.from({ length: count }, (_, index) => {
+    const setId = String(10000 + index);
+
+    return buildSeed({
+      productUrl: `https://example.com/lego-${setId}`,
+      seedId: `seed-goodbricks-${setId}`,
+      setId,
+    });
+  });
+}
+
 describe('commerce current-offer snapshots', () => {
   test('builds one snapshot per set and selects the same best offer as cards/detail', () => {
     const result = buildCommerceCurrentOfferSnapshots({
@@ -477,6 +489,115 @@ describe('commerce current-offer snapshots', () => {
         onConflict: 'set_id,region_code,currency_code,condition',
       },
     );
+  });
+
+  test('upserts 1383 snapshots in chunks using the composite snapshot key', async () => {
+    const infoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    const upsert = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn().mockReturnValue({ upsert });
+    const result = buildCommerceCurrentOfferSnapshots({
+      now,
+      syncSeeds: buildSnapshotSeeds(1383),
+    });
+
+    await expect(
+      upsertCommerceCurrentOfferSnapshots({
+        snapshots: result.snapshots,
+        supabaseClient: { from } as never,
+      }),
+    ).resolves.toEqual({
+      upsertedCount: 1383,
+    });
+
+    expect(upsert).toHaveBeenCalledTimes(14);
+    expect(upsert.mock.calls[0]?.[0]).toHaveLength(100);
+    expect(upsert.mock.calls[13]?.[0]).toHaveLength(83);
+    for (const call of upsert.mock.calls) {
+      expect(call[1]).toEqual({
+        onConflict: 'set_id,region_code,currency_code,condition',
+      });
+    }
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[commerce-current-offer-snapshots] upsert_progress',
+      expect.objectContaining({
+        chunkCount: 14,
+        chunkIndex: 0,
+        chunkSize: 100,
+        upsertedSoFar: 100,
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[commerce-current-offer-snapshots] upsert_complete',
+      expect.objectContaining({
+        chunkCount: 14,
+        snapshotCount: 1383,
+      }),
+    );
+
+    infoSpy.mockRestore();
+  });
+
+  test('fails with chunk diagnostics when a snapshot chunk upsert fails', async () => {
+    const upsertError = {
+      code: '57014',
+      details: 'statement timeout',
+      hint: 'Try a smaller batch.',
+      message: 'canceling statement due to statement timeout',
+    };
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const infoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    const upsert = vi
+      .fn()
+      .mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: upsertError });
+    const from = vi.fn().mockReturnValue({ upsert });
+    const result = buildCommerceCurrentOfferSnapshots({
+      now,
+      syncSeeds: buildSnapshotSeeds(250),
+    });
+
+    await expect(
+      upsertCommerceCurrentOfferSnapshots({
+        snapshots: result.snapshots,
+        supabaseClient: { from } as never,
+      }),
+    ).rejects.toThrow(/"chunkIndex":1/u);
+
+    expect(upsert).toHaveBeenCalledTimes(2);
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[commerce-current-offer-snapshots] upsert_failed',
+      expect.objectContaining({
+        chunkCount: 3,
+        chunkIndex: 1,
+        chunkSize: 100,
+        code: '57014',
+        details: 'statement timeout',
+        event: 'commerce_current_offer_snapshot_upsert_failed',
+        hint: 'Try a smaller batch.',
+        message: 'canceling statement due to statement timeout',
+        sampleSnapshotKeys: [
+          expect.objectContaining({
+            setId: '10100',
+          }),
+          expect.objectContaining({
+            setId: '10101',
+          }),
+          expect.objectContaining({
+            setId: '10102',
+          }),
+        ],
+        snapshotCount: 250,
+      }),
+    );
+
+    errorSpy.mockRestore();
+    infoSpy.mockRestore();
   });
 
   test('logs Supabase details when snapshot upsert fails', async () => {

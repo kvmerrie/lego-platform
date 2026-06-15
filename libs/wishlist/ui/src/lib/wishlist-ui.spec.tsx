@@ -217,6 +217,47 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('fill="currentColor"');
   });
 
+  it('uses secondary icon button styling for idle hero inline hearts', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        appearance="hero-action"
+        hasResolvedState
+        isWanted={false}
+        productIntent="price-alert"
+        setId="21348"
+        variant="inline"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('buttonIconSecondary');
+    expect(markup).not.toContain('inlineToggleButtonIdle');
+    expect(markup).not.toContain('inlineToggleButtonActive');
+    expect(markup).toContain('inlineToggleButtonHeroAction');
+    expect(markup).toContain('fill="none"');
+  });
+
+  it('uses primary icon button styling for followed hero inline hearts', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        appearance="hero-action"
+        hasResolvedState
+        isWanted
+        productIntent="price-alert"
+        setId="21348"
+        variant="inline"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('buttonIcon');
+    expect(markup).not.toContain('buttonIconSecondary');
+    expect(markup).not.toContain('inlineToggleButtonIdle');
+    expect(markup).not.toContain('inlineToggleButtonActive');
+    expect(markup).toContain('inlineToggleButtonHeroAction');
+    expect(markup).toContain('fill="currentColor"');
+  });
+
   it('styles followed inline hearts as borderless light-blue buttons', () => {
     const css = readWishlistUiCss();
     const activeBlock =
@@ -241,6 +282,20 @@ describe('WantedSetToggleCard', () => {
     expect(css).toContain('--wishlist-button-active-pressed-background');
     expect(css).toContain('--wishlist-button-active-pressed-border-color');
     expect(css).toContain('--wishlist-button-active-pressed-color');
+  });
+
+  it('keeps hero inline hearts on design-system variants without custom hover colors', () => {
+    const css = readWishlistUiCss();
+    const heroActionBlock =
+      css.match(/\.inlineToggleButtonHeroAction \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(heroActionBlock).toContain('--lego-action-border-color');
+    expect(heroActionBlock).not.toContain('--wishlist-button-hover-background');
+    expect(heroActionBlock).not.toContain(
+      '--wishlist-button-active-hover-background',
+    );
+    expect(heroActionBlock).not.toContain('background:');
+    expect(heroActionBlock).not.toContain('color:');
   });
 
   it('keeps product price-follow buttons on the same defaults unless a hero passes variables', () => {
