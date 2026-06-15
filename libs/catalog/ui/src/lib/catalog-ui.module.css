@@ -2411,29 +2411,29 @@
 
   .bestDealSideAction,
   .bestDealFollowAction {
-    --catalog-hero-side-action-active-background: var(
+    --wishlist-button-active-background: var(
       --lego-button-accent-background,
       var(--lego-accent)
     );
-    --catalog-hero-side-action-active-border-color: var(
-      --lego-button-accent-background,
-      var(--lego-accent)
-    );
-    --catalog-hero-side-action-active-color: var(
-      --lego-button-accent-color,
-      #ffffff
-    );
-    --catalog-hero-side-action-active-hover-background: var(
+    --wishlist-button-active-border-color: transparent;
+    --wishlist-button-active-color: var(--lego-button-accent-color, #ffffff);
+    --wishlist-button-active-hover-background: var(
       --lego-button-accent-hover-background,
-      var(--catalog-hero-side-action-active-background)
+      var(--wishlist-button-active-background)
     );
-    --catalog-hero-side-action-active-hover-border-color: var(
-      --lego-button-accent-hover-background,
-      var(--catalog-hero-side-action-active-border-color)
-    );
-    --catalog-hero-side-action-active-hover-color: var(
+    --wishlist-button-active-hover-border-color: transparent;
+    --wishlist-button-active-hover-color: var(
       --lego-button-accent-hover-color,
-      var(--catalog-hero-side-action-active-color)
+      var(--wishlist-button-active-color)
+    );
+    --wishlist-button-active-pressed-background: var(
+      --lego-button-accent-active-background,
+      var(--wishlist-button-active-hover-background)
+    );
+    --wishlist-button-active-pressed-border-color: transparent;
+    --wishlist-button-active-pressed-color: var(
+      --lego-button-accent-active-color,
+      var(--wishlist-button-active-hover-color)
     );
     --catalog-hero-side-action-background: var(
       --lego-button-secondary-background,
@@ -2447,48 +2447,35 @@
       --lego-button-secondary-color,
       var(--lego-text)
     );
-    --catalog-hero-side-action-hover-background: var(
-      --lego-button-secondary-hover-background,
-      var(--lego-surface-subtle)
-    );
-    --catalog-hero-side-action-hover-border-color: var(
-      --lego-button-secondary-hover-border-color,
-      var(--lego-text)
-    );
-    --catalog-hero-side-action-hover-color: var(
-      --lego-button-secondary-hover-color,
-      var(--lego-text)
-    );
-    --wishlist-button-active-background: var(
-      --catalog-hero-side-action-active-background
-    );
-    --wishlist-button-active-border-color: var(
-      --catalog-hero-side-action-active-border-color
-    );
-    --wishlist-button-active-color: var(
-      --catalog-hero-side-action-active-color
-    );
-    --wishlist-button-active-hover-background: var(
-      --catalog-hero-side-action-active-hover-background
-    );
-    --wishlist-button-active-hover-border-color: var(
-      --catalog-hero-side-action-active-hover-border-color
-    );
-    --wishlist-button-active-hover-color: var(
-      --catalog-hero-side-action-active-hover-color
-    );
     --wishlist-button-background: var(--catalog-hero-side-action-background);
     --wishlist-button-border-color: var(
       --catalog-hero-side-action-border-color
     );
     --wishlist-button-color: var(--catalog-hero-side-action-color);
     --wishlist-button-hover-background: var(
-      --catalog-hero-side-action-hover-background
+      --lego-button-secondary-hover-background,
+      var(--lego-surface-subtle)
     );
     --wishlist-button-hover-border-color: var(
-      --catalog-hero-side-action-hover-border-color
+      --lego-button-secondary-hover-border-color,
+      var(--lego-border)
     );
-    --wishlist-button-hover-color: var(--catalog-hero-side-action-hover-color);
+    --wishlist-button-hover-color: var(
+      --lego-button-secondary-hover-color,
+      var(--lego-text)
+    );
+    --wishlist-button-pressed-background: var(
+      --lego-button-secondary-active-background,
+      var(--wishlist-button-hover-background)
+    );
+    --wishlist-button-pressed-border-color: var(
+      --lego-button-secondary-active-border-color,
+      var(--wishlist-button-hover-border-color)
+    );
+    --wishlist-button-pressed-color: var(
+      --lego-button-secondary-active-color,
+      var(--wishlist-button-hover-color)
+    );
   }
 
   .bestDealSideAction {
@@ -2499,18 +2486,6 @@
   }
 
   .bestDealFollowIconButton {
-    --wishlist-button-active-pressed-background: var(
-      --lego-button-accent-active-background,
-      var(--catalog-hero-side-action-active-hover-background)
-    );
-    --wishlist-button-active-pressed-border-color: var(
-      --lego-button-accent-active-background,
-      var(--catalog-hero-side-action-active-hover-border-color)
-    );
-    --wishlist-button-active-pressed-color: var(
-      --lego-button-accent-active-color,
-      var(--catalog-hero-side-action-active-hover-color)
-    );
     --catalog-hero-side-action-background: transparent;
     --catalog-hero-follow-action-radius: var(--lego-radius-sm);
     align-self: stretch;
@@ -2545,29 +2520,6 @@
     inline-size: 100%;
     min-inline-size: var(--catalog-card-action-height, 3.35rem);
     padding: 0;
-  }
-
-  .bestDealSideAction :where(button, a):hover,
-  .bestDealFollowAction :where(button, a):hover {
-    background: var(
-      --catalog-hero-side-action-hover-background,
-      var(--lego-surface-subtle)
-    );
-    border-color: var(
-      --catalog-hero-side-action-hover-border-color,
-      var(--lego-border)
-    );
-    color: var(--catalog-hero-side-action-hover-color, var(--lego-text));
-  }
-
-  .bestDealSideAction :where(button, a):active {
-    transform: translateY(1px);
-  }
-
-  .bestDealSideAction :where(button, a):focus-visible,
-  .bestDealFollowAction :where(button, a):focus-visible {
-    box-shadow: 0 0 0 4px var(--lego-focus-ring);
-    outline: none;
   }
 
   .bestDealSideAction :where(button, a):disabled,

@@ -169,6 +169,8 @@ describe('WantedSetToggleCard', () => {
     const buttonBlock = css.match(/\.inlineToggleButton \{[^}]+\}/u)?.[0] ?? '';
     const idleBlock =
       css.match(/\.inlineToggleButtonIdle \{[^}]+\}/u)?.[0] ?? '';
+    const idlePressedBlock =
+      css.match(/\.inlineToggleButtonIdle:active \{[^}]+\}/u)?.[0] ?? '';
 
     expect(buttonBlock).toContain(
       'inline-size: var(--catalog-card-action-height, 2.75rem);',
@@ -187,6 +189,14 @@ describe('WantedSetToggleCard', () => {
     );
     expect(idleBlock).toContain(
       'color: var(--wishlist-button-color, var(--lego-text));',
+    );
+    expect(idlePressedBlock).toContain('--wishlist-button-pressed-background');
+    expect(idlePressedBlock).toContain(
+      '--wishlist-button-pressed-border-color',
+    );
+    expect(idlePressedBlock).toContain('--wishlist-button-pressed-color');
+    expect(idlePressedBlock).toContain(
+      'var(--wishlist-button-hover-background, var(--lego-surface-subtle))',
     );
   });
 

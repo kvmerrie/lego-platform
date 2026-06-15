@@ -2519,17 +2519,35 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('--wishlist-button-border-color: var(');
     expect(css).toContain('--wishlist-button-color: var(');
     expect(css).toContain('--wishlist-button-active-background: var(');
-    expect(css).toContain('--wishlist-button-active-border-color: var(');
+    expect(css).toContain(
+      '--wishlist-button-active-border-color: transparent;',
+    );
     expect(css).toContain('--wishlist-button-active-color: var(');
+    expect(css).toContain('--wishlist-button-active-hover-background: var(');
+    expect(css).toContain(
+      '--wishlist-button-active-hover-border-color: transparent;',
+    );
     expect(css).toContain('--wishlist-button-active-hover-color: var(');
     expect(css).toContain('--wishlist-button-active-pressed-background: var(');
     expect(css).toContain(
-      '--wishlist-button-active-pressed-border-color: var(',
+      '--wishlist-button-active-pressed-border-color: transparent;',
     );
     expect(css).toContain('--wishlist-button-active-pressed-color: var(');
+    expect(css).toContain('--wishlist-button-hover-background: var(');
+    expect(css).toContain('--wishlist-button-hover-border-color: var(');
+    expect(css).toContain('--wishlist-button-hover-color: var(');
+    expect(css).toContain('--wishlist-button-pressed-background: var(');
+    expect(css).toContain('--wishlist-button-pressed-border-color: var(');
+    expect(css).toContain('--wishlist-button-pressed-color: var(');
     expect(css).toContain('--lego-button-secondary-background');
     expect(css).toContain('--lego-button-secondary-border-color');
     expect(css).toContain('--lego-button-secondary-color');
+    expect(css).toContain('--lego-button-secondary-hover-background');
+    expect(css).toContain('--lego-button-secondary-hover-border-color');
+    expect(css).toContain('--lego-button-secondary-hover-color');
+    expect(css).toContain('--lego-button-secondary-active-background');
+    expect(css).toContain('--lego-button-secondary-active-border-color');
+    expect(css).toContain('--lego-button-secondary-active-color');
     expect(css).toContain('--lego-button-accent-background');
     expect(css).toContain('--lego-button-accent-hover-background');
     expect(css).toContain('--lego-button-accent-active-background');
@@ -2538,9 +2556,13 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('--lego-button-accent-active-color');
     expect(css).toContain('#ffffff');
     expect(css).not.toContain("[class*='inlineToggleButtonActive']");
-    expect(css).toContain('--catalog-hero-side-action-active-background');
-    expect(css).toContain('--catalog-hero-side-action-active-border-color');
-    expect(css).toContain('box-shadow: 0 0 0 4px var(--lego-focus-ring);');
+    expect(css).not.toContain('--catalog-hero-side-action-active-background');
+    expect(css).not.toContain('--catalog-hero-side-action-active-border-color');
+    expect(css).not.toContain('.bestDealSideAction :where(button, a):hover');
+    expect(css).not.toContain('.bestDealSideAction :where(button, a):active');
+    expect(css).not.toContain(
+      '.bestDealSideAction :where(button, a):focus-visible',
+    );
     expect(css).toContain(
       'min-inline-size: var(--catalog-card-action-height, 3.35rem);',
     );
@@ -2559,7 +2581,19 @@ describe('CatalogSetCard', () => {
     );
     expect(heroFollowVariableBlock).toContain('--lego-button-secondary-color');
     expect(heroFollowVariableBlock).toContain(
+      '--lego-button-secondary-hover-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-secondary-active-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
       '--lego-button-accent-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-accent-hover-background',
+    );
+    expect(heroFollowVariableBlock).toContain(
+      '--lego-button-accent-active-background',
     );
     expect(heroFollowVariableBlock).toContain('--lego-button-accent-color');
     expect(heroFollowVariableBlock).toContain('#ffffff');

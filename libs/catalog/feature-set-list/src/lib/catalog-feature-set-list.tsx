@@ -7,6 +7,7 @@ import {
   CatalogSetCardRail,
   type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
+  type CatalogSetCardRailItem,
   type CatalogSetCardRailLayoutMode,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
@@ -108,18 +109,20 @@ export function CatalogFeatureSetList({
     showHeadingChevron,
     style,
   };
-  const railItems = homepageSets.map((catalogSetSummary, index) => ({
-    actions: catalogSetSummary.actions,
-    ctaMode: catalogSetSummary.ctaMode,
-    href: buildSetDetailPath(catalogSetSummary.slug),
-    id: catalogSetSummary.id,
-    imageFetchPriority:
-      prioritizeFirstImage && index === 0 ? 'high' : undefined,
-    imageLoading: prioritizeFirstImage && index === 0 ? 'eager' : undefined,
-    priceContext: catalogSetSummary.priceContext,
-    setSummary: catalogSetSummary,
-    trackingEvent: catalogSetSummary.trackingEvent,
-  }));
+  const railItems: readonly CatalogSetCardRailItem[] = homepageSets.map(
+    (catalogSetSummary, index) => ({
+      actions: catalogSetSummary.actions,
+      ctaMode: catalogSetSummary.ctaMode,
+      href: buildSetDetailPath(catalogSetSummary.slug),
+      id: catalogSetSummary.id,
+      imageFetchPriority:
+        prioritizeFirstImage && index === 0 ? 'high' : undefined,
+      imageLoading: prioritizeFirstImage && index === 0 ? 'eager' : undefined,
+      priceContext: catalogSetSummary.priceContext,
+      setSummary: catalogSetSummary,
+      trackingEvent: catalogSetSummary.trackingEvent,
+    }),
+  );
 
   if (layout === 'rail' && !showHeader) {
     return (
