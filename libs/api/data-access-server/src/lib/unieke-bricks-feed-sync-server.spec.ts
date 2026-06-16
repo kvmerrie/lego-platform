@@ -1,6 +1,7 @@
 import { Readable } from 'node:stream';
 import { describe, expect, test, vi } from 'vitest';
 import { importAffiliateFeedRowsForMerchant } from './alternate-affiliate-feed-server';
+import { classifyScheduledJobFailure } from './scheduled-job-reliability';
 import {
   normalizeUniekeBricksFeedProductToFeedRow,
   parseUniekeBricksProductFeedXmlStream,
@@ -173,11 +174,12 @@ describe('Unieke Bricks feed sync server', () => {
     const importFeedRowsForMerchantFn = vi
       .fn()
       .mockResolvedValue(createImportResult());
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(sampleUniekeBricksFeedXml));
     const result = await syncUniekeBricksFeed({
       dependencies: {
-        fetchFn: vi
-          .fn<typeof fetch>()
-          .mockResolvedValue(new Response(sampleUniekeBricksFeedXml)),
+        fetchFn,
         getUniekeBricksFeedConfigFn: () => ({
           feedUrl:
             'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
@@ -195,6 +197,19 @@ describe('Unieke Bricks feed sync server', () => {
       },
     });
 
+    expect(fetchFn).toHaveBeenCalledWith(
+      'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      {
+        headers: {
+          Accept: 'application/xml,text/xml,*/*',
+          'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          'User-Agent':
+            'Mozilla/5.0 compatible BrickhuntBot/1.0; +https://www.brickhunt.nl',
+        },
+      },
+    );
     expect(importFeedRowsForMerchantFn).toHaveBeenCalledWith({
       merchant: {
         name: 'Unieke Bricks',
@@ -252,6 +267,111 @@ describe('Unieke Bricks feed sync server', () => {
       skippedNonLegoCount: 1,
       skippedNonNewCount: 1,
     });
+  });
+
+  test('retries a blocked feed request once and imports after recovery', async () => {
+    const importFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult());
+    const sleepFn = vi.fn(async () => undefined);
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response('blocked', {
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+          },
+          status: 403,
+          statusText: 'Forbidden',
+        }),
+      )
+      .mockResolvedValueOnce(new Response(sampleUniekeBricksFeedXml));
+
+    await syncUniekeBricksFeed({
+      dependencies: {
+        fetchFn,
+        getUniekeBricksFeedConfigFn: () => ({
+          feedUrl:
+            'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+        }),
+        importFeedRowsForMerchantFn,
+        sleepFn,
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(sleepFn).toHaveBeenCalledWith(250);
+    expect(importFeedRowsForMerchantFn).toHaveBeenCalled();
+  });
+
+  test('keeps repeated 403 recoverable without importing rows or marking stale', async () => {
+    const importFeedRowsForMerchantFn = vi.fn();
+    const sleepFn = vi.fn(async () => undefined);
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response('<html>Forbidden</html>', {
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+        },
+        status: 403,
+        statusText: 'Forbidden',
+      }),
+    );
+
+    let caughtError: unknown;
+
+    try {
+      await syncUniekeBricksFeed({
+        dependencies: {
+          fetchFn,
+          getUniekeBricksFeedConfigFn: () => ({
+            feedUrl:
+              'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            merchantName: 'Unieke Bricks',
+            merchantSlug: 'uniekebricks',
+          }),
+          importFeedRowsForMerchantFn,
+          sleepFn,
+        },
+        options: {
+          dryRun: false,
+        },
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toMatchObject({
+      name: 'Error',
+      message: expect.stringContaining(
+        'Unieke Bricks feed request failed with 403 Forbidden.',
+      ),
+    });
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(importFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(classifyScheduledJobFailure(caughtError)).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_http',
+      recoverable: true,
+    });
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'content_type="text/html; charset=utf-8"',
+        ),
+      }),
+    );
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'body_snippet="<html>Forbidden</html>"',
+        ),
+      }),
+    );
   });
 
   test('direct merchant metadata has no affiliate network and dry-run writes nothing', async () => {

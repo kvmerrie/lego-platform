@@ -265,6 +265,12 @@ main().catch((error) => {
     jobName: 'uniekebricks-feed-sync',
   });
 
+  if (classification.recoverable) {
+    console.warn(
+      `[uniekebricks-feed-sync] end status=degraded source=direct merchant=uniekebricks import_skipped=true latest_rows_marked_stale=0 reason=${classification.failureType}`,
+    );
+  }
+
   if (!classification.recoverable) {
     process.exit(1);
   }

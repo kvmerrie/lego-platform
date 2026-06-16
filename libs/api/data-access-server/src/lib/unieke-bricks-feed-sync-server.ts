@@ -27,6 +27,7 @@ export interface UniekeBricksFeedSyncDependencies {
   fetchFn?: typeof fetch;
   getUniekeBricksFeedConfigFn?: typeof getUniekeBricksFeedConfig;
   importFeedRowsForMerchantFn?: typeof importAffiliateFeedRowsForMerchant;
+  sleepFn?: (delayMs: number) => Promise<void>;
 }
 
 export interface UniekeBricksFeedSyncOptions {
@@ -71,6 +72,69 @@ export interface UniekeBricksFeedSyncResult
   merchantSlug: string;
   normalizedRowCount: number;
   parseFailureCount: number;
+}
+
+const uniekeBricksFeedRetryDelayMs = 250;
+const uniekeBricksFeedResponseSnippetLimit = 500;
+const retriableUniekeBricksFeedStatuses = new Set([403, 429]);
+
+function buildUniekeBricksFeedRequestHeaders(): HeadersInit {
+  return {
+    Accept: 'application/xml,text/xml,*/*',
+    'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
+    'Cache-Control': 'no-cache',
+    Pragma: 'no-cache',
+    'User-Agent':
+      'Mozilla/5.0 compatible BrickhuntBot/1.0; +https://www.brickhunt.nl',
+  };
+}
+
+function shouldRetryUniekeBricksFeedStatus(status: number): boolean {
+  return retriableUniekeBricksFeedStatuses.has(status) || status >= 500;
+}
+
+function sleep(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
+function normalizeResponseBodySnippet(value: string): string | undefined {
+  const snippet = value
+    .replace(/\s+/gu, ' ')
+    .trim()
+    .slice(0, uniekeBricksFeedResponseSnippetLimit);
+
+  return snippet || undefined;
+}
+
+async function readResponseBodySnippet(
+  response: Response,
+): Promise<string | undefined> {
+  try {
+    return normalizeResponseBodySnippet(await response.text());
+  } catch {
+    return undefined;
+  }
+}
+
+async function buildUniekeBricksFeedResponseError(
+  response: Response,
+): Promise<Error> {
+  const contentType = response.headers.get('content-type')?.trim();
+  const bodySnippet = await readResponseBodySnippet(response);
+  const diagnostics = [
+    `status_code=${response.status}`,
+    response.statusText
+      ? `status_text=${JSON.stringify(response.statusText)}`
+      : '',
+    contentType ? `content_type=${JSON.stringify(contentType)}` : '',
+    bodySnippet ? `body_snippet=${JSON.stringify(bodySnippet)}` : '',
+  ].filter(Boolean);
+
+  return new Error(
+    `Unieke Bricks feed request failed with ${response.status} ${response.statusText}. upstream_http ${diagnostics.join(' ')}`,
+  );
 }
 
 function normalizeSearchText(value?: string): string {
@@ -477,21 +541,26 @@ async function fetchProducts({
   config,
   fetchFn,
   maxProducts,
+  sleepFn,
 }: {
   config: UniekeBricksFeedConfig;
   fetchFn: typeof fetch;
   maxProducts?: number;
+  sleepFn: (delayMs: number) => Promise<void>;
 }): Promise<readonly UniekeBricksFeedProduct[]> {
-  const response = await fetchFn(config.feedUrl, {
-    headers: {
-      Accept: 'application/xml,text/xml;q=0.9,*/*;q=0.1',
-    },
+  let response = await fetchFn(config.feedUrl, {
+    headers: buildUniekeBricksFeedRequestHeaders(),
   });
 
+  if (!response.ok && shouldRetryUniekeBricksFeedStatus(response.status)) {
+    await sleepFn(uniekeBricksFeedRetryDelayMs);
+    response = await fetchFn(config.feedUrl, {
+      headers: buildUniekeBricksFeedRequestHeaders(),
+    });
+  }
+
   if (!response.ok) {
-    throw new Error(
-      `Unieke Bricks feed request failed with ${response.status} ${response.statusText}.`,
-    );
+    throw await buildUniekeBricksFeedResponseError(response);
   }
 
   return parseUniekeBricksProductFeedXmlStream({
@@ -513,11 +582,13 @@ export async function syncUniekeBricksFeed({
   const importFeedRowsForMerchantFn =
     dependencies?.importFeedRowsForMerchantFn ??
     importAffiliateFeedRowsForMerchant;
+  const sleepFn = dependencies?.sleepFn ?? sleep;
   const config = getUniekeBricksFeedConfigFn();
   const products = await fetchProducts({
     config,
     fetchFn,
     maxProducts: options?.maxProducts,
+    sleepFn,
   });
   const legoCandidates = products.filter(isLegoContext);
   const nonConstructionLegoProducts = legoCandidates.filter(
