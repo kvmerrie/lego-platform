@@ -103,7 +103,17 @@ export function classifyScheduledJobFailure(
   }
 
   if (httpStatusMatch?.[1]) {
-    return classifyHttpStatus(Number(httpStatusMatch[1]));
+    const httpStatus = Number(httpStatusMatch[1]);
+
+    if (httpStatus === 404 && normalizedMessage.includes('origin_mode=ip')) {
+      return {
+        exitCode: 0,
+        failureType: 'upstream_http',
+        recoverable: true,
+      };
+    }
+
+    return classifyHttpStatus(httpStatus);
   }
 
   if (

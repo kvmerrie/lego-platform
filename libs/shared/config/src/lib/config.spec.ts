@@ -1344,6 +1344,7 @@ describe('shared config Unieke Bricks feed helpers', () => {
     expect(getUniekeBricksFeedConfig()).toEqual({
       feedUrl:
         'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      feedOriginHostHeader: 'uniekebricks.nl',
       feedOriginUrl: undefined,
       merchantSlug: 'uniekebricks',
       merchantName: 'Unieke Bricks',
@@ -1353,6 +1354,7 @@ describe('shared config Unieke Bricks feed helpers', () => {
   test('allows explicit Unieke Bricks merchant overrides', () => {
     process.env.UNIEKE_BRICKS_FEED_URL =
       'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+    process.env.UNIEKE_BRICKS_FEED_ORIGIN_HOST_HEADER = 'www.uniekebricks.nl';
     process.env.UNIEKE_BRICKS_FEED_ORIGIN_URL =
       'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
     process.env.UNIEKE_BRICKS_MERCHANT_SLUG = 'unieke-bricks-direct';
@@ -1361,6 +1363,7 @@ describe('shared config Unieke Bricks feed helpers', () => {
     expect(getUniekeBricksFeedConfig()).toEqual({
       feedUrl:
         'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      feedOriginHostHeader: 'www.uniekebricks.nl',
       feedOriginUrl:
         'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
       merchantSlug: 'unieke-bricks-direct',

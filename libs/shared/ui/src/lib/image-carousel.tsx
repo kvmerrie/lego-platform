@@ -568,13 +568,11 @@ function GalleryImageMedia({
         sizes={
           kind === 'detail'
             ? '(max-width: 1024px) calc(100vw - 2rem), 900px'
-            : kind === 'lightbox'
-              ? '(max-width: 1280px) 100vw, 1400px'
-              : kind === 'overview'
-                ? '(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 640px'
-                : kind === 'thumbnail'
-                  ? '96px'
-                  : '(max-width: 768px) calc(100vw - 2rem), 1120px'
+            : kind === 'overview'
+              ? '(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 640px'
+              : kind === 'thumbnail'
+                ? '96px'
+                : '(max-width: 768px) calc(100vw - 2rem), 1120px'
         }
         src={imageSource}
       />

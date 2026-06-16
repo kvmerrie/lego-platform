@@ -181,6 +181,7 @@ describe('Unieke Bricks feed sync server', () => {
       dependencies: {
         fetchFn,
         getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'uniekebricks.nl',
           feedUrl:
             'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
           merchantName: 'Unieke Bricks',
@@ -282,6 +283,7 @@ describe('Unieke Bricks feed sync server', () => {
       dependencies: {
         fetchFn,
         getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'uniekebricks.nl',
           feedOriginUrl:
             'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
           feedUrl:
@@ -331,6 +333,7 @@ describe('Unieke Bricks feed sync server', () => {
       dependencies: {
         fetchFn,
         getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'uniekebricks.nl',
           feedOriginUrl: originUrl,
           feedUrl:
             'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml',
@@ -366,6 +369,52 @@ describe('Unieke Bricks feed sync server', () => {
     consoleLogSpy.mockRestore();
   });
 
+  test('uses the configured origin Host header override in origin IP mode', async () => {
+    const originUrl =
+      'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(sampleUniekeBricksFeedXml));
+    const importFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult());
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+      return undefined;
+    });
+
+    await syncUniekeBricksFeed({
+      dependencies: {
+        fetchFn,
+        getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'www.uniekebricks.nl',
+          feedOriginUrl: originUrl,
+          feedUrl:
+            'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+        }),
+        importFeedRowsForMerchantFn,
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(fetchFn).toHaveBeenCalledWith(
+      originUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Host: 'www.uniekebricks.nl',
+        }),
+      }),
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[uniekebricks-feed-sync] fetch_request origin_mode=ip attempt=1 request_url_host="93.119.2.137" request_host_header="www.uniekebricks.nl"',
+    );
+
+    consoleLogSpy.mockRestore();
+  });
+
   test('retries a blocked feed request once and imports after recovery', async () => {
     const importFeedRowsForMerchantFn = vi
       .fn()
@@ -388,6 +437,7 @@ describe('Unieke Bricks feed sync server', () => {
       dependencies: {
         fetchFn,
         getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'uniekebricks.nl',
           feedUrl:
             'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
           merchantName: 'Unieke Bricks',
@@ -428,6 +478,7 @@ describe('Unieke Bricks feed sync server', () => {
         dependencies: {
           fetchFn,
           getUniekeBricksFeedConfigFn: () => ({
+            feedOriginHostHeader: 'uniekebricks.nl',
             feedOriginUrl:
               'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
             feedUrl:
@@ -469,6 +520,62 @@ describe('Unieke Bricks feed sync server', () => {
     });
   });
 
+  test('keeps origin IP 404 recoverable without importing rows or marking stale', async () => {
+    const importFeedRowsForMerchantFn = vi.fn();
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response('<html>Not found</html>', {
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+        },
+        status: 404,
+        statusText: 'Not Found',
+      }),
+    );
+
+    let caughtError: unknown;
+
+    try {
+      await syncUniekeBricksFeed({
+        dependencies: {
+          fetchFn,
+          getUniekeBricksFeedConfigFn: () => ({
+            feedOriginHostHeader: 'uniekebricks.nl',
+            feedOriginUrl:
+              'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            feedUrl:
+              'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            merchantName: 'Unieke Bricks',
+            merchantSlug: 'uniekebricks',
+          }),
+          importFeedRowsForMerchantFn,
+        },
+        options: {
+          dryRun: false,
+        },
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toMatchObject({
+      name: 'Error',
+      message: expect.stringContaining(
+        'Unieke Bricks feed request failed with 404 Not Found.',
+      ),
+    });
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('origin_mode=ip'),
+      }),
+    );
+    expect(importFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(classifyScheduledJobFailure(caughtError)).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_http',
+      recoverable: true,
+    });
+  });
+
   test('keeps repeated 403 recoverable without importing rows or marking stale', async () => {
     const importFeedRowsForMerchantFn = vi.fn();
     const sleepFn = vi.fn(async () => undefined);
@@ -489,6 +596,7 @@ describe('Unieke Bricks feed sync server', () => {
         dependencies: {
           fetchFn,
           getUniekeBricksFeedConfigFn: () => ({
+            feedOriginHostHeader: 'uniekebricks.nl',
             feedUrl:
               'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
             merchantName: 'Unieke Bricks',

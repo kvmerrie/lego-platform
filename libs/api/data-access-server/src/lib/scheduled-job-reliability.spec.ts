@@ -28,6 +28,20 @@ describe('scheduled job reliability', () => {
     });
   });
 
+  test('treats origin-IP 404 feed failures as recoverable degraded runs', () => {
+    expect(
+      classifyScheduledJobFailure(
+        new Error(
+          'Unieke Bricks feed request failed with 404 Not Found. upstream_http origin_mode=ip status_code=404',
+        ),
+      ),
+    ).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_http',
+      recoverable: true,
+    });
+  });
+
   test('keeps parser/schema malformed feed payloads as hard failures', () => {
     expect(
       classifyScheduledJobFailure(

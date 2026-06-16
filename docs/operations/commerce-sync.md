@@ -591,10 +591,12 @@ Recommended cadence:
 
 Unieke Bricks job notes:
 
-- keep `UNIEKE_BRICKS_FEED_URL`, `UNIEKE_BRICKS_FEED_ORIGIN_URL`, `UNIEKE_BRICKS_MERCHANT_SLUG`, `UNIEKE_BRICKS_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- keep `UNIEKE_BRICKS_FEED_URL`, `UNIEKE_BRICKS_FEED_ORIGIN_URL`, `UNIEKE_BRICKS_FEED_ORIGIN_HOST_HEADER`, `UNIEKE_BRICKS_MERCHANT_SLUG`, `UNIEKE_BRICKS_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
 - `UNIEKE_BRICKS_FEED_URL` is the public WooCommerce Product Feed Pro XML URL; keep it as the local/default route
 - set `UNIEKE_BRICKS_FEED_ORIGIN_URL` in Render to bypass Cloudflare via the direct origin IP, for example `http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml`
-- origin-IP requests send `Host: uniekebricks.nl` plus browser-like XML request headers; the job logs `origin_mode=ip` without printing the URL
+- origin-IP requests send `Host: uniekebricks.nl` by default; set `UNIEKE_BRICKS_FEED_ORIGIN_HOST_HEADER=www.uniekebricks.nl` if the origin virtual host expects the `www` host instead
+- origin-IP requests include browser-like XML request headers; the job logs `origin_mode=ip`, `request_url_host` and `request_host_header` without printing the full feed URL
+- 404 from the origin-IP route is treated as a recoverable upstream failure so the run ends degraded with `import_skipped=true` and `latest_rows_marked_stale=0`
 - the importer only runs after the response looks like XML; HTML/Cloudflare challenge responses are treated as recoverable upstream failures and do not mark stale rows
 - quote `UNIEKE_BRICKS_MERCHANT_NAME="Unieke Bricks"` when sourcing `.env.local` in a local shell because the display name contains a space
 - use `pnpm sync:uniekebricks-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review

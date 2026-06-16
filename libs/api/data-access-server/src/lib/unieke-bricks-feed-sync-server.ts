@@ -114,7 +114,7 @@ function buildUniekeBricksFeedRequest(
   return {
     headers: {
       ...headers,
-      Host: new URL(config.feedUrl).hostname,
+      Host: config.feedOriginHostHeader,
     },
     originMode: 'ip',
     url: config.feedOriginUrl,

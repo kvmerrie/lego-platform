@@ -676,6 +676,7 @@ export const brickfeverEnvKeys = {
 
 export const uniekeBricksEnvKeys = {
   feedUrl: 'UNIEKE_BRICKS_FEED_URL',
+  feedOriginHostHeader: 'UNIEKE_BRICKS_FEED_ORIGIN_HOST_HEADER',
   feedOriginUrl: 'UNIEKE_BRICKS_FEED_ORIGIN_URL',
   merchantSlug: 'UNIEKE_BRICKS_MERCHANT_SLUG',
   merchantName: 'UNIEKE_BRICKS_MERCHANT_NAME',
@@ -809,6 +810,7 @@ export interface BrickfeverFeedConfig {
 
 export interface UniekeBricksFeedConfig {
   feedUrl: string;
+  feedOriginHostHeader: string;
   feedOriginUrl?: string;
   merchantName: string;
   merchantSlug: string;
@@ -2055,6 +2057,9 @@ export function getUniekeBricksFeedConfig(
     }),
     feedOriginUrl:
       environment[uniekeBricksEnvKeys.feedOriginUrl]?.trim() || undefined,
+    feedOriginHostHeader:
+      environment[uniekeBricksEnvKeys.feedOriginHostHeader]?.trim() ||
+      'uniekebricks.nl',
     merchantSlug:
       environment[uniekeBricksEnvKeys.merchantSlug]?.trim() || 'uniekebricks',
     merchantName:
