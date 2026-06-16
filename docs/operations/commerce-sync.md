@@ -5,6 +5,7 @@ This repository keeps the first pricing and affiliate slice snapshot-backed. The
 See also:
 
 - `docs/architecture/commerce-current-offer-snapshot.md`
+- `docs/operations/indexnow.md`
 - `docs/operations/pricing-history.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 
@@ -286,6 +287,7 @@ Available feed commands:
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
 - `pnpm sync:brickfever-feed`
+- `pnpm sync:uniekebricks-feed`
 
 `pnpm sync:awin-feed` remains as a temporary backwards-compatible alias for
 the Coolblue feed job. Prefer `pnpm sync:coolblue-feed` for new runbooks and
@@ -293,20 +295,21 @@ operator commands.
 
 Recommended feed cadence:
 
-| Merchant         | Source       | Production cadence                        | Notes                                                                 |
-| ---------------- | ------------ | ----------------------------------------- | --------------------------------------------------------------------- |
-| Conrad           | TradeTracker | every 6 hours, offset from other jobs     | Newer broad feed. Watch duration, parse failures and 429s.            |
-| Goodbricks       | Adtraction   | every 6 hours, offset from other jobs     | Trusted feed merchant; timestamp refreshes should keep rows current.  |
-| Alternate        | TradeTracker | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
-| Coolblue         | Awin         | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
-| Joybuy           | Awin         | every 6 hours, offset from other jobs     | Broad affiliate feed; strict LEGO filtering and unmatched reports.    |
-| Proshop          | Awin         | every 6 hours, offset from other jobs     | Awin CSV feed; strict LEGO filtering and title fallback for set IDs.  |
-| LEGO EU          | Rakuten      | every 6 hours after feed availability     | SFTP gzip XML feed; list files first to discover MID/filename.        |
-| Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
-| MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
-| MisterBricks     | Channable    | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
-| Brickfever       | Direct XML   | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
-| Coppenswarenhuis | TradeTracker | once daily after feed refresh             | Strategic/manual until availability quality is consistently reliable. |
+| Merchant         | Source          | Production cadence                        | Notes                                                                 |
+| ---------------- | --------------- | ----------------------------------------- | --------------------------------------------------------------------- |
+| Conrad           | TradeTracker    | every 6 hours, offset from other jobs     | Newer broad feed. Watch duration, parse failures and 429s.            |
+| Goodbricks       | Adtraction      | every 6 hours, offset from other jobs     | Trusted feed merchant; timestamp refreshes should keep rows current.  |
+| Alternate        | TradeTracker    | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
+| Coolblue         | Awin            | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
+| Joybuy           | Awin            | every 6 hours, offset from other jobs     | Broad affiliate feed; strict LEGO filtering and unmatched reports.    |
+| Proshop          | Awin            | every 6 hours, offset from other jobs     | Awin CSV feed; strict LEGO filtering and title fallback for set IDs.  |
+| LEGO EU          | Rakuten         | every 6 hours after feed availability     | SFTP gzip XML feed; list files first to discover MID/filename.        |
+| Lidl             | TradeTracker    | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
+| MediaMarkt       | TradeDoubler    | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
+| MisterBricks     | Channable       | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
+| Brickfever       | Direct XML      | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
+| Unieke Bricks    | WooCommerce XML | once daily after feed refresh             | Direct non-affiliate feed; Google Merchant XML from WooCommerce.      |
+| Coppenswarenhuis | TradeTracker    | once daily after feed refresh             | Strategic/manual until availability quality is consistently reliable. |
 
 All feed jobs currently treat missing-from-feed as non-authoritative unless a
 job explicitly opts into authoritative stale retirement. That is intentional:
@@ -571,6 +574,33 @@ Brickfever job notes:
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync only uses the explicit `lego_set_id` field as LEGO set number; it never uses EAN, URLs, product IDs or title-only matches as set numbers
 
+Unieke Bricks uses a WooCommerce Product Feed Pro Google Merchant XML feed and
+writes through the same strict offer import path as MisterBricks and
+Brickfever. The merchant is stored as a direct non-affiliate source and
+contributes price-comparison offers only.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:uniekebricks-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the Unieke Bricks feed refresh window
+
+Unieke Bricks job notes:
+
+- keep `UNIEKE_BRICKS_FEED_URL`, `UNIEKE_BRICKS_MERCHANT_SLUG`, `UNIEKE_BRICKS_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- the feed URL comes from the WooCommerce Product Feed Pro output URL in Unieke Bricks; keep the generated XML URL in Render and `.env.local`, not in committed config
+- quote `UNIEKE_BRICKS_MERCHANT_NAME="Unieke Bricks"` when sourcing `.env.local` in a local shell because the display name contains a space
+- use `pnpm sync:uniekebricks-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:uniekebricks-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/uniekebricks-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync uses title and description matches for LEGO set numbers; it never uses GTIN, feed product IDs or URL IDs as set numbers
+- after a write import, run the normal commerce sync or `pnpm sync:merchant-page-snapshots` so `/winkels` includes the latest merchant snapshot
+
 ## Troubleshooting Notes
 
 Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
@@ -686,6 +716,7 @@ pnpm nx run lidl-feed-sync:run -- --report-stale-latest-path tmp/lidl-stale-late
 pnpm nx run mediamarkt-feed-sync:run -- --dry-run --report-stale-latest-path tmp/mediamarkt-stale-latest.json
 pnpm nx run misterbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/misterbricks-stale-latest.json
 pnpm nx run brickfever-feed-sync:run -- --dry-run --report-stale-latest-path tmp/brickfever-stale-latest.json
+pnpm nx run uniekebricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/uniekebricks-stale-latest.json
 pnpm nx run coppenswarenhuis-feed-sync:run -- --dry-run --report-stale-latest-path tmp/coppenswarenhuis-stale-latest.json
 ```
 

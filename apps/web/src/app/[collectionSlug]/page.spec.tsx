@@ -65,56 +65,76 @@ vi.mock('../lib/public-browse-page-cache', () => ({
 vi.mock('@lego-platform/catalog/util', () => ({
   CATALOG_BROWSE_PAGE_SIZE: 40,
   getCatalogCollectionLandingPageConfig: (slug: string) =>
-    slug === collectionPageMocks.collectionConfig.slug
-      ? collectionPageMocks.collectionConfig
-      : slug === 'lego-sets-onder-50-euro'
-        ? {
-            ...collectionPageMocks.collectionConfig,
-            canonicalPath: '/lego-sets-onder-50-euro',
-            h1: 'LEGO sets onder 50 euro',
-            metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
-            slug: 'lego-sets-onder-50-euro',
-          }
-        : slug === 'lego-voor-volwassenen'
+    slug === 'sets'
+      ? {
+          ...collectionPageMocks.collectionConfig,
+          browseDescription: 'Alle sets naast elkaar.',
+          browseEyebrow: 'Alles bij elkaar',
+          browseTitle: 'Alle LEGO sets',
+          canonicalPath: '/sets',
+          description: 'Alle LEGO sets.',
+          filters: {},
+          h1: 'Alle LEGO sets',
+          metaDescription: 'Bekijk alle LEGO sets.',
+          metaTitle: 'Alle LEGO sets | Brickhunt',
+          signalLabel: 'alle sets',
+          slug: 'sets',
+          sort: {
+            default: 'recommended',
+            options: ['recommended', 'newest', 'pieces-desc'],
+          },
+        }
+      : slug === collectionPageMocks.collectionConfig.slug
+        ? collectionPageMocks.collectionConfig
+        : slug === 'lego-sets-onder-50-euro'
           ? {
               ...collectionPageMocks.collectionConfig,
-              canonicalPath: '/lego-voor-volwassenen',
-              h1: 'LEGO voor volwassenen',
-              metaTitle: 'LEGO voor volwassenen | Brickhunt',
-              slug: 'lego-voor-volwassenen',
-              sort: {
-                default: 'recommended',
-                options: ['recommended', 'pieces-desc', 'newest'],
-              },
+              canonicalPath: '/lego-sets-onder-50-euro',
+              h1: 'LEGO sets onder 50 euro',
+              metaTitle: 'LEGO sets onder 50 euro | Brickhunt',
+              slug: 'lego-sets-onder-50-euro',
             }
-          : slug === 'nieuwe-lego-sets'
+          : slug === 'lego-voor-volwassenen'
             ? {
                 ...collectionPageMocks.collectionConfig,
-                canonicalPath: '/nieuwe-lego-sets',
-                h1: 'Nieuwe LEGO sets',
-                metaTitle: 'Nieuwe LEGO sets | Brickhunt',
-                slug: 'nieuwe-lego-sets',
+                canonicalPath: '/lego-voor-volwassenen',
+                h1: 'LEGO voor volwassenen',
+                metaTitle: 'LEGO voor volwassenen | Brickhunt',
+                slug: 'lego-voor-volwassenen',
                 sort: {
-                  default: 'newest',
-                  options: ['newest', 'recommended', 'pieces-desc'],
+                  default: 'recommended',
+                  options: ['recommended', 'pieces-desc', 'newest'],
                 },
               }
-            : slug === 'retiring-lego-sets' || slug === 'laatste-kans-lego-sets'
+            : slug === 'nieuwe-lego-sets'
               ? {
                   ...collectionPageMocks.collectionConfig,
-                  canonicalPath: '/laatste-kans-lego-sets',
-                  h1: 'Laatste Kans LEGO Sets',
-                  metaDescription:
-                    'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
-                  metaTitle:
-                    'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
-                  slug: 'retiring-lego-sets',
+                  canonicalPath: '/nieuwe-lego-sets',
+                  h1: 'Nieuwe LEGO sets',
+                  metaTitle: 'Nieuwe LEGO sets | Brickhunt',
+                  slug: 'nieuwe-lego-sets',
                   sort: {
-                    default: 'recommended',
-                    options: ['recommended', 'pieces-desc', 'newest'],
+                    default: 'newest',
+                    options: ['newest', 'recommended', 'pieces-desc'],
                   },
                 }
-              : undefined,
+              : slug === 'retiring-lego-sets' ||
+                  slug === 'laatste-kans-lego-sets'
+                ? {
+                    ...collectionPageMocks.collectionConfig,
+                    canonicalPath: '/laatste-kans-lego-sets',
+                    h1: 'Laatste Kans LEGO Sets',
+                    metaDescription:
+                      'Deze LEGO sets gaan binnenkort uit productie. Vergelijk prijzen van verschillende winkels en koop jouw favoriete set voordat deze definitief verdwijnt.',
+                    metaTitle:
+                      'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
+                    slug: 'retiring-lego-sets',
+                    sort: {
+                      default: 'recommended',
+                      options: ['recommended', 'pieces-desc', 'newest'],
+                    },
+                  }
+                : undefined,
   isCatalogCollectionPageSnapshotSlug: (slug: string) =>
     [
       'nieuwe-lego-sets',
@@ -124,6 +144,11 @@ vi.mock('@lego-platform/catalog/util', () => ({
       'lego-voor-volwassenen',
     ].includes(slug),
   listCatalogCollectionLandingPageConfigs: () => [
+    {
+      ...collectionPageMocks.collectionConfig,
+      canonicalPath: '/sets',
+      slug: 'sets',
+    },
     collectionPageMocks.collectionConfig,
     {
       ...collectionPageMocks.collectionConfig,
@@ -241,10 +266,28 @@ describe('collection landing page route', () => {
             imageUrl: 'https://cdn.example.com/60430.jpg',
             name: 'Ruimteschip',
             pieces: 240,
+            commerce: {
+              setId: '60430',
+              slug: 'spaceship-60430',
+              currentPriceMinor: 3999,
+              merchantName: 'Brickfever',
+              merchantSlug: 'brickfever',
+              dealLabel: 'Beste prijs',
+              confidenceLabel: '2 vergeleken winkels',
+              primaryActionHref: 'https://example.com/brickfever/60430',
+              commerceIntent: 'merchant',
+            },
             priceContext: {
+              commerceIntent: 'merchant',
+              confidenceLabel: '2 vergeleken winkels',
               coverageLabel: 'Actuele prijs gevonden',
               currentPrice: 'Vanaf € 39,99',
+              currentPriceMinor: 3999,
+              dealLabel: 'Beste prijs',
               merchantLabel: 'Laagst bij Brickfever',
+              merchantName: 'Brickfever',
+              merchantSlug: 'brickfever',
+              primaryActionHref: 'https://example.com/brickfever/60430',
             },
             releaseYear: 2026,
             slug: 'spaceship-60430',
@@ -373,7 +416,12 @@ describe('collection landing page route', () => {
           expect.objectContaining({
             id: '60430',
             priceContext: expect.objectContaining({
+              coverageLabel: '2 vergeleken winkels',
               currentPrice: 'Vanaf € 39,99',
+              decisionLabel: 'Beste prijs',
+              merchantLabel: 'Laagst bij Brickfever',
+              primaryActionHref: 'https://example.com/brickfever/60430',
+              reviewedLabel: '2 vergeleken winkels',
             }),
           }),
         ],
@@ -407,6 +455,26 @@ describe('collection landing page route', () => {
       openGraph: {
         url: 'https://www.brickhunt.nl/lego-sets-onder-100-euro?page=2',
       },
+    });
+  });
+
+  it('emits explicit canonical and OpenGraph URLs for the sets index', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata({
+      params: Promise.resolve({
+        collectionSlug: 'sets',
+      }),
+      searchParams: Promise.resolve({}),
+    });
+
+    expect(metadata).toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/sets',
+      },
+      openGraph: {
+        url: 'https://www.brickhunt.nl/sets',
+      },
+      title: 'Alle LEGO sets | Brickhunt',
     });
   });
 

@@ -86,6 +86,8 @@ import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import {
   type CatalogSetImage,
+  buildCatalogMerchantPresentation,
+  type CatalogMerchantClaim,
   getCatalogCollectionLandingPageConfig,
   getCatalogReleaseYear,
   resolveCatalogReleaseDatePrecision,
@@ -1488,6 +1490,20 @@ function getHeroPrimaryMerchantCta({
   };
 }
 
+function getHeroMerchantClaim({
+  isBestCurrentOffer,
+  presentation,
+}: {
+  isBestCurrentOffer: boolean;
+  presentation: HeroDealPresentation;
+}): CatalogMerchantClaim {
+  if (presentation.merchantCtaIntent === 'availability_check') {
+    return 'availability';
+  }
+
+  return isBestCurrentOffer ? 'lowest-current' : 'selected-price';
+}
+
 function buildBestDeal({
   catalogOffer,
   catalogOffers,
@@ -1605,6 +1621,14 @@ function buildBestDeal({
     evidence: heroDealPresentation.evidence,
     merchantLabel: merchantName,
     merchantName,
+    merchantPresentation: buildCatalogMerchantPresentation({
+      claim: getHeroMerchantClaim({
+        isBestCurrentOffer,
+        presentation: heroDealPresentation,
+      }),
+      merchantName,
+      merchantSlug,
+    }),
     merchantSlug,
     price: formatOfferPrice(catalogOffer),
     rankingLabel:

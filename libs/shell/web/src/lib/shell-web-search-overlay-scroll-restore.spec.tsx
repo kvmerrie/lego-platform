@@ -5,6 +5,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { writeSearchOverlayReturnState } from './shell-web-search-overlay-return-state';
+import {
+  isHeaderScrollReactionSuppressed,
+  resetProgrammaticScrollSuppressionForTests,
+} from '@lego-platform/shared/util';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/themes/icons',
@@ -70,6 +74,7 @@ describe('ShellWebSearchOverlayScrollRestore', () => {
   });
 
   afterEach(() => {
+    resetProgrammaticScrollSuppressionForTests();
     act(() => {
       root.unmount();
     });
@@ -108,6 +113,12 @@ describe('ShellWebSearchOverlayScrollRestore', () => {
     });
 
     expect(window.scrollY).toBe(800);
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      behavior: 'auto',
+      left: 0,
+      top: 800,
+    });
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
     expect(
       window.sessionStorage.getItem('brickhunt.search-overlay-return-state'),
     ).toBeNull();

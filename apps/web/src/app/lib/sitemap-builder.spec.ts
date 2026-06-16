@@ -248,6 +248,7 @@ describe('sitemap generation', () => {
       'https://www.brickhunt.nl/deals/nieuwe-deals',
       'https://www.brickhunt.nl/deals/onder-20',
       'https://www.brickhunt.nl/deals/premium',
+      'https://www.brickhunt.nl/sets',
       'https://www.brickhunt.nl/lego-sets-onder-50-euro',
       'https://www.brickhunt.nl/lego-sets-onder-100-euro',
       'https://www.brickhunt.nl/nieuwe-lego-sets',

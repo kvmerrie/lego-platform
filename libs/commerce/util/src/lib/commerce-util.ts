@@ -125,6 +125,13 @@ const commerceMerchantSupportProfiles = {
     defaultRefresh: false,
     operatorLabel: 'Primary',
   },
+  uniekebricks: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
   lidl: {
     tier: 'primary',
     reliabilityTier: 'production_feed',
@@ -629,6 +636,7 @@ export const commerceMerchantSearchableSlugs = [
   'proshop',
   'smyths-toys',
   'top1toys',
+  'uniekebricks',
   'wehkamp',
 ] as const;
 
@@ -960,6 +968,8 @@ export function buildCommerceMerchantSearchUrl({
       return `https://www.wehkamp.nl/zoeken/?term=${encodedQuery}&type=manual`;
     case 'misterbricks':
       return `https://misterbricks.nl/catalogsearch/result/?q=${encodedQuery}`;
+    case 'uniekebricks':
+      return `https://uniekebricks.nl/?s=${encodedQuery}&post_type=product`;
     case 'lego-nl':
       return `https://www.lego.com/nl-nl/search?q=${encodedQuery}`;
     case 'proshop':

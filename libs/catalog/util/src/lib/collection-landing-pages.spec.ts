@@ -12,6 +12,7 @@ describe('collection landing page configs', () => {
     const configs = listCatalogCollectionLandingPageConfigs();
 
     expect(configs.map((config) => config.slug)).toEqual([
+      'sets',
       'lego-sets-onder-50-euro',
       'lego-sets-onder-100-euro',
       'nieuwe-lego-sets',
@@ -46,6 +47,12 @@ describe('collection landing page configs', () => {
       metaTitle:
         'Laatste Kans LEGO Sets | Binnenkort uit productie | Brickhunt',
       slug: 'retiring-lego-sets',
+    });
+    expect(getCatalogCollectionLandingPageConfig('sets')).toMatchObject({
+      canonicalPath: '/sets',
+      h1: 'Alle LEGO sets',
+      metaTitle: 'Alle LEGO sets | Brickhunt',
+      slug: 'sets',
     });
   });
 
@@ -95,6 +102,7 @@ describe('collection landing page configs', () => {
     );
 
     expect(indexableConfigs.map((config) => config.slug)).toEqual([
+      'sets',
       'lego-sets-onder-50-euro',
       'lego-sets-onder-100-euro',
       'nieuwe-lego-sets',

@@ -62,6 +62,8 @@ describe('shared design tokens', () => {
       '--lego-button-focus-ring-gap-color: var(--lego-surface-default);',
     );
     expect(themeStyles).toContain('scroll-behavior: smooth;');
+    expect(themeStyles).toContain("html[data-programmatic-scroll='true']");
+    expect(themeStyles).toContain('scroll-behavior: auto !important;');
   });
 
   it('injects the shared theme styles into the document head once', () => {

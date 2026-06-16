@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { runWithProgrammaticScrollSuppression } from '@lego-platform/shared/util';
 
 function normalizePathname(pathname: string): string {
   if (pathname === '/') {
@@ -130,15 +131,20 @@ export function ShellWebSamePageFragmentLinks() {
         window.history.replaceState(window.history.state, '', nextHref);
       }
 
-      target.scrollIntoView({
-        behavior: getFragmentScrollBehavior({
-          prefersReducedMotion: window.matchMedia(
-            '(prefers-reduced-motion: reduce)',
-          ).matches,
-        }),
-        block: 'start',
-        inline: 'nearest',
-      });
+      runWithProgrammaticScrollSuppression(
+        () => {
+          target.scrollIntoView({
+            behavior: getFragmentScrollBehavior({
+              prefersReducedMotion: window.matchMedia(
+                '(prefers-reduced-motion: reduce)',
+              ).matches,
+            }),
+            block: 'start',
+            inline: 'nearest',
+          });
+        },
+        { reason: 'same-page-fragment-scroll' },
+      );
       target.focus({ preventScroll: true });
     }
 

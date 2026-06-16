@@ -62,6 +62,35 @@ function getCollectionLandingPageSortHref({
     : config.canonicalPath;
 }
 
+function getCollectionResultCountCopy({
+  currentPage,
+  pageSize,
+  renderedCount,
+  totalSetCount,
+}: {
+  currentPage: number;
+  pageSize: number;
+  renderedCount: number;
+  totalSetCount: number;
+}): string {
+  if (totalSetCount <= 0 || renderedCount <= 0) {
+    return 'Geen sets gevonden';
+  }
+
+  if (totalSetCount <= pageSize) {
+    return `${totalSetCount} sets weergegeven`;
+  }
+
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(totalSetCount, startIndex + renderedCount - 1);
+
+  if (startIndex === 1) {
+    return `${endIndex} van ${totalSetCount} sets weergegeven`;
+  }
+
+  return `${startIndex}–${endIndex} van ${totalSetCount} sets weergegeven`;
+}
+
 function renderLinkList({
   links,
 }: {
@@ -128,6 +157,12 @@ export function CatalogFeatureCollectionLandingPage({
     normalizedPageSize > 0
       ? Math.max(1, Math.ceil(totalSetCount / normalizedPageSize))
       : 1;
+  const resultCountCopy = getCollectionResultCountCopy({
+    currentPage: normalizedCurrentPage,
+    pageSize: normalizedPageSize,
+    renderedCount: setCards.length,
+    totalSetCount,
+  });
 
   return (
     <main className={styles.page}>
@@ -199,7 +234,7 @@ export function CatalogFeatureCollectionLandingPage({
         as="section"
         bodySpacing="relaxed"
         className={styles.browseSection}
-        description={`${setCards.length} producten worden weergegeven`}
+        description={resultCountCopy}
         id={browseSectionId}
         padding="default"
         spacing="relaxed"
@@ -211,8 +246,9 @@ export function CatalogFeatureCollectionLandingPage({
             <nav aria-label="Sorteer sets" className={styles.sortNav}>
               {config.sort.options.map((sortKey) => (
                 <a
-                  aria-current={sortKey === activeSortKey ? 'true' : undefined}
+                  aria-current={sortKey === activeSortKey ? 'page' : undefined}
                   className={styles.sortLink}
+                  data-active={sortKey === activeSortKey ? 'true' : undefined}
                   href={getCollectionLandingPageSortHref({ config, sortKey })}
                   key={sortKey}
                 >

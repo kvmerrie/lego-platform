@@ -162,10 +162,51 @@ describe('merchant deals page', () => {
         href: '/sets/rivendell-10316',
         priceContext: expect.objectContaining({
           discountMetric: expect.stringContaining('20,00 goedkoper dan bol'),
+          merchantLabel: 'Laagst bij Goodbricks',
           primaryActionHref: 'https://goodbricks.example/10316',
         }),
       }),
     );
+  });
+
+  it('labels only-found merchant cards without making a lowest-price claim', async () => {
+    const onlyAtDeal = {
+      ...createDeal(),
+      nextBestMerchant: undefined,
+      nextBestPriceMinor: undefined,
+      savingsMinor: undefined,
+      savingsPercentage: undefined,
+    };
+
+    merchantPageMocks.getMerchantDeals.mockResolvedValue(
+      createMerchantDeals({
+        dealCount: 1,
+        offerCount: 1,
+        onlyAtMerchantDealCount: 1,
+        onlyAtMerchantDeals: [onlyAtDeal],
+      }),
+    );
+
+    const pageModule = await import('./page');
+    renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({ merchantSlug: 'goodbricks' }),
+      }),
+    );
+
+    expect(merchantPageMocks.catalogSetCard).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceContext: expect.objectContaining({
+          coverageLabel: 'Alleen bij deze winkel',
+          decisionLabel: 'Alleen hier gevonden',
+          merchantLabel: 'Alleen gevonden bij Goodbricks',
+        }),
+      }),
+    );
+    expect(
+      merchantPageMocks.catalogSetCard.mock.calls[0]?.[0]?.priceContext
+        ?.merchantLabel,
+    ).not.toBe('Laagst bij Goodbricks');
   });
 
   it('returns notFound when the merchant is missing or inactive', async () => {

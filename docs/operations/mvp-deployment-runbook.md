@@ -279,6 +279,8 @@ Vercel web:
 - `NEXT_PUBLIC_SUPABASE_URL=<production-supabase-url>`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY=<production-supabase-anon-key>`
 - optional `WEB_REVALIDATE_SECRET=<shared-production-revalidate-secret>`
+- `INDEXNOW_KEY=<shared-production-indexnow-key>`
+- optional `INDEXNOW_ENABLED=true`
 - `CONTENTFUL_SPACE_ID=<contentful-space-id>`
 - `CONTENTFUL_DELIVERY_ACCESS_TOKEN=<production-delivery-token>`
 - optional `CONTENTFUL_ENVIRONMENT=master`
@@ -290,8 +292,10 @@ Render API:
 
 - `SUPABASE_URL=<production-supabase-url>`
 - `SUPABASE_SERVICE_ROLE_KEY=<production-service-role-key>`
-- optional `WEB_BASE_URL=https://brickhunt.nl`
+- optional `WEB_BASE_URL=https://www.brickhunt.nl`
 - optional `WEB_REVALIDATE_SECRET=<shared-production-revalidate-secret>`
+- `INDEXNOW_KEY=<shared-production-indexnow-key>`
+- optional `INDEXNOW_ENABLED=true`
 - `HOST=0.0.0.0`
 - `PORT=<render-provided>`
 

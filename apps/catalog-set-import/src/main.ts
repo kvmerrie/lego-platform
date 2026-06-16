@@ -5,8 +5,10 @@ import {
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
+  buildSetDetailPath,
   hasRebrickableApiConfig,
   hasServerSupabaseConfig,
+  submitUrl,
 } from '@lego-platform/shared/config';
 
 function getRequiredArg({
@@ -101,6 +103,15 @@ async function main() {
   const createdSet = await createCatalogSet({
     input: matchingSearchResult,
   });
+  const indexNowResult = await submitUrl(buildSetDetailPath(createdSet.slug), {
+    reason: 'catalog_set_import',
+  });
+
+  if (indexNowResult.attempted || indexNowResult.invalidUrls.length > 0) {
+    console.log(
+      `[catalog-set-import] indexnow attempted=${indexNowResult.attempted} skipped=${indexNowResult.skipped} submitted_url_count=${indexNowResult.submittedUrlCount} invalid_url_count=${indexNowResult.invalidUrls.length}`,
+    );
+  }
 
   console.log(
     `[catalog-set-import] end status=created set_id=${createdSet.setId} slug=${createdSet.slug} primary_theme=${createdSet.theme} source_theme_id=${createdSet.sourceThemeId ?? 'none'} primary_theme_id=${createdSet.primaryThemeId ?? 'none'} duration_ms=${Date.now() - startedAt}`,

@@ -108,6 +108,36 @@ export const catalogDiscoveryVisualVariants = {
 
 export const catalogCollectionLandingPageConfigs = [
   {
+    slug: 'sets',
+    canonicalPath: '/sets',
+    h1: 'Alle LEGO sets',
+    intro:
+      'Begin hier als je nog twijfelt. Van Rivendell en Hogwarts tot Star Wars-schepen: scan wat opvalt en klik door naar de doos die op je plank past.',
+    description:
+      'Alle LEGO sets op Brickhunt, van grote displaymodellen tot kleinere dozen.',
+    metaTitle: 'Alle LEGO sets | Brickhunt',
+    metaDescription:
+      'Bekijk LEGO sets op Brickhunt: vergelijk thema’s, releasejaren en actuele prijzen voor builds zoals Rivendell, Hogwarts en Star Wars-schepen.',
+    browseEyebrow: 'Alles bij elkaar',
+    browseTitle: 'Alle sets om te vergelijken',
+    browseDescription:
+      'Kies deze lijst als je breed wilt kijken: grote displaymodellen, voertuigen en kleine dozen naast elkaar.',
+    signalLabel: 'alle sets',
+    filters: {},
+    sort: {
+      default: 'recommended',
+      options: ['recommended', 'newest', 'pieces-desc'],
+    },
+    links: {
+      themes: [
+        { href: '/themes/star-wars', label: 'Star Wars' },
+        { href: '/themes/icons', label: 'Icons' },
+        { href: '/themes/harry-potter', label: 'Harry Potter' },
+      ],
+      relatedPages: ['nieuwe-lego-sets', 'lego-voor-volwassenen'],
+    },
+  },
+  {
     slug: 'lego-sets-onder-50-euro',
     canonicalPath: '/lego-sets-onder-50-euro',
     h1: 'LEGO sets onder 50 euro',

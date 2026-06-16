@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { runWithProgrammaticScrollSuppression } from '@lego-platform/shared/util';
 import {
   clearSearchOverlayReturnState,
   createCurrentLocationHref,
@@ -63,10 +64,16 @@ export function ShellWebSearchOverlayScrollRestore() {
         return;
       }
 
-      window.scrollTo({
-        left: returnState.scrollX,
-        top: returnState.scrollY,
-      });
+      runWithProgrammaticScrollSuppression(
+        () => {
+          window.scrollTo({
+            behavior: 'auto',
+            left: returnState.scrollX,
+            top: returnState.scrollY,
+          });
+        },
+        { reason: 'search-overlay-scroll-restore' },
+      );
 
       if (hasReachedTargetScroll(returnState)) {
         clearSearchOverlayReturnState(window.sessionStorage);

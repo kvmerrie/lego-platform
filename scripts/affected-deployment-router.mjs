@@ -15,6 +15,7 @@ const feedJobProjects = new Set([
   'mediamarkt-feed-sync',
   'misterbricks-feed-sync',
   'proshop-feed-sync',
+  'uniekebricks-feed-sync',
 ]);
 
 const manualCronJobProjects = new Set([

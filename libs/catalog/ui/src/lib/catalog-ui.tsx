@@ -22,14 +22,7 @@ import {
   sortCatalogSetGalleryImages,
 } from '@lego-platform/catalog/util';
 import { PRODUCT_REVIEWS_SECTION_ID } from '@lego-platform/shared/config';
-import {
-  CalendarDays,
-  ChevronRight,
-  Clock3,
-  Eye,
-  Star,
-  ToyBrick,
-} from 'lucide-react';
+import { CalendarDays, ChevronRight, Star, ToyBrick } from 'lucide-react';
 import {
   CatalogKeyFacts,
   CatalogOfferComparison,
@@ -45,6 +38,10 @@ import {
   type CatalogSetDetailVerdict,
 } from './catalog-commerce-ui';
 import { CatalogPageIntro, CatalogSetDetailHero } from './catalog-composite-ui';
+import {
+  getCatalogCtaPresentation,
+  type CatalogCtaPresentation,
+} from './catalog-cta-presentation';
 import {
   ActionLink,
   Badge,
@@ -66,6 +63,7 @@ import {
 } from '@lego-platform/shared/util';
 import { CatalogSetCardCollectionBrowseMobileLayout } from './catalog-set-card-mobile-layout';
 import { CatalogSetDetailReviewLink } from './catalog-set-detail-review-link';
+import { getMerchantFaviconUrl } from './catalog-merchant-brand';
 import styles from './catalog-ui.module.css';
 
 function joinClassNames(
@@ -683,6 +681,62 @@ function getCardMerchantLabel(merchantLabel: string): string {
   return `Laagst bij ${trimmedMerchantLabel}`;
 }
 
+function getCardLowestMerchantLinePresentation(label: string):
+  | {
+      faviconUrl: string;
+      merchantName: string;
+      prefix: string;
+    }
+  | undefined {
+  const trimmedLabel = label.trim();
+  const match = trimmedLabel.match(/^(Laagst bij)\s+(.+)$/u);
+  const prefix = match?.[1]?.trim();
+  const merchantName = match?.[2]?.trim();
+
+  if (!prefix || !merchantName) {
+    return undefined;
+  }
+
+  const faviconUrl = getMerchantFaviconUrl({
+    merchantLabel: trimmedLabel,
+    merchantName,
+  });
+
+  return faviconUrl
+    ? {
+        faviconUrl,
+        merchantName,
+        prefix,
+      }
+    : undefined;
+}
+
+function CatalogSetCardMerchantLine({ label }: { label: string }) {
+  const presentation = getCardLowestMerchantLinePresentation(label);
+
+  if (!presentation) {
+    return label;
+  }
+
+  return (
+    <span className={styles.cardMerchantLine} title={label}>
+      <span className={styles.cardMerchantPrefix}>{presentation.prefix} </span>
+      <img
+        alt=""
+        className={styles.cardMerchantFavicon}
+        decoding="async"
+        height={16}
+        loading="lazy"
+        src={presentation.faviconUrl}
+        width={16}
+      />
+      <span className={styles.cardMerchantName}>
+        {presentation.merchantName}
+      </span>
+    </span>
+  );
+}
+
 function isDuplicatePriceContextLine(left?: string, right?: string): boolean {
   return Boolean(left && right && left.trim() === right.trim());
 }
@@ -727,7 +781,7 @@ function getCardPrimaryActionConfig({
   ariaLabel: string;
   className: string;
   href?: string;
-  icon: typeof Eye;
+  icon: CatalogCtaPresentation['icon'];
   label: string;
   rel?: string;
   target?: '_blank';
@@ -737,35 +791,47 @@ function getCardPrimaryActionConfig({
     priceContext && !/^prijs volgt$/iu.test(priceContext.currentPrice.trim());
 
   if (!hasKnownPrice) {
+    const pendingPresentation = getCatalogCtaPresentation({
+      destination: 'pending',
+    });
+
     return {
-      ariaLabel: 'Bekijk set, prijs volgt',
+      ariaLabel: pendingPresentation.ariaLabel,
       className: styles.cardCompactActionPending,
       href,
-      icon: Clock3,
-      label: 'Prijs volgt',
+      icon: pendingPresentation.icon,
+      label: pendingPresentation.label,
       trackingEvent,
     };
   }
 
   if (ctaMode === 'commerce' && priceContext?.primaryActionHref) {
+    const merchantPresentation = getCatalogCtaPresentation({
+      destination: 'merchant',
+    });
+
     return {
-      ariaLabel: 'Naar winkel',
+      ariaLabel: merchantPresentation.ariaLabel,
       className: styles.cardCompactActionBrowse,
       href: priceContext.primaryActionHref,
-      icon: Eye,
-      label: 'Naar winkel',
+      icon: merchantPresentation.icon,
+      label: merchantPresentation.label,
       rel: 'noopener noreferrer sponsored',
       target: '_blank',
       trackingEvent: priceContext.primaryActionTrackingEvent,
     };
   }
 
+  const setdetailPresentation = getCatalogCtaPresentation({
+    destination: 'setdetail',
+  });
+
   return {
-    ariaLabel: 'Bekijk set',
+    ariaLabel: setdetailPresentation.ariaLabel,
     className: styles.cardCompactActionBrowse,
     href,
-    icon: Eye,
-    label: 'Bekijk set',
+    icon: setdetailPresentation.icon,
+    label: setdetailPresentation.label,
     trackingEvent,
   };
 }
@@ -1307,6 +1373,10 @@ export function CatalogSetCard({
     visual: getCatalogPublicThemeVisual(setSummary.publicTheme),
   });
   const cardImageUrl = getCatalogSetCardImageUrl(setSummary);
+  const setdetailAction = getCatalogCtaPresentation({
+    destination: 'setdetail',
+  });
+  const SetdetailActionIcon = setdetailAction.icon;
   const hasSupportingContext = Boolean(
     (priceContext && priceDisplay === 'subtle') || supportingNote,
   );
@@ -1383,6 +1453,7 @@ export function CatalogSetCard({
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
         data-catalog-set-card="true"
+        data-catalog-set-card-id={setSummary.id}
         data-catalog-set-card-variant={variant}
         data-theme={setThemeSlug}
         style={setThemeStyle}
@@ -1488,7 +1559,9 @@ export function CatalogSetCard({
                   </p>
                 ) : null}
                 <p className={styles.cardCompactSupporting}>
-                  {featuredMerchantLabel}
+                  <CatalogSetCardMerchantLine
+                    label={featuredMerchantLabel ?? priceContext.merchantLabel}
+                  />
                 </p>
               </>
             ) : (
@@ -1504,6 +1577,7 @@ export function CatalogSetCard({
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
         data-catalog-set-card="true"
+        data-catalog-set-card-id={setSummary.id}
         data-catalog-set-card-variant={variant}
         data-theme={setThemeSlug}
         style={setThemeStyle}
@@ -1558,6 +1632,7 @@ export function CatalogSetCard({
       as="article"
       className={styles.setCard}
       data-catalog-set-card="true"
+      data-catalog-set-card-id={setSummary.id}
       data-catalog-set-card-variant={variant}
       data-theme={setThemeSlug}
       style={setThemeStyle}
@@ -1616,7 +1691,9 @@ export function CatalogSetCard({
             <p className={styles.dealReason}>{priceContext.dealReason}</p>
           ) : null}
           <p className={styles.priceMeta}>
-            {priceContext.decisionNote ?? priceContext.merchantLabel}
+            <CatalogSetCardMerchantLine
+              label={priceContext.decisionNote ?? priceContext.merchantLabel}
+            />
           </p>
           {(priceContext.decisionLabel ?? priceContext.pricePositionLabel) ? (
             <p className={styles.pricePosition}>
@@ -1677,12 +1754,14 @@ export function CatalogSetCard({
         <div className={styles.cardActions}>
           {href ? (
             <ActionLink
+              aria-label={setdetailAction.ariaLabel}
               className={styles.actionLink}
               href={href}
               tone="secondary"
               {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
             >
-              Bekijk set
+              <SetdetailActionIcon aria-hidden="true" size={16} />
+              <span>{setdetailAction.label}</span>
             </ActionLink>
           ) : null}
           {actions}

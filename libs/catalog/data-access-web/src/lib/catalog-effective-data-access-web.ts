@@ -23,6 +23,8 @@ import type {
   CatalogThemeSearchMatch,
   CatalogThemeSnapshot,
   CatalogThemeVisual,
+  CollectionCommerceCard,
+  CollectionCommerceIntent,
   HomepageCommerceCard,
   HomepageCommerceSnapshot,
   ThemeBrowsePriceContext,
@@ -4276,8 +4278,26 @@ export async function listCatalogSetCards({
 export interface CatalogCollectionLandingPageResult {
   bestPriceMinorBySetId: ReadonlyMap<string, number>;
   snapshotGeneratedAt?: string | null;
-  setCards: readonly CatalogHomepageSetCard[];
+  setCards: readonly CatalogCollectionSnapshotSetCard[];
   totalSetCount: number;
+}
+
+export interface CatalogCollectionSnapshotSetCard
+  extends CatalogHomepageSetCard {
+  bestPriceMinor?: number;
+  commerce?: CollectionCommerceCard;
+  priceContext?: {
+    commerceIntent?: CollectionCommerceIntent;
+    confidenceLabel?: string;
+    coverageLabel: string;
+    currentPrice: string;
+    currentPriceMinor?: number;
+    dealLabel?: string;
+    merchantLabel: string;
+    merchantName?: string;
+    merchantSlug?: string;
+    primaryActionHref?: string;
+  };
 }
 
 interface CatalogCollectionPageSnapshotRow {
@@ -4290,32 +4310,212 @@ interface CatalogCollectionPageSnapshotRow {
   total_count: number;
 }
 
+function normalizeCollectionCommerceIntent(
+  value: unknown,
+): CollectionCommerceIntent | undefined {
+  return value === 'merchant' || value === 'setdetail' || value === 'follow'
+    ? value
+    : undefined;
+}
+
+function normalizeCollectionCommerceCard(
+  value: unknown,
+): CollectionCommerceCard | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const candidate = value as Partial<CollectionCommerceCard>;
+  const commerceIntent = normalizeCollectionCommerceIntent(
+    candidate.commerceIntent,
+  );
+
+  if (
+    typeof candidate.setId !== 'string' ||
+    typeof candidate.slug !== 'string'
+  ) {
+    return undefined;
+  }
+
+  return {
+    setId: candidate.setId,
+    slug: candidate.slug,
+    ...(typeof candidate.currentPriceMinor === 'number' &&
+    candidate.currentPriceMinor > 0
+      ? { currentPriceMinor: candidate.currentPriceMinor }
+      : {}),
+    ...(typeof candidate.merchantName === 'string'
+      ? { merchantName: candidate.merchantName }
+      : {}),
+    ...(typeof candidate.merchantSlug === 'string'
+      ? { merchantSlug: candidate.merchantSlug }
+      : {}),
+    ...(typeof candidate.dealLabel === 'string'
+      ? { dealLabel: candidate.dealLabel }
+      : {}),
+    ...(typeof candidate.confidenceLabel === 'string'
+      ? { confidenceLabel: candidate.confidenceLabel }
+      : {}),
+    ...(typeof candidate.primaryActionHref === 'string'
+      ? { primaryActionHref: candidate.primaryActionHref }
+      : {}),
+    ...(commerceIntent ? { commerceIntent } : {}),
+    ...(candidate.followRecommended === true
+      ? { followRecommended: true }
+      : {}),
+  };
+}
+
+function normalizeCollectionSnapshotPriceContext(
+  value: unknown,
+): CatalogCollectionSnapshotSetCard['priceContext'] | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const candidate = value as Partial<
+    NonNullable<CatalogCollectionSnapshotSetCard['priceContext']>
+  >;
+  const commerceIntent = normalizeCollectionCommerceIntent(
+    candidate.commerceIntent,
+  );
+
+  if (
+    typeof candidate.coverageLabel !== 'string' ||
+    typeof candidate.currentPrice !== 'string' ||
+    typeof candidate.merchantLabel !== 'string'
+  ) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel: candidate.coverageLabel,
+    currentPrice: candidate.currentPrice,
+    merchantLabel: candidate.merchantLabel,
+    ...(commerceIntent ? { commerceIntent } : {}),
+    ...(typeof candidate.confidenceLabel === 'string'
+      ? { confidenceLabel: candidate.confidenceLabel }
+      : {}),
+    ...(typeof candidate.currentPriceMinor === 'number' &&
+    candidate.currentPriceMinor > 0
+      ? { currentPriceMinor: candidate.currentPriceMinor }
+      : {}),
+    ...(typeof candidate.dealLabel === 'string'
+      ? { dealLabel: candidate.dealLabel }
+      : {}),
+    ...(typeof candidate.merchantName === 'string'
+      ? { merchantName: candidate.merchantName }
+      : {}),
+    ...(typeof candidate.merchantSlug === 'string'
+      ? { merchantSlug: candidate.merchantSlug }
+      : {}),
+    ...(typeof candidate.primaryActionHref === 'string'
+      ? { primaryActionHref: candidate.primaryActionHref }
+      : {}),
+  };
+}
+
 export function buildSetDetailRelatedThemeSnapshotSlug(setId: string): string {
   return `set-detail-related-theme:${getCanonicalCatalogSetId(setId)}`;
 }
 
 function normalizeCatalogCollectionPageSnapshotItems(
   itemsJson: unknown,
-): CatalogHomepageSetCard[] {
+): CatalogCollectionSnapshotSetCard[] {
   if (!Array.isArray(itemsJson)) {
     return [];
   }
 
-  return itemsJson.filter((item): item is CatalogHomepageSetCard => {
+  return itemsJson.flatMap((item): CatalogCollectionSnapshotSetCard[] => {
     if (!item || typeof item !== 'object' || Array.isArray(item)) {
-      return false;
+      return [];
     }
 
-    const candidate = item as Partial<CatalogHomepageSetCard>;
+    const candidate = item as Partial<CatalogCollectionSnapshotSetCard>;
+    const commerce = normalizeCollectionCommerceCard(candidate.commerce);
+    const priceContext = normalizeCollectionSnapshotPriceContext(
+      candidate.priceContext,
+    );
 
-    return (
+    if (
       typeof candidate.id === 'string' &&
       typeof candidate.slug === 'string' &&
       typeof candidate.name === 'string' &&
       typeof candidate.theme === 'string' &&
       typeof candidate.releaseYear === 'number' &&
       typeof candidate.pieces === 'number'
-    );
+    ) {
+      return [
+        {
+          id: candidate.id,
+          slug: candidate.slug,
+          name: candidate.name,
+          theme: candidate.theme,
+          releaseYear: candidate.releaseYear,
+          pieces: candidate.pieces,
+          ...(typeof candidate.cardImageUrl === 'string'
+            ? { cardImageUrl: candidate.cardImageUrl }
+            : {}),
+          ...(typeof candidate.catalogName === 'string'
+            ? { catalogName: candidate.catalogName }
+            : {}),
+          ...(typeof candidate.createdAt === 'string'
+            ? { createdAt: candidate.createdAt }
+            : {}),
+          ...(typeof candidate.displayTitle === 'string'
+            ? { displayTitle: candidate.displayTitle }
+            : {}),
+          ...(candidate.displayTitleSource
+            ? { displayTitleSource: candidate.displayTitleSource }
+            : {}),
+          ...(candidate.publicTheme
+            ? { publicTheme: candidate.publicTheme }
+            : {}),
+          ...(Array.isArray(candidate.secondaryLabels)
+            ? { secondaryLabels: candidate.secondaryLabels }
+            : {}),
+          ...(typeof candidate.releaseDate === 'string'
+            ? { releaseDate: candidate.releaseDate }
+            : {}),
+          ...(candidate.releaseDatePrecision
+            ? { releaseDatePrecision: candidate.releaseDatePrecision }
+            : {}),
+          ...(typeof candidate.collectorAngle === 'string'
+            ? { collectorAngle: candidate.collectorAngle }
+            : {}),
+          ...(typeof candidate.imageUrl === 'string'
+            ? { imageUrl: candidate.imageUrl }
+            : {}),
+          ...(typeof candidate.primaryImage === 'string'
+            ? { primaryImage: candidate.primaryImage }
+            : {}),
+          ...(typeof candidate.availability === 'string'
+            ? { availability: candidate.availability }
+            : {}),
+          ...(typeof candidate.minifigureCount === 'number'
+            ? { minifigureCount: candidate.minifigureCount }
+            : {}),
+          ...(Array.isArray(candidate.minifigureHighlights)
+            ? { minifigureHighlights: candidate.minifigureHighlights }
+            : {}),
+          ...(typeof candidate.recommendedAge === 'number'
+            ? { recommendedAge: candidate.recommendedAge }
+            : {}),
+          ...(candidate.setStatus ? { setStatus: candidate.setStatus } : {}),
+          ...(typeof candidate.tagline === 'string'
+            ? { tagline: candidate.tagline }
+            : {}),
+          ...(typeof candidate.bestPriceMinor === 'number' &&
+          candidate.bestPriceMinor > 0
+            ? { bestPriceMinor: candidate.bestPriceMinor }
+            : {}),
+          ...(commerce ? { commerce } : {}),
+          ...(priceContext ? { priceContext } : {}),
+        },
+      ];
+    }
+
+    return [];
   });
 }
 
@@ -4379,10 +4579,21 @@ export async function getCatalogCollectionLandingPageSnapshot({
     return undefined;
   }
 
+  const setCards = normalizeCatalogCollectionPageSnapshotItems(
+    snapshot.items_json,
+  );
+  const bestPriceMinorBySetId = new Map(
+    setCards.flatMap((setCard) =>
+      typeof setCard.bestPriceMinor === 'number' && setCard.bestPriceMinor > 0
+        ? [[setCard.id, setCard.bestPriceMinor] as const]
+        : [],
+    ),
+  );
+
   return {
-    bestPriceMinorBySetId: new Map(),
+    bestPriceMinorBySetId,
     snapshotGeneratedAt: snapshot.generated_at,
-    setCards: normalizeCatalogCollectionPageSnapshotItems(snapshot.items_json),
+    setCards,
     totalSetCount: snapshot.total_count,
   };
 }

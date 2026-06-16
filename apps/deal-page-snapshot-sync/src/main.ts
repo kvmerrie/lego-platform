@@ -1,4 +1,5 @@
 import { syncDealPageSnapshots } from '@lego-platform/api/data-access-server';
+import { publicDealPathnames, submitUrls } from '@lego-platform/shared/config';
 
 function getFlagValue({
   argv,
@@ -69,6 +70,18 @@ async function main() {
     dryRun: !write,
     pageSize,
   });
+
+  if (write && result.upsertedCount > 0) {
+    const indexNowResult = await submitUrls(publicDealPathnames, {
+      reason: 'deal_page_snapshot_sync',
+    });
+
+    if (indexNowResult.attempted || indexNowResult.invalidUrls.length > 0) {
+      console.log(
+        `[deal-page-snapshot-sync] indexnow attempted=${indexNowResult.attempted} skipped=${indexNowResult.skipped} submitted_url_count=${indexNowResult.submittedUrlCount} invalid_url_count=${indexNowResult.invalidUrls.length}`,
+      );
+    }
+  }
 
   for (const [sortKey, summary] of Object.entries(result.summaryBySortKey)) {
     console.log(

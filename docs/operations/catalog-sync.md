@@ -7,6 +7,7 @@ See also:
 - `docs/architecture/catalog-supabase-first-migration.md`
 - `docs/operations/supabase-clean-bootstrap.md`
 - `docs/operations/catalog-sync-validation.md`
+- `docs/operations/indexnow.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 
 ## Current Scope

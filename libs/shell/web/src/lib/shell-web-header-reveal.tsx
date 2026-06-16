@@ -1,6 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
+import {
+  applyPreservedHeaderVisibility,
+  getPreservedHeaderHiddenState,
+  isHeaderScrollReactionSuppressed,
+} from '@lego-platform/shared/util';
 import { mobileSearchOverlayVisibilityChangeEventName } from './shell-web-search-overlay-events';
 
 const mobileBreakpoint = 48 * 16;
@@ -53,16 +58,27 @@ export function getShellHeaderRevealConfig(
 export function advanceShellHeaderRevealState({
   currentScrollY,
   overlayOpen = false,
+  suppressVisibilityUpdate = false,
   state,
   viewportWidth,
 }: {
   currentScrollY: number;
   overlayOpen?: boolean;
+  suppressVisibilityUpdate?: boolean;
   state: ShellHeaderRevealState;
   viewportWidth: number;
 }): ShellHeaderRevealState {
   const nextScrollY = Math.max(currentScrollY, 0);
   const config = getShellHeaderRevealConfig(viewportWidth);
+
+  if (suppressVisibilityUpdate) {
+    return {
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: state.hidden,
+      lastScrollY: nextScrollY,
+    };
+  }
 
   if (overlayOpen || nextScrollY <= config.topVisibleOffset) {
     return {
@@ -143,9 +159,23 @@ export function ShellWebHeaderReveal() {
 
     function syncHeaderVisibility() {
       animationFrameId = 0;
+      const preservedHeaderHidden = getPreservedHeaderHiddenState();
+
+      if (preservedHeaderHidden !== undefined) {
+        state = {
+          accumulatedDown: 0,
+          accumulatedUp: 0,
+          hidden: preservedHeaderHidden,
+          lastScrollY: Math.max(window.scrollY, 0),
+        };
+        applyPreservedHeaderVisibility();
+        return;
+      }
+
       state = advanceShellHeaderRevealState({
         currentScrollY: Math.max(window.scrollY, 0),
         overlayOpen: isOverlayOpen,
+        suppressVisibilityUpdate: isHeaderScrollReactionSuppressed(),
         state,
         viewportWidth: window.innerWidth,
       });

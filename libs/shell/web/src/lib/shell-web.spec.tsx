@@ -6,6 +6,11 @@ import {
   advanceShellHeaderRevealState,
   getShellHeaderRevealConfig,
 } from './shell-web-header-reveal';
+import {
+  isHeaderScrollReactionSuppressed,
+  resetProgrammaticScrollSuppressionForTests,
+  suppressHeaderScrollReaction,
+} from '@lego-platform/shared/util';
 import { getActiveMobileTabId } from './shell-web-mobile-tab-bar';
 import { getShellMobileViewportBottomOffset } from './shell-web-mobile-viewport-offset';
 import {
@@ -122,7 +127,7 @@ describe('ShellWeb', () => {
       '--lego-section-inline-padding: var(--lego-space-3);',
     );
     expect(css).toMatch(
-      /\.headerBar \{\n  align-items: center;[\s\S]*padding-inline: var\(--lego-section-inline-padding\);/u,
+      /\.headerBar \{\n {2}align-items: center;[\s\S]*padding-inline: var\(--lego-section-inline-padding\);/u,
     );
     expect(css).toContain(
       '.footerInner {\n  padding-bottom: calc(var(--lego-space-8) + var(--shell-mobile-tabbar-offset));\n  padding-inline: var(--lego-section-inline-padding);',
@@ -479,6 +484,87 @@ describe('advanceShellHeaderRevealState', () => {
       hidden: false,
       lastScrollY: 420,
     });
+  });
+
+  it('keeps a hidden header hidden during programmatic scroll restore', () => {
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 180,
+        state: {
+          accumulatedDown: 0,
+          accumulatedUp: 0,
+          hidden: true,
+          lastScrollY: 720,
+        },
+        suppressVisibilityUpdate: true,
+        viewportWidth: 390,
+      }),
+    ).toEqual({
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: true,
+      lastScrollY: 180,
+    });
+  });
+
+  it('keeps a visible header visible during programmatic scroll restore', () => {
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 900,
+        state: {
+          accumulatedDown: 0,
+          accumulatedUp: 0,
+          hidden: false,
+          lastScrollY: 120,
+        },
+        suppressVisibilityUpdate: true,
+        viewportWidth: 390,
+      }),
+    ).toEqual({
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: false,
+      lastScrollY: 900,
+    });
+  });
+
+  it('reacts to real user scroll again after suppression expires', () => {
+    const suppressedState = advanceShellHeaderRevealState({
+      currentScrollY: 900,
+      state: {
+        accumulatedDown: 0,
+        accumulatedUp: 0,
+        hidden: false,
+        lastScrollY: 120,
+      },
+      suppressVisibilityUpdate: true,
+      viewportWidth: 390,
+    });
+
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 930,
+        state: suppressedState,
+        viewportWidth: 390,
+      }).hidden,
+    ).toBe(true);
+  });
+
+  it('exposes a temporary suppression window for programmatic scrolls', () => {
+    resetProgrammaticScrollSuppressionForTests();
+
+    const releaseSuppression = suppressHeaderScrollReaction('test-scroll', 300);
+
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
+
+    releaseSuppression();
+
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
+    expect(isHeaderScrollReactionSuppressed(performance.now() + 301)).toBe(
+      false,
+    );
+
+    resetProgrammaticScrollSuppressionForTests();
   });
 });
 

@@ -291,7 +291,12 @@ describe('collection page snapshots', () => {
         {
           best_availability: 'in_stock',
           best_merchant_name: 'Brickfever',
+          best_merchant_slug: 'brickfever',
           best_price_minor: 4999,
+          best_product_url: 'https://example.com/brickfever/30000',
+          comparable_offer_count: 2,
+          offer_count: 3,
+          price_spread_minor: 1200,
           set_id: '30000-1',
         },
       ],
@@ -307,6 +312,32 @@ describe('collection page snapshots', () => {
     ).toBe(1);
     expect(result.snapshots[0]?.items[0]?.priceContext?.currentPrice).toBe(
       'Vanaf € 49,99',
+    );
+    expect(result.snapshots[0]?.items[0]?.commerce).toEqual({
+      setId: '30000-1',
+      slug: 'budget-set-30000',
+      currentPriceMinor: 4999,
+      merchantName: 'Brickfever',
+      merchantSlug: 'brickfever',
+      dealLabel: 'Beste marktprijs',
+      confidenceLabel: '3 vergeleken winkels',
+      primaryActionHref: 'https://example.com/brickfever/30000',
+      commerceIntent: 'merchant',
+    });
+    expect(result.snapshots[0]?.items[0]?.priceContext).toMatchObject({
+      commerceIntent: 'merchant',
+      confidenceLabel: '3 vergeleken winkels',
+      currentPriceMinor: 4999,
+      dealLabel: 'Beste marktprijs',
+      merchantName: 'Brickfever',
+      merchantSlug: 'brickfever',
+      primaryActionHref: 'https://example.com/brickfever/30000',
+    });
+    expect(JSON.stringify(result.snapshots[0]?.items[0])).not.toContain(
+      '"offers"',
+    );
+    expect(JSON.stringify(result.snapshots[0]?.items[0])).not.toContain(
+      '"rankedOffers"',
     );
   });
 
@@ -328,7 +359,9 @@ describe('collection page snapshots', () => {
         {
           best_availability: 'in_stock',
           best_merchant_name: 'Brickfever',
+          best_merchant_slug: 'brickfever',
           best_price_minor: 9999,
+          best_product_url: 'https://example.com/brickfever/30000',
           set_id: '30000-1',
         },
         {
@@ -354,6 +387,97 @@ describe('collection page snapshots', () => {
     expect(result.snapshots[0]?.items[0]?.id).toBe('30000-1');
     expect(result.snapshots[0]?.items[0]?.priceContext?.currentPrice).toBe(
       'Vanaf € 99,99',
+    );
+    expect(result.snapshots[0]?.items[0]?.commerce?.commerceIntent).toBe(
+      'merchant',
+    );
+  });
+
+  test('stores setdetail commerce intent for discovery-first collection snapshots', async () => {
+    listCanonicalCatalogSetsMock.mockResolvedValue([
+      createCatalogSet({
+        setId: '31000-1',
+        slug: 'new-set-31000',
+        sourceSetNumber: '31000',
+      }),
+    ]);
+    const { client } = createSupabaseClient({
+      commerceSnapshots: [
+        {
+          best_availability: 'in_stock',
+          best_merchant_name: 'Brickfever',
+          best_merchant_slug: 'brickfever',
+          best_price_minor: 5999,
+          best_product_url: 'https://example.com/brickfever/31000',
+          set_id: '31000-1',
+        },
+      ],
+      sourceMetadata: [
+        {
+          catalog_set_id: '31000-1',
+          locale: 'en-US',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            launchDate: '2026-06-10',
+          },
+          policy: 'render_publicly_with_attribution',
+          set_number: '31000',
+          source: 'brickset',
+        },
+      ],
+    });
+
+    const result = await buildCollectionPageSnapshots({
+      collectionSlugs: ['nieuwe-lego-sets'],
+      now: new Date('2026-05-30T00:00:00.000Z'),
+      supabaseClient: client,
+    });
+
+    expect(result.snapshots[0]?.items[0]?.commerce).toEqual(
+      expect.objectContaining({
+        commerceIntent: 'setdetail',
+        currentPriceMinor: 5999,
+        merchantName: 'Brickfever',
+        primaryActionHref: 'https://example.com/brickfever/31000',
+      }),
+    );
+  });
+
+  test('stores follow commerce intent when a priced collection card has no merchant click route', async () => {
+    listCanonicalCatalogSetsMock.mockResolvedValue([
+      createCatalogSet({
+        setId: '32000-1',
+        slug: 'follow-set-32000',
+        sourceSetNumber: '32000',
+      }),
+    ]);
+    const { client } = createSupabaseClient({
+      commerceSnapshots: [
+        {
+          best_availability: 'in_stock',
+          best_merchant_name: 'Brickfever',
+          best_merchant_slug: 'brickfever',
+          best_price_minor: 3999,
+          best_product_url: null,
+          set_id: '32000-1',
+        },
+      ],
+    });
+
+    const result = await buildCollectionPageSnapshots({
+      collectionSlugs: ['lego-sets-onder-50-euro'],
+      supabaseClient: client,
+    });
+
+    expect(result.snapshots[0]?.items[0]?.commerce).toEqual(
+      expect.objectContaining({
+        commerceIntent: 'follow',
+        currentPriceMinor: 3999,
+        followRecommended: true,
+      }),
+    );
+    expect(result.snapshots[0]?.items[0]?.commerce).not.toHaveProperty(
+      'primaryActionHref',
     );
   });
 

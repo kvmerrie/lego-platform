@@ -6,10 +6,13 @@ import {
   getCatalogCollectionLandingPageConfig,
   getCanonicalCatalogSetId,
   isCatalogCollectionPageSnapshotSlug,
+  type CollectionCommerceCard,
+  type CollectionCommerceIntent,
   type CatalogCollectionLandingPageSortKey,
   type CatalogCollectionPageSnapshotSlug,
   type CatalogHomepageSetCard,
 } from '@lego-platform/catalog/util';
+import { resolvePublicMerchantDisplayName } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -48,19 +51,31 @@ interface CommerceCurrentOfferSnapshotRow {
   best_merchant_slug: string | null;
   best_price_minor: number | null;
   best_product_url: string | null;
+  comparable_offer_count?: number | null;
   computed_at: string | null;
+  next_best_price_minor?: number | null;
   offer_count: number | null;
+  price_spread_minor?: number | null;
   set_id: string;
+  trusted_offer_count?: number | null;
 }
 
 export interface CollectionPageSnapshotCard extends CatalogHomepageSetCard {
   adultCollectorScore?: number;
   effectivePieces?: number;
   bestPriceMinor?: number;
+  commerce?: CollectionCommerceCard;
   priceContext?: {
+    commerceIntent?: CollectionCommerceIntent;
+    confidenceLabel?: string;
     coverageLabel: string;
     currentPrice: string;
+    currentPriceMinor?: number;
+    dealLabel?: string;
     merchantLabel: string;
+    merchantName?: string;
+    merchantSlug?: string;
+    primaryActionHref?: string;
   };
   setNumber: string;
 }
@@ -234,7 +249,7 @@ async function listCommerceCurrentOfferSnapshots({
     const { data, error } = await supabaseClient
       .from('commerce_current_offer_snapshots')
       .select(
-        'set_id, best_price_minor, best_merchant_name, best_merchant_slug, best_availability, best_product_url, best_checked_at, offer_count, computed_at',
+        'set_id, best_price_minor, best_merchant_name, best_merchant_slug, best_availability, best_product_url, best_checked_at, offer_count, computed_at, trusted_offer_count, comparable_offer_count, next_best_price_minor, price_spread_minor',
       )
       .eq('region_code', 'NL')
       .eq('currency_code', 'EUR')
@@ -257,6 +272,158 @@ async function listCommerceCurrentOfferSnapshots({
   }
 
   return snapshotBySetId;
+}
+
+function isActionableCurrentOffer(
+  priceSnapshot: CommerceCurrentOfferSnapshotRow | undefined,
+): priceSnapshot is CommerceCurrentOfferSnapshotRow & {
+  best_price_minor: number;
+  best_product_url: string;
+} {
+  return (
+    priceSnapshot !== undefined &&
+    typeof priceSnapshot.best_price_minor === 'number' &&
+    priceSnapshot.best_price_minor > 0 &&
+    typeof priceSnapshot.best_product_url === 'string' &&
+    priceSnapshot.best_product_url.trim().length > 0 &&
+    (priceSnapshot.best_availability === 'in_stock' ||
+      priceSnapshot.best_availability === 'limited')
+  );
+}
+
+function getCollectionDefaultCommerceIntent(
+  collectionSlug: CatalogCollectionPageSnapshotSlug,
+): CollectionCommerceIntent {
+  switch (collectionSlug) {
+    case 'lego-sets-onder-50-euro':
+    case 'lego-sets-onder-100-euro':
+    case 'retiring-lego-sets':
+      return 'merchant';
+    case 'lego-voor-volwassenen':
+    case 'nieuwe-lego-sets':
+      return 'setdetail';
+  }
+}
+
+function getCollectionCommerceIntent({
+  collectionSlug,
+  priceSnapshot,
+}: {
+  collectionSlug: CatalogCollectionPageSnapshotSlug;
+  priceSnapshot?: CommerceCurrentOfferSnapshotRow;
+}): CollectionCommerceIntent {
+  if (!priceSnapshot || !isActionableCurrentOffer(priceSnapshot)) {
+    return 'follow';
+  }
+
+  return getCollectionDefaultCommerceIntent(collectionSlug);
+}
+
+function getPublicMerchantName(
+  priceSnapshot: CommerceCurrentOfferSnapshotRow,
+): string | undefined {
+  if (!priceSnapshot.best_merchant_name) {
+    return undefined;
+  }
+
+  return resolvePublicMerchantDisplayName({
+    merchantName: priceSnapshot.best_merchant_name,
+    merchantSlug: priceSnapshot.best_merchant_slug ?? undefined,
+  });
+}
+
+function getPriceSpreadMinor(
+  priceSnapshot: CommerceCurrentOfferSnapshotRow,
+): number {
+  if (
+    typeof priceSnapshot.price_spread_minor === 'number' &&
+    priceSnapshot.price_spread_minor > 0
+  ) {
+    return priceSnapshot.price_spread_minor;
+  }
+
+  if (
+    typeof priceSnapshot.best_price_minor === 'number' &&
+    typeof priceSnapshot.next_best_price_minor === 'number' &&
+    priceSnapshot.next_best_price_minor > priceSnapshot.best_price_minor
+  ) {
+    return priceSnapshot.next_best_price_minor - priceSnapshot.best_price_minor;
+  }
+
+  return 0;
+}
+
+function getCollectionDealLabel(
+  priceSnapshot: CommerceCurrentOfferSnapshotRow,
+): string {
+  const spreadMinor = getPriceSpreadMinor(priceSnapshot);
+
+  if (
+    spreadMinor >= 2_500 &&
+    (priceSnapshot.comparable_offer_count ?? 0) >= 2
+  ) {
+    return 'Sterke deal';
+  }
+
+  if (spreadMinor >= 500) {
+    return 'Beste marktprijs';
+  }
+
+  return 'Beste prijs';
+}
+
+function getCollectionConfidenceLabel(
+  priceSnapshot: CommerceCurrentOfferSnapshotRow,
+): string | undefined {
+  const offerCount = priceSnapshot.offer_count ?? 0;
+
+  if (offerCount <= 0) {
+    return undefined;
+  }
+
+  return `${offerCount} vergeleken winkel${offerCount === 1 ? '' : 's'}`;
+}
+
+function toCollectionCommerceCard({
+  collectionSlug,
+  priceSnapshot,
+  setId,
+  slug,
+}: {
+  collectionSlug: CatalogCollectionPageSnapshotSlug;
+  priceSnapshot?: CommerceCurrentOfferSnapshotRow;
+  setId: string;
+  slug: string;
+}): CollectionCommerceCard | undefined {
+  const bestPriceMinor = priceSnapshot?.best_price_minor;
+
+  if (typeof bestPriceMinor !== 'number' || bestPriceMinor <= 0) {
+    return undefined;
+  }
+
+  const merchantName = getPublicMerchantName(priceSnapshot);
+  const commerceIntent = getCollectionCommerceIntent({
+    collectionSlug,
+    priceSnapshot,
+  });
+  const confidenceLabel = getCollectionConfidenceLabel(priceSnapshot);
+
+  return {
+    setId,
+    slug,
+    currentPriceMinor: bestPriceMinor,
+    ...(merchantName ? { merchantName } : {}),
+    ...(priceSnapshot.best_merchant_slug
+      ? { merchantSlug: priceSnapshot.best_merchant_slug }
+      : {}),
+    dealLabel: getCollectionDealLabel(priceSnapshot),
+    ...(confidenceLabel ? { confidenceLabel } : {}),
+    ...(isActionableCurrentOffer(priceSnapshot)
+      ? { primaryActionHref: priceSnapshot.best_product_url }
+      : {}),
+    commerceIntent,
+    ...(commerceIntent === 'follow' ? { followRecommended: true } : {}),
+  };
 }
 
 function toSnapshotCard({
@@ -307,6 +474,7 @@ function toSnapshotCard({
           priceContext: {
             coverageLabel: 'Actuele prijs gevonden',
             currentPrice: `Vanaf ${formatPrice(bestPriceMinor)}`,
+            currentPriceMinor: bestPriceMinor,
             merchantLabel: priceSnapshot.best_merchant_name
               ? `Laagst bij ${priceSnapshot.best_merchant_name}`
               : 'Laagste bekende prijs',
@@ -330,6 +498,52 @@ function toSnapshotCard({
     slug: catalogSet.slug,
     theme: catalogSet.primaryTheme,
     ...(catalogSet.publicTheme ? { publicTheme: catalogSet.publicTheme } : {}),
+  };
+}
+
+function withCollectionCommerce({
+  card,
+  collectionSlug,
+  priceSnapshot,
+}: {
+  card: CollectionPageSnapshotCard;
+  collectionSlug: CatalogCollectionPageSnapshotSlug;
+  priceSnapshot?: CommerceCurrentOfferSnapshotRow;
+}): CollectionPageSnapshotCard {
+  const commerce = toCollectionCommerceCard({
+    collectionSlug,
+    priceSnapshot,
+    setId: card.id,
+    slug: card.slug,
+  });
+
+  if (!commerce) {
+    return card;
+  }
+
+  return {
+    ...card,
+    commerce,
+    priceContext: {
+      ...(card.priceContext ?? {
+        coverageLabel: 'Actuele prijs gevonden',
+        currentPrice: `Vanaf ${formatPrice(commerce.currentPriceMinor ?? 0)}`,
+        merchantLabel: commerce.merchantName
+          ? `Laagst bij ${commerce.merchantName}`
+          : 'Laagste bekende prijs',
+      }),
+      commerceIntent: commerce.commerceIntent,
+      ...(commerce.confidenceLabel
+        ? { confidenceLabel: commerce.confidenceLabel }
+        : {}),
+      currentPriceMinor: commerce.currentPriceMinor,
+      ...(commerce.dealLabel ? { dealLabel: commerce.dealLabel } : {}),
+      ...(commerce.merchantName ? { merchantName: commerce.merchantName } : {}),
+      ...(commerce.merchantSlug ? { merchantSlug: commerce.merchantSlug } : {}),
+      ...(commerce.primaryActionHref
+        ? { primaryActionHref: commerce.primaryActionHref }
+        : {}),
+    },
   };
 }
 
@@ -773,10 +987,8 @@ function isRetiringCandidate({
 
 function getRetiringSortTimestamp({
   bricksetMetadata,
-  setCard,
 }: {
   bricksetMetadata?: CatalogSetSourceMetadataRow;
-  setCard: CollectionPageSnapshotCard;
 }): number {
   return (
     parseDateTimestamp(
@@ -806,11 +1018,9 @@ function compareSnapshotCards({
       return (
         getRetiringSortTimestamp({
           bricksetMetadata: bricksetBySetId.get(left.id),
-          setCard: left,
         }) -
           getRetiringSortTimestamp({
             bricksetMetadata: bricksetBySetId.get(right.id),
-            setCard: right,
           }) ||
         right.releaseYear - left.releaseYear ||
         right.pieces - left.pieces ||
@@ -1036,9 +1246,16 @@ export async function buildCollectionPageSnapshots({
     const bricksetMetadataUsedCount = candidates.filter((card) =>
       sourceMetadata.bricksetBySetId.has(card.id),
     ).length;
+    const commerceCandidates = candidates.map((card) =>
+      withCollectionCommerce({
+        card,
+        collectionSlug,
+        priceSnapshot: priceSnapshots.get(card.id),
+      }),
+    );
 
     for (const sortKey of config.sort.options) {
-      const sortedCandidates = [...candidates].sort(
+      const sortedCandidates = [...commerceCandidates].sort(
         compareSnapshotCards({
           bricksetBySetId: sourceMetadata.bricksetBySetId,
           collectionSlug,

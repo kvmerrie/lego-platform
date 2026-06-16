@@ -68,6 +68,7 @@ const knownPriceHistoryMerchantLabels: ReadonlyMap<string, string> = new Map([
   ['mediamarkt', 'MediaMarkt'],
   ['misterbricks', 'MisterBricks'],
   ['top1toys', 'Top1Toys'],
+  ['uniekebricks', 'Unieke Bricks'],
   ['wehkamp', 'Wehkamp'],
 ]);
 

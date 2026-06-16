@@ -4,6 +4,7 @@ import {
   buildCompactOfferComparisonContext,
   buildCompactOfferPresentation,
 } from './catalog-offer-comparison-rail';
+import { buildCatalogMerchantPresentation } from '@lego-platform/catalog/util';
 import {
   CatalogKeyFacts,
   CatalogOfferComparison,
@@ -308,6 +309,70 @@ describe('Catalog commerce UI', () => {
     expect(markup).not.toContain('data-brickhunt-event="offer_click"');
   });
 
+  it('renders selected-price merchant presentation in the set-detail hero without changing the CTA copy', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPrimary
+        primaryOffer={{
+          checkedLabel: 'Recent gecontroleerd',
+          coverageLabel: '1 winkel nagekeken',
+          ctaHref: 'https://example.com/lego',
+          ctaLabel: 'Bekijk prijs bij LEGO',
+          ctaTone: 'secondary',
+          decisionLabel: 'Marktprijs',
+          decisionTone: 'info',
+          merchantLabel: 'LEGO',
+          merchantName: 'LEGO',
+          merchantPresentation: buildCatalogMerchantPresentation({
+            claim: 'selected-price',
+            merchantName: 'LEGO',
+            merchantSlug: 'lego-nl',
+          }),
+          merchantSlug: 'lego-nl',
+          price: '€ 249,99',
+          stockLabel: 'Op voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Prijs bij LEGO"');
+    expect(markup).toContain('Prijs bij');
+    expect(markup).toContain('Bekijk prijs bij LEGO');
+    expect(markup).not.toContain('aria-label="Bij LEGO"');
+    expect(markup).not.toContain('Laagst bij LEGO');
+  });
+
+  it('renders availability merchant presentation in the set-detail hero without changing the CTA copy', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPrimary
+        primaryOffer={{
+          checkedLabel: 'Recent gecontroleerd',
+          coverageLabel: '1 winkel nagekeken',
+          ctaHref: 'https://example.com/coolblue',
+          ctaLabel: 'Bekijk voorraad bij Coolblue',
+          ctaTone: 'secondary',
+          decisionLabel: 'Voorraad gevonden',
+          decisionTone: 'neutral',
+          merchantLabel: 'Coolblue',
+          merchantName: 'Coolblue',
+          merchantPresentation: buildCatalogMerchantPresentation({
+            claim: 'availability',
+            merchantName: 'Coolblue',
+            merchantSlug: 'coolblue',
+          }),
+          merchantSlug: 'coolblue',
+          price: '€ 179,00',
+          stockLabel: 'Op voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Verkrijgbaar bij Coolblue"');
+    expect(markup).toContain('Verkrijgbaar bij');
+    expect(markup).toContain('Bekijk voorraad bij Coolblue');
+    expect(markup).not.toContain('aria-label="Bij Coolblue"');
+    expect(markup).not.toContain('Laagst bij Coolblue');
+  });
+
   it('renders no-offer primary follow without a duplicate compact heart action', () => {
     const markup = renderToStaticMarkup(
       <CatalogPriceDecisionPrimary
@@ -527,7 +592,6 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('href="https://example.com/atat-amazon"');
     expect(markup).toContain('rel="noopener noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('Bekijk deal');
     expect(markup).toContain('Naar winkel');
     expect(markup).toContain('Amazon');
     expect(markup).not.toContain('Amazon Amazon');
@@ -754,7 +818,7 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.confidenceLabel).toBe('Laagste prijs');
+    expect(presentation.confidenceLabel).toBeUndefined();
     expect(presentation.isBestDeal).toBe(true);
     expect(presentation.priceComparisonState).toBe('best');
   });
@@ -807,7 +871,7 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(joybuyPresentation.actionLabel).toBe('Bekijk deal');
+    expect(joybuyPresentation.actionLabel).toBe('Naar winkel');
     expect(joybuyPresentation.confidenceLabel).toBe(
       '€3,59 goedkoper dan de rest',
     );
@@ -840,7 +904,7 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(presentation.confidenceLabel).toBe('€30,04 goedkoper dan de rest');
-    expect(presentation.actionLabel).toBe('Bekijk deal');
+    expect(presentation.actionLabel).toBe('Naar winkel');
     expect(presentation.priceComparisonState).toBe('best');
   });
 
@@ -866,7 +930,7 @@ describe('Catalog commerce UI', () => {
     expect(presentation.confidenceLabel).toBe('€6 goedkoper dan de rest');
   });
 
-  it('falls back to a generic cheapest-state label when multiple reviewed offers exist without a concrete delta', () => {
+  it('hides generic cheapest-state copy when multiple reviewed offers have no meaningful delta', () => {
     const presentation = buildCompactOfferPresentation({
       comparisonContext: {
         bestPriceMinor: 104995,
@@ -885,7 +949,7 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.confidenceLabel).toBe('Laagste prijs');
+    expect(presentation.confidenceLabel).toBeUndefined();
   });
 
   it('shows lower unavailable alternatives without presenting them as equal-price choices', () => {

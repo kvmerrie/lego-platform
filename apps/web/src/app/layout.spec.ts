@@ -32,4 +32,12 @@ describe('RootLayout theme tokens', () => {
       "'msvalidate.01': bingWebmasterVerificationCode,",
     );
   });
+
+  it('uses the canonical www production origin as the metadata base', () => {
+    const layoutSource = readFileSync(layoutSourcePath, 'utf8');
+
+    expect(layoutSource).toContain(
+      'metadataBase: new URL(publicWebBaseUrls.production),',
+    );
+  });
 });

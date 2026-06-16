@@ -100,6 +100,37 @@ function createEmptyCollectionLandingPageResult(): SerializableCollectionLanding
   };
 }
 
+function buildCollectionSnapshotCardPriceContext(
+  setCard: CatalogCollectionSetCard,
+) {
+  const snapshotPriceContext = setCard.priceContext;
+
+  if (!snapshotPriceContext) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel:
+      snapshotPriceContext.confidenceLabel ??
+      snapshotPriceContext.coverageLabel,
+    currentPrice: snapshotPriceContext.currentPrice,
+    ...(snapshotPriceContext.dealLabel
+      ? {
+          decisionLabel: snapshotPriceContext.dealLabel,
+        }
+      : {}),
+    merchantLabel: snapshotPriceContext.merchantLabel,
+    ...(snapshotPriceContext.primaryActionHref
+      ? {
+          primaryActionHref: snapshotPriceContext.primaryActionHref,
+        }
+      : {}),
+    reviewedLabel:
+      snapshotPriceContext.confidenceLabel ??
+      snapshotPriceContext.coverageLabel,
+  };
+}
+
 function getCollectionSnapshotMaxAgeMs(
   config: CatalogCollectionLandingPageConfig,
 ): number {
@@ -428,13 +459,19 @@ export default async function CollectionLandingPage({
     ]),
   ];
   const setCards = collectionPage.setCards.map((setCard) => {
+    const {
+      priceContext: _snapshotPriceContext,
+      ...setCardWithoutPriceContext
+    } = setCard;
     const bestPriceMinor = collectionPage.bestPriceMinorBySetId[setCard.id];
-    const priceContext = buildBrowseSetCardPriceContext({
-      priceMinor: bestPriceMinor,
-    });
+    const priceContext =
+      buildCollectionSnapshotCardPriceContext(setCard) ??
+      buildBrowseSetCardPriceContext({
+        priceMinor: bestPriceMinor,
+      });
 
     return {
-      ...setCard,
+      ...setCardWithoutPriceContext,
       actions: (
         <WishlistFeatureWishlistToggle
           analyticsContext={{

@@ -343,6 +343,14 @@ describe('homepage commerce snapshot runtime', () => {
     setupHomepageRenderMocks();
   });
 
+  it('emits an explicit www canonical and OpenGraph URL for the homepage', async () => {
+    const pageModule = await import('./page');
+    const metadata = await pageModule.generateMetadata();
+
+    expect(metadata.alternates?.canonical).toBe('https://www.brickhunt.nl/');
+    expect(metadata.openGraph?.url).toBe('https://www.brickhunt.nl/');
+  });
+
   it('renders discovery, buy intent, and follow intent from the snapshot', async () => {
     const pageModule = await import('./page');
     const markup = renderToStaticMarkup(await pageModule.default());

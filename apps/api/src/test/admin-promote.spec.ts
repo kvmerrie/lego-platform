@@ -166,10 +166,12 @@ async function createAdminPromoteServer({
   adminPromoteService,
   getExpectedAdminSecret,
   revalidatePublicWebFn,
+  submitIndexNowUrlsFn,
 }: {
   adminPromoteService?: AdminPromoteService;
   getExpectedAdminSecret?: () => string;
   revalidatePublicWebFn?: AdminPromoteRouteOptions['revalidatePublicWebFn'];
+  submitIndexNowUrlsFn?: AdminPromoteRouteOptions['submitIndexNowUrlsFn'];
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
     previewCms: vi.fn(async () => createCmsPromotionPreview()),
@@ -240,6 +242,7 @@ async function createAdminPromoteServer({
       adminPromoteService: nextAdminPromoteService,
       getExpectedAdminSecret,
       revalidatePublicWebFn,
+      submitIndexNowUrlsFn,
     }),
   );
 
@@ -247,6 +250,7 @@ async function createAdminPromoteServer({
     adminPromoteService: nextAdminPromoteService,
     revalidatePublicWebFn,
     server,
+    submitIndexNowUrlsFn,
   };
 }
 
@@ -356,9 +360,25 @@ describe('admin promote routes', () => {
         'collection:nieuwe-lego-sets',
       ],
     }));
+    const submitIndexNowUrlsFn = vi.fn(async () => ({
+      attempted: true,
+      batchCount: 1,
+      batches: [],
+      enabled: true,
+      invalidUrls: [],
+      skipped: false,
+      submittedUrlCount: 4,
+      urls: [
+        'https://www.brickhunt.nl/',
+        'https://www.brickhunt.nl/themes',
+        'https://www.brickhunt.nl/themes/icons',
+        'https://www.brickhunt.nl/nieuwe-lego-sets',
+      ],
+    }));
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
+      submitIndexNowUrlsFn,
     });
 
     const response = await server.inject({
@@ -387,6 +407,12 @@ describe('admin promote routes', () => {
         'collection:nieuwe-lego-sets',
       ],
     });
+    expect(submitIndexNowUrlsFn).toHaveBeenCalledWith(
+      ['/', '/nieuwe-lego-sets', '/themes', '/themes/icons'],
+      {
+        reason: 'cms_promote',
+      },
+    );
 
     await server.close();
   });
@@ -538,6 +564,16 @@ describe('admin promote routes', () => {
       tagCount: 3,
       tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     }));
+    const submitIndexNowUrlsFn = vi.fn(async () => ({
+      attempted: true,
+      batchCount: 1,
+      batches: [],
+      enabled: true,
+      invalidUrls: [],
+      skipped: false,
+      submittedUrlCount: 1,
+      urls: ['https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316'],
+    }));
     const service: AdminPromoteService = {
       previewCms: vi.fn(async () => createCmsPromotionPreview()),
       previewCatalog: vi.fn(async () => createPromotionPreview()),
@@ -562,6 +598,7 @@ describe('admin promote routes', () => {
       adminPromoteService: service,
       getExpectedAdminSecret: () => 'promote-secret',
       revalidatePublicWebFn,
+      submitIndexNowUrlsFn,
     });
 
     const response = await server.inject({
@@ -578,6 +615,12 @@ describe('admin promote routes', () => {
       reason: 'catalog_promote',
       tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
     });
+    expect(submitIndexNowUrlsFn).toHaveBeenCalledWith(
+      ['/sets/lord-of-the-rings-rivendell-10316'],
+      {
+        reason: 'catalog_promote',
+      },
+    );
     expect(response.json()).toEqual(
       expect.objectContaining({
         catalogPromoteRevalidation: expect.objectContaining({
@@ -1040,6 +1083,53 @@ describe('admin promote routes', () => {
         },
         status: 'ok',
       }),
+    );
+
+    await server.close();
+  });
+
+  test('keeps successful catalog promotion when IndexNow submission fails', async () => {
+    const submitIndexNowUrlsFn = vi.fn(async () => {
+      throw new Error('IndexNow unavailable.');
+    });
+    const adminPromoteService: AdminPromoteService = {
+      previewCms: vi.fn(async () => createCmsPromotionPreview()),
+      previewCatalog: vi.fn(async () => createPromotionPreview()),
+      promoteCms: vi.fn(async () => createCmsPromotionResult()),
+      promoteCatalog: vi.fn(async () => ({
+        ...createPromotionResult(),
+        promotedImageMetadataSetIds: ['10316'],
+        promotedImageMetadataSetSlugs: ['lord-of-the-rings-rivendell-10316'],
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn: vi.fn(async () => ({
+        attempted: true,
+        pathCount: 1,
+        paths: ['/sets/lord-of-the-rings-rivendell-10316'],
+        skipped: false,
+        tagCount: 3,
+        tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316', 'sets'],
+      })),
+      submitIndexNowUrlsFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(submitIndexNowUrlsFn).toHaveBeenCalledWith(
+      ['/sets/lord-of-the-rings-rivendell-10316'],
+      {
+        reason: 'catalog_promote',
+      },
     );
 
     await server.close();

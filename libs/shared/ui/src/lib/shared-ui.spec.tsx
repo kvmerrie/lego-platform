@@ -20,10 +20,19 @@ import {
 } from './shared-ui';
 import { ResponsiveDialog } from './responsive-dialog';
 import { SelectableItemDialog } from './selectable-item-dialog';
+import {
+  applyPreservedHeaderVisibility,
+  getPreservedHeaderHiddenState,
+  isHeaderScrollReactionSuppressed,
+  preserveHeaderVisibility,
+  resetProgrammaticScrollSuppressionForTests,
+  suppressHeaderScrollReaction,
+} from '@lego-platform/shared/util';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 afterEach(() => {
+  resetProgrammaticScrollSuppressionForTests();
   vi.useRealTimers();
   document.body.innerHTML = '';
   document.body.style.overflow = '';
@@ -387,10 +396,12 @@ describe('ResponsiveDialog', () => {
     expect(document.documentElement.style.scrollBehavior).toBe('smooth');
     expect(document.body.style.scrollBehavior).toBe('smooth');
     expect(scrollTo).toHaveBeenCalledWith({
-      behavior: 'instant',
+      behavior: 'auto',
       left: 0,
       top: 128,
     });
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
+    expect(getPreservedHeaderHiddenState()).toBe(false);
 
     await act(async () => {
       root.unmount();
@@ -426,6 +437,66 @@ describe('ResponsiveDialog', () => {
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
     expect(css).toContain('overscroll-behavior: contain;');
     expect(css).toContain('touch-action: none;');
+  });
+});
+
+describe('Programmatic scroll suppression', () => {
+  it('marks the document while programmatic scroll should bypass smooth behavior', () => {
+    const releaseSuppression = suppressHeaderScrollReaction('test-scroll', 300);
+
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
+    expect(
+      document.documentElement.getAttribute('data-programmatic-scroll'),
+    ).toBe('true');
+
+    releaseSuppression();
+
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
+    expect(isHeaderScrollReactionSuppressed(performance.now() + 301)).toBe(
+      false,
+    );
+
+    resetProgrammaticScrollSuppressionForTests();
+
+    expect(
+      document.documentElement.hasAttribute('data-programmatic-scroll'),
+    ).toBe(false);
+  });
+
+  it('preserves hidden header visibility during modal lifecycle restores', () => {
+    document.documentElement.setAttribute('data-shell-header-hidden', 'true');
+
+    const releasePreservation = preserveHeaderVisibility('dialog-close');
+
+    document.documentElement.removeAttribute('data-shell-header-hidden');
+    applyPreservedHeaderVisibility();
+
+    expect(getPreservedHeaderHiddenState()).toBe(true);
+    expect(
+      document.documentElement.getAttribute('data-shell-header-hidden'),
+    ).toBe('true');
+
+    releasePreservation();
+
+    expect(getPreservedHeaderHiddenState()).toBeUndefined();
+  });
+
+  it('preserves visible header visibility during modal lifecycle restores', () => {
+    document.documentElement.removeAttribute('data-shell-header-hidden');
+
+    const releasePreservation = preserveHeaderVisibility('dialog-close');
+
+    document.documentElement.setAttribute('data-shell-header-hidden', 'true');
+    applyPreservedHeaderVisibility();
+
+    expect(getPreservedHeaderHiddenState()).toBe(false);
+    expect(
+      document.documentElement.hasAttribute('data-shell-header-hidden'),
+    ).toBe(false);
+
+    releasePreservation();
+
+    expect(getPreservedHeaderHiddenState()).toBeUndefined();
   });
 });
 
@@ -671,7 +742,7 @@ describe('Button', () => {
       css.match(/\.interactiveSizeHero \{[^}]+\}/u)?.[0] ?? '';
     const iconRule =
       css.match(
-        /\.buttonIcon,\n  \.buttonIconSecondary,\n  \.linkIcon,\n  \.linkIconSecondary \{[^}]+\}/u,
+        /\.buttonIcon,\n {2}\.buttonIconSecondary,\n {2}\.linkIcon,\n {2}\.linkIconSecondary \{[^}]+\}/u,
       )?.[0] ?? '';
     const focusRule =
       css.match(/\.interactiveBase:focus-visible \{[^}]+\}/u)?.[0] ?? '';
@@ -679,11 +750,11 @@ describe('Button', () => {
       css.match(/\.interactiveSurfaceDark \{[^}]+\}/u)?.[0] ?? '';
     const secondaryHoverRule =
       css.match(
-        /\.buttonSecondary:hover,\n  \.linkSecondary:hover \{[^}]+\}/u,
+        /\.buttonSecondary:hover,\n {2}\.linkSecondary:hover \{[^}]+\}/u,
       )?.[0] ?? '';
     const secondaryActiveRule =
       css.match(
-        /\.buttonSecondary:active,[\s\S]+?\.linkSecondary\[aria-pressed='true'\] \{[\s\S]+?\n  \}/u,
+        /\.buttonSecondary:active,[\s\S]+?\.linkSecondary\[aria-pressed='true'\] \{[\s\S]+?\n {2}\}/u,
       )?.[0] ?? '';
 
     expect(baseRule).toContain(

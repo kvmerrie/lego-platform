@@ -16,9 +16,62 @@ import {
 } from './catalog-ui';
 import {
   SET_CARD_MOBILE_VIEW_STORAGE_KEY,
+  getCatalogSetCardAnchorScrollTop,
+  getCatalogSetCardMobileToolbarStuckThreshold,
+  getCatalogSetCardViewportAnchorId,
+  isCatalogSetCardMobileToolbarStuck,
   normalizeSetCardMobileView,
 } from './catalog-set-card-mobile-layout';
+import { getCatalogCtaPresentation } from './catalog-cta-presentation';
 import { getAccessibleForegroundColor } from '@lego-platform/shared/util';
+
+describe('Catalog CTA presentation', () => {
+  function renderCtaIcon(
+    destination: Parameters<typeof getCatalogCtaPresentation>[0]['destination'],
+  ) {
+    const presentation = getCatalogCtaPresentation({ destination });
+    const Icon = presentation.icon;
+
+    return {
+      iconMarkup: renderToStaticMarkup(<Icon aria-hidden="true" />),
+      presentation,
+    };
+  }
+
+  it('maps merchant destinations to a store CTA', () => {
+    const { iconMarkup, presentation } = renderCtaIcon('merchant');
+
+    expect(presentation.label).toBe('Naar winkel');
+    expect(presentation.ariaLabel).toBe('Naar winkel');
+    expect(iconMarkup).toContain('lucide-store');
+    expect(iconMarkup).not.toContain('lucide-eye');
+  });
+
+  it('maps setdetail destinations to an internal set CTA', () => {
+    const { iconMarkup, presentation } = renderCtaIcon('setdetail');
+
+    expect(presentation.label).toBe('Bekijk set');
+    expect(presentation.ariaLabel).toBe('Bekijk set');
+    expect(iconMarkup).toContain('lucide-arrow-right');
+    expect(iconMarkup).not.toContain('lucide-store');
+  });
+
+  it('maps pending prices to a clock CTA', () => {
+    const { iconMarkup, presentation } = renderCtaIcon('pending');
+
+    expect(presentation.label).toBe('Prijs volgt');
+    expect(presentation.ariaLabel).toBe('Bekijk set, prijs volgt');
+    expect(iconMarkup).toContain('lucide-clock-3');
+  });
+
+  it('maps follow actions to a price-follow CTA', () => {
+    const { iconMarkup, presentation } = renderCtaIcon('follow');
+
+    expect(presentation.label).toBe('Volg prijs');
+    expect(presentation.ariaLabel).toBe('Volg prijs');
+    expect(iconMarkup).toContain('lucide-heart');
+  });
+});
 
 describe('CatalogSetCard', () => {
   function parseTestHexColor(
@@ -828,6 +881,119 @@ describe('CatalogSetCard', () => {
     expect(markup.match(/cardCompactSupporting/g) ?? []).toHaveLength(1);
   });
 
+  it('renders a known merchant favicon inside the lowest-merchant line', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: '4 actuele winkels',
+          currentPrice: 'Vanaf € 489,99',
+          merchantLabel: 'Laagst bij Coolblue',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+    const prefixIndex = markup.indexOf('>Laagst bij </span>');
+    const faviconIndex = markup.indexOf(
+      'src="/merchant-favicons/coolblue.png"',
+    );
+    const merchantIndex = markup.indexOf('>Coolblue</span>');
+
+    expect(markup).toContain('cardMerchantLine');
+    expect(markup).toContain('Laagst bij');
+    expect(markup).toContain('Coolblue');
+    expect(markup).toContain('width="16"');
+    expect(markup).toContain('height="16"');
+    expect(prefixIndex).toBeGreaterThan(-1);
+    expect(faviconIndex).toBeGreaterThan(prefixIndex);
+    expect(merchantIndex).toBeGreaterThan(faviconIndex);
+  });
+
+  it('renders the Unieke Bricks favicon from the merchant display name', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: '4 actuele winkels',
+          currentPrice: 'Vanaf € 489,99',
+          merchantLabel: 'Laagst bij Unieke Bricks',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Laagst bij');
+    expect(markup).toContain('Unieke Bricks');
+    expect(markup).toContain('src="/merchant-favicons/uniekebricks.png"');
+  });
+
+  it('keeps unknown merchant lines as plain text without a favicon', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: '4 actuele winkels',
+          currentPrice: 'Vanaf € 489,99',
+          merchantLabel: 'Laagst bij Onbekende winkel',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Laagst bij Onbekende winkel');
+    expect(markup).not.toContain('cardMerchantFavicon');
+    expect(markup).not.toContain('/merchant-favicons/');
+  });
+
+  it('keeps merchant favicon sizing stable on set cards', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const lineRule = css.match(/\.cardMerchantLine \{[^}]+\}/u)?.[0] ?? '';
+    const faviconRule =
+      css.match(/\.cardMerchantFavicon \{[^}]+\}/u)?.[0] ?? '';
+    const nameRule = css.match(/\.cardMerchantName \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(lineRule).toContain('display: inline-flex;');
+    expect(lineRule).toContain('max-inline-size: 100%;');
+    expect(faviconRule).toContain('block-size: 1rem;');
+    expect(faviconRule).toContain('inline-size: 1rem;');
+    expect(faviconRule).toContain('flex: 0 0 1rem;');
+    expect(nameRule).toContain('overflow: hidden;');
+    expect(nameRule).toContain('text-overflow: ellipsis;');
+  });
+
   it('uses the rail-card price scale and calmer spacing for featured deal cards', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
@@ -1310,7 +1476,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).toContain('aria-label="Volg set"');
     expect(markup).not.toContain('>10316<');
-    expect(source).toContain('icon: Clock3');
+    expect(markup).toContain('lucide-clock-3');
+    expect(source).toContain("destination: 'pending'");
 
     const pendingActionStart = markup.indexOf(
       'aria-label="Bekijk set, prijs volgt"',
@@ -2001,6 +2168,8 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Bekijk set');
     expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('lucide-arrow-right');
+    expect(markup).not.toContain('lucide-store');
     expect(markup).toContain('data-brickhunt-event="catalog_set_click"');
   });
 
@@ -2044,6 +2213,8 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Naar winkel');
     expect(markup).toContain('aria-label="Naar winkel"');
+    expect(markup).toContain('lucide-store');
+    expect(markup).not.toContain('lucide-eye');
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).not.toContain('Koop nu');
     expect(markup).toContain('href="https://merchant.example/rivendell"');
@@ -3659,6 +3830,111 @@ describe('CatalogSetCard', () => {
 });
 
 describe('CatalogSetCardCollection', () => {
+  it('selects the first fully visible set card as mobile view anchor', () => {
+    expect(
+      getCatalogSetCardViewportAnchorId({
+        candidates: [
+          { bottom: 64, setId: 'above-toolbar', top: -40 },
+          { bottom: 260, setId: 'first-visible', top: 72 },
+          { bottom: 420, setId: 'second-visible', top: 280 },
+        ],
+        viewportBottom: 844,
+        viewportTop: 56,
+      }),
+    ).toBe('first-visible');
+  });
+
+  it('falls back to the set closest to the toolbar when none is fully visible', () => {
+    expect(
+      getCatalogSetCardViewportAnchorId({
+        candidates: [
+          { bottom: 120, setId: 'partly-above', top: -90 },
+          { bottom: 980, setId: 'partly-visible', top: 48 },
+          { bottom: 1180, setId: 'below', top: 980 },
+        ],
+        viewportBottom: 844,
+        viewportTop: 112,
+      }),
+    ).toBe('partly-visible');
+  });
+
+  it('calculates anchor scroll from element position and sticky offset', () => {
+    expect(
+      getCatalogSetCardAnchorScrollTop({
+        currentScrollY: 1200,
+        elementTop: 360,
+        stickyOffset: 112,
+      }),
+    ).toBe(1448);
+  });
+
+  it('keeps header-hidden changes out of the normal-flow mobile toolbar phase', () => {
+    const stickyTop = getCatalogSetCardMobileToolbarStuckThreshold({
+      currentIsStuck: false,
+      headerHeight: 56,
+      headerHidden: true,
+    });
+
+    expect(stickyTop).toBe(0);
+    expect(
+      isCatalogSetCardMobileToolbarStuck({
+        sentinelTop: 24,
+        stickyTop,
+      }),
+    ).toBe(false);
+  });
+
+  it('lets a stuck mobile toolbar follow header visibility without leaving the stuck phase', () => {
+    const stickyTop = getCatalogSetCardMobileToolbarStuckThreshold({
+      currentIsStuck: true,
+      headerHeight: 56,
+      headerHidden: true,
+    });
+
+    expect(stickyTop).toBe(56);
+    expect(
+      isCatalogSetCardMobileToolbarStuck({
+        sentinelTop: 24,
+        stickyTop,
+      }),
+    ).toBe(true);
+  });
+
+  it('uses instant suppressed scrolling for mobile layout anchor restore', () => {
+    const source = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/catalog/ui/src/lib/catalog-set-card-mobile-layout.tsx',
+      ),
+      'utf-8',
+    );
+
+    expect(source).toContain('runWithProgrammaticScrollSuppression');
+    expect(source).toContain("reason: 'collection-view-anchor-restore'");
+    expect(source).toContain("behavior: 'auto'");
+    expect(source).not.toContain("behavior: 'smooth'");
+    expect(source).toContain('data-catalog-set-card-id');
+  });
+
+  it('renders stable set ids on cards for mobile view anchoring', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('data-catalog-set-card-id="10316"');
+  });
+
   it('distinguishes continuous browse grids from standalone tile collections', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCardCollection gridMode="browse" variant="compact">
@@ -3678,12 +3954,26 @@ describe('CatalogSetCardCollection', () => {
     );
 
     expect(markup).toContain('aria-label="Mobiele kaartweergave"');
+    expect(markup).toContain(
+      'data-catalog-set-card-mobile-toolbar-sentinel="true"',
+    );
+    expect(markup).toContain('data-catalog-set-card-mobile-toolbar="true"');
+    expect(markup).toContain('data-stuck="false"');
     expect(markup.indexOf('Mobiele kaartweergave')).toBeLessThan(
       markup.indexOf('data-catalog-set-card-collection="true"'),
     );
+    expect(markup).toContain('Weergave');
+    expect(markup).toContain('aria-label="Toon grote kaarten"');
+    expect(markup).toContain('aria-label="Toon compacte kaarten"');
     expect(markup).toContain('aria-pressed="true"');
-    expect(markup).toContain('Groot');
-    expect(markup).toContain('Compact');
+    expect(markup).toContain('interactiveSizeIconMd');
+    expect(markup).toContain('lucide-square');
+    expect(markup).toContain('lucide-grid-2x2');
+    expect(markup).not.toContain('lucide-rectangle-horizontal');
+    expect(markup).toContain('data-catalog-set-card-layout-state="active"');
+    expect(markup).toContain('data-catalog-set-card-layout-state="inactive"');
+    expect(markup).not.toContain('>Groot<');
+    expect(markup).not.toContain('>Compact<');
     expect(markup).toContain('data-catalog-set-card-mobile-view="large"');
     expect(markup).toContain('setCardCollectionMobileOneColumn');
   });
@@ -3705,7 +3995,63 @@ describe('CatalogSetCardCollection', () => {
     );
 
     expect(css).toContain('.setCardMobileLayoutToggle');
+    expect(css).toContain('.setCardMobileLayoutSentinel');
+    expect(css).toContain('.setCardMobileLayoutLabel');
+    expect(css).toContain('.setCardMobileLayoutActions');
+    expect(css).toContain(
+      '--catalog-mobile-toolbar-header-offset: var(--shell-header-height, 0px);',
+    );
+    expect(css).toContain('--catalog-mobile-toolbar-block-size: 56px;');
+    expect(css).toContain(
+      'block-size: var(--catalog-mobile-toolbar-block-size);',
+    );
+    expect(css).toContain(
+      'min-block-size: var(--catalog-mobile-toolbar-block-size);',
+    );
+    expect(css).toContain('padding-block: 0;');
+    expect(css).toContain(
+      'scroll-margin-top: var(--catalog-mobile-toolbar-header-offset);',
+    );
+    expect(css).toContain('transform 220ms cubic-bezier(0.22, 1, 0.36, 1),');
+    expect(css).toContain('opacity 180ms ease;');
     expect(css).toContain('@media (max-width: 47.999rem)');
+    expect(css).toMatch(
+      /@media \(max-width: 47\.999rem\) \{[\s\S]*?\.setCardMobileLayoutToggle \{\s+position: sticky;\s+top: 0;\s+z-index: 20;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutToggle\[data-stuck='false'\] \{\s+top: 0;\s+transform: translate3d\(0, 0, 0\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutToggle\[data-stuck='true'\] \{\s+top: var\(--catalog-mobile-toolbar-header-offset\);/u,
+    );
+    expect(css).toMatch(
+      /:global\(html\[data-shell-header-hidden='true'\]\)\s+\.setCardMobileLayoutToggle\[data-stuck='true'\] \{\s+opacity: 0;\s+pointer-events: none;\s+transform: translate3d\(\s+0,\s+calc\(\s+-1 \*\s+\(\s+var\(--catalog-mobile-toolbar-header-offset\) \+\s+var\(--catalog-mobile-toolbar-block-size\)\s+\)\s+\),\s+0\s+\);/u,
+    );
+    expect(css).not.toContain(
+      ":global(html[data-shell-header-hidden='true']) .setCardMobileLayoutToggle {",
+    );
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(css).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.setCardMobileLayoutToggle \{\s+transition: none;/u,
+    );
+    expect(css).toContain(
+      'inline-size: calc(100% + (2 * var(--catalog-section-inline-padding, 0px)));',
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutButton \{\s+--lego-action-border-width: 0;\s+--lego-button-border-radius: var\(--lego-radius-pill\);[\s\S]+?--lego-button-secondary-active-color: var\(--lego-accent\);[\s\S]+?--lego-button-secondary-color: var\(--lego-text\);[\s\S]+?flex: 0 0 auto;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutButton\[data-catalog-set-card-layout-state='active'\] \{\s+color: var\(--lego-accent\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutButton\[data-catalog-set-card-layout-state='inactive'\] \{\s+color: var\(--lego-text\);/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutIcon \{\s+display: block;\s+flex: 0 0 auto;\s+opacity: 0\.74;/u,
+    );
+    expect(css).toMatch(
+      /\.setCardMobileLayoutButton\[data-catalog-set-card-layout-state='active'\]\s+\.setCardMobileLayoutIcon \{\s+opacity: 1;/u,
+    );
     expect(css).toMatch(
       /\.setCardCollectionBrowse\.setCardCollectionMobileOneColumn \{\s+grid-template-columns: minmax\(0, 1fr\);/u,
     );

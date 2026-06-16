@@ -8,6 +8,7 @@ import {
   MetaSignal,
   Panel,
 } from '@lego-platform/shared/ui';
+import type { CatalogMerchantPresentation } from '@lego-platform/catalog/util';
 import {
   buildBrickhuntAnalyticsAttributes,
   type BrickhuntAnalyticsEventDescriptor,
@@ -40,6 +41,7 @@ export interface CatalogDecisionOffer {
   merchantKey?: string;
   merchantLabel: string;
   merchantName?: string;
+  merchantPresentation?: CatalogMerchantPresentation;
   merchantSlug?: string;
   price: string;
   rankingLabel?: string;
@@ -345,9 +347,19 @@ export function CatalogHeroMerchantBrand({
     merchantKey?: string;
     merchantLabel: string;
     merchantName?: string;
+    merchantPresentation?: CatalogMerchantPresentation;
     merchantSlug?: string;
   };
 }) {
+  const merchantName =
+    merchant?.merchantPresentation?.merchantName ??
+    merchant?.merchantName ??
+    merchant?.merchantLabel;
+  const prefix = merchant?.merchantPresentation?.prefix || 'Bij';
+  const merchantLabel =
+    merchant?.merchantPresentation?.label ??
+    [prefix, merchantName].filter(Boolean).join(' ');
+
   return (
     <div
       className={styles.bestDealMerchantSlot}
@@ -356,25 +368,39 @@ export function CatalogHeroMerchantBrand({
     >
       {merchant ? (
         <p
-          aria-label={`Bij ${merchant.merchantLabel}`}
+          aria-label={merchantLabel ? merchantLabel : merchant.merchantLabel}
           className={styles.bestDealMerchant}
         >
-          <span className={styles.bestDealMerchantPrefix}>Bij</span>
+          {prefix ? (
+            <span className={styles.bestDealMerchantPrefix}>{prefix}</span>
+          ) : null}
           {getHeroMerchantHref(merchant.merchantSlug) ? (
             <a
-              aria-label={`Bekijk winkel ${merchant.merchantLabel}`}
+              aria-label={`Bekijk winkel ${merchantName}`}
               className={styles.bestDealMerchantLink}
               href={getHeroMerchantHref(merchant.merchantSlug)}
             >
               <CatalogMerchantBrand
                 className={styles.bestDealMerchantBrand}
-                merchant={merchant}
+                merchant={{
+                  merchantId: merchant.merchantId,
+                  merchantKey: merchant.merchantKey,
+                  merchantLabel: merchantName ?? merchant.merchantLabel,
+                  merchantName: merchantName ?? merchant.merchantLabel,
+                  merchantSlug: merchant.merchantSlug,
+                }}
               />
             </a>
           ) : (
             <CatalogMerchantBrand
               className={styles.bestDealMerchantBrand}
-              merchant={merchant}
+              merchant={{
+                merchantId: merchant.merchantId,
+                merchantKey: merchant.merchantKey,
+                merchantLabel: merchantName ?? merchant.merchantLabel,
+                merchantName: merchantName ?? merchant.merchantLabel,
+                merchantSlug: merchant.merchantSlug,
+              }}
             />
           )}
         </p>
@@ -525,6 +551,7 @@ function CatalogDecisionOfferCard({
                 merchantKey: resolvedOffer.merchantKey,
                 merchantLabel: merchantName,
                 merchantName,
+                merchantPresentation: resolvedOffer.merchantPresentation,
                 merchantSlug: resolvedOffer.merchantSlug,
               }
             : undefined

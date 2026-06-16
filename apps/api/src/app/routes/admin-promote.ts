@@ -20,9 +20,10 @@ import {
   buildThemePath,
   cacheTags,
   getAdminPromotionConfig,
+  submitUrls,
   webPathnames,
 } from '@lego-platform/shared/config';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
 import {
   authorizeAdminRequest,
   createAdminPreHandler,
@@ -45,6 +46,7 @@ export interface AdminPromoteService {
 }
 
 type RevalidatePublicWebFn = typeof revalidatePublicWeb;
+type SubmitIndexNowUrlsFn = typeof submitUrls;
 
 function createAdminPromoteService(): AdminPromoteService {
   return {
@@ -266,16 +268,72 @@ function buildCatalogPromoteRevalidationTargets({
   };
 }
 
+function scheduleIndexNowSubmission({
+  logger,
+  paths,
+  reason,
+  route,
+  submitIndexNowUrlsFn,
+}: {
+  logger: FastifyBaseLogger;
+  paths: readonly string[];
+  reason: string;
+  route: string;
+  submitIndexNowUrlsFn: SubmitIndexNowUrlsFn;
+}): void {
+  const uniquePaths = uniqueSorted(paths);
+
+  if (uniquePaths.length === 0) {
+    return;
+  }
+
+  void submitIndexNowUrlsFn(uniquePaths, {
+    reason,
+  })
+    .then((result) => {
+      if (!result.attempted && result.invalidUrls.length === 0) {
+        return;
+      }
+
+      logger.info(
+        {
+          attempted: result.attempted,
+          batchCount: result.batchCount,
+          invalidUrls: result.invalidUrls,
+          reason,
+          route,
+          skipped: result.skipped,
+          submittedUrlCount: result.submittedUrlCount,
+          urls: result.urls,
+        },
+        'IndexNow submission completed after promotion.',
+      );
+    })
+    .catch((error) => {
+      logger.warn(
+        {
+          error,
+          paths: uniquePaths,
+          reason,
+          route,
+        },
+        'IndexNow submission failed after promotion.',
+      );
+    });
+}
+
 export function createAdminPromoteRoutes({
   adminPreHandler = createAdminPreHandler(),
   adminPromoteService = createAdminPromoteService(),
   getExpectedAdminSecret = () => getAdminPromotionConfig().secret,
   revalidatePublicWebFn = revalidatePublicWeb,
+  submitIndexNowUrlsFn = submitUrls,
 }: {
   adminPreHandler?: ReturnType<typeof createAdminPreHandler>;
   adminPromoteService?: AdminPromoteService;
   getExpectedAdminSecret?: () => string;
   revalidatePublicWebFn?: RevalidatePublicWebFn;
+  submitIndexNowUrlsFn?: SubmitIndexNowUrlsFn;
 } = {}) {
   return async function (fastify: FastifyInstance) {
     fastify.get<{
@@ -388,6 +446,14 @@ export function createAdminPromoteRoutes({
           'Public web revalidation failed after CMS promotion.',
         );
       }
+
+      scheduleIndexNowSubmission({
+        logger: request.log,
+        paths: targets.paths,
+        reason: 'cms_promote',
+        route: apiPaths.adminCmsPromotion,
+        submitIndexNowUrlsFn,
+      });
 
       request.log.info(
         {
@@ -530,6 +596,14 @@ export function createAdminPromoteRoutes({
             );
           }
         }
+
+        scheduleIndexNowSubmission({
+          logger: request.log,
+          paths: revalidationPaths,
+          reason: 'catalog_promote',
+          route: apiPaths.adminCatalogPromotion,
+          submitIndexNowUrlsFn,
+        });
 
         request.log.info(
           {

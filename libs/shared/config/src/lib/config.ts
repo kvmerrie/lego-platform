@@ -179,6 +179,10 @@ function isTrueEnvValue(value?: string): boolean {
   return value?.trim().toLowerCase() === 'true';
 }
 
+function isFalseEnvValue(value?: string): boolean {
+  return value?.trim().toLowerCase() === 'false';
+}
+
 function getEnvironmentHostname(value?: string): string | undefined {
   const trimmedValue = value?.trim();
 
@@ -406,6 +410,33 @@ export const webPathnames = {
   pages: '/pages',
 } as const;
 
+export const publicDealCategoryRouteConfigs = [
+  {
+    categorySlug: 'grootste-kortingen',
+    sortKey: 'largest-discount',
+  },
+  {
+    categorySlug: 'prijs-per-steen',
+    sortKey: 'price-per-brick',
+  },
+  {
+    categorySlug: 'onder-50',
+    sortKey: 'under-50',
+  },
+  {
+    categorySlug: 'nieuwe-deals',
+    sortKey: 'new-deals',
+  },
+  {
+    categorySlug: 'onder-20',
+    sortKey: 'under-20',
+  },
+  {
+    categorySlug: 'premium',
+    sortKey: 'premium-deals',
+  },
+] as const;
+
 export const PUBLIC_ARTICLE_CONTENT_MINIMUM = 5;
 export const HAS_PUBLIC_ARTICLE_CONTENT = false;
 
@@ -551,6 +582,12 @@ export const publicWebRevalidationEnvKeys = {
   secret: 'WEB_REVALIDATE_SECRET',
 } as const;
 
+export const indexNowEnvKeys = {
+  enabled: 'INDEXNOW_ENABLED',
+  endpoint: 'INDEXNOW_ENDPOINT',
+  key: 'INDEXNOW_KEY',
+} as const;
+
 export const rebrickableEnvKeys = {
   apiKey: 'REBRICKABLE_API_KEY',
   baseUrl: 'REBRICKABLE_BASE_URL',
@@ -637,6 +674,12 @@ export const brickfeverEnvKeys = {
   merchantName: 'BRICKFEVER_MERCHANT_NAME',
 } as const;
 
+export const uniekeBricksEnvKeys = {
+  feedUrl: 'UNIEKE_BRICKS_FEED_URL',
+  merchantSlug: 'UNIEKE_BRICKS_MERCHANT_SLUG',
+  merchantName: 'UNIEKE_BRICKS_MERCHANT_NAME',
+} as const;
+
 export const rakutenLegoEnvKeys = {
   enablePhaseOneImport: 'RAKUTEN_LEGO_PHASE1_IMPORT_ENABLED',
   host: 'RAKUTEN_LEGO_FEED_HOST',
@@ -688,6 +731,14 @@ export interface ProductEmailConfig {
 export interface PublicWebRevalidationConfig {
   secret: string;
   webBaseUrl: string;
+}
+
+export interface IndexNowConfig {
+  enabled: boolean;
+  endpoint: string;
+  host: string;
+  key: string;
+  keyLocation: string;
 }
 
 export interface RebrickableApiConfig {
@@ -750,6 +801,12 @@ export interface MisterBricksFeedConfig {
 }
 
 export interface BrickfeverFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface UniekeBricksFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -961,6 +1018,17 @@ export function buildArticlePreviewPath(previewId: string): string {
 export function buildThemePath(slug: string): string {
   return buildWebPath(`${webPathnames.themes}/${slug}`);
 }
+
+export function buildDealCategoryPath(categorySlug: string): string {
+  return `${buildWebPath(webPathnames.deals)}/${categorySlug}`;
+}
+
+export const publicDealPathnames = [
+  buildWebPath(webPathnames.deals),
+  ...publicDealCategoryRouteConfigs.map((config) =>
+    buildDealCategoryPath(config.categorySlug),
+  ),
+] as const;
 
 export const publicWebBaseUrls = {
   local: getRuntimeBaseUrl('web'),
@@ -1570,6 +1638,69 @@ export function getMissingPublicWebRevalidationEnvKeys(
     : [publicWebRevalidationEnvKeys.secret];
 }
 
+export const indexNowDefaultEndpoint = 'https://api.indexnow.org/indexnow';
+
+export function isValidIndexNowKey(value: string | undefined): boolean {
+  const trimmedValue = value?.trim();
+
+  return Boolean(trimmedValue && /^[A-Za-z0-9-]{8,128}$/u.test(trimmedValue));
+}
+
+export function resolveIndexNowEnabled(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  const explicitEnabled = environment[indexNowEnvKeys.enabled];
+
+  if (isTrueEnvValue(explicitEnabled)) {
+    return true;
+  }
+
+  if (isFalseEnvValue(explicitEnabled)) {
+    return false;
+  }
+
+  return isCanonicalProductionIndexingEnvironment(environment);
+}
+
+export function getIndexNowKeyLocation(key: string): string {
+  return buildCanonicalUrl(`/${key}.txt`);
+}
+
+export function getIndexNowConfig(
+  environment: Record<string, string | undefined> = process.env,
+): IndexNowConfig {
+  const key = environment[indexNowEnvKeys.key]?.trim() ?? '';
+
+  if (!isValidIndexNowKey(key)) {
+    throw new Error(
+      `Missing or invalid IndexNow key. Set ${indexNowEnvKeys.key} to 8-128 letters, numbers, or dashes.`,
+    );
+  }
+
+  return {
+    enabled: resolveIndexNowEnabled(environment),
+    endpoint:
+      environment[indexNowEnvKeys.endpoint]?.trim() || indexNowDefaultEndpoint,
+    host: new URL(publicWebBaseUrls.production).host,
+    key,
+    keyLocation: getIndexNowKeyLocation(key),
+  };
+}
+
+export function hasIndexNowConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return isValidIndexNowKey(environment[indexNowEnvKeys.key]);
+}
+
+export function getMissingIndexNowEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return isValidIndexNowKey(environment[indexNowEnvKeys.key])
+    ? []
+    : [indexNowEnvKeys.key];
+}
+
 export function getProductEmailConfig(
   environment: Record<string, string | undefined> = process.env,
 ): ProductEmailConfig {
@@ -1912,6 +2043,21 @@ export function getBrickfeverFeedConfig(
   };
 }
 
+export function getUniekeBricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): UniekeBricksFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: uniekeBricksEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[uniekeBricksEnvKeys.merchantSlug]?.trim() || 'uniekebricks',
+    merchantName:
+      environment[uniekeBricksEnvKeys.merchantName]?.trim() || 'Unieke Bricks',
+  };
+}
+
 export function getRakutenLegoFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): RakutenLegoFeedConfig {
@@ -2027,6 +2173,20 @@ export function getMissingBrickfeverEnvKeys(
   return environment[brickfeverEnvKeys.feedUrl]
     ? []
     : [brickfeverEnvKeys.feedUrl];
+}
+
+export function hasUniekeBricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[uniekeBricksEnvKeys.feedUrl]);
+}
+
+export function getMissingUniekeBricksEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[uniekeBricksEnvKeys.feedUrl]
+    ? []
+    : [uniekeBricksEnvKeys.feedUrl];
 }
 
 export function hasRakutenLegoFeedConfig(

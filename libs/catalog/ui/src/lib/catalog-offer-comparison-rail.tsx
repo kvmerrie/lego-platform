@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { ChevronRight, Clock3, Eye } from 'lucide-react';
+import { ChevronRight, Clock3 } from 'lucide-react';
 import {
   ActionChrome,
   ActionLink,
@@ -12,6 +12,10 @@ import {
 } from '@lego-platform/shared/ui';
 import { buildBrickhuntAnalyticsAttributes } from '@lego-platform/shared/util';
 import type { CatalogOfferItem } from './catalog-commerce-ui';
+import {
+  getCatalogCtaPresentation,
+  type CatalogCtaPresentation,
+} from './catalog-cta-presentation';
 import { CatalogMerchantBrand as MerchantBrandInline } from './catalog-merchant-brand';
 import styles from './catalog-ui.module.css';
 
@@ -25,8 +29,35 @@ interface CatalogOfferComparisonRailProps {
 
 const MAX_VISIBLE_OFFER_RAIL_ITEMS = 20;
 const CLOSE_PRICE_DELTA_MINOR = 100;
+const SIGNIFICANT_NEXT_BEST_DELTA_MINOR = 500;
+const SIGNIFICANT_NEXT_BEST_DELTA_RATIO = 0.03;
+const SIGNIFICANT_REFERENCE_DELTA_MINOR = 1000;
+const SIGNIFICANT_REFERENCE_DELTA_RATIO = 0.1;
+const TINY_PRICE_DELTA_MINOR = 100;
+
+export type OfferRailPriceDeltaTone = 'positive' | 'neutral' | 'muted';
+
+export type OfferRailPriceDeltaReasonCode =
+  | 'alternative_higher'
+  | 'alternative_lower_unavailable'
+  | 'alternative_same_price'
+  | 'alternative_tiny_delta_hidden'
+  | 'best_above_lowest'
+  | 'best_no_significant_delta'
+  | 'best_significant_highest_comparable'
+  | 'best_significant_lego_reference'
+  | 'best_significant_next_best'
+  | 'best_single_available_offer'
+  | 'invalid_comparison_data';
+
+export interface OfferRailPriceDeltaPresentation {
+  label?: string;
+  reasonCode: OfferRailPriceDeltaReasonCode;
+  tone: OfferRailPriceDeltaTone;
+}
 
 interface CompactOfferPresentation {
+  actionIcon: CatalogCtaPresentation['icon'];
   actionLabel: string;
   overlayCheckedLabel: string;
   railCheckedLabel: string;
@@ -53,6 +84,8 @@ interface CompactOfferPresentation {
 interface CompactOfferComparisonContext {
   bestPriceMinor?: number;
   comparedOfferCount: number;
+  highestComparablePriceMinor?: number;
+  legoReferencePriceMinor?: number;
   nextBestAvailablePriceMinor?: number;
   reviewedInStockOfferCount: number;
 }
@@ -83,6 +116,12 @@ function formatCompactEuroAmount(deltaMinor: number): string {
   })
     .format(deltaMinor / 100)
     .replace(/\s+/g, '');
+}
+
+function formatCommercialSavingsAmount(deltaMinor: number): string {
+  const wholeEuroMinor = Math.floor(deltaMinor / 100) * 100;
+
+  return formatCompactEuroAmount(wholeEuroMinor || deltaMinor);
 }
 
 function getCompactStockLabel(stockLabel: string): string {
@@ -258,6 +297,41 @@ function isOfferAvailableForComparison(offer: CatalogOfferItem): boolean {
   return stockState === 'available' || stockState === 'limited';
 }
 
+function isLegoReferenceOffer(offer: CatalogOfferItem): boolean {
+  const merchantIdentifiers = [
+    offer.merchantId,
+    offer.merchantKey,
+    offer.merchantLabel,
+    offer.merchantSlug,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return /\blego\b/u.test(merchantIdentifiers);
+}
+
+function isSignificantPriceDelta({
+  absoluteThresholdMinor,
+  deltaMinor,
+  percentageThreshold,
+  referencePriceMinor,
+}: {
+  absoluteThresholdMinor: number;
+  deltaMinor: number;
+  percentageThreshold: number;
+  referencePriceMinor: number;
+}): boolean {
+  if (deltaMinor <= 0 || referencePriceMinor <= 0) {
+    return false;
+  }
+
+  return (
+    deltaMinor >= absoluteThresholdMinor ||
+    deltaMinor / referencePriceMinor >= percentageThreshold
+  );
+}
+
 function isCompactOfferBestDeal({
   bestPriceMinor,
   offer,
@@ -293,151 +367,268 @@ export function buildCompactOfferComparisonContext(
         typeof priceMinor === 'number' && priceMinor > (bestPriceMinor ?? 0),
     )
     .sort((left, right) => left - right)[0];
+  const highestComparablePriceMinor = availablePrices.at(-1);
+  const legoReferencePriceMinor = availableOffers
+    .filter(isLegoReferenceOffer)
+    .map((offer) => parseDisplayedPriceMinor(offer.price))
+    .filter(
+      (priceMinor): priceMinor is number => typeof priceMinor === 'number',
+    )
+    .sort((left, right) => left - right)[0];
 
   return {
     bestPriceMinor,
     comparedOfferCount: offers.length,
+    highestComparablePriceMinor,
+    legoReferencePriceMinor,
     nextBestAvailablePriceMinor,
     reviewedInStockOfferCount: availableOffers.length,
   };
 }
 
-function getCompactDeltaPresentation({
+export function getOfferRailPriceDeltaPresentation({
   bestPriceMinor,
+  comparedOfferCount,
+  currentPriceMinor,
+  highestComparablePriceMinor,
   isBestDeal,
+  legoReferencePriceMinor,
+  nextBestPriceMinor,
   offer,
+  reviewedInStockOfferCount,
 }: {
   bestPriceMinor?: number;
+  comparedOfferCount?: number;
+  currentPriceMinor?: number;
+  highestComparablePriceMinor?: number;
   isBestDeal: boolean;
+  legoReferencePriceMinor?: number;
+  nextBestPriceMinor?: number;
   offer: CatalogOfferItem;
-}): Pick<CompactOfferPresentation, 'deltaLabel' | 'priceComparisonState'> {
-  if (isBestDeal || bestPriceMinor === undefined) {
+  reviewedInStockOfferCount?: number;
+}): OfferRailPriceDeltaPresentation {
+  if (
+    typeof bestPriceMinor !== 'number' ||
+    typeof currentPriceMinor !== 'number'
+  ) {
     return {
-      priceComparisonState: isBestDeal ? 'best' : 'unknown',
+      reasonCode: 'invalid_comparison_data',
+      tone: 'muted',
     };
   }
 
-  const currentPriceMinor = parseDisplayedPriceMinor(offer.price);
+  const deltaMinor = currentPriceMinor - bestPriceMinor;
 
-  if (currentPriceMinor !== undefined) {
-    const deltaMinor = currentPriceMinor - bestPriceMinor;
-
-    if (deltaMinor < 0) {
-      const stockState = getStockState(offer.stockLabel);
-
-      if (stockState === 'out') {
-        return {
-          deltaLabel: 'Uitverkocht maar lager',
-          priceComparisonState: 'lower-unavailable',
-        };
-      }
-
-      if (stockState === 'unknown') {
-        return {
-          deltaLabel: 'Voorraad onbekend, lager',
-          priceComparisonState: 'lower-unavailable',
-        };
-      }
-
+  if (isBestDeal) {
+    if (deltaMinor > 0) {
       return {
-        deltaLabel: `${formatCompactEuroAmount(Math.abs(deltaMinor))} lager`,
-        priceComparisonState: 'lower-unavailable',
+        label: `${formatCompactEuroAmount(deltaMinor)} boven laagste prijs`,
+        reasonCode: 'best_above_lowest',
+        tone: 'muted',
       };
     }
 
-    if (deltaMinor === 0) {
-      if (offer.rankingLabel?.toLowerCase().includes('laagste prijs')) {
+    if (typeof reviewedInStockOfferCount === 'number') {
+      if (reviewedInStockOfferCount <= 1) {
         return {
-          deltaLabel: 'Laagste prijs',
-          priceComparisonState: 'same',
+          label: 'Enige beschikbare optie',
+          reasonCode: 'best_single_available_offer',
+          tone: 'neutral',
         };
       }
+    }
 
+    if (typeof nextBestPriceMinor === 'number') {
+      const nextBestDeltaMinor = nextBestPriceMinor - bestPriceMinor;
+
+      if (
+        isSignificantPriceDelta({
+          absoluteThresholdMinor: SIGNIFICANT_NEXT_BEST_DELTA_MINOR,
+          deltaMinor: nextBestDeltaMinor,
+          percentageThreshold: SIGNIFICANT_NEXT_BEST_DELTA_RATIO,
+          referencePriceMinor: nextBestPriceMinor,
+        })
+      ) {
+        return {
+          label: `${formatCompactEuroAmount(
+            nextBestDeltaMinor,
+          )} goedkoper dan de rest`,
+          reasonCode: 'best_significant_next_best',
+          tone: 'positive',
+        };
+      }
+    }
+
+    if (typeof legoReferencePriceMinor === 'number') {
+      const legoDeltaMinor = legoReferencePriceMinor - bestPriceMinor;
+
+      if (
+        isSignificantPriceDelta({
+          absoluteThresholdMinor: SIGNIFICANT_REFERENCE_DELTA_MINOR,
+          deltaMinor: legoDeltaMinor,
+          percentageThreshold: SIGNIFICANT_REFERENCE_DELTA_RATIO,
+          referencePriceMinor: legoReferencePriceMinor,
+        })
+      ) {
+        return {
+          label: `${formatCommercialSavingsAmount(
+            legoDeltaMinor,
+          )} goedkoper dan LEGO`,
+          reasonCode: 'best_significant_lego_reference',
+          tone: 'positive',
+        };
+      }
+    }
+
+    if (typeof highestComparablePriceMinor === 'number') {
+      const highestDeltaMinor = highestComparablePriceMinor - bestPriceMinor;
+
+      if (
+        isSignificantPriceDelta({
+          absoluteThresholdMinor: SIGNIFICANT_REFERENCE_DELTA_MINOR,
+          deltaMinor: highestDeltaMinor,
+          percentageThreshold: SIGNIFICANT_REFERENCE_DELTA_RATIO,
+          referencePriceMinor: highestComparablePriceMinor,
+        })
+      ) {
+        return {
+          label: `Bespaar tot ${formatCommercialSavingsAmount(
+            highestDeltaMinor,
+          )}`,
+          reasonCode: 'best_significant_highest_comparable',
+          tone: 'positive',
+        };
+      }
+    }
+
+    return {
+      reasonCode:
+        typeof comparedOfferCount === 'number' && comparedOfferCount <= 1
+          ? 'best_single_available_offer'
+          : 'best_no_significant_delta',
+      tone: 'neutral',
+    };
+  }
+
+  if (deltaMinor < 0) {
+    const stockState = getStockState(offer.stockLabel);
+
+    if (stockState === 'out') {
       return {
-        deltaLabel: 'Zelfde prijs',
-        priceComparisonState: 'same',
+        label: 'Uitverkocht maar lager',
+        reasonCode: 'alternative_lower_unavailable',
+        tone: 'muted',
+      };
+    }
+
+    if (stockState === 'unknown') {
+      return {
+        label: 'Voorraad onbekend, lager',
+        reasonCode: 'alternative_lower_unavailable',
+        tone: 'muted',
       };
     }
 
     return {
-      deltaLabel: `${formatCompactEuroAmount(deltaMinor)} duurder`,
-      priceComparisonState:
-        deltaMinor <= CLOSE_PRICE_DELTA_MINOR ? 'close' : 'higher',
+      label: `${formatCompactEuroAmount(Math.abs(deltaMinor))} lager`,
+      reasonCode: 'alternative_lower_unavailable',
+      tone: 'muted',
     };
   }
 
-  if (offer.rankingLabel?.toLowerCase().includes('zelfde prijs')) {
+  if (deltaMinor === 0) {
+    if (offer.rankingLabel?.toLowerCase().includes('laagste prijs')) {
+      return {
+        label: 'Laagste prijs',
+        reasonCode: 'alternative_same_price',
+        tone: 'neutral',
+      };
+    }
+
     return {
-      deltaLabel: 'Zelfde prijs',
-      priceComparisonState: 'same',
+      label: 'Zelfde prijs',
+      reasonCode: 'alternative_same_price',
+      tone: 'neutral',
     };
   }
 
-  const rankingLabelMatch = offer.rankingLabel?.match(/€\s?[\d.,]+/);
-
-  if (!rankingLabelMatch) {
+  if (deltaMinor < TINY_PRICE_DELTA_MINOR) {
     return {
-      priceComparisonState: 'unknown',
+      reasonCode: 'alternative_tiny_delta_hidden',
+      tone: 'muted',
     };
   }
 
   return {
-    deltaLabel: `${rankingLabelMatch[0].replace(/^€\s?/, '€')} duurder`,
-    priceComparisonState: 'higher',
+    label: `${formatCompactEuroAmount(deltaMinor)} duurder`,
+    reasonCode: 'alternative_higher',
+    tone: deltaMinor <= CLOSE_PRICE_DELTA_MINOR ? 'muted' : 'neutral',
   };
 }
 
-function getBestOfferConfidenceLabel({
+function getCompactDeltaPresentation({
   bestPriceMinor,
   comparedOfferCount,
+  highestComparablePriceMinor,
   isBestDeal,
-  nextBestAvailablePriceMinor,
+  legoReferencePriceMinor,
+  nextBestPriceMinor,
   offer,
   reviewedInStockOfferCount,
 }: {
   bestPriceMinor?: number;
   comparedOfferCount: number;
+  highestComparablePriceMinor?: number;
   isBestDeal: boolean;
-  nextBestAvailablePriceMinor?: number;
+  legoReferencePriceMinor?: number;
+  nextBestPriceMinor?: number;
   offer: CatalogOfferItem;
   reviewedInStockOfferCount: number;
-}): string | undefined {
-  if (!isBestDeal) {
-    return undefined;
+}): Pick<
+  CompactOfferPresentation,
+  'confidenceLabel' | 'deltaLabel' | 'priceComparisonState'
+> {
+  const currentPriceMinor = parseDisplayedPriceMinor(offer.price);
+
+  if (currentPriceMinor === undefined || bestPriceMinor === undefined) {
+    return {
+      priceComparisonState: isBestDeal ? 'best' : 'unknown',
+    };
   }
 
-  const offerPriceMinor = parseDisplayedPriceMinor(offer.price);
+  const deltaPresentation = getOfferRailPriceDeltaPresentation({
+    bestPriceMinor,
+    comparedOfferCount,
+    currentPriceMinor,
+    highestComparablePriceMinor,
+    isBestDeal,
+    legoReferencePriceMinor,
+    nextBestPriceMinor,
+    offer,
+    reviewedInStockOfferCount,
+  });
 
-  if (
-    typeof bestPriceMinor === 'number' &&
-    typeof offerPriceMinor === 'number' &&
-    offerPriceMinor > bestPriceMinor
-  ) {
-    return `${formatCompactEuroAmount(
-      offerPriceMinor - bestPriceMinor,
-    )} boven laagste prijs`;
+  if (isBestDeal) {
+    return {
+      confidenceLabel: deltaPresentation.label,
+      priceComparisonState: 'best',
+    };
   }
 
-  if (reviewedInStockOfferCount <= 1) {
-    return 'Enige beschikbare optie';
-  }
+  const deltaMinor = currentPriceMinor - bestPriceMinor;
+  const priceComparisonState =
+    deltaMinor < 0
+      ? 'lower-unavailable'
+      : deltaMinor === 0
+        ? 'same'
+        : deltaMinor <= CLOSE_PRICE_DELTA_MINOR
+          ? 'close'
+          : 'higher';
 
-  if (
-    typeof bestPriceMinor === 'number' &&
-    typeof nextBestAvailablePriceMinor === 'number'
-  ) {
-    const nextBestDeltaMinor = nextBestAvailablePriceMinor - bestPriceMinor;
-
-    if (nextBestDeltaMinor > 0) {
-      return `${formatCompactEuroAmount(nextBestDeltaMinor)} goedkoper dan de rest`;
-    }
-  }
-
-  if (comparedOfferCount > 1) {
-    return 'Laagste prijs';
-  }
-
-  return 'Enige beschikbare optie';
+  return {
+    deltaLabel: deltaPresentation.label,
+    priceComparisonState,
+  };
 }
 
 export function buildCompactOfferPresentation({
@@ -447,33 +638,34 @@ export function buildCompactOfferPresentation({
   comparisonContext: CompactOfferComparisonContext;
   offer: CatalogOfferItem;
 }): CompactOfferPresentation {
+  const merchantCtaPresentation = getCatalogCtaPresentation({
+    destination: 'merchant',
+  });
   const isBestDeal = isCompactOfferBestDeal({
     bestPriceMinor: comparisonContext.bestPriceMinor,
     offer,
   });
   const deltaPresentation = getCompactDeltaPresentation({
     bestPriceMinor: comparisonContext.bestPriceMinor,
+    comparedOfferCount: comparisonContext.comparedOfferCount,
+    highestComparablePriceMinor: comparisonContext.highestComparablePriceMinor,
     isBestDeal,
+    legoReferencePriceMinor: comparisonContext.legoReferencePriceMinor,
+    nextBestPriceMinor: comparisonContext.nextBestAvailablePriceMinor,
     offer,
+    reviewedInStockOfferCount: comparisonContext.reviewedInStockOfferCount,
   });
   const railCheckedPresentation = getCompactRailCheckedPresentation(
     offer.checkedLabel,
   );
 
   return {
-    actionLabel: isBestDeal ? 'Bekijk deal' : 'Naar winkel',
+    actionIcon: merchantCtaPresentation.icon,
+    actionLabel: merchantCtaPresentation.label,
     overlayCheckedLabel: getCompactCheckedLabel(offer.checkedLabel),
     railCheckedLabel: railCheckedPresentation.label,
     railCheckedTitle: railCheckedPresentation.title,
-    confidenceLabel: getBestOfferConfidenceLabel({
-      bestPriceMinor: comparisonContext.bestPriceMinor,
-      comparedOfferCount: comparisonContext.comparedOfferCount,
-      isBestDeal,
-      nextBestAvailablePriceMinor:
-        comparisonContext.nextBestAvailablePriceMinor,
-      offer,
-      reviewedInStockOfferCount: comparisonContext.reviewedInStockOfferCount,
-    }),
+    confidenceLabel: deltaPresentation.confidenceLabel,
     deltaLabel: deltaPresentation.deltaLabel,
     isBestDeal,
     merchantId: offer.merchantId,
@@ -510,6 +702,7 @@ function CatalogOfferRailCard({
     comparisonContext,
     offer,
   });
+  const OfferActionIcon = presentation.actionIcon;
   const supportLineClassName = [
     styles.offerRailSupportLine,
     presentation.isBestDeal
@@ -594,7 +787,7 @@ function CatalogOfferRailCard({
             className={styles.offerRailAction}
             variant={presentation.isBestDeal ? 'primary' : 'secondary'}
           >
-            <Eye aria-hidden="true" size={15} strokeWidth={2.2} />
+            <OfferActionIcon aria-hidden="true" size={15} strokeWidth={2.2} />
             <span>{presentation.actionLabel}</span>
           </ActionChrome>
         </div>

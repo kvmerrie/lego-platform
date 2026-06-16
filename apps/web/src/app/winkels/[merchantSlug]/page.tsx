@@ -6,6 +6,7 @@ import {
   type CommerceMerchantDeal,
   type CommerceMerchantDealsResult,
 } from '@lego-platform/catalog/data-access-web';
+import { buildCatalogMerchantPresentation } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogSetCard,
@@ -82,6 +83,14 @@ function toMerchantDealPriceContext({
   sectionId: string;
 }): CatalogSetCardPriceContext {
   const savingsLabel = getDealSavingsLabel(deal);
+  const merchantPresentation = buildCatalogMerchantPresentation({
+    claim:
+      typeof deal.nextBestPriceMinor === 'number'
+        ? 'lowest-current'
+        : 'only-found',
+    merchantName: deal.merchant.name,
+    merchantSlug: deal.merchant.slug,
+  });
 
   return {
     coverageLabel:
@@ -97,7 +106,7 @@ function toMerchantDealPriceContext({
       ? { dealReason: `${Math.round(deal.savingsPercentage)}% lager` }
       : {}),
     decisionLabel: savingsLabel ? 'Beste winkelprijs' : 'Alleen hier gevonden',
-    merchantLabel: `Laagst bij ${deal.merchant.name}`,
+    merchantLabel: merchantPresentation.label,
     primaryActionHref: deal.productUrl,
     primaryActionTrackingEvent: {
       event: 'offer_click',

@@ -350,6 +350,10 @@ html {
   scroll-behavior: smooth;
 }
 
+html[data-programmatic-scroll='true'] {
+  scroll-behavior: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

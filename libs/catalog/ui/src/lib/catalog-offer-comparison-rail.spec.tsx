@@ -8,7 +8,10 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CatalogOfferItem } from './catalog-commerce-ui';
 import { getMerchantFaviconUrl } from './catalog-merchant-brand';
-import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
+import {
+  CatalogOfferComparisonRail,
+  getOfferRailPriceDeltaPresentation,
+} from './catalog-offer-comparison-rail';
 
 vi.mock('next/link', () => ({
   default: ({
@@ -226,8 +229,18 @@ describe('CatalogOfferComparisonRail overlay', () => {
               rankingLabel: 'Laagste prijs',
               stockLabel: 'Op voorraad',
             },
+            {
+              checkedLabel: 'Vandaag om 09:02',
+              ctaHref: 'https://example.com/lego',
+              ctaLabel: 'Bekijk bij LEGO',
+              merchantLabel: 'LEGO',
+              merchantSlug: 'lego-nl',
+              price: '€ 249,99',
+              rankingLabel: 'LEGO adviesprijs',
+              stockLabel: 'Op voorraad',
+            },
           ]}
-          summaryLabel="2 winkels nagekeken"
+          summaryLabel="3 winkels nagekeken"
         />,
       );
     });
@@ -237,10 +250,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(proshopCard.getAttribute('data-best')).toBe('true');
     expect(proshopCard.textContent).toContain('Beste deal');
-    expect(proshopCard.textContent).toContain('Bekijk deal');
+    expect(proshopCard.textContent).toContain('€71 goedkoper dan LEGO');
+    expect(proshopCard.textContent).not.toContain('€0,26 goedkoper');
+    expect(proshopCard.textContent).toContain('Naar winkel');
     expect(coolblueCard.getAttribute('data-best')).toBe('false');
     expect(coolblueCard.textContent).not.toContain('Beste deal');
-    expect(coolblueCard.textContent).toContain('€0,26 duurder');
+    expect(coolblueCard.textContent).not.toContain('€0,26 duurder');
   });
 
   it('treats a one-cent price difference as enough for a single best deal badge', () => {
@@ -276,7 +291,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(proshopCard.getAttribute('data-best')).toBe('true');
     expect(coolblueCard.getAttribute('data-best')).toBe('false');
-    expect(coolblueCard.textContent).toContain('€0,01 duurder');
+    expect(coolblueCard.textContent).not.toContain('€0,01 duurder');
   });
 
   it('marks exact price ties as shared best deal cards', () => {
@@ -396,6 +411,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
     ).toBe('/merchant-favicons/misterbricks.png');
     expect(
       getMerchantFaviconUrl({
+        merchantLabel: 'Unieke Bricks',
+        merchantSlug: 'uniekebricks',
+      }),
+    ).toBe('/merchant-favicons/uniekebricks.png');
+    expect(
+      getMerchantFaviconUrl({
         merchantLabel: 'Top1Toys',
         merchantSlug: 'top1toys',
       }),
@@ -431,6 +452,11 @@ describe('CatalogOfferComparisonRail overlay', () => {
         merchantLabel: 'LEGO®',
       }),
     ).toBe('/merchant-favicons/lego-nl.png');
+    expect(
+      getMerchantFaviconUrl({
+        merchantLabel: 'Unieke Bricks',
+      }),
+    ).toBe('/merchant-favicons/uniekebricks.png');
   });
 
   it('does not render a broken favicon image for an unknown merchant', () => {
@@ -457,6 +483,142 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(container.querySelector('img')).toBeNull();
     expect(container.textContent).toContain('Onbekende winkel');
+  });
+
+  it('uses commercial price-delta labels only when the difference is meaningful', () => {
+    const baseOffer: CatalogOfferItem = {
+      checkedLabel: 'Vandaag om 09:00',
+      ctaHref: 'https://example.com/proshop',
+      ctaLabel: 'Bekijk bij Proshop',
+      merchantLabel: 'Proshop',
+      price: '€ 178,74',
+      stockLabel: 'Op voorraad',
+    };
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 17874,
+        comparedOfferCount: 3,
+        currentPriceMinor: 17874,
+        highestComparablePriceMinor: 24999,
+        isBestDeal: true,
+        legoReferencePriceMinor: 24999,
+        nextBestPriceMinor: 17900,
+        offer: baseOffer,
+        reviewedInStockOfferCount: 3,
+      }),
+    ).toEqual({
+      label: '€71 goedkoper dan LEGO',
+      reasonCode: 'best_significant_lego_reference',
+      tone: 'positive',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 18000,
+        comparedOfferCount: 3,
+        currentPriceMinor: 18000,
+        highestComparablePriceMinor: 24999,
+        isBestDeal: true,
+        nextBestPriceMinor: 20000,
+        offer: baseOffer,
+        reviewedInStockOfferCount: 3,
+      }),
+    ).toEqual({
+      label: '€20 goedkoper dan de rest',
+      reasonCode: 'best_significant_next_best',
+      tone: 'positive',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 18000,
+        comparedOfferCount: 3,
+        currentPriceMinor: 18000,
+        highestComparablePriceMinor: 22600,
+        isBestDeal: true,
+        nextBestPriceMinor: 18100,
+        offer: baseOffer,
+        reviewedInStockOfferCount: 3,
+      }),
+    ).toEqual({
+      label: 'Bespaar tot €46',
+      reasonCode: 'best_significant_highest_comparable',
+      tone: 'positive',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 17874,
+        comparedOfferCount: 3,
+        currentPriceMinor: 17874,
+        highestComparablePriceMinor: 17900,
+        isBestDeal: true,
+        nextBestPriceMinor: 17900,
+        offer: baseOffer,
+        reviewedInStockOfferCount: 3,
+      }),
+    ).toEqual({
+      reasonCode: 'best_no_significant_delta',
+      tone: 'neutral',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 17874,
+        currentPriceMinor: 17900,
+        isBestDeal: false,
+        offer: {
+          ...baseOffer,
+          merchantLabel: 'Coolblue',
+          price: '€ 179,00',
+        },
+      }),
+    ).toEqual({
+      reasonCode: 'alternative_tiny_delta_hidden',
+      tone: 'muted',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 17874,
+        currentPriceMinor: 20299,
+        isBestDeal: false,
+        offer: {
+          ...baseOffer,
+          merchantLabel: 'Alternate',
+          price: '€ 202,99',
+        },
+      }),
+    ).toEqual({
+      label: '€24,25 duurder',
+      reasonCode: 'alternative_higher',
+      tone: 'neutral',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        bestPriceMinor: 10000,
+        currentPriceMinor: 10000,
+        isBestDeal: true,
+        nextBestPriceMinor: 10400,
+        offer: baseOffer,
+        reviewedInStockOfferCount: 2,
+      }),
+    ).toMatchObject({
+      label: '€4 goedkoper dan de rest',
+      reasonCode: 'best_significant_next_best',
+    });
+
+    expect(
+      getOfferRailPriceDeltaPresentation({
+        isBestDeal: true,
+        offer: baseOffer,
+      }),
+    ).toEqual({
+      reasonCode: 'invalid_comparison_data',
+      tone: 'muted',
+    });
   });
 
   it('uses the same merchant favicon resolver and inline brand component in rail and overlay offers', async () => {
@@ -526,7 +688,7 @@ describe('CatalogOfferComparisonRail overlay', () => {
 
     expect(bestDealCard?.className).toContain('offerRailCardLink');
     expect(bestDealCard?.getAttribute('aria-label')).toBe(
-      'Bekijk deal bij bol',
+      'Naar winkel bij bol',
     );
     expect(bestDealCard?.getAttribute('target')).toBe('_blank');
     expect(bestDealCard?.getAttribute('rel')).toBe(
@@ -540,7 +702,8 @@ describe('CatalogOfferComparisonRail overlay', () => {
     );
     expect(bestDealAction?.className).toContain('offerRailAction');
     expect(bestDealAction?.className).toContain('buttonAccent');
-    expect(bestDealAction?.textContent).toContain('Bekijk deal');
+    expect(bestDealAction?.textContent).toContain('Naar winkel');
+    expect(bestDealAction?.innerHTML).toContain('lucide-store');
     expect(alternativeCard?.className).toContain('offerRailCardLink');
     expect(alternativeCard?.getAttribute('aria-label')).toBe(
       'Naar winkel bij LEGO',
@@ -589,9 +752,9 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(bestDealCard).not.toBeNull();
     expect(bestDealCard?.textContent).toContain('Beste deal');
     expect(bestDealCard?.getAttribute('aria-label')).toBe(
-      'Bekijk deal bij Proshop',
+      'Naar winkel bij Proshop',
     );
-    expect(bestDealAction?.textContent).toContain('Bekijk deal');
+    expect(bestDealAction?.textContent).toContain('Naar winkel');
   });
 
   it('renders the full comparison trigger on the heading for normal multi-shop rails', () => {
@@ -785,7 +948,6 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(rows).toHaveLength(overlayOffers.length);
     expect(priceCells).toHaveLength(overlayOffers.length);
     expect(dialog?.textContent).toContain('Beste deal');
-    expect(dialog?.textContent).toContain('Bekijk deal');
     expect(dialog?.textContent).toContain('Naar winkel');
     expect(dialog?.textContent).toContain('LEGO');
     expect(dialog?.textContent).not.toContain('LEGO LEGO');

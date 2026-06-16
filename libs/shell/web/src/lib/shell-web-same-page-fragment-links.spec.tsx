@@ -8,6 +8,10 @@ import {
   isSamePageFragmentUrl,
   ShellWebSamePageFragmentLinks,
 } from './shell-web-same-page-fragment-links';
+import {
+  isHeaderScrollReactionSuppressed,
+  resetProgrammaticScrollSuppressionForTests,
+} from '@lego-platform/shared/util';
 
 describe('same-page fragment helpers', () => {
   it('matches only same-page fragment URLs', () => {
@@ -66,6 +70,7 @@ describe('ShellWebSamePageFragmentLinks', () => {
   });
 
   afterEach(() => {
+    resetProgrammaticScrollSuppressionForTests();
     act(() => {
       root.unmount();
     });
@@ -109,6 +114,7 @@ describe('ShellWebSamePageFragmentLinks', () => {
 
     expect(window.location.hash).toBe('#theme-browse');
     expect(target.scrollIntoView).toHaveBeenCalledTimes(2);
+    expect(isHeaderScrollReactionSuppressed()).toBe(true);
     expect(target.scrollIntoView).toHaveBeenLastCalledWith({
       behavior: 'smooth',
       block: 'start',

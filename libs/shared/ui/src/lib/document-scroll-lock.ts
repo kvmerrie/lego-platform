@@ -1,5 +1,10 @@
 'use client';
 
+import {
+  preserveHeaderVisibility,
+  runWithProgrammaticScrollSuppression,
+} from '@lego-platform/shared/util';
+
 interface DocumentScrollLockSnapshot {
   bodyOverflow: string;
   bodyOverscrollBehavior: string;
@@ -16,6 +21,7 @@ interface DocumentScrollLockSnapshot {
 
 const documentScrollLock = {
   count: 0,
+  releaseHeaderVisibility: undefined as (() => void) | undefined,
   snapshot: undefined as DocumentScrollLockSnapshot | undefined,
 };
 
@@ -28,19 +34,37 @@ function restoreScrollPositionWithoutAnimation(
   body.style.scrollBehavior = 'auto';
 
   if (snapshot.scrollY > 0) {
-    try {
-      window.scrollTo({
-        behavior: 'instant',
-        left: 0,
-        top: snapshot.scrollY,
-      });
-    } catch {
-      window.scrollTo(0, snapshot.scrollY);
-    }
+    runWithProgrammaticScrollSuppression(
+      () => {
+        try {
+          window.scrollTo({
+            behavior: 'auto',
+            left: 0,
+            top: snapshot.scrollY,
+          });
+        } catch {
+          window.scrollTo(0, snapshot.scrollY);
+        }
+      },
+      { reason: 'document-scroll-lock-restore' },
+    );
   }
 
   documentElement.style.scrollBehavior = snapshot.documentScrollBehavior;
   body.style.scrollBehavior = snapshot.bodyScrollBehavior;
+}
+
+function releaseHeaderVisibilityAfterScrollRestore(): void {
+  const releaseHeaderVisibility = documentScrollLock.releaseHeaderVisibility;
+  documentScrollLock.releaseHeaderVisibility = undefined;
+
+  if (!releaseHeaderVisibility) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(releaseHeaderVisibility);
+  });
 }
 
 export function lockDocumentScroll(): () => void {
@@ -49,6 +73,9 @@ export function lockDocumentScroll(): () => void {
   }
 
   if (documentScrollLock.count === 0) {
+    documentScrollLock.releaseHeaderVisibility = preserveHeaderVisibility(
+      'document-scroll-lock',
+    );
     const scrollY =
       window.scrollY ||
       document.documentElement.scrollTop ||
@@ -103,6 +130,7 @@ export function lockDocumentScroll(): () => void {
     documentScrollLock.snapshot = undefined;
 
     if (!snapshot) {
+      releaseHeaderVisibilityAfterScrollRestore();
       return;
     }
 
@@ -117,5 +145,6 @@ export function lockDocumentScroll(): () => void {
     document.body.style.paddingRight = snapshot.bodyPaddingRight;
 
     restoreScrollPositionWithoutAnimation(snapshot);
+    releaseHeaderVisibilityAfterScrollRestore();
   };
 }

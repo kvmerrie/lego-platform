@@ -73,6 +73,9 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       decisionTone?: string;
       merchantLabel?: string;
       merchantName?: string;
+      merchantPresentation?: {
+        label: string;
+      };
       rankingLabel?: string;
       stockLabel?: string;
     };
@@ -139,9 +142,10 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             bestDeal.rankingLabel,
             bestDeal.ctaTone,
             bestDeal.ctaLabel,
-            bestDeal.merchantName
-              ? `Bij ${bestDeal.merchantName}`
-              : bestDeal.merchantLabel,
+            bestDeal.merchantPresentation?.label ??
+              (bestDeal.merchantName
+                ? `Bij ${bestDeal.merchantName}`
+                : bestDeal.merchantLabel),
             bestDeal.stockLabel,
             bestDeal.coverageLabel,
             bestDeal.checkedLabel,
@@ -1981,7 +1985,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('data-testid="best-deal"');
     expect(html).toContain('data-tone="positive"');
     expect(html).toContain('Goede prijs');
-    expect(html).toContain('Bij Proshop');
+    expect(html).toContain('Laagst bij Proshop');
     expect(html).toContain('Bekijk deal bij Proshop');
     expect(html).toMatch(/data-is-best="true" data-merchant="Proshop"/u);
     expect(html).toMatch(/data-is-best="false" data-merchant="Coolblue"/u);
@@ -1989,7 +1993,7 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('Op voorraad');
     expect(html).toContain('9 winkels nagekeken');
     expect(html).not.toContain('Prijsbeeld bouwt op');
-    expect(html).not.toContain('Bij Coolblue');
+    expect(html).not.toContain('Laagst bij Coolblue');
     expect(setPageMocks.wishlistToggle).toHaveBeenCalledWith(
       expect.objectContaining({
         appearance: 'hero-action',
@@ -2073,9 +2077,9 @@ describe('set detail page JSON-LD', () => {
       }),
     );
 
-    expect(html).toContain('Bij Joybuy');
+    expect(html).toContain('Laagst bij Joybuy');
     expect(html).toContain('Bekijk deal bij Joybuy');
-    expect(html).not.toContain('Bij Lidl');
+    expect(html).not.toContain('Laagst bij Lidl');
     expect(html).not.toContain('Prijsbeeld bouwt op');
     expect(html).not.toContain('€ 3,59 boven laagste prijs');
     expect(html).toContain('Joybuy');

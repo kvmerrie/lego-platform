@@ -127,6 +127,12 @@ describe('commerce util', () => {
     ).toBe('https://www.wehkamp.nl/zoeken/?term=75411%20lego&type=manual');
     expect(
       buildCommerceMerchantSearchUrl({
+        merchantSlug: 'uniekebricks',
+        query: '40688 lego',
+      }),
+    ).toBe('https://uniekebricks.nl/?s=40688%20lego&post_type=product');
+    expect(
+      buildCommerceMerchantSearchUrl({
         merchantSlug: 'unknown-merchant',
         query: '21061',
       }),
@@ -159,10 +165,14 @@ describe('commerce util', () => {
     expect(includeCommerceMerchantInDefaultSeedGeneration('proshop')).toBe(
       false,
     );
+    expect(includeCommerceMerchantInDefaultSeedGeneration('uniekebricks')).toBe(
+      false,
+    );
     expect(includeCommerceMerchantInDefaultRefresh('lego-nl')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('intertoys')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('bol')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('misterbricks')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('uniekebricks')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('top1toys')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('kruidvat')).toBe(false);
@@ -176,6 +186,9 @@ describe('commerce util', () => {
       'production_feed',
     );
     expect(getCommerceMerchantReliabilityTier('misterbricks')).toBe(
+      'production_feed',
+    );
+    expect(getCommerceMerchantReliabilityTier('uniekebricks')).toBe(
       'production_feed',
     );
     expect(getCommerceMerchantReliabilityTier('conrad')).toBe(

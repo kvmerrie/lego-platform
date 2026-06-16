@@ -115,21 +115,35 @@
 
 .sortNav {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-1);
+  gap: var(--lego-space-4);
+  max-width: 100%;
+  overflow-x: auto;
+  padding-block-end: 0.18rem;
+  scrollbar-width: thin;
+  white-space: nowrap;
 }
 
 .sortLink {
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  border-radius: var(--lego-radius-pill);
   color: var(--lego-text-muted);
   display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
+  flex: 0 0 auto;
+  font-size: var(--lego-text-role-body-sm-size);
   font-weight: var(--lego-font-weight-bold);
-  line-height: 1;
+  line-height: 1.25;
   min-height: 2.25rem;
-  padding: 0.62rem var(--lego-space-3);
+  padding: 0.35rem 0;
+  position: relative;
   text-decoration: none;
+}
+
+.sortLink::after {
+  background: transparent;
+  block-size: 0.18rem;
+  border-radius: var(--lego-radius-pill);
+  content: '';
+  inset-block-end: 0;
+  inset-inline: 0;
+  position: absolute;
 }
 
 .sortLink:hover {
@@ -137,10 +151,12 @@
   text-decoration: none;
 }
 
-.sortLink[aria-current='true'] {
-  background: var(--lego-accent);
-  border-color: transparent;
-  color: var(--lego-accent-contrast);
+.sortLink[aria-current='page'] {
+  color: var(--lego-text);
+}
+
+.sortLink[aria-current='page']::after {
+  background: currentColor;
 }
 
 .sortLink:focus-visible,

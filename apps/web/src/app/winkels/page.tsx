@@ -4,7 +4,10 @@ import {
   getActiveCommerceMerchantsOverview,
   type CommerceMerchantOverviewItem,
 } from '@lego-platform/catalog/data-access-web';
-import { CatalogSectionShell } from '@lego-platform/catalog/ui';
+import {
+  CatalogMerchantBrand,
+  CatalogSectionShell,
+} from '@lego-platform/catalog/ui';
 import {
   buildCanonicalUrl,
   buildWebPath,
@@ -66,7 +69,15 @@ function MerchantOverviewCard({
     <a className={styles.merchantCard} href={merchantHref}>
       <div className={styles.merchantCardHeader}>
         <div>
-          <h2 className={styles.merchantName}>{item.merchant.name}</h2>
+          <h2 className={styles.merchantName}>
+            <CatalogMerchantBrand
+              merchant={{
+                merchantLabel: item.merchant.name,
+                merchantName: item.merchant.name,
+                merchantSlug: item.merchant.slug,
+              }}
+            />
+          </h2>
           <p className={styles.merchantMeta}>
             {formatSavings({
               currencyCode: bestDeal?.currencyCode,

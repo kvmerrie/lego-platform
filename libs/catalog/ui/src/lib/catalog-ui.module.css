@@ -31,37 +31,89 @@
   }
 
   .setCardMobileLayoutToggle {
+    --catalog-mobile-toolbar-block-size: 56px;
+    --catalog-mobile-toolbar-header-offset: var(--shell-header-height, 0px);
+
     align-items: center;
+    background: var(--lego-surface-default);
+    border-block: var(--lego-border-width-1) solid var(--lego-border-subtle);
+    block-size: var(--catalog-mobile-toolbar-block-size);
+    box-sizing: border-box;
     display: flex;
-    gap: var(--lego-space-1);
-    justify-content: flex-end;
-    margin-block-end: var(--lego-space-2);
+    gap: var(--lego-space-3);
+    inline-size: calc(100% + (2 * var(--catalog-section-inline-padding, 0px)));
+    justify-content: space-between;
+    margin-block: calc(-1 * var(--lego-space-1)) 0;
+    margin-inline: calc(-1 * var(--catalog-section-inline-padding, 0px));
+    min-block-size: var(--catalog-mobile-toolbar-block-size);
+    padding-block: 0;
     padding-inline: var(--catalog-section-inline-padding, 0px);
+    scroll-margin-top: var(--catalog-mobile-toolbar-header-offset);
+    transform: translate3d(0, 0, 0);
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 180ms ease;
+    will-change: transform;
+  }
+
+  .setCardMobileLayoutSentinel {
+    block-size: 0;
+    display: block;
+    inline-size: 100%;
+    pointer-events: none;
+  }
+
+  .setCardMobileLayoutLabel {
+    color: var(--lego-text);
+    font-size: var(--lego-text-role-meta-size);
+    font-weight: var(--lego-font-weight-bold);
+    line-height: 1.1;
+  }
+
+  .setCardMobileLayoutActions {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: var(--lego-space-2);
   }
 
   .setCardMobileLayoutButton {
-    background: var(--lego-surface-default);
-    border: var(--lego-border-width-1) solid var(--lego-border-subtle);
-    border-radius: var(--lego-radius-pill);
-    color: var(--lego-text-muted);
-    cursor: pointer;
-    font: inherit;
-    font-size: var(--lego-text-role-meta-size);
-    font-weight: var(--lego-font-weight-semibold);
-    line-height: 1;
-    min-height: 2.2rem;
-    padding: 0 var(--lego-space-3);
+    --lego-action-border-width: 0;
+    --lego-button-border-radius: var(--lego-radius-pill);
+    --lego-button-secondary-active-background: transparent;
+    --lego-button-secondary-active-border-color: transparent;
+    --lego-button-secondary-active-color: var(--lego-accent);
+    --lego-button-secondary-background: transparent;
+    --lego-button-secondary-border-color: transparent;
+    --lego-button-secondary-color: var(--lego-text);
+    --lego-button-secondary-hover-background: color-mix(
+      in srgb,
+      var(--lego-surface-subtle) 72%,
+      transparent
+    );
+    --lego-button-secondary-hover-border-color: transparent;
+    --lego-button-secondary-hover-color: var(--lego-text);
+
+    flex: 0 0 auto;
   }
 
-  .setCardMobileLayoutButton[aria-pressed='true'] {
-    background: var(--lego-accent);
-    border-color: transparent;
-    color: var(--lego-accent-contrast);
+  .setCardMobileLayoutButton[data-catalog-set-card-layout-state='active'] {
+    color: var(--lego-accent);
   }
 
-  .setCardMobileLayoutButton:focus-visible {
-    outline: 3px solid var(--lego-focus-ring);
-    outline-offset: 2px;
+  .setCardMobileLayoutButton[data-catalog-set-card-layout-state='inactive'] {
+    color: var(--lego-text);
+  }
+
+  .setCardMobileLayoutIcon {
+    display: block;
+    flex: 0 0 auto;
+    opacity: 0.74;
+  }
+
+  .setCardMobileLayoutButton[data-catalog-set-card-layout-state='active']
+    .setCardMobileLayoutIcon {
+    opacity: 1;
   }
 
   .browsePagination {
@@ -691,6 +743,33 @@
     font-weight: var(--lego-font-weight-medium);
     line-height: 1.28;
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cardMerchantLine {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.28rem;
+    max-inline-size: 100%;
+    min-inline-size: 0;
+    vertical-align: text-bottom;
+  }
+
+  .cardMerchantPrefix {
+    flex: 0 0 auto;
+  }
+
+  .cardMerchantFavicon {
+    block-size: 1rem;
+    flex: 0 0 1rem;
+    inline-size: 1rem;
+    object-fit: contain;
+  }
+
+  .cardMerchantName {
+    min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4770,6 +4849,44 @@
   }
 
   @media (max-width: 47.999rem) {
+    .setCardMobileLayoutToggle {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .setCardMobileLayoutToggle[data-stuck='false'] {
+      top: 0;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .setCardMobileLayoutToggle[data-stuck='true'] {
+      top: var(--catalog-mobile-toolbar-header-offset);
+    }
+
+    :global(html[data-shell-header-hidden='true'])
+      .setCardMobileLayoutToggle[data-stuck='true'] {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(
+        0,
+        calc(
+          -1 *
+            (
+              var(--catalog-mobile-toolbar-header-offset) +
+                var(--catalog-mobile-toolbar-block-size)
+            )
+        ),
+        0
+      );
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .setCardMobileLayoutToggle {
+        transition: none;
+      }
+    }
+
     .setCardCollectionBrowse.setCardCollectionMobileOneColumn {
       grid-template-columns: minmax(0, 1fr);
     }

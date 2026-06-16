@@ -22,6 +22,7 @@ import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogCollectionLandingPage,
   getCatalogCollectionLandingPageConfigWithPresentation,
+  getCatalogCollectionLandingPageSnapshot,
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
@@ -13523,6 +13524,113 @@ describe('catalog effective data access web', () => {
 
     expect(result.validPrimaryOfferCount).toBe(1);
     expect(result.primarySeedCount).toBe(1);
+  });
+});
+
+describe('collection page snapshot data access', () => {
+  test('loads compact collection commerce v2 fields while keeping price-map compatibility', async () => {
+    const selectedTables: string[] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      collectionSnapshotRows: [
+        {
+          collection_slug: 'lego-sets-onder-100-euro',
+          generated_at: '2026-06-15T08:00:00.000Z',
+          items_json: [
+            {
+              id: '10316',
+              slug: 'the-lord-of-the-rings-rivendell-10316',
+              name: 'Rivendell',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 6167,
+              imageUrl: 'https://img.example/10316.jpg',
+              bestPriceMinor: 9999,
+              commerce: {
+                setId: '10316',
+                slug: 'the-lord-of-the-rings-rivendell-10316',
+                currentPriceMinor: 9999,
+                merchantName: 'Proshop',
+                merchantSlug: 'proshop',
+                dealLabel: 'Sterke deal',
+                confidenceLabel: '3 vergeleken winkels',
+                primaryActionHref: 'https://merchant.example/10316',
+                commerceIntent: 'merchant',
+              },
+              priceContext: {
+                coverageLabel: 'Actuele prijs gevonden',
+                currentPrice: 'Vanaf € 99,99',
+                currentPriceMinor: 9999,
+                merchantLabel: 'Laagst bij Proshop',
+                merchantName: 'Proshop',
+                merchantSlug: 'proshop',
+                dealLabel: 'Sterke deal',
+                confidenceLabel: '3 vergeleken winkels',
+                primaryActionHref: 'https://merchant.example/10316',
+                commerceIntent: 'merchant',
+              },
+              offers: [{ priceMinor: 9999 }],
+            },
+          ],
+          page: 1,
+          page_size: 40,
+          sort_key: 'recommended',
+          total_count: 1,
+        },
+      ],
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      onSelect: (table) => selectedTables.push(table),
+    });
+
+    const snapshot = await getCatalogCollectionLandingPageSnapshot({
+      config: {
+        browseDescription: 'Budget sets.',
+        browseEyebrow: 'Budget',
+        browseTitle: 'Goede keuzes tot 100 euro',
+        canonicalPath: '/lego-sets-onder-100-euro',
+        description: 'LEGO sets onder 100 euro.',
+        filters: {
+          maxBestPriceMinor: 10_000,
+        },
+        h1: 'LEGO sets onder 100 euro',
+        intro: 'Kijk naar sets onder budget.',
+        links: {},
+        metaDescription: 'Bekijk LEGO sets onder 100 euro.',
+        metaTitle: 'LEGO sets onder 100 euro | Brickhunt',
+        signalLabel: 'sets onder 100 euro',
+        slug: 'lego-sets-onder-100-euro',
+        sort: {
+          default: 'recommended',
+          options: ['recommended'],
+        },
+      },
+      sortKey: 'recommended',
+      supabaseClient,
+    });
+
+    expect(selectedTables).toEqual(['collection_page_snapshots']);
+    expect(snapshot?.bestPriceMinorBySetId.get('10316')).toBe(9999);
+    expect(snapshot?.setCards[0]).toMatchObject({
+      id: '10316',
+      bestPriceMinor: 9999,
+      commerce: {
+        currentPriceMinor: 9999,
+        merchantName: 'Proshop',
+        merchantSlug: 'proshop',
+        dealLabel: 'Sterke deal',
+        confidenceLabel: '3 vergeleken winkels',
+        primaryActionHref: 'https://merchant.example/10316',
+        commerceIntent: 'merchant',
+      },
+      priceContext: {
+        currentPrice: 'Vanaf € 99,99',
+        merchantName: 'Proshop',
+        primaryActionHref: 'https://merchant.example/10316',
+        commerceIntent: 'merchant',
+      },
+    });
+    expect(JSON.stringify(snapshot?.setCards[0])).not.toContain('offers');
   });
 });
 

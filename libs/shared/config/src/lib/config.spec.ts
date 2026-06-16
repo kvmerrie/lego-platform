@@ -11,6 +11,7 @@ import {
   getBricksetGalleryRenderMode,
   buildArticlePath,
   buildCanonicalUrl,
+  buildDealCategoryPath,
   buildPublicSiteRobotsPolicy,
   buildPublicSetDetailUrl,
   buildThemePath,
@@ -26,9 +27,12 @@ import {
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
+  getIndexNowConfig,
+  getIndexNowKeyLocation,
   getMisterBricksFeedConfig,
   getWebNavigation,
   getMissingBrowserSupabaseEnvKeys,
+  getMissingIndexNowEnvKeys,
   getMissingMisterBricksEnvKeys,
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
@@ -40,6 +44,7 @@ import {
   getMissingTradeTrackerConradEnvKeys,
   getMissingTradeTrackerLidlEnvKeys,
   getMissingTradeDoublerMediaMarktEnvKeys,
+  getMissingUniekeBricksEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
@@ -53,10 +58,13 @@ import {
   getTradeTrackerConradFeedConfig,
   getTradeTrackerLidlFeedConfig,
   getTradeDoublerMediaMarktFeedConfig,
+  getUniekeBricksFeedConfig,
   resolveRakutenLegoFeedFilename,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   isLikelyPublicCatalogSetSlug,
+  indexNowDefaultEndpoint,
+  indexNowEnvKeys,
   hasAdtractionGoodbricksFeedConfig,
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
@@ -64,6 +72,7 @@ import {
   hasAwinProshopFeedConfig,
   hasBrowserSupabaseConfig,
   hasBrickfeverFeedConfig,
+  hasIndexNowConfig,
   hasMisterBricksFeedConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
@@ -75,10 +84,15 @@ import {
   hasTradeTrackerConradFeedConfig,
   hasTradeTrackerLidlFeedConfig,
   hasTradeDoublerMediaMarktFeedConfig,
+  hasUniekeBricksFeedConfig,
   isArticlePreviewEnabled,
+  isValidIndexNowKey,
+  publicDealCategoryRouteConfigs,
+  publicDealPathnames,
   publicSiteIndexingEnvKeys,
   publicSiteRobotsPolicy,
   bricksetGalleryEnvKeys,
+  resolveIndexNowEnabled,
   resolvePublicSiteAllowIndexing,
   brickfeverEnvKeys,
   awinProshopEnvKeys,
@@ -87,6 +101,7 @@ import {
   tradeDoublerMediaMarktEnvKeys,
   tradeTrackerCoppenswarenhuisEnvKeys,
   tradeTrackerConradEnvKeys,
+  uniekeBricksEnvKeys,
   webNavigation,
   platformConfig,
   resolvePublicMerchantDisplayName,
@@ -273,6 +288,7 @@ describe('shared config locale and market foundations', () => {
   });
 
   test('builds production canonical URLs without tracking, affiliate, sort, or trailing slash noise', () => {
+    expect(buildCanonicalUrl('/')).toBe('https://www.brickhunt.nl/');
     expect(
       buildCanonicalUrl(
         'https://staging.brickhunt.nl/sets/rivendell-10316/?utm_source=wa&awc=123&sort=price#reviews',
@@ -361,6 +377,31 @@ describe('shared config locale and market foundations', () => {
         suffix: '3 merchants shown',
       }),
     ).toBe('Nederlandse markt · EUR · new condition · 3 merchants shown');
+  });
+
+  test('defines canonical public deal pathnames from the shared route config', () => {
+    expect(
+      publicDealCategoryRouteConfigs.map((config) => config.categorySlug),
+    ).toEqual([
+      'grootste-kortingen',
+      'prijs-per-steen',
+      'onder-50',
+      'nieuwe-deals',
+      'onder-20',
+      'premium',
+    ]);
+    expect(buildDealCategoryPath('grootste-kortingen')).toBe(
+      '/deals/grootste-kortingen',
+    );
+    expect(publicDealPathnames).toEqual([
+      '/deals',
+      '/deals/grootste-kortingen',
+      '/deals/prijs-per-steen',
+      '/deals/onder-50',
+      '/deals/nieuwe-deals',
+      '/deals/onder-20',
+      '/deals/premium',
+    ]);
   });
 
   test('keeps the public site globally blocked from indexing during pre-launch', () => {
@@ -490,6 +531,30 @@ describe('shared config locale and market foundations', () => {
       isIndexablePage({
         allowIndexing: true,
         pathname: '/search?q=rivendell',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/api/v1/catalog/sets',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/admin/catalog',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/account',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/auth/callback',
       }),
     ).toBe(false);
     expect(
@@ -644,6 +709,80 @@ describe('shared config public web revalidation helpers', () => {
     expect(getMissingPublicWebRevalidationEnvKeys()).toEqual([
       'WEB_REVALIDATE_SECRET',
     ]);
+  });
+});
+
+describe('shared config IndexNow helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('validates IndexNow keys according to the public protocol shape', () => {
+    expect(isValidIndexNowKey('brickhunt-indexnow-key-2026')).toBe(true);
+    expect(isValidIndexNowKey('12345678')).toBe(true);
+    expect(isValidIndexNowKey('short')).toBe(false);
+    expect(isValidIndexNowKey('invalid key with spaces')).toBe(false);
+  });
+
+  test('defaults IndexNow to production canonical deployments and keeps local disabled', () => {
+    expect(resolveIndexNowEnabled({})).toBe(false);
+    expect(
+      resolveIndexNowEnabled({
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(true);
+    expect(
+      resolveIndexNowEnabled({
+        BRICKHUNT_DEPLOY_ENV: 'staging',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(false);
+  });
+
+  test('allows the explicit IndexNow feature flag to override defaults', () => {
+    expect(
+      resolveIndexNowEnabled({
+        [indexNowEnvKeys.enabled]: 'true',
+      }),
+    ).toBe(true);
+    expect(
+      resolveIndexNowEnabled({
+        [indexNowEnvKeys.enabled]: 'false',
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(false);
+  });
+
+  test('reads the IndexNow config with the canonical www host and key location', () => {
+    process.env.INDEXNOW_KEY = 'brickhunt-indexnow-key-2026';
+    process.env.INDEXNOW_ENABLED = 'true';
+
+    expect(hasIndexNowConfig()).toBe(true);
+    expect(getMissingIndexNowEnvKeys()).toEqual([]);
+    expect(getIndexNowKeyLocation('brickhunt-indexnow-key-2026')).toBe(
+      'https://www.brickhunt.nl/brickhunt-indexnow-key-2026.txt',
+    );
+    expect(getIndexNowConfig()).toEqual({
+      enabled: true,
+      endpoint: indexNowDefaultEndpoint,
+      host: 'www.brickhunt.nl',
+      key: 'brickhunt-indexnow-key-2026',
+      keyLocation: 'https://www.brickhunt.nl/brickhunt-indexnow-key-2026.txt',
+    });
+  });
+
+  test('reports the missing IndexNow key', () => {
+    delete process.env.INDEXNOW_KEY;
+
+    expect(hasIndexNowConfig()).toBe(false);
+    expect(getMissingIndexNowEnvKeys()).toEqual([indexNowEnvKeys.key]);
+    expect(() => getIndexNowConfig()).toThrow(
+      /Missing or invalid IndexNow key/u,
+    );
   });
 });
 
@@ -1185,6 +1324,51 @@ describe('shared config Brickfever feed helpers', () => {
 
     expect(hasBrickfeverFeedConfig()).toBe(false);
     expect(getMissingBrickfeverEnvKeys()).toEqual([brickfeverEnvKeys.feedUrl]);
+  });
+});
+
+describe('shared config Unieke Bricks feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Unieke Bricks feed config with sensible merchant defaults', () => {
+    process.env.UNIEKE_BRICKS_FEED_URL =
+      'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+
+    expect(hasUniekeBricksFeedConfig()).toBe(true);
+    expect(getMissingUniekeBricksEnvKeys()).toEqual([]);
+    expect(getUniekeBricksFeedConfig()).toEqual({
+      feedUrl:
+        'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      merchantSlug: 'uniekebricks',
+      merchantName: 'Unieke Bricks',
+    });
+  });
+
+  test('allows explicit Unieke Bricks merchant overrides', () => {
+    process.env.UNIEKE_BRICKS_FEED_URL =
+      'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+    process.env.UNIEKE_BRICKS_MERCHANT_SLUG = 'unieke-bricks-direct';
+    process.env.UNIEKE_BRICKS_MERCHANT_NAME = 'Unieke Bricks Direct';
+
+    expect(getUniekeBricksFeedConfig()).toEqual({
+      feedUrl:
+        'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      merchantSlug: 'unieke-bricks-direct',
+      merchantName: 'Unieke Bricks Direct',
+    });
+  });
+
+  test('reports the missing Unieke Bricks feed URL', () => {
+    delete process.env.UNIEKE_BRICKS_FEED_URL;
+
+    expect(hasUniekeBricksFeedConfig()).toBe(false);
+    expect(getMissingUniekeBricksEnvKeys()).toEqual([
+      uniekeBricksEnvKeys.feedUrl,
+    ]);
   });
 });
 

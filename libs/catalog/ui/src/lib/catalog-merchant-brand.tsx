@@ -34,6 +34,8 @@ const MERCHANT_FAVICON_BY_KEY: Record<string, string> = {
   'rakuten-lego-eu': 'rakuten-lego-eu.png',
   top1toys: 'top1toys.png',
   'top-1-toys': 'top1toys.png',
+  uniekebricks: 'uniekebricks.png',
+  'unieke-bricks': 'uniekebricks.png',
   wehkamp: 'wehkamp.ico',
 };
 // Smyths Toys is intentionally omitted until its official site returns a

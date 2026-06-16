@@ -1,9 +1,42 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { getCatalogCollectionLandingPageConfig } from '@lego-platform/catalog/util';
 import { CatalogFeatureCollectionLandingPage } from './catalog-feature-collection-landing';
+
+function createSetCard(index: number) {
+  return {
+    id: `set-${index}`,
+    slug: `set-${index}`,
+    name: `Set ${index}`,
+    theme: 'Icons',
+    releaseYear: 2026,
+    pieces: 100 + index,
+  };
+}
+
+function readCollectionLandingCss(): string {
+  const candidatePaths = [
+    resolve(
+      process.cwd(),
+      'src/lib/catalog-feature-collection-landing.module.css',
+    ),
+    resolve(
+      process.cwd(),
+      'libs/catalog/feature-collection-landing/src/lib/catalog-feature-collection-landing.module.css',
+    ),
+  ];
+  const cssPath = candidatePaths.find((candidatePath) =>
+    existsSync(candidatePath),
+  );
+
+  if (!cssPath) {
+    throw new Error('Missing collection landing CSS fixture.');
+  }
+
+  return readFileSync(cssPath, 'utf-8');
+}
 
 describe('CatalogFeatureCollectionLandingPage', () => {
   it('renders indexable collection content with sort links and internal links', () => {
@@ -62,6 +95,190 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('?sort=newest');
     expect(markup).toContain('href="/lego-voor-volwassenen?page=2"');
     expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('data-active="true"');
+  });
+
+  it('renders sort navigation as URL-driven tabs instead of pill chips', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-voor-volwassenen',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="newest"
+        config={config}
+        setCards={[createSetCard(1)]}
+        totalSetCount={1}
+      />,
+    );
+    const css = readCollectionLandingCss();
+    const sortLinkRule =
+      css.match(/\.sortLink \{(?<body>[^}]+)\}/u)?.groups?.body ?? '';
+
+    expect(markup).toContain('aria-label="Sorteer sets"');
+    expect(markup).toContain('href="/lego-voor-volwassenen?sort=newest"');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('data-active="true"');
+    expect(css).toContain('.sortLink::after');
+    expect(css).toContain(".sortLink[aria-current='page']::after");
+    expect(css).toContain('overflow-x: auto;');
+    expect(css).toContain('white-space: nowrap;');
+    expect(sortLinkRule).not.toContain('border:');
+    expect(sortLinkRule).not.toContain('border-radius');
+    expect(sortLinkRule).not.toContain('background:');
+  });
+
+  it('keeps sort tabs separate from the mobile view toolbar', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-voor-volwassenen',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        setCards={[createSetCard(1)]}
+        totalSetCount={1}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Sorteer sets"');
+    expect(markup).toContain('aria-label="Mobiele kaartweergave"');
+    expect(markup.indexOf('aria-label="Sorteer sets"')).toBeLessThan(
+      markup.indexOf('aria-label="Mobiele kaartweergave"'),
+    );
+    expect(markup).toContain('Weergave');
+    expect(markup).toContain('aria-label="Toon grote kaarten"');
+    expect(markup).toContain('aria-label="Toon compacte kaarten"');
+  });
+
+  it('shows total-aware result count copy for the first page', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-sets-onder-100-euro',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        currentPage={1}
+        pageSize={40}
+        setCards={Array.from({ length: 40 }, (_, index) =>
+          createSetCard(index + 1),
+        )}
+        totalSetCount={123}
+      />,
+    );
+
+    expect(markup).toContain('40 van 123 sets weergegeven');
+    expect(markup).not.toContain('producten worden weergegeven');
+  });
+
+  it('shows a result range after the first page', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-sets-onder-100-euro',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        currentPage={2}
+        pageSize={40}
+        setCards={Array.from({ length: 40 }, (_, index) =>
+          createSetCard(index + 41),
+        )}
+        totalSetCount={123}
+      />,
+    );
+
+    expect(markup).toContain('41–80 van 123 sets weergegeven');
+  });
+
+  it('shows the final result range on the last page', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-sets-onder-100-euro',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        currentPage={4}
+        pageSize={40}
+        setCards={Array.from({ length: 3 }, (_, index) =>
+          createSetCard(index + 121),
+        )}
+        totalSetCount={123}
+      />,
+    );
+
+    expect(markup).toContain('121–123 van 123 sets weergegeven');
+  });
+
+  it('shows a compact result count when all sets fit on one page', () => {
+    const config = getCatalogCollectionLandingPageConfig(
+      'lego-sets-onder-100-euro',
+    );
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="recommended"
+        config={config}
+        pageSize={40}
+        setCards={Array.from({ length: 23 }, (_, index) =>
+          createSetCard(index + 1),
+        )}
+        totalSetCount={23}
+      />,
+    );
+
+    expect(markup).toContain('23 sets weergegeven');
+  });
+
+  it('uses an honest empty result count when no sets are available', () => {
+    const config = getCatalogCollectionLandingPageConfig('nieuwe-lego-sets');
+
+    if (!config) {
+      throw new Error('Missing test config.');
+    }
+
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureCollectionLandingPage
+        activeSortKey="newest"
+        config={config}
+        pageSize={40}
+        setCards={[]}
+        totalSetCount={0}
+      />,
+    );
+
+    expect(markup).toContain('Geen sets gevonden');
+    expect(markup).not.toContain('producten');
   });
 
   it('keeps the destination hero on the shared black button treatment', () => {
@@ -111,13 +328,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
         totalSetCount={0}
       />,
     );
-    const css = readFileSync(
-      resolve(
-        process.cwd(),
-        'src/lib/catalog-feature-collection-landing.module.css',
-      ),
-      'utf-8',
-    );
+    const css = readCollectionLandingCss();
 
     expect(markup).toContain('--collection-page-surface:#123047');
     expect(markup).toContain('--collection-page-text:#ffffff');

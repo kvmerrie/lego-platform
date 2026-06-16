@@ -60,6 +60,10 @@ const nextConfig = {
 
     return [
       {
+        source: '/:indexNowKey([A-Za-z0-9-]{8,128}).txt',
+        destination: '/_indexnow/:indexNowKey',
+      },
+      {
         source: '/images/sets/:setId/gallery/:file',
         destination: `${catalogSetImagesStorageOrigin}${catalogSetImagesStoragePublicPath}/sets/:setId/gallery/:file`,
       },
