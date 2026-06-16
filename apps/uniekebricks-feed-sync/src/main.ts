@@ -6,6 +6,7 @@ import {
   syncUniekeBricksFeed,
 } from '@lego-platform/api/data-access-server';
 import {
+  getUniekeBricksFeedConfig,
   getMissingServerSupabaseEnvKeys,
   getMissingUniekeBricksEnvKeys,
   hasServerSupabaseConfig,
@@ -128,8 +129,11 @@ async function main() {
     );
   }
 
+  const feedConfig = getUniekeBricksFeedConfig();
+  const originMode = feedConfig.feedOriginUrl ? 'ip' : 'public';
+
   console.log(
-    `[uniekebricks-feed-sync] start source=direct merchant=uniekebricks mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
+    `[uniekebricks-feed-sync] start source=direct merchant=uniekebricks origin_mode=${originMode} mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
   );
 
   const result = await syncUniekeBricksFeed({
@@ -254,20 +258,23 @@ async function main() {
   }
 
   console.log(
-    `[uniekebricks-feed-sync] end status=imported source=direct merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} availability_distribution=${JSON.stringify(result.availabilityDistribution)} excluded_reasons=${JSON.stringify(result.excludedReasonCounts)} parse_failures=${result.parseFailureCount} duration_ms=${Date.now() - startedAt}`,
+    `[uniekebricks-feed-sync] end status=imported source=direct merchant=${result.merchantSlug} origin_mode=${result.originMode} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} remaining_stale_success_latest=${result.existingStaleSuccessLatestCount} remaining_stale_success_by_age_bucket=${JSON.stringify(result.existingStaleSuccessLatestByAgeBucket ?? {})} remaining_stale_success_duplicate_seed_count=${result.existingStaleSuccessLatestDuplicateSeedCount ?? 0} remaining_stale_success_missing_from_feed_count=${result.existingStaleSuccessLatestMissingFromFeedCount ?? 0} remaining_stale_success_sample=${JSON.stringify(result.existingStaleSuccessLatestSample)} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} availability_distribution=${JSON.stringify(result.availabilityDistribution)} excluded_reasons=${JSON.stringify(result.excludedReasonCounts)} parse_failures=${result.parseFailureCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
 main().catch((error) => {
+  const originMode = process.env.UNIEKE_BRICKS_FEED_ORIGIN_URL?.trim()
+    ? 'ip'
+    : 'public';
   const classification = logScheduledJobFailure({
-    context: 'source=direct merchant=uniekebricks',
+    context: `source=direct merchant=uniekebricks origin_mode=${originMode}`,
     error,
     jobName: 'uniekebricks-feed-sync',
   });
 
   if (classification.recoverable) {
     console.warn(
-      `[uniekebricks-feed-sync] end status=degraded source=direct merchant=uniekebricks import_skipped=true latest_rows_marked_stale=0 reason=${classification.failureType}`,
+      `[uniekebricks-feed-sync] end status=degraded source=direct merchant=uniekebricks origin_mode=${originMode} import_skipped=true latest_rows_marked_stale=0 reason=${classification.failureType}`,
     );
   }
 

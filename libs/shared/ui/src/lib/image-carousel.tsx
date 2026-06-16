@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
+  type SyntheticEvent as ReactSyntheticEvent,
   type TransitionEvent as ReactTransitionEvent,
   useCallback,
   useEffect,
@@ -118,6 +119,10 @@ const LIGHTBOX_DOUBLE_TAP_MAX_DELAY_MS = 280;
 const LIGHTBOX_DOUBLE_TAP_MAX_DISTANCE_PX = 26;
 const LIGHTBOX_DOUBLE_TAP_LOCK_MS = 320;
 const LIGHTBOX_MOUSE_DRAG_CLICK_SUPPRESS_MS = 240;
+const LIGHTBOX_IMAGE_FALLBACK_WIDTH = 1600;
+const LIGHTBOX_IMAGE_FALLBACK_HEIGHT = 1000;
+const LIGHTBOX_IMAGE_FALLBACK_ASPECT_RATIO =
+  LIGHTBOX_IMAGE_FALLBACK_WIDTH / LIGHTBOX_IMAGE_FALLBACK_HEIGHT;
 const LIGHTBOX_ZOOM_ANIMATION_MS = 220;
 const LIGHTBOX_MOMENTUM_FRICTION = 0.92;
 const LIGHTBOX_MOMENTUM_MIN_VELOCITY_PX_PER_MS = 0.018;
@@ -231,8 +236,18 @@ function getGalleryImageOrientation(
 
 function getGalleryImageFrameStyle(
   image: GalleryImage,
+  {
+    fallbackAspectRatio,
+    measuredAspectRatio,
+  }: {
+    fallbackAspectRatio?: number;
+    measuredAspectRatio?: number;
+  } = {},
 ): CSSProperties | undefined {
-  const aspectRatio = getGalleryImageAspectRatio(image);
+  const aspectRatio =
+    measuredAspectRatio ??
+    getGalleryImageAspectRatio(image) ??
+    fallbackAspectRatio;
 
   if (!aspectRatio) {
     return undefined;
@@ -470,12 +485,17 @@ function GalleryImageMedia({
   kind,
   isFallbackVisible,
   onImageError,
+  onImageLoad,
 }: {
   image: GalleryImage;
   imageIndex: number;
   kind: GalleryImageMediaKind;
   isFallbackVisible: boolean;
   onImageError: (imageIndex: number) => void;
+  onImageLoad: (
+    imageIndex: number,
+    event: ReactSyntheticEvent<HTMLImageElement>,
+  ) => void;
 }) {
   const imageSource =
     kind === 'thumbnail' && image.thumbnailSrc
@@ -499,22 +519,50 @@ function GalleryImageMedia({
     );
   }
 
+  const imageClassName = joinClasses(
+    styles.galleryImage,
+    kind === 'article'
+      ? styles.galleryImageArticle
+      : kind === 'thumbnail'
+        ? styles.galleryImageThumbnail
+        : kind === 'overview'
+          ? styles.galleryImageOverview
+          : kind === 'lightbox'
+            ? styles.galleryImageLightbox
+            : styles.galleryImageDetail,
+  );
+
   if (isLocalImageSource(imageSource)) {
+    if (kind === 'lightbox') {
+      return (
+        <Image
+          alt={image.alt}
+          className={imageClassName}
+          height={getGalleryImageIntrinsicDimension({
+            fallback: LIGHTBOX_IMAGE_FALLBACK_HEIGHT,
+            value: image.height,
+          })}
+          onError={() => onImageError(imageIndex)}
+          onLoad={(event) => onImageLoad(imageIndex, event)}
+          priority={imageIndex === 0}
+          quality={getGalleryImageQuality(kind)}
+          sizes="(max-width: 1280px) 100vw, 1400px"
+          src={imageSource}
+          width={getGalleryImageIntrinsicDimension({
+            fallback: LIGHTBOX_IMAGE_FALLBACK_WIDTH,
+            value: image.width,
+          })}
+        />
+      );
+    }
+
     return (
       <Image
         alt={image.alt}
-        className={joinClasses(
-          styles.galleryImage,
-          kind === 'article'
-            ? styles.galleryImageArticle
-            : kind === 'thumbnail'
-              ? styles.galleryImageThumbnail
-              : kind === 'overview'
-                ? styles.galleryImageOverview
-                : styles.galleryImageDetail,
-        )}
+        className={imageClassName}
         fill
         onError={() => onImageError(imageIndex)}
+        onLoad={(event) => onImageLoad(imageIndex, event)}
         priority={imageIndex === 0 && kind !== 'overview'}
         quality={getGalleryImageQuality(kind)}
         sizes={
@@ -536,20 +584,16 @@ function GalleryImageMedia({
   return (
     <img
       alt={image.alt}
-      className={joinClasses(
-        styles.galleryImage,
-        kind === 'article'
-          ? styles.galleryImageArticle
-          : kind === 'thumbnail'
-            ? styles.galleryImageThumbnail
-            : kind === 'overview'
-              ? styles.galleryImageOverview
-              : styles.galleryImageDetail,
-      )}
+      className={imageClassName}
       decoding="async"
       fetchPriority={kind === 'detail' && imageIndex === 0 ? 'high' : 'auto'}
       height={getGalleryImageIntrinsicDimension({
-        fallback: kind === 'thumbnail' ? 160 : kind === 'detail' ? 900 : 1000,
+        fallback:
+          kind === 'thumbnail'
+            ? 160
+            : kind === 'detail'
+              ? 900
+              : LIGHTBOX_IMAGE_FALLBACK_HEIGHT,
         value: image.height,
       })}
       loading={
@@ -562,9 +606,15 @@ function GalleryImageMedia({
             : 'lazy'
       }
       onError={() => onImageError(imageIndex)}
+      onLoad={(event) => onImageLoad(imageIndex, event)}
       src={imageSource}
       width={getGalleryImageIntrinsicDimension({
-        fallback: kind === 'thumbnail' ? 224 : kind === 'detail' ? 900 : 1600,
+        fallback:
+          kind === 'thumbnail'
+            ? 224
+            : kind === 'detail'
+              ? 900
+              : LIGHTBOX_IMAGE_FALLBACK_WIDTH,
         value: image.width,
       })}
     />
@@ -604,6 +654,9 @@ export function ImageGallery({
   const [failedImageIndexes, setFailedImageIndexes] = useState<
     Record<number, true>
   >({});
+  const [measuredImageAspectRatios, setMeasuredImageAspectRatios] = useState<
+    Record<number, number>
+  >({});
   const [detailImageIndex, setDetailImageIndex] = useState(0);
   const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(
     null,
@@ -625,7 +678,7 @@ export function ImageGallery({
   const lightboxPrimaryButtonRef = useRef<HTMLButtonElement>(null);
   const lightboxDialogRef = useRef<HTMLDivElement>(null);
   const lightboxMediaFrameRef = useRef<HTMLDivElement>(null);
-  const lightboxOverviewReturnKeyRef = useRef(0);
+  const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const swipeStateRef = useRef<{
     mode: 'horizontal' | 'vertical' | null;
     pointerId: number | null;
@@ -677,7 +730,6 @@ export function ImageGallery({
   const lightboxOpenAnimationFrameRef = useRef<number | null>(null);
   const lightboxCloseFallbackTimerRef = useRef<number | null>(null);
   const suppressDetailClickRef = useRef(false);
-  const pendingOverviewFocusIndexRef = useRef<number | null>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
   const swipeSettleTimersRef = useRef<Record<SwipeTarget, number | null>>({
     detail: null,
@@ -1152,11 +1204,18 @@ export function ImageGallery({
     pendingOverviewFocusIndexRef.current = null;
 
     window.requestAnimationFrame(() => {
-      overviewImageButtonRefs.current[focusIndex]?.focus({
-        preventScroll: true,
+      const overviewButton =
+        overviewImageButtonRefs.current[
+          clampIndex(focusIndex, resolvedImages.length)
+        ];
+
+      overviewButton?.focus({ preventScroll: true });
+      overviewButton?.scrollIntoView?.({
+        block: 'nearest',
+        inline: 'nearest',
       });
     });
-  }, [lightboxMode]);
+  }, [lightboxMode, resolvedImages.length]);
 
   useEffect(
     () => () => {
@@ -1232,7 +1291,8 @@ export function ImageGallery({
       ),
     ),
   ];
-
+  const isDetailLightboxViewer =
+    lightboxMode === 'viewer' && variant === 'detail';
   function handleImageError(imageIndex: number) {
     setFailedImageIndexes((currentIndexes) =>
       currentIndexes[imageIndex]
@@ -1240,6 +1300,33 @@ export function ImageGallery({
         : {
             ...currentIndexes,
             [imageIndex]: true,
+          },
+    );
+  }
+
+  function handleImageLoad(
+    imageIndex: number,
+    event: ReactSyntheticEvent<HTMLImageElement>,
+  ) {
+    const { naturalHeight, naturalWidth } = event.currentTarget;
+
+    if (
+      !Number.isFinite(naturalWidth) ||
+      !Number.isFinite(naturalHeight) ||
+      naturalWidth <= 0 ||
+      naturalHeight <= 0
+    ) {
+      return;
+    }
+
+    const measuredAspectRatio = naturalWidth / naturalHeight;
+
+    setMeasuredImageAspectRatios((currentRatios) =>
+      Math.abs((currentRatios[imageIndex] ?? 0) - measuredAspectRatio) < 0.001
+        ? currentRatios
+        : {
+            ...currentRatios,
+            [imageIndex]: measuredAspectRatio,
           },
     );
   }
@@ -1276,26 +1363,20 @@ export function ImageGallery({
   }
 
   function returnToLightboxOverview() {
+    if (safeLightboxImageIndex === null || !hasMultipleImages) {
+      closeLightbox();
+      return;
+    }
+
     pendingOverviewFocusIndexRef.current = safeLightboxImageIndex;
     resetLightboxZoom();
-    setLightboxOverviewReturnTransition(
-      safeLightboxImageIndex === null
-        ? null
-        : {
-            imageIndex: safeLightboxImageIndex,
-            key: (lightboxOverviewReturnKeyRef.current += 1),
-          },
-    );
+    setLightboxOverviewReturnTransition(null);
     setLightboxImageTransitionReason('return_to_gallery');
     setLightboxMode('overview');
   }
 
   function handleLightboxCloseButtonClick() {
-    if (
-      lightboxMode === 'viewer' &&
-      variant === 'detail' &&
-      hasMultipleImages
-    ) {
+    if (isDetailLightboxViewer && hasMultipleImages) {
       returnToLightboxOverview();
       return;
     }
@@ -2183,6 +2264,10 @@ export function ImageGallery({
               ? `lightbox-enter-${lightboxImageTransitionReason}-${getGalleryImageKey(image, imageIndex)}`
               : undefined
           }
+          style={getGalleryImageFrameStyle(image, {
+            fallbackAspectRatio: LIGHTBOX_IMAGE_FALLBACK_ASPECT_RATIO,
+            measuredAspectRatio: measuredImageAspectRatios[imageIndex],
+          })}
         >
           <GalleryImageMedia
             image={image}
@@ -2190,6 +2275,7 @@ export function ImageGallery({
             kind={kind}
             isFallbackVisible={Boolean(failedImageIndexes[imageIndex])}
             onImageError={handleImageError}
+            onImageLoad={handleImageLoad}
           />
         </span>
       );
@@ -2282,41 +2368,31 @@ export function ImageGallery({
           role="dialog"
           tabIndex={-1}
         >
-          <div className={styles.lightboxHeader}>
-            {lightboxMode === 'viewer' &&
-            variant === 'detail' &&
-            hasMultipleImages ? (
-              <p aria-live="polite" className={styles.lightboxIndicator}>
-                {safeLightboxImageIndex + 1}/{resolvedImages.length}
-              </p>
-            ) : lightboxMode === 'overview' ? (
-              <p aria-live="polite" className={styles.lightboxIndicator}>
-                Alle afbeeldingen
-              </p>
-            ) : hasMultipleImages ? (
-              <p aria-live="polite" className={styles.lightboxIndicator}>
-                {safeLightboxImageIndex + 1} / {resolvedImages.length}
-              </p>
-            ) : (
-              <span />
-            )}
-            <button
-              aria-label={
-                lightboxMode === 'viewer' &&
-                variant === 'detail' &&
-                hasMultipleImages
-                  ? 'Toon alle afbeeldingen'
-                  : 'Sluit galerij'
-              }
-              className={styles.lightboxCloseButton}
-              data-lightbox-close="true"
-              onClick={handleLightboxCloseButtonClick}
-              ref={lightboxPrimaryButtonRef}
-              type="button"
-            >
-              <X aria-hidden="true" size={18} strokeWidth={2.2} />
-            </button>
-          </div>
+          {isDetailLightboxViewer ? null : (
+            <div className={styles.lightboxHeader}>
+              {lightboxMode === 'overview' ? (
+                <p aria-live="polite" className={styles.lightboxIndicator}>
+                  Alle afbeeldingen
+                </p>
+              ) : hasMultipleImages ? (
+                <p aria-live="polite" className={styles.lightboxIndicator}>
+                  {safeLightboxImageIndex + 1} / {resolvedImages.length}
+                </p>
+              ) : (
+                <span />
+              )}
+              <button
+                aria-label="Sluit galerij"
+                className={styles.lightboxCloseButton}
+                data-lightbox-close="true"
+                onClick={handleLightboxCloseButtonClick}
+                ref={lightboxPrimaryButtonRef}
+                type="button"
+              >
+                <X aria-hidden="true" size={18} strokeWidth={2.2} />
+              </button>
+            </div>
+          )}
 
           {lightboxMode === 'overview' ? (
             <div className={styles.lightboxOverviewBody}>
@@ -2332,6 +2408,12 @@ export function ImageGallery({
                     className={styles.lightboxOverviewReturnFrame}
                     style={getGalleryImageFrameStyle(
                       lightboxOverviewReturnImage,
+                      {
+                        measuredAspectRatio:
+                          measuredImageAspectRatios[
+                            lightboxOverviewReturnTransition.imageIndex
+                          ],
+                      },
                     )}
                   >
                     <GalleryImageMedia
@@ -2344,6 +2426,7 @@ export function ImageGallery({
                         ],
                       )}
                       onImageError={handleImageError}
+                      onImageLoad={handleImageLoad}
                     />
                   </span>
                 </span>
@@ -2395,7 +2478,10 @@ export function ImageGallery({
                       >
                         <span
                           className={styles.lightboxOverviewFrame}
-                          style={getGalleryImageFrameStyle(image)}
+                          style={getGalleryImageFrameStyle(image, {
+                            measuredAspectRatio:
+                              measuredImageAspectRatios[imageIndex],
+                          })}
                         >
                           <GalleryImageMedia
                             image={image}
@@ -2405,6 +2491,7 @@ export function ImageGallery({
                               failedImageIndexes[imageIndex],
                             )}
                             onImageError={handleImageError}
+                            onImageLoad={handleImageLoad}
                           />
                         </span>
                       </button>
@@ -2414,7 +2501,36 @@ export function ImageGallery({
               </div>
             </div>
           ) : (
-            <div className={styles.lightboxViewport}>
+            <div
+              className={styles.lightboxViewport}
+              data-lightbox-stage="viewer"
+            >
+              {isDetailLightboxViewer ? (
+                <>
+                  <p
+                    aria-label={`Afbeelding ${safeLightboxImageIndex + 1} van ${resolvedImages.length}`}
+                    aria-live="polite"
+                    className={styles.lightboxCounterOverlay}
+                  >
+                    {safeLightboxImageIndex + 1}/{resolvedImages.length}
+                  </p>
+                  <button
+                    aria-label={
+                      hasMultipleImages
+                        ? 'Terug naar overzicht'
+                        : 'Sluit galerij'
+                    }
+                    className={styles.lightboxCloseButton}
+                    data-lightbox-close="true"
+                    data-lightbox-overlay-control="close"
+                    onClick={handleLightboxCloseButtonClick}
+                    ref={lightboxPrimaryButtonRef}
+                    type="button"
+                  >
+                    <X aria-hidden="true" size={18} strokeWidth={2.2} />
+                  </button>
+                </>
+              ) : null}
               {hasMultipleImages ? (
                 <button
                   aria-label="Vorige afbeelding"
@@ -2489,6 +2605,10 @@ export function ImageGallery({
                 }}
                 style={getGalleryImageFrameStyle(
                   resolvedImages[safeLightboxImageIndex],
+                  {
+                    measuredAspectRatio:
+                      measuredImageAspectRatios[safeLightboxImageIndex],
+                  },
                 )}
               >
                 <span
@@ -2579,6 +2699,7 @@ export function ImageGallery({
                         failedImageIndexes[imageIndex],
                       )}
                       onImageError={handleImageError}
+                      onImageLoad={handleImageLoad}
                     />
                   </div>
                 </button>
@@ -2626,6 +2747,7 @@ export function ImageGallery({
                           failedImageIndexes[imageIndex],
                         )}
                         onImageError={handleImageError}
+                        onImageLoad={handleImageLoad}
                       />
                       {hiddenArticleImageCount > 0 &&
                       imageIndex === visibleArticleImages.length - 1 ? (
@@ -2704,6 +2826,10 @@ export function ImageGallery({
                   data-swipe-target="detail"
                   style={getGalleryImageFrameStyle(
                     resolvedImages[safeDetailImageIndex],
+                    {
+                      measuredAspectRatio:
+                        measuredImageAspectRatios[safeDetailImageIndex],
+                    },
                   )}
                 >
                   {renderSwipeableMedia({
@@ -2786,6 +2912,7 @@ export function ImageGallery({
                             failedImageIndexes[imageIndex],
                           )}
                           onImageError={handleImageError}
+                          onImageLoad={handleImageLoad}
                         />
                       </div>
                     </button>

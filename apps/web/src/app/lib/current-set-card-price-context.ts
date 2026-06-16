@@ -561,6 +561,11 @@ export function buildCurrentSetCardPriceContext({
   )
     ? undefined
     : decisionPresentation.cardSupportingCopy;
+  const merchantName = getPublicBestOfferMerchantName(bestOffer);
+  const merchantSlug =
+    'merchantSlug' in bestOffer && typeof bestOffer.merchantSlug === 'string'
+      ? bestOffer.merchantSlug
+      : undefined;
 
   return {
     coverageLabel: getCoverageLabel(currentOfferSummary),
@@ -575,9 +580,9 @@ export function buildCurrentSetCardPriceContext({
     }),
     decisionLabel,
     decisionNote,
-    merchantLabel: `Nu het laagst bij ${getPublicBestOfferMerchantName(
-      bestOffer,
-    )}`,
+    merchantLabel: `Nu het laagst bij ${merchantName}`,
+    merchantName,
+    merchantSlug,
     primaryActionHref: bestOffer.url,
     pricePositionLabel: getPricePositionLabel({
       currencyCode: bestOffer.currency,

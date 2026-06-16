@@ -205,28 +205,30 @@ describe('CatalogOfferComparisonRail overlay', () => {
     expect(container.textContent).not.toContain('LEGO® LEGO®');
   });
 
-  it('marks the cheapest merchant as the best deal even when another merchant is recommended', () => {
+  it('uses the canonical best offer for the best-deal badge even when a stale lower price is visible', () => {
     act(() => {
       root.render(
         <CatalogOfferComparisonRail
           offers={[
             {
-              checkedLabel: 'Vandaag om 09:05',
-              ctaHref: 'https://example.com/coolblue',
-              ctaLabel: 'Bekijk bij Coolblue',
+              checkedLabel: 'Vandaag om 06:06',
+              ctaHref: 'https://example.com/proshop',
+              ctaLabel: 'Bekijk bij Proshop',
               isBest: true,
-              merchantLabel: 'Coolblue',
-              price: '€ 179,00',
-              rankingLabel: '€ 0,26 boven laagste prijs',
+              merchantLabel: 'Proshop',
+              merchantSlug: 'proshop',
+              price: '€ 176,67',
+              rankingLabel: 'Laagste prijs op voorraad',
               stockLabel: 'Op voorraad',
             },
             {
-              checkedLabel: 'Vandaag om 09:00',
-              ctaHref: 'https://example.com/proshop',
-              ctaLabel: 'Bekijk bij Proshop',
-              merchantLabel: 'Proshop',
-              price: '€ 178,74',
-              rankingLabel: 'Laagste prijs',
+              checkedLabel: '7 mei om 05:01',
+              ctaHref: 'https://example.com/mediamarkt',
+              ctaLabel: 'Bekijk bij MediaMarkt',
+              merchantLabel: 'MediaMarkt',
+              merchantSlug: 'mediamarkt',
+              price: '€ 175,00',
+              rankingLabel: '€ 1,67 lager, maar niet recent genoeg',
               stockLabel: 'Op voorraad',
             },
             {
@@ -246,16 +248,16 @@ describe('CatalogOfferComparisonRail overlay', () => {
     });
 
     const proshopCard = getVisibleOfferCard('Proshop');
-    const coolblueCard = getVisibleOfferCard('Coolblue');
+    const mediaMarktCard = getVisibleOfferCard('MediaMarkt');
 
     expect(proshopCard.getAttribute('data-best')).toBe('true');
     expect(proshopCard.textContent).toContain('Beste deal');
-    expect(proshopCard.textContent).toContain('€71 goedkoper dan LEGO');
-    expect(proshopCard.textContent).not.toContain('€0,26 goedkoper');
     expect(proshopCard.textContent).toContain('Naar winkel');
-    expect(coolblueCard.getAttribute('data-best')).toBe('false');
-    expect(coolblueCard.textContent).not.toContain('Beste deal');
-    expect(coolblueCard.textContent).not.toContain('€0,26 duurder');
+    expect(mediaMarktCard.getAttribute('data-best')).toBe('false');
+    expect(mediaMarktCard.textContent).not.toContain('Beste deal');
+    expect(mediaMarktCard.textContent).toContain(
+      '€ 1,67 lager, maar niet recent genoeg',
+    );
   });
 
   it('treats a one-cent price difference as enough for a single best deal badge', () => {
@@ -275,7 +277,6 @@ describe('CatalogOfferComparisonRail overlay', () => {
               checkedLabel: 'Vandaag om 09:01',
               ctaHref: 'https://example.com/coolblue',
               ctaLabel: 'Bekijk bij Coolblue',
-              isBest: true,
               merchantLabel: 'Coolblue',
               price: '€ 178,75',
               stockLabel: 'Op voorraad',

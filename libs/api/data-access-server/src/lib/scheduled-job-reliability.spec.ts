@@ -64,6 +64,18 @@ describe('scheduled job reliability', () => {
     });
   });
 
+  test('treats temporary upstream non-XML responses as recoverable degraded runs', () => {
+    expect(
+      classifyScheduledJobFailure(
+        new Error('Unieke Bricks feed returned non-XML upstream response.'),
+      ),
+    ).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_invalid_response',
+      recoverable: true,
+    });
+  });
+
   test('keeps missing feed configuration as hard failures', () => {
     expect(
       classifyScheduledJobFailure(

@@ -6,12 +6,14 @@ import { selectBestPurchasableOffer as selectBestPurchasableOfferInternal } from
 export {
   DEFAULT_BEST_PURCHASABLE_OFFER_MAX_AGE_DAYS,
   dedupeCommerceOffersByPublicMerchant as dedupeCatalogOffersByPublicMerchant,
+  getCommercePurchasableOfferRejectionReason,
   getCommerceOfferMerchantSlug as getCatalogOfferMerchantSlug,
   getCommerceOfferPublicMerchantName as getCatalogOfferPublicMerchantName,
   selectBestPurchasableOffer,
 } from '@lego-platform/shared/config';
 export type {
   BestPurchasableOfferDebugSignals,
+  BestPurchasableOfferRejectionReason,
   BestPurchasableOfferResult,
   BestPurchasableOfferSelectionReason,
   SelectBestPurchasableOfferOptions,

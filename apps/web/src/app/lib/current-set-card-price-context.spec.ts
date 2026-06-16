@@ -136,6 +136,40 @@ describe('buildCurrentSetCardPriceContext', () => {
     expect(result?.decisionLabel).toBe('Actuele prijs binnen');
   });
 
+  it('uses the canonical best offer for card price, merchant, and action when a stale lower snapshot offer is present', () => {
+    const staleMediaMarktOffer = createOffer({
+      checkedAt: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+      merchantName: 'MediaMarkt',
+      merchantSlug: 'mediamarkt',
+      priceCents: 17_500,
+      setId: '21061',
+      url: 'https://example.com/21061-mediamarkt',
+    });
+    const proshopOffer = createOffer({
+      checkedAt: RECENT_CHECKED_AT,
+      merchantName: 'Proshop',
+      merchantSlug: 'proshop',
+      priceCents: 17_667,
+      setId: '21061',
+      url: 'https://example.com/21061-proshop',
+    });
+
+    const result = buildCurrentSetCardPriceContext({
+      currentOfferSummary: {
+        bestOffer: staleMediaMarktOffer,
+        offers: [staleMediaMarktOffer, proshopOffer],
+        setId: '21061',
+      },
+      theme: 'Architecture',
+    });
+
+    expect(result?.currentPrice).toBe('€ 176,67');
+    expect(result?.merchantLabel).toBe('Nu het laagst bij Proshop');
+    expect(result?.merchantName).toBe('Proshop');
+    expect(result?.merchantSlug).toBe('proshop');
+    expect(result?.primaryActionHref).toBe('https://example.com/21061-proshop');
+  });
+
   it('uses official LEGO pricing as a public comparison when available', () => {
     const legoOffer = {
       ...createOffer({

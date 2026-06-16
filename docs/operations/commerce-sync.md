@@ -591,10 +591,14 @@ Recommended cadence:
 
 Unieke Bricks job notes:
 
-- keep `UNIEKE_BRICKS_FEED_URL`, `UNIEKE_BRICKS_MERCHANT_SLUG`, `UNIEKE_BRICKS_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
-- the feed URL comes from the WooCommerce Product Feed Pro output URL in Unieke Bricks; keep the generated XML URL in Render and `.env.local`, not in committed config
+- keep `UNIEKE_BRICKS_FEED_URL`, `UNIEKE_BRICKS_FEED_ORIGIN_URL`, `UNIEKE_BRICKS_MERCHANT_SLUG`, `UNIEKE_BRICKS_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- `UNIEKE_BRICKS_FEED_URL` is the public WooCommerce Product Feed Pro XML URL; keep it as the local/default route
+- set `UNIEKE_BRICKS_FEED_ORIGIN_URL` in Render to bypass Cloudflare via the direct origin IP, for example `http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml`
+- origin-IP requests send `Host: uniekebricks.nl` plus browser-like XML request headers; the job logs `origin_mode=ip` without printing the URL
+- the importer only runs after the response looks like XML; HTML/Cloudflare challenge responses are treated as recoverable upstream failures and do not mark stale rows
 - quote `UNIEKE_BRICKS_MERCHANT_NAME="Unieke Bricks"` when sourcing `.env.local` in a local shell because the display name contains a space
 - use `pnpm sync:uniekebricks-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `UNIEKE_BRICKS_FEED_ORIGIN_URL='http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml' pnpm sync:uniekebricks-feed -- --dry-run --max-products 20 --debug-samples 3` to validate the production origin route locally
 - use `pnpm sync:uniekebricks-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
 - use `--report-unmatched-path tmp/uniekebricks-unmatched.json` when reviewing LEGO candidates that do not match the catalog
 - use `--max-products <n>` only for local/debug runs, never for the production job

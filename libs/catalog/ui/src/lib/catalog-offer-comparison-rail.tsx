@@ -84,6 +84,7 @@ interface CompactOfferPresentation {
 interface CompactOfferComparisonContext {
   bestPriceMinor?: number;
   comparedOfferCount: number;
+  hasCanonicalBestOffer: boolean;
   highestComparablePriceMinor?: number;
   legoReferencePriceMinor?: number;
   nextBestAvailablePriceMinor?: number;
@@ -334,11 +335,17 @@ function isSignificantPriceDelta({
 
 function isCompactOfferBestDeal({
   bestPriceMinor,
+  hasCanonicalBestOffer,
   offer,
 }: {
   bestPriceMinor?: number;
+  hasCanonicalBestOffer: boolean;
   offer: CatalogOfferItem;
 }): boolean {
+  if (hasCanonicalBestOffer) {
+    return offer.isBest === true;
+  }
+
   if (
     !isOfferAvailableForComparison(offer) ||
     typeof bestPriceMinor !== 'number'
@@ -353,13 +360,20 @@ export function buildCompactOfferComparisonContext(
   offers: readonly CatalogOfferItem[],
 ): CompactOfferComparisonContext {
   const availableOffers = offers.filter(isOfferAvailableForComparison);
+  const canonicalBestPrices = offers
+    .filter((offer) => offer.isBest === true)
+    .map((offer) => parseDisplayedPriceMinor(offer.price))
+    .filter(
+      (priceMinor): priceMinor is number => typeof priceMinor === 'number',
+    )
+    .sort((left, right) => left - right);
   const availablePrices = availableOffers
     .map((offer) => parseDisplayedPriceMinor(offer.price))
     .filter(
       (priceMinor): priceMinor is number => typeof priceMinor === 'number',
     )
     .sort((left, right) => left - right);
-  const bestPriceMinor = availablePrices[0];
+  const bestPriceMinor = canonicalBestPrices[0] ?? availablePrices[0];
   const nextBestAvailablePriceMinor = availableOffers
     .map((offer) => parseDisplayedPriceMinor(offer.price))
     .filter(
@@ -379,6 +393,7 @@ export function buildCompactOfferComparisonContext(
   return {
     bestPriceMinor,
     comparedOfferCount: offers.length,
+    hasCanonicalBestOffer: canonicalBestPrices.length > 0,
     highestComparablePriceMinor,
     legoReferencePriceMinor,
     nextBestAvailablePriceMinor,
@@ -511,6 +526,19 @@ export function getOfferRailPriceDeltaPresentation({
   }
 
   if (deltaMinor < 0) {
+    const rankingLabel = offer.rankingLabel?.trim();
+
+    if (
+      rankingLabel &&
+      rankingLabel.toLocaleLowerCase('nl').includes('lager')
+    ) {
+      return {
+        label: rankingLabel,
+        reasonCode: 'alternative_lower_unavailable',
+        tone: 'muted',
+      };
+    }
+
     const stockState = getStockState(offer.stockLabel);
 
     if (stockState === 'out') {
@@ -643,6 +671,7 @@ export function buildCompactOfferPresentation({
   });
   const isBestDeal = isCompactOfferBestDeal({
     bestPriceMinor: comparisonContext.bestPriceMinor,
+    hasCanonicalBestOffer: comparisonContext.hasCanonicalBestOffer,
     offer,
   });
   const deltaPresentation = getCompactDeltaPresentation({

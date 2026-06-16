@@ -2457,7 +2457,23 @@ describe('CatalogSetCard', () => {
               url: 'https://images.example/rivendell-box-back.jpg',
             },
             {
+              imageRole: 'box_front',
               order: 4,
+              thumbnailUrl:
+                'https://images.example/rivendell-box-product-thumb.jpg',
+              type: 'detail',
+              url: 'https://images.example/rivendell-box-with-built-set.jpg',
+            },
+            {
+              imageRole: 'box_front',
+              order: 5,
+              thumbnailUrl:
+                'https://images.example/rivendell-box-front-thumb.jpg',
+              type: 'detail',
+              url: 'https://images.example/rivendell-box-front.jpg',
+            },
+            {
+              order: 6,
               type: 'thumbnail',
               url: 'https://images.example/rivendell-thumbnail-row.webp',
             },
@@ -2631,12 +2647,22 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('data-image-media-role="model"');
     expect(markup).toContain('data-image-orientation="landscape"');
     expect(
+      markup.indexOf('https://images.example/rivendell-box-product-thumb.jpg'),
+    ).toBeLessThan(
+      markup.indexOf('https://images.example/rivendell-product-thumb.jpg'),
+    );
+    expect(
       markup.indexOf('https://images.example/rivendell-product-thumb.jpg'),
     ).toBeLessThan(
       markup.indexOf('https://images.example/rivendell-2-thumb.jpg'),
     );
     expect(
       markup.indexOf('https://images.example/rivendell-2-thumb.jpg'),
+    ).toBeLessThan(
+      markup.indexOf('https://images.example/rivendell-box-front-thumb.jpg'),
+    );
+    expect(
+      markup.indexOf('https://images.example/rivendell-box-front-thumb.jpg'),
     ).toBeLessThan(
       markup.indexOf('https://images.example/rivendell-box-back-thumb.jpg'),
     );

@@ -262,11 +262,56 @@ describe('Unieke Bricks feed sync server', () => {
       merchantName: 'Unieke Bricks',
       merchantSlug: 'uniekebricks',
       normalizedRowCount: 2,
+      originMode: 'public',
       parseFailureCount: 0,
       skippedMissingSetNumberCount: 1,
       skippedNonLegoCount: 1,
       skippedNonNewCount: 1,
     });
+  });
+
+  test('uses the origin IP URL with the public Host header and browser-like headers', async () => {
+    const importFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult());
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(sampleUniekeBricksFeedXml));
+
+    const result = await syncUniekeBricksFeed({
+      dependencies: {
+        fetchFn,
+        getUniekeBricksFeedConfigFn: () => ({
+          feedOriginUrl:
+            'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          feedUrl:
+            'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+        }),
+        importFeedRowsForMerchantFn,
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(fetchFn).toHaveBeenCalledWith(
+      'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      {
+        headers: {
+          Accept: 'application/xml,text/xml,*/*',
+          'Accept-Language': 'nl-NL,nl;q=0.9,en;q=0.8',
+          'Cache-Control': 'no-cache',
+          Host: 'uniekebricks.nl',
+          Pragma: 'no-cache',
+          'User-Agent':
+            'Mozilla/5.0 compatible BrickhuntBot/1.0; +https://www.brickhunt.nl',
+        },
+      },
+    );
+    expect(result.originMode).toBe('ip');
+    expect(importFeedRowsForMerchantFn).toHaveBeenCalled();
   });
 
   test('retries a blocked feed request once and imports after recovery', async () => {
@@ -307,6 +352,69 @@ describe('Unieke Bricks feed sync server', () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
     expect(sleepFn).toHaveBeenCalledWith(250);
     expect(importFeedRowsForMerchantFn).toHaveBeenCalled();
+  });
+
+  test('rejects Cloudflare HTML responses before importing or marking stale', async () => {
+    const importFeedRowsForMerchantFn = vi.fn();
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        '<html><head><title>Just a moment...</title></head><body><script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script></body></html>',
+        {
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+          },
+          status: 200,
+          statusText: 'OK',
+        },
+      ),
+    );
+
+    let caughtError: unknown;
+
+    try {
+      await syncUniekeBricksFeed({
+        dependencies: {
+          fetchFn,
+          getUniekeBricksFeedConfigFn: () => ({
+            feedOriginUrl:
+              'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            feedUrl:
+              'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            merchantName: 'Unieke Bricks',
+            merchantSlug: 'uniekebricks',
+          }),
+          importFeedRowsForMerchantFn,
+        },
+        options: {
+          dryRun: false,
+        },
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toMatchObject({
+      name: 'Error',
+      message: expect.stringContaining(
+        'Unieke Bricks feed returned HTML response instead of XML.',
+      ),
+    });
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('origin_mode=ip'),
+      }),
+    );
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('challenges.cloudflare.com'),
+      }),
+    );
+    expect(importFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(classifyScheduledJobFailure(caughtError)).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_invalid_response',
+      recoverable: true,
+    });
   });
 
   test('keeps repeated 403 recoverable without importing rows or marking stale', async () => {

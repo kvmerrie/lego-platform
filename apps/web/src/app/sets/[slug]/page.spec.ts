@@ -76,6 +76,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       merchantPresentation?: {
         label: string;
       };
+      price?: string;
       rankingLabel?: string;
       stockLabel?: string;
     };
@@ -99,6 +100,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
       ctaLabel?: string;
       isBest?: boolean;
       merchantLabel?: string;
+      price?: string;
       rankingLabel?: string;
     }[];
     recentlyViewedRail?: unknown;
@@ -142,6 +144,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
             bestDeal.rankingLabel,
             bestDeal.ctaTone,
             bestDeal.ctaLabel,
+            bestDeal.price,
             bestDeal.merchantPresentation?.label ??
               (bestDeal.merchantName
                 ? `Bij ${bestDeal.merchantName}`
@@ -166,6 +169,7 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
                 },
                 offer.ctaLabel,
                 offer.merchantLabel,
+                offer.price,
                 offer.rankingLabel,
               ),
             ),
@@ -1519,7 +1523,7 @@ describe('set detail page JSON-LD', () => {
     setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
       {
         availability: 'in_stock',
-        checkedAt: '2026-05-05T10:00:00.000Z',
+        checkedAt: '2099-05-05T10:00:00.000Z',
         condition: 'new',
         currency: 'EUR',
         market: 'NL',
@@ -1614,7 +1618,7 @@ describe('set detail page JSON-LD', () => {
     setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
       {
         availability: 'in_stock',
-        checkedAt: '2026-05-25T10:00:00.000Z',
+        checkedAt: '2099-05-25T10:00:00.000Z',
         condition: 'new',
         currency: 'EUR',
         market: 'NL',
@@ -1627,7 +1631,7 @@ describe('set detail page JSON-LD', () => {
       },
       {
         availability: 'in_stock',
-        checkedAt: '2026-05-24T10:00:00.000Z',
+        checkedAt: '2099-05-24T10:00:00.000Z',
         condition: 'new',
         currency: 'EUR',
         market: 'NL',
@@ -1654,7 +1658,7 @@ describe('set detail page JSON-LD', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-25T10:00:00.000Z',
+            checkedAt: '2099-05-25T10:00:00.000Z',
             currency: 'EUR',
             merchant: 'lego',
             merchantName: 'LEGO EU',
@@ -1664,7 +1668,7 @@ describe('set detail page JSON-LD', () => {
           },
           {
             availability: 'in_stock',
-            checkedAt: '2026-05-24T10:00:00.000Z',
+            checkedAt: '2099-05-24T10:00:00.000Z',
             currency: 'EUR',
             merchant: 'other',
             merchantName: 'LEGO®',
@@ -1878,46 +1882,48 @@ describe('set detail page JSON-LD', () => {
     expect(html).not.toContain('Sterke deal');
   });
 
-  it('keeps the set-detail hero merchant-first when Proshop is the best premium offer', async () => {
+  it('keeps the set-detail hero and offer rail on the same canonical best offer when a stale lower MediaMarkt price is visible', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
-      id: '76454',
-      imageUrl: 'https://cdn.example.com/76454.jpg',
-      name: 'Hogwarts Castle: The Main Tower',
-      pieces: 2135,
-      releaseYear: 2025,
-      slug: 'hogwarts-castle-the-main-tower-76454',
-      theme: 'Harry Potter',
+      id: '21061',
+      imageUrl: 'https://cdn.example.com/21061.jpg',
+      name: 'Notre-Dame de Paris',
+      pieces: 4383,
+      releaseYear: 2024,
+      slug: 'notre-dame-de-paris-21061',
+      theme: 'Architecture',
     });
 
+    const recentCheckedAt = new Date().toISOString();
+    const staleCheckedAt = new Date(Date.now() - 30 * 86_400_000).toISOString();
     const proshopOffer = {
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-14T12:06:01.670Z',
+      checkedAt: recentCheckedAt,
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
       merchant: 'other' as const,
       merchantName: 'Proshop',
       merchantSlug: 'proshop',
-      priceCents: 17874,
-      setId: '76454',
-      url: 'https://partner.example/76454-proshop',
+      priceCents: 17667,
+      setId: '21061',
+      url: 'https://partner.example/21061-proshop',
     };
-    const staleCoolblueOffer = {
+    const staleMediaMarktOffer = {
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-06T12:16:00.000Z',
+      checkedAt: staleCheckedAt,
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
       merchant: 'other' as const,
-      merchantName: 'Coolblue',
-      merchantSlug: 'coolblue',
-      priceCents: 17900,
-      setId: '76454',
-      url: 'https://partner.example/76454-coolblue',
+      merchantName: 'MediaMarkt',
+      merchantSlug: 'mediamarkt',
+      priceCents: 17500,
+      setId: '21061',
+      url: 'https://partner.example/21061-mediamarkt',
     };
     const legoOffer = {
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-14T12:46:06.947Z',
+      checkedAt: recentCheckedAt,
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
@@ -1925,12 +1931,12 @@ describe('set detail page JSON-LD', () => {
       merchantName: 'LEGO',
       merchantSlug: 'rakuten-lego-eu',
       priceCents: 24999,
-      setId: '76454',
-      url: 'https://partner.example/76454-lego',
+      setId: '21061',
+      url: 'https://partner.example/21061-lego',
     };
     const alternativeOffers = Array.from({ length: 6 }, (_, index) => ({
       availability: 'in_stock' as const,
-      checkedAt: '2026-06-14T12:20:00.000Z',
+      checkedAt: recentCheckedAt,
       condition: 'new',
       currency: 'EUR' as const,
       market: 'NL',
@@ -1938,12 +1944,12 @@ describe('set detail page JSON-LD', () => {
       merchantName: `Winkel ${index + 2}`,
       merchantSlug: `winkel-${index + 2}`,
       priceCents: 18900 + index * 500,
-      setId: '76454',
-      url: `https://partner.example/76454-shop-${index + 2}`,
+      setId: '21061',
+      url: `https://partner.example/21061-shop-${index + 2}`,
     }));
     const offers = [
       proshopOffer,
-      staleCoolblueOffer,
+      staleMediaMarktOffer,
       ...alternativeOffers,
       legoOffer,
     ];
@@ -1962,11 +1968,11 @@ describe('set detail page JSON-LD', () => {
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
       new Map([
         [
-          '76454',
+          '21061',
           {
-            bestOffer: staleCoolblueOffer,
-            offers: [staleCoolblueOffer, proshopOffer, ...alternativeOffers],
-            setId: '76454',
+            bestOffer: staleMediaMarktOffer,
+            offers: [staleMediaMarktOffer, proshopOffer, ...alternativeOffers],
+            setId: '21061',
           },
         ],
       ]),
@@ -1977,7 +1983,7 @@ describe('set detail page JSON-LD', () => {
     const html = renderToStaticMarkup(
       await pageModule.default({
         params: Promise.resolve({
-          slug: 'hogwarts-castle-the-main-tower-76454',
+          slug: 'notre-dame-de-paris-21061',
         }),
       }),
     );
@@ -1987,18 +1993,24 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain('Goede prijs');
     expect(html).toContain('Laagst bij Proshop');
     expect(html).toContain('Bekijk deal bij Proshop');
+    expect(html).toMatch(/€(?: |\u00a0)176,67/u);
     expect(html).toMatch(/data-is-best="true" data-merchant="Proshop"/u);
-    expect(html).toMatch(/data-is-best="false" data-merchant="Coolblue"/u);
-    expect(html).toMatch(/€7[01] goedkoper dan LEGO/u);
+    expect(html).toMatch(/data-is-best="false" data-merchant="MediaMarkt"/u);
+    expect(html).toMatch(/€(?: |\u00a0)175,00/u);
+    expect(html).toMatch(/€(?: |\u00a0)1,67 lager, maar niet recent genoeg/u);
+    expect(html).toContain('https://partner.example/21061-proshop');
+    expect(html).toContain('"lowPrice":176.67');
+    expect(html).not.toContain('https://partner.example/21061-mediamarkt');
+    expect(html).not.toContain('"lowPrice":175');
     expect(html).toContain('Op voorraad');
     expect(html).toContain('9 winkels nagekeken');
     expect(html).not.toContain('Prijsbeeld bouwt op');
-    expect(html).not.toContain('Laagst bij Coolblue');
+    expect(html).not.toContain('Laagst bij MediaMarkt');
     expect(setPageMocks.wishlistToggle).toHaveBeenCalledWith(
       expect.objectContaining({
         appearance: 'hero-action',
         productIntent: 'price-alert',
-        setId: '76454',
+        setId: '21061',
         variant: 'inline',
       }),
     );

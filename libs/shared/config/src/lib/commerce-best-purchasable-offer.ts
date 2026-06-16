@@ -33,6 +33,11 @@ export type BestPurchasableOfferSelectionReason =
   | 'availability_override'
   | 'none';
 
+export type BestPurchasableOfferRejectionReason =
+  | 'out_of_stock'
+  | 'stale'
+  | 'unavailable';
+
 export interface BestPurchasableOfferDebugSignals {
   staleFilteredCount: number;
   outOfStockFilteredCount: number;
@@ -192,15 +197,15 @@ function getCommerceOfferReliabilityRank(
     : 1;
 }
 
-function getPurchasableOfferRejectionReason({
+export function getCommercePurchasableOfferRejectionReason({
   commerceOffer,
-  maxOfferAgeDays,
-  now,
+  maxOfferAgeDays = DEFAULT_BEST_PURCHASABLE_OFFER_MAX_AGE_DAYS,
+  now = new Date(),
 }: {
   commerceOffer: CommerceOfferLike;
-  maxOfferAgeDays: number;
-  now: Date;
-}): 'out_of_stock' | 'stale' | 'unavailable' | undefined {
+  maxOfferAgeDays?: number;
+  now?: Date;
+}): BestPurchasableOfferRejectionReason | undefined {
   if (
     !commerceOffer.url ||
     commerceOffer.priceCents <= 0 ||
@@ -289,7 +294,7 @@ export function selectBestPurchasableOffer<Offer extends CommerceOfferLike>(
   };
   const dedupedOffers = dedupeCommerceOffersByPublicMerchant(commerceOffers);
   const purchasableOffers = dedupedOffers.filter((commerceOffer) => {
-    const rejectionReason = getPurchasableOfferRejectionReason({
+    const rejectionReason = getCommercePurchasableOfferRejectionReason({
       commerceOffer,
       maxOfferAgeDays,
       now,

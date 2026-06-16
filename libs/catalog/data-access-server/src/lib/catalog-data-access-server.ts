@@ -1092,7 +1092,6 @@ function selectBestLiveCatalogOffer<Offer extends CatalogLiveOffer>(
 ): Offer | undefined {
   return (
     selectBestPurchasableOffer(offers, {
-      maxOfferAgeDays: Number.POSITIVE_INFINITY,
       strategicTieBreakerOffer: sortLiveCatalogOffers(offers)[0],
     }).offer ?? undefined
   );

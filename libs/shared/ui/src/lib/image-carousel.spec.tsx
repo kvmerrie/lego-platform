@@ -2,7 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { act } from 'react';
+import { act, type ReactEventHandler } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -22,15 +22,32 @@ vi.mock('next/image', () => ({
   default: ({
     alt,
     className,
+    fill,
+    height,
+    onLoad,
     quality,
     src,
+    width,
   }: {
     alt: string;
     className?: string;
+    fill?: boolean;
+    height?: number;
+    onLoad?: ReactEventHandler<HTMLImageElement>;
     quality?: number;
     src: string;
+    width?: number;
   }) => (
-    <img alt={alt} className={className} data-quality={quality} src={src} />
+    <img
+      alt={alt}
+      className={className}
+      data-fill={fill ? 'true' : undefined}
+      data-quality={quality}
+      height={height}
+      onLoad={onLoad}
+      src={src}
+      width={width}
+    />
   ),
 }));
 
@@ -614,17 +631,20 @@ describe('ImageGallery', () => {
     expect(
       Array.from(
         document.body.querySelectorAll<HTMLImageElement>(
-          '[data-lightbox-media-surface="light"] [class*="galleryImageDetail"]',
+          '[data-lightbox-media-surface="light"] [class*="galleryImageLightbox"]',
         ),
       ).some((image) => image.getAttribute('data-quality') === '90'),
     ).toBe(true);
-    expect(
-      document.body
-        .querySelector<HTMLImageElement>(
-          '[data-lightbox-media-surface="light"] [class*="galleryImageDetail"]',
-        )
-        ?.getAttribute('src'),
-    ).toBe('/images/sets/10298/large/0.webp');
+    const lightboxImage = document.body.querySelector<HTMLImageElement>(
+      '[data-lightbox-media-surface="light"] [class*="galleryImageLightbox"]',
+    );
+
+    expect(lightboxImage?.getAttribute('src')).toBe(
+      '/images/sets/10298/large/0.webp',
+    );
+    expect(lightboxImage?.getAttribute('data-fill')).toBeNull();
+    expect(lightboxImage?.getAttribute('width')).toBe('1600');
+    expect(lightboxImage?.getAttribute('height')).toBe('1000');
   });
 
   it('renders an article grid and opens a fullscreen viewer with controls for multiple images', () => {
@@ -1734,9 +1754,21 @@ describe('ImageGallery', () => {
       const swipeTrack = document.body.querySelector<HTMLElement>(
         '[data-swipe-track="lightbox"]',
       );
+      const lightboxSwipeFrameStyles = Array.from(
+        document.body.querySelectorAll<HTMLElement>(
+          '[data-lightbox-mode="viewer"] [class*="swipeImageFrame"]',
+        ),
+        (frame) => frame.getAttribute('style') ?? '',
+      );
 
       expect(swipeTrack?.dataset['swipePhase']).toBe('dragging');
       expect(swipeTrack?.style.transform).toContain('-100px');
+      expect(lightboxSwipeFrameStyles.length).toBeGreaterThan(0);
+      expect(
+        lightboxSwipeFrameStyles.every((style) =>
+          style.includes('--gallery-image-aspect-ratio: 1.6000;'),
+        ),
+      ).toBe(true);
 
       act(() => {
         dispatchPointerEvent(mediaFrame, 'pointerup', {
@@ -1760,6 +1792,85 @@ describe('ImageGallery', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('uses loaded natural dimensions for adjacent lightbox slide aspect ratios', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Ruimteschip breed beeld',
+              src: 'https://images.example/ship-wide.jpg',
+            },
+            {
+              alt: 'Ruimteschip portrait beeld',
+              src: 'https://images.example/ship-portrait.jpg',
+            },
+            {
+              alt: 'Ruimteschip doosbeeld',
+              src: 'https://images.example/ship-box.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>(
+          'button[aria-label="Alle afbeeldingen weergeven"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="0"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    const nextImage = document.body.querySelector<HTMLImageElement>(
+      '[data-lightbox-mode="viewer"] [data-swipe-slide="next"] img[alt="Ruimteschip portrait beeld"]',
+    );
+    const nextFrame = nextImage?.closest<HTMLElement>(
+      '[class*="swipeImageFrame"]',
+    );
+
+    expect(nextFrame?.getAttribute('style')).toContain(
+      '--gallery-image-aspect-ratio: 1.6000;',
+    );
+
+    if (!nextImage) {
+      throw new Error('Expected adjacent lightbox image to render');
+    }
+
+    Object.defineProperty(nextImage, 'naturalWidth', {
+      configurable: true,
+      value: 900,
+    });
+    Object.defineProperty(nextImage, 'naturalHeight', {
+      configurable: true,
+      value: 1200,
+    });
+
+    act(() => {
+      nextImage.dispatchEvent(new Event('load'));
+    });
+
+    expect(nextFrame?.getAttribute('style')).toContain(
+      '--gallery-image-aspect-ratio: 0.7500;',
+    );
   });
 
   it('keeps vertical lightbox viewer gestures available for page scrolling', () => {
@@ -2040,6 +2151,17 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-media-surface="light"]'),
     ).toBeNull();
+    const overviewCloseButton = document.body.querySelector<HTMLButtonElement>(
+      '[data-lightbox-mode="overview"] [data-lightbox-close="true"]',
+    );
+    expect(overviewCloseButton).not.toBeNull();
+    expect(overviewCloseButton?.getAttribute('aria-label')).toBe(
+      'Sluit galerij',
+    );
+    expect(overviewCloseButton?.closest('[class*="lightboxHeader"]')).not.toBe(
+      null,
+    );
+    const overviewCloseClassName = overviewCloseButton?.className;
 
     const gridImages = document.body.querySelectorAll<HTMLImageElement>(
       '[class*="lightboxOverviewFrame"] img',
@@ -2067,6 +2189,31 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-active-index="2"]'),
     ).not.toBeNull();
+    expect(
+      document.body.querySelector(
+        '[data-lightbox-mode="viewer"] [class*="lightboxHeader"]',
+      ),
+    ).toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-stage="viewer"]'),
+    ).not.toBeNull();
+    const overlayCounter = document.body.querySelector(
+      '[class*="lightboxCounterOverlay"]',
+    );
+    expect(overlayCounter?.textContent).toBe('3/4');
+    expect(overlayCounter?.getAttribute('aria-label')).toBe(
+      'Afbeelding 3 van 4',
+    );
+    expect(
+      document.body.querySelector(
+        '[data-lightbox-overlay-control="close"][aria-label="Terug naar overzicht"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector<HTMLButtonElement>(
+        '[data-lightbox-mode="viewer"] [data-lightbox-overlay-control="close"]',
+      )?.className,
+    ).toBe(overviewCloseClassName);
     expect(document.body.textContent).toContain('3/4');
     expect(
       document.body.querySelector('[data-lightbox-media-surface="light"]'),
@@ -2082,6 +2229,11 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector(
         '[data-lightbox-mode="viewer"] button[aria-label="Volgende afbeelding"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector(
+        '[data-lightbox-mode="viewer"] button[aria-label="Vorige afbeelding"]',
       ),
     ).not.toBeNull();
     expect(
@@ -2135,8 +2287,60 @@ describe('ImageGallery', () => {
     act(() => {
       document.body
         .querySelector<HTMLButtonElement>(
-          '[data-lightbox-mode="viewer"] [data-lightbox-close="true"]',
+          '[data-lightbox-mode="viewer"] [data-lightbox-overlay-control="close"]',
         )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-mode="overview"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
+    ).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
+    ).toBeNull();
+    await flushAnimationFrame();
+    expect(document.activeElement).toBe(
+      document.body.querySelector('[data-lightbox-grid-index="2"]'),
+    );
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>('[data-lightbox-grid-index="2"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(
+      document.body.querySelector('[data-lightbox-mode="viewer"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          key: 'Escape',
+        }),
+      );
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
         ?.dispatchEvent(
           new MouseEvent('click', {
             bubbles: true,
@@ -2148,18 +2352,21 @@ describe('ImageGallery', () => {
     expect(
       document.body.querySelector('[data-lightbox-mode="overview"]'),
     ).not.toBeNull();
-    expect(
-      document.body.querySelector('[data-lightbox-overview-enter="true"]'),
-    ).not.toBeNull();
-    expect(
-      document.body.querySelector(
-        '[data-lightbox-overview-return-image="true"] img[alt="Eiffeltoren detail 2"]',
-      ),
-    ).not.toBeNull();
-    await flushAnimationFrame();
-    expect(document.activeElement).toBe(
-      document.body.querySelector('[data-lightbox-grid-index="2"]'),
-    );
+
+    act(() => {
+      document.body
+        .querySelector<HTMLButtonElement>(
+          '[data-lightbox-mode="overview"] [data-lightbox-close="true"]',
+        )
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
   });
 
   it('uses optional image metadata for detail frames and lightbox overview tiles', () => {
@@ -2292,6 +2499,32 @@ describe('ImageGallery', () => {
         `Bekijk afbeelding ${index + 1}`,
       );
     });
+
+    act(() => {
+      overviewButtons[1]?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    const lightboxSwipeFrameStyles = Array.from(
+      document.body.querySelectorAll<HTMLElement>(
+        '[data-lightbox-mode="viewer"] [class*="swipeImageFrame"]',
+      ),
+      (frame) => frame.getAttribute('style') ?? '',
+    );
+
+    expect(lightboxSwipeFrameStyles).toContain(
+      '--gallery-image-aspect-ratio: 1.5000;',
+    );
+    expect(lightboxSwipeFrameStyles).toContain(
+      '--gallery-image-aspect-ratio: 0.6667;',
+    );
+    expect(lightboxSwipeFrameStyles).toContain(
+      '--gallery-image-aspect-ratio: 1.3333;',
+    );
   });
 
   it('starts the overview with two standard tiles and keeps a 2-1-2-1 rhythm', () => {
@@ -3425,7 +3658,7 @@ describe('ImageGallery', () => {
     }
   });
 
-  it('keeps set detail gallery images on a white contained product surface', () => {
+  it('keeps set detail gallery images contained and the lightbox stage neutral', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -3445,6 +3678,32 @@ describe('ImageGallery', () => {
       css.match(
         /@media \(max-width: 47\.99rem\) \{[\s\S]+?\.lightboxDialog \{[^}]+\}/u,
       )?.[0] ?? '';
+    const detailLightboxMediaFrameBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\] \.lightboxMediaFrame \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailLightboxHeaderBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\] \.lightboxHeader \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailOverviewIndicatorBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\]\[data-lightbox-mode='overview'\]\n\s+\.lightboxIndicator \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailOverviewCloseButtonBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\]\[data-lightbox-mode='overview'\]\n\s+\.lightboxCloseButton \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailLightboxSwipeImageFrameBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\] \.swipeImageFrame \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const detailPortraitLightboxFrameBlock =
+      css.match(
+        /\.lightboxDialog\[data-lightbox-variant='detail'\]\n\s+\.lightboxMediaFrame\[data-image-orientation='portrait'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const galleryImageLightboxBlock =
+      css.match(/\.galleryImageLightbox \{[^}]+\}/u)?.[0] ?? '';
 
     expect(css).toContain('.detailMainFrame {\n  aspect-ratio: 1 / 1;');
     expect(css).toContain('.detailMainFrame,\n.detailThumbFrame {');
@@ -3589,12 +3848,43 @@ describe('ImageGallery', () => {
     );
     expect(css).toContain('max-width: min(90vw, 92rem);');
     expect(css).toContain(".lightboxDialog[data-lightbox-variant='detail']");
+    expect(css).toContain(
+      '--gallery-lightbox-overview-content-max-width: 980px;',
+    );
     expect(css).toContain('gap: 0;');
     expect(css).toContain('padding: 0;');
+    expect(detailLightboxHeaderBlock).toContain('align-items: center;');
+    expect(detailLightboxHeaderBlock).toContain('display: flex;');
+    expect(detailLightboxHeaderBlock).toContain('margin-inline: 0;');
+    expect(detailLightboxHeaderBlock).toContain('max-width: none;');
+    expect(detailLightboxHeaderBlock).toContain(
+      'padding: var(--lego-space-4) 0',
+    );
+    expect(detailLightboxHeaderBlock).toContain('width: 100%;');
+    expect(detailOverviewIndicatorBlock).toContain(
+      'color: var(--lego-text-muted);',
+    );
+    expect(detailOverviewIndicatorBlock).toContain('font-size: 1.2rem;');
+    expect(detailOverviewIndicatorBlock).toContain(
+      'font-weight: var(--lego-font-weight-bold);',
+    );
+    expect(detailOverviewIndicatorBlock).toContain('margin-inline: auto;');
+    expect(detailOverviewIndicatorBlock).toContain(
+      'max-width: var(--gallery-lightbox-overview-content-max-width);',
+    );
+    expect(detailOverviewIndicatorBlock).toContain(
+      'padding-inline: var(--lego-space-4) calc(var(--lego-space-4) + 3rem);',
+    );
+    expect(detailOverviewCloseButtonBlock).toContain('position: absolute;');
+    expect(detailOverviewCloseButtonBlock).toContain(
+      'max(var(--lego-space-4), env(safe-area-inset-right)) auto auto;',
+    );
     expect(css).toContain('.lightboxOverviewBody {');
     expect(css).toContain('overflow-y: auto;');
     expect(css).toContain('.lightboxOverview {');
-    expect(css).toContain('max-width: 980px;');
+    expect(css).toContain(
+      'max-width: var(--gallery-lightbox-overview-content-max-width);',
+    );
     expect(css).toContain('margin-inline: auto;');
     expect(css).toContain('grid-auto-rows: auto;');
     expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
@@ -3651,6 +3941,12 @@ describe('ImageGallery', () => {
     expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
     expect(css).toContain('.galleryImageOverview');
     expect(css).toContain('.galleryImageOverview {\n  object-fit: contain;');
+    expect(galleryImageLightboxBlock).toContain('background: #ffffff;');
+    expect(galleryImageLightboxBlock).toContain('height: 100%;');
+    expect(galleryImageLightboxBlock).toContain('max-height: 100%;');
+    expect(galleryImageLightboxBlock).toContain('max-width: 100%;');
+    expect(galleryImageLightboxBlock).toContain('object-fit: contain;');
+    expect(galleryImageLightboxBlock).toContain('width: 100%;');
     expect(css).toContain(
       '.lightboxMediaFrame {\n  aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);',
     );
@@ -3662,14 +3958,83 @@ describe('ImageGallery', () => {
     expect(css).toContain('align-items: flex-end;');
     expect(css).toContain('height: min(92vh, 100dvh);');
     expect(css).toContain('max-height: 100dvh;');
-    expect(css).toContain('--gallery-lightbox-sheet-top-offset: 56px;');
     expect(css).toContain(
-      'height: calc(100dvh - var(--gallery-lightbox-sheet-top-offset));',
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']",
     );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n  .lightboxCloseButton {",
+    );
+    expect(css).toContain('grid-template-rows: minmax(0, 1fr);');
+    expect(css).toContain('.lightboxCounterOverlay {');
+    expect(css).toContain('background: rgba(12, 18, 32, 0.72);');
+    expect(css).toContain('border-radius: var(--lego-radius-pill);');
+    expect(css).toContain('pointer-events: none;');
+    expect(css).toContain('.lightboxNavButton {\n  opacity: 0;');
+    expect(css).toContain(
+      '.lightboxDialog:hover .lightboxNavButton,\n.lightboxNavButton:focus-visible {',
+    );
+    expect(css).toContain('pointer-events: auto;');
+    expect(css).toContain("data-lightbox-mode='viewer']");
+    expect(css).toContain('background: #f1f2f4;');
+    expect(detailLightboxMediaFrameBlock).toContain('background: transparent;');
+    expect(detailLightboxMediaFrameBlock).toContain('border-radius: 0;');
+    expect(detailLightboxMediaFrameBlock).toContain('height: 100%;');
+    expect(detailLightboxMediaFrameBlock).toContain('max-height: 100%;');
+    expect(detailLightboxMediaFrameBlock).toContain(
+      'max-width: min(100%, 75rem);',
+    );
+    expect(detailLightboxMediaFrameBlock).toContain('width: min(100%, 75rem);');
+    expect(detailLightboxSwipeImageFrameBlock).toContain(
+      'align-items: center;',
+    );
+    expect(detailLightboxSwipeImageFrameBlock).toContain(
+      'aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);',
+    );
+    expect(detailLightboxSwipeImageFrameBlock).toContain('display: flex;');
+    expect(detailLightboxSwipeImageFrameBlock).toContain('height: 100%;');
+    expect(detailLightboxSwipeImageFrameBlock).toContain(
+      'justify-content: center;',
+    );
+    expect(detailLightboxSwipeImageFrameBlock).toContain('max-height: 100%;');
+    expect(detailLightboxSwipeImageFrameBlock).toContain('max-width: 100%;');
+    expect(detailLightboxSwipeImageFrameBlock).toContain('width: auto;');
+    expect(detailPortraitLightboxFrameBlock).toContain(
+      'aspect-ratio: var(--gallery-image-aspect-ratio, 3 / 4);',
+    );
+    expect(detailPortraitLightboxFrameBlock).toContain('height: 100%;');
+    expect(detailPortraitLightboxFrameBlock).toContain('max-height: 100%;');
+    expect(detailPortraitLightboxFrameBlock).toContain('width: auto;');
+    expect(css).toContain('--gallery-lightbox-sheet-top-offset: var(');
+    expect(css).toContain('--responsive-dialog-sheet-top-offset');
     expect(css).toContain('max-width: 100vw;');
     expect(css).toContain('width: 100vw;');
     expect(css).toContain(
-      'border-radius: var(--lego-radius-lg) var(--lego-radius-lg) 0 0;',
+      ".lightboxDialog[data-lightbox-variant='detail'] {\n    --gallery-lightbox-sheet-top-offset: var(",
+    );
+    expect(css).toContain(
+      'border-radius: var(--lego-radius-lg) var(--lego-radius-lg) 0 0;\n    height: calc(100dvh - var(--gallery-lightbox-sheet-top-offset));',
+    );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n    .lightboxCloseButton {",
+    );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n    .lightboxMediaFrame,\n  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n    .lightboxMediaFrame[data-image-orientation='portrait'],",
+    );
+    expect(css).toContain(
+      'aspect-ratio: auto;\n    border-radius: 0;\n    height: 100%;\n    max-height: 100%;\n    max-width: 100%;\n    width: 100%;',
+    );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n    .swipeImageFrame {",
+    );
+    expect(css).toContain(
+      ".lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']\n    .galleryImageLightbox {",
+    );
+    expect(css).toContain(
+      'aspect-ratio: var(--gallery-image-aspect-ratio, 8 / 5);\n    display: block;\n    flex: 0 0 auto;\n    height: auto;\n    width: 100%;',
+    );
+    expect(css).toContain('height: auto;\n    width: 100%;');
+    expect(css).toContain(
+      'aspect-ratio: var(--gallery-image-aspect-ratio, 8 / 5);\n    display: block;\n    height: auto;\n    width: 100%;',
     );
   });
 
@@ -3845,6 +4210,16 @@ describe('ImageGallery', () => {
     ).not.toBeNull();
     expect(
       document.body.querySelector('[data-lightbox-grid-index]'),
+    ).toBeNull();
+    expect(
+      document.body.querySelector('[class*="lightboxCounterOverlay"]')
+        ?.textContent,
+    ).toBe('1/1');
+    expect(
+      document.body.querySelector('[data-lightbox-control="previous"]'),
+    ).toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-control="next"]'),
     ).toBeNull();
   });
 

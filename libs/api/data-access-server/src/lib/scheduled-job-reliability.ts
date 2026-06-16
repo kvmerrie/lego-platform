@@ -40,6 +40,8 @@ function isRecoverableUpstreamInvalidResponse(
     normalizedMessage.includes('html response') ||
     normalizedMessage.includes('returned html') ||
     normalizedMessage.includes('received html') ||
+    normalizedMessage.includes('non-xml upstream response') ||
+    normalizedMessage.includes('cloudflare challenge') ||
     normalizedMessage.includes('unexpected token <')
   );
 }

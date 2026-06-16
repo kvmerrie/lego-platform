@@ -236,6 +236,16 @@
   object-position: center;
 }
 
+.galleryImageLightbox {
+  background: #ffffff;
+  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
+}
+
 .galleryImageThumbnail {
   object-fit: contain;
   object-position: center;
@@ -552,6 +562,8 @@
 }
 
 .lightboxDialog[data-lightbox-variant='detail'] {
+  --gallery-lightbox-overview-content-max-width: 980px;
+
   background: #f5f6f8;
   border-radius: var(--lego-radius-lg);
   box-shadow: 0 24px 80px rgba(12, 18, 32, 0.2);
@@ -559,6 +571,7 @@
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   overflow: hidden;
   padding: 0;
+  position: relative;
 }
 
 .lightboxHeader {
@@ -572,11 +585,18 @@
 }
 
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxHeader {
+  align-items: center;
   background: #f5f6f8;
+  box-sizing: border-box;
   color: var(--lego-text);
-  padding: var(--lego-space-4) var(--lego-space-4) var(--lego-space-3);
+  display: flex;
+  margin-inline: 0;
+  max-width: none;
+  min-height: calc(2.5rem + var(--lego-space-4) + var(--lego-space-2));
+  padding: var(--lego-space-4) 0 var(--lego-space-3);
   position: sticky;
   top: 0;
+  width: 100%;
 }
 
 .lightboxIndicator {
@@ -586,8 +606,41 @@
   margin: 0;
 }
 
+.lightboxCounterOverlay {
+  align-items: center;
+  background: rgba(12, 18, 32, 0.72);
+  border: var(--lego-border-width-1) solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-contrast-white);
+  display: inline-flex;
+  font-size: var(--lego-text-role-label-size);
+  font-weight: var(--lego-font-weight-semibold);
+  inset: max(var(--lego-space-4), env(safe-area-inset-top)) auto auto
+    max(var(--lego-space-4), env(safe-area-inset-left));
+  line-height: 1;
+  margin: 0;
+  min-height: 2.35rem;
+  padding: 0.62rem 0.82rem;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxIndicator {
   color: var(--lego-text-muted);
+}
+
+.lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='overview']
+  .lightboxIndicator {
+  box-sizing: border-box;
+  color: var(--lego-text-muted);
+  font-size: 1.2rem;
+  font-weight: var(--lego-font-weight-bold);
+  line-height: 1.2;
+  margin-inline: auto;
+  max-width: var(--gallery-lightbox-overview-content-max-width);
+  padding-inline: var(--lego-space-4) calc(var(--lego-space-4) + 3rem);
+  width: 100%;
 }
 
 .lightboxCloseButton,
@@ -608,14 +661,49 @@
   width: 2.5rem;
 }
 
+.lightboxNavButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lightboxDialog:hover .lightboxNavButton,
+.lightboxNavButton:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxCloseButton {
-  background: #ffffff;
-  border-color: var(--lego-border-subtle);
+  background: transparent;
+  border-color: transparent;
   color: var(--lego-text);
 }
 
-.lightboxDialog[data-lightbox-variant='detail'] .lightboxCloseButton:hover {
-  background: var(--lego-surface-subtle);
+.lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='overview']
+  .lightboxCloseButton {
+  inset: max(var(--lego-space-4), env(safe-area-inset-top))
+    max(var(--lego-space-4), env(safe-area-inset-right)) auto auto;
+  position: absolute;
+  z-index: 5;
+}
+
+.lightboxDialog[data-lightbox-variant='detail'] .lightboxCloseButton:hover,
+.lightboxDialog[data-lightbox-variant='detail']
+  .lightboxCloseButton:focus-visible {
+  background: rgba(12, 18, 32, 0.72);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--lego-contrast-white);
+}
+
+.lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer'] {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+  .lightboxCloseButton {
+  inset: max(var(--lego-space-4), env(safe-area-inset-top))
+    max(var(--lego-space-4), env(safe-area-inset-right)) auto auto;
+  position: absolute;
+  z-index: 5;
 }
 
 .lightboxOverviewBody {
@@ -633,7 +721,7 @@
   grid-auto-rows: auto;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-inline: auto;
-  max-width: 980px;
+  max-width: var(--gallery-lightbox-overview-content-max-width);
   padding: 0 var(--lego-space-4) var(--lego-space-4);
   width: 100%;
 }
@@ -660,11 +748,11 @@
 .lightboxOverviewReturnFrame {
   display: block;
   height: min(100%, 68vh);
-  max-width: 980px;
+  max-width: var(--gallery-lightbox-overview-content-max-width);
   min-height: 0;
   min-width: 0;
   position: relative;
-  width: min(100%, 980px);
+  width: min(100%, var(--gallery-lightbox-overview-content-max-width));
 }
 
 @keyframes lightboxOverviewEnter {
@@ -804,21 +892,53 @@
 
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxViewport {
   align-items: center;
+  background: #f1f2f4;
   height: 100%;
   justify-items: center;
   min-height: 0;
   overflow: hidden;
-  padding: 0 var(--lego-space-4) var(--lego-space-4);
+  padding: 0;
 }
 
 .lightboxDialog[data-lightbox-variant='detail'] .lightboxMediaFrame {
   aspect-ratio: auto;
-  background: #ffffff;
-  border-radius: var(--lego-radius-md);
+  background: transparent;
+  border-radius: 0;
+  height: 100%;
+  max-height: 100%;
+  max-width: min(100%, 75rem);
+  width: min(100%, 75rem);
+}
+
+.lightboxDialog[data-lightbox-variant='detail'] .swipeImageFrame {
+  align-items: center;
+  aspect-ratio: var(--gallery-image-aspect-ratio, 4 / 3);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  max-height: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  width: auto;
+}
+
+.lightboxDialog[data-lightbox-variant='detail']
+  .lightboxMediaFrame[data-image-orientation='portrait'] {
+  aspect-ratio: var(--gallery-image-aspect-ratio, 3 / 4);
   height: 100%;
   max-height: 100%;
   max-width: 100%;
-  width: 100%;
+  width: auto;
+}
+
+.lightboxDialog[data-lightbox-variant='detail']
+  .lightboxMediaFrame[data-image-orientation='landscape'],
+.lightboxDialog[data-lightbox-variant='detail']
+  .lightboxMediaFrame[data-image-orientation='square'] {
+  height: 100%;
+  max-height: 100%;
+  max-width: min(100%, 75rem);
+  width: min(100%, 75rem);
 }
 
 .lightboxFooter {
@@ -1237,7 +1357,10 @@
   }
 
   .lightboxDialog[data-lightbox-variant='detail'] {
-    --gallery-lightbox-sheet-top-offset: 56px;
+    --gallery-lightbox-sheet-top-offset: var(
+      --responsive-dialog-sheet-top-offset,
+      64px
+    );
 
     border-radius: var(--lego-radius-lg) var(--lego-radius-lg) 0 0;
     height: calc(100dvh - var(--gallery-lightbox-sheet-top-offset));
@@ -1246,9 +1369,21 @@
   }
 
   .lightboxDialog[data-lightbox-variant='detail'] .lightboxHeader {
-    padding: var(--lego-space-3)
-      max(var(--lego-space-3), env(safe-area-inset-right)) var(--lego-space-2)
-      max(var(--lego-space-3), env(safe-area-inset-left));
+    min-height: calc(2.5rem + var(--lego-space-3) + var(--lego-space-2));
+    padding: var(--lego-space-3) 0 var(--lego-space-2);
+  }
+
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='overview']
+    .lightboxIndicator {
+    font-size: 1.05rem;
+    padding-inline: max(var(--lego-space-2), env(safe-area-inset-left))
+      calc(max(var(--lego-space-2), env(safe-area-inset-right)) + 3rem);
+  }
+
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='overview']
+    .lightboxCloseButton {
+    inset: max(var(--lego-space-3), env(safe-area-inset-top))
+      max(var(--lego-space-3), env(safe-area-inset-right)) auto auto;
   }
 
   .lightboxDialog[data-lightbox-variant='detail'] .lightboxOverviewBody {
@@ -1270,13 +1405,51 @@
   }
 
   .lightboxDialog[data-lightbox-variant='detail'] .lightboxViewport {
-    padding: 0 max(var(--lego-space-2), env(safe-area-inset-right))
-      max(var(--lego-space-2), env(safe-area-inset-bottom))
-      max(var(--lego-space-2), env(safe-area-inset-left));
+    padding: 0;
   }
 
-  .lightboxDialog[data-lightbox-variant='detail'] .lightboxMediaFrame {
-    border-radius: var(--lego-radius-md);
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .lightboxMediaFrame,
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .lightboxMediaFrame[data-image-orientation='portrait'],
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .lightboxMediaFrame[data-image-orientation='landscape'],
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .lightboxMediaFrame[data-image-orientation='square'] {
+    aspect-ratio: auto;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .swipeImageFrame {
+    aspect-ratio: var(--gallery-image-aspect-ratio, 8 / 5);
+    display: block;
+    flex: 0 0 auto;
+    height: auto;
+    width: 100%;
+  }
+
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .galleryImageLightbox {
+    aspect-ratio: var(--gallery-image-aspect-ratio, 8 / 5);
+    display: block;
+    height: auto;
+    width: 100%;
+  }
+
+  .lightboxCounterOverlay {
+    inset: max(var(--lego-space-3), env(safe-area-inset-top)) auto auto
+      max(var(--lego-space-3), env(safe-area-inset-left));
+  }
+
+  .lightboxDialog[data-lightbox-variant='detail'][data-lightbox-mode='viewer']
+    .lightboxCloseButton {
+    inset: max(var(--lego-space-3), env(safe-area-inset-top))
+      max(var(--lego-space-3), env(safe-area-inset-right)) auto auto;
   }
 
   .lightboxNavButtonPrev {

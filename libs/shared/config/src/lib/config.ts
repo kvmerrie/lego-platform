@@ -676,6 +676,7 @@ export const brickfeverEnvKeys = {
 
 export const uniekeBricksEnvKeys = {
   feedUrl: 'UNIEKE_BRICKS_FEED_URL',
+  feedOriginUrl: 'UNIEKE_BRICKS_FEED_ORIGIN_URL',
   merchantSlug: 'UNIEKE_BRICKS_MERCHANT_SLUG',
   merchantName: 'UNIEKE_BRICKS_MERCHANT_NAME',
 } as const;
@@ -808,6 +809,7 @@ export interface BrickfeverFeedConfig {
 
 export interface UniekeBricksFeedConfig {
   feedUrl: string;
+  feedOriginUrl?: string;
   merchantName: string;
   merchantSlug: string;
 }
@@ -2051,6 +2053,8 @@ export function getUniekeBricksFeedConfig(
       environment,
       key: uniekeBricksEnvKeys.feedUrl,
     }),
+    feedOriginUrl:
+      environment[uniekeBricksEnvKeys.feedOriginUrl]?.trim() || undefined,
     merchantSlug:
       environment[uniekeBricksEnvKeys.merchantSlug]?.trim() || 'uniekebricks',
     merchantName:

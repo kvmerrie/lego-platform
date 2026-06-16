@@ -505,7 +505,7 @@ describe('catalog snapshot helpers', () => {
     });
   });
 
-  test('sorts gallery display images with product images before lifestyle photography', () => {
+  test('sorts gallery display images in the canonical setdetail order', () => {
     const sortedImages = sortCatalogSetGalleryImages([
       {
         imageRole: 'lifestyle_room',
@@ -552,12 +552,12 @@ describe('catalog snapshot helpers', () => {
     ]);
 
     expect(sortedImages.map((image) => image.url)).toEqual([
-      'https://images.example/vader-model-white.jpg',
-      'https://images.example/vader-minifigure.jpg',
       'https://images.example/vader-main.jpg',
-      'https://images.example/vader-box-front.jpg',
-      'https://images.example/vader-room.jpg',
+      'https://images.example/vader-model-white.jpg',
       'https://images.example/vader-build.jpg',
+      'https://images.example/vader-minifigure.jpg',
+      'https://images.example/vader-room.jpg',
+      'https://images.example/vader-box-front.jpg',
       'https://images.example/vader-box-back.jpg',
     ]);
   });
@@ -569,7 +569,7 @@ describe('catalog snapshot helpers', () => {
         url: 'https://images.example/model-a.jpg',
       },
       {
-        imageRole: 'model_primary',
+        imageRole: 'model_secondary',
         url: 'https://images.example/model-b.jpg',
       },
       {
@@ -587,6 +587,289 @@ describe('catalog snapshot helpers', () => {
       'https://images.example/model-b.jpg',
       'https://images.example/lifestyle-a.jpg',
       'https://images.example/lifestyle-b.jpg',
+    ]);
+  });
+
+  test('keeps a box back image after box front and product images', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'box_back',
+        url: 'https://images.example/bus-box-back.jpg',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/bus-box-front.jpg',
+      },
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/bus-product-side.jpg',
+      },
+      {
+        imageRole: 'model_primary',
+        type: 'hero',
+        url: 'https://images.example/bus-product-primary.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/bus-product-primary.jpg',
+      'https://images.example/bus-product-side.jpg',
+      'https://images.example/bus-box-front.jpg',
+      'https://images.example/bus-box-back.jpg',
+    ]);
+  });
+
+  test('detects box front and back hints from image URLs', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        url: 'https://images.example/castle-back-of-box.webp',
+      },
+      {
+        url: 'https://images.example/castle-front-box.webp',
+      },
+      {
+        type: 'hero',
+        url: 'https://images.example/castle-clean-product.webp',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/castle-clean-product.webp',
+      'https://images.example/castle-front-box.webp',
+      'https://images.example/castle-back-of-box.webp',
+    ]);
+  });
+
+  test('sorts product-with-box packshots before secondary product images', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/car-product-side.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/car-boxprod.webp',
+      },
+      {
+        imageRole: 'model_primary',
+        type: 'hero',
+        url: 'https://images.example/car-product-primary.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/car-box-front.webp',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/car-product-primary.webp',
+      'https://images.example/car-boxprod.webp',
+      'https://images.example/car-product-side.webp',
+      'https://images.example/car-box-front.webp',
+    ]);
+  });
+
+  test('sorts box-with-product images directly after the primary product image', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'lifestyle_room',
+        url: 'https://images.example/city-lifestyle-room.webp',
+      },
+      {
+        imageRole: 'box_back',
+        url: 'https://images.example/city-box-back.webp',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/city-feature-detail.webp',
+      },
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/city-product-side.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/city-box-front.webp',
+      },
+      {
+        imageRole: 'minifigure',
+        url: 'https://images.example/city-minifigures.webp',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/city-dimensions-scale.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/city-box+product.webp',
+      },
+      {
+        imageRole: 'model_primary',
+        type: 'hero',
+        url: 'https://images.example/city-primary-product.webp',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/city-primary-product.webp',
+      'https://images.example/city-box+product.webp',
+      'https://images.example/city-product-side.webp',
+      'https://images.example/city-feature-detail.webp',
+      'https://images.example/city-minifigures.webp',
+      'https://images.example/city-dimensions-scale.webp',
+      'https://images.example/city-lifestyle-room.webp',
+      'https://images.example/city-box-front.webp',
+      'https://images.example/city-box-back.webp',
+    ]);
+  });
+
+  test('promotes late packaging-with-built-set images ahead of product and box images', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'model_primary',
+        type: 'hero',
+        url: 'https://images.example/icons-primary-product.webp',
+      },
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/icons-product-angle.webp',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/icons-feature-detail.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/icons-box-front.webp',
+      },
+      {
+        imageRole: 'box_back',
+        url: 'https://images.example/icons-box-back.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/icons-packaging-with-built-set.webp',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/icons-primary-product.webp',
+      'https://images.example/icons-packaging-with-built-set.webp',
+      'https://images.example/icons-product-angle.webp',
+      'https://images.example/icons-feature-detail.webp',
+      'https://images.example/icons-box-front.webp',
+      'https://images.example/icons-box-back.webp',
+    ]);
+  });
+
+  test('does not classify pure box front or back images as box-with-product', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'box_back',
+        url: 'https://images.example/star-wars-box-back-with-model-callouts.webp',
+      },
+      {
+        imageRole: 'box_front',
+        url: 'https://images.example/star-wars-box-front.webp',
+      },
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/star-wars-product-side.webp',
+      },
+      {
+        imageRole: 'model_primary',
+        type: 'hero',
+        url: 'https://images.example/star-wars-primary-product.webp',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/star-wars-primary-product.webp',
+      'https://images.example/star-wars-product-side.webp',
+      'https://images.example/star-wars-box-front.webp',
+      'https://images.example/star-wars-box-back-with-model-callouts.webp',
+    ]);
+  });
+
+  test('sorts minifigures before lifestyle photography', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'lifestyle_people',
+        url: 'https://images.example/castle-lifestyle-room.jpg',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/castle-characters-minifigures.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/castle-characters-minifigures.jpg',
+      'https://images.example/castle-lifestyle-room.jpg',
+    ]);
+  });
+
+  test('sorts dimensions after product and detail images but before box back', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'box_back',
+        url: 'https://images.example/museum-box-back.jpg',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/museum-dimensions-scale.jpg',
+      },
+      {
+        imageRole: 'detail',
+        url: 'https://images.example/museum-roof-detail.jpg',
+      },
+      {
+        imageRole: 'model_secondary',
+        url: 'https://images.example/museum-product-side.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/museum-product-side.jpg',
+      'https://images.example/museum-roof-detail.jpg',
+      'https://images.example/museum-dimensions-scale.jpg',
+      'https://images.example/museum-box-back.jpg',
+    ]);
+  });
+
+  test('keeps unknown gallery images in stable source order', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        url: 'https://images.example/source-1.jpg',
+      },
+      {
+        url: 'https://images.example/source-2.jpg',
+      },
+      {
+        url: 'https://images.example/source-3.jpg',
+      },
+    ]);
+
+    expect(sortedImages.map((image) => image.url)).toEqual([
+      'https://images.example/source-1.jpg',
+      'https://images.example/source-2.jpg',
+      'https://images.example/source-3.jpg',
+    ]);
+  });
+
+  test('keeps single-image galleries unchanged', () => {
+    const sortedImages = sortCatalogSetGalleryImages([
+      {
+        imageRole: 'model_primary',
+        url: 'https://images.example/single-product.jpg',
+      },
+    ]);
+
+    expect(sortedImages).toEqual([
+      {
+        imageRole: 'model_primary',
+        url: 'https://images.example/single-product.jpg',
+      },
     ]);
   });
 

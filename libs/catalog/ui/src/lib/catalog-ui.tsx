@@ -122,6 +122,8 @@ export interface CatalogSetCardPriceContext {
   decisionLabel?: string;
   decisionNote?: string;
   merchantLabel: string;
+  merchantName?: string;
+  merchantSlug?: string;
   primaryActionHref?: string;
   primaryActionTrackingEvent?: BrickhuntAnalyticsEventDescriptor;
   pricePositionLabel?: string;

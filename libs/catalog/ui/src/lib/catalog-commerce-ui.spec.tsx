@@ -823,7 +823,7 @@ describe('Catalog commerce UI', () => {
     expect(presentation.priceComparisonState).toBe('best');
   });
 
-  it('uses the lowest current price as the best deal instead of a recommended flag', () => {
+  it('uses the canonical best flag instead of recomputing best deal from a lower displayed price', () => {
     const comparisonContext = buildCompactOfferComparisonContext([
       {
         checkedLabel: 'Nagekeken 2 apr, 09:00',
@@ -872,16 +872,15 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(joybuyPresentation.actionLabel).toBe('Naar winkel');
-    expect(joybuyPresentation.confidenceLabel).toBe(
-      '€3,59 goedkoper dan de rest',
-    );
-    expect(joybuyPresentation.isBestDeal).toBe(true);
-    expect(joybuyPresentation.priceComparisonState).toBe('best');
+    expect(joybuyPresentation.confidenceLabel).toBeUndefined();
+    expect(joybuyPresentation.deltaLabel).toBe('€3,59 lager');
+    expect(joybuyPresentation.isBestDeal).toBe(false);
+    expect(joybuyPresentation.priceComparisonState).toBe('lower-unavailable');
     expect(lidlPresentation.actionLabel).toBe('Naar winkel');
     expect(lidlPresentation.confidenceLabel).toBeUndefined();
-    expect(lidlPresentation.deltaLabel).toBe('€3,59 duurder');
-    expect(lidlPresentation.isBestDeal).toBe(false);
-    expect(lidlPresentation.priceComparisonState).toBe('higher');
+    expect(lidlPresentation.deltaLabel).toBeUndefined();
+    expect(lidlPresentation.isBestDeal).toBe(true);
+    expect(lidlPresentation.priceComparisonState).toBe('best');
   });
 
   it('shows the savings versus the next-best reviewed offer on the best card without an extra label', () => {

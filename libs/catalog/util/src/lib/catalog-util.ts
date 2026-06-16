@@ -83,42 +83,242 @@ export interface CatalogSetImage {
 
 export type CatalogSetImageSeed = CatalogSetImage | string;
 
+type CatalogSetGallerySortableImage = Pick<
+  CatalogSetImage,
+  'imageRole' | 'type'
+> &
+  Partial<
+    Pick<
+      CatalogSetImage,
+      'attributionText' | 'largeUrl' | 'thumbnailUrl' | 'url'
+    >
+  >;
+
+const catalogSetGalleryImageDisplayGroups = {
+  primaryProduct: 0,
+  boxWithProduct: 1,
+  product: 2,
+  detail: 3,
+  minifigure: 4,
+  dimensions: 5,
+  lifestyle: 6,
+  boxFront: 7,
+  boxBack: 8,
+  unknown: 9,
+} as const;
+
+const boxBackGalleryImageHints = [
+  /\bachterkant(?:\s+(?:box|doos|verpakking))?\b/u,
+  /\bback(?:\s+(?:of\s+)?(?:box|doos|packaging))?\b/u,
+  /\bbox\s+back\b/u,
+] as const;
+
+const boxFrontGalleryImageHints = [
+  /\bfront(?:\s+(?:box|doos|packaging))?\b/u,
+  /\bbox\s+front\b/u,
+  /\bvoorkant(?:\s+(?:box|doos|verpakking))?\b/u,
+] as const;
+
+const boxGalleryImageHints = [
+  /\bbox\b/u,
+  /\bboxprod\b/u,
+  /\bpackage\b/u,
+  /\bdoos\b/u,
+  /\bpackaging\b/u,
+  /\bpackshot\b/u,
+  /\bverpakking\b/u,
+] as const;
+
+const boxWithProductGalleryImageHints = [
+  /\bbox\s+(?:art\s+)?(?:and|en|met|plus|with)\s+(?:built\s+)?(?:model|product|set)\b/u,
+  /\bbox\s+(?:built\s+)?(?:model|product)\b/u,
+  /\bboxprod\b/u,
+  /\bdoos\s+(?:en|met|plus)\s+(?:gebouwd(?:e)?\s+)?(?:model|product|set)\b/u,
+  /\bdoos\s+(?:model|product)\b/u,
+  /\bpackage\s+(?:and|met|plus|with)\s+(?:built\s+)?(?:model|product|set)\b/u,
+  /\bpackage\s+(?:built\s+)?(?:model|product)\b/u,
+  /\bpackaging\s+(?:and|met|plus|with)\s+(?:built\s+)?(?:model|product|set)\b/u,
+  /\bpackaging\s+(?:built\s+)?(?:model|product)\b/u,
+  /\bpackshot\b/u,
+  /\b(?:built\s+)?(?:model|product|set)\s+(?:and|en|met|plus|with)\s+(?:box|packaging)\b/u,
+  /\b(?:model|product)\s+box\b/u,
+  /\b(?:model|product|set)\s+(?:en|met|plus)\s+doos\b/u,
+  /\b(?:model|product)\s+doos\b/u,
+] as const;
+
+const dimensionsGalleryImageHints = [
+  /\bafmetingen\b/u,
+  /\bdimensions?\b/u,
+  /\bformaat\b/u,
+  /\bmaatvoering\b/u,
+  /\bmeasurements?\b/u,
+  /\bscale\b/u,
+] as const;
+
+const lifestyleGalleryImageHints = [
+  /\badults?\b/u,
+  /\bchild(?:ren)?\b/u,
+  /\benvironment\b/u,
+  /\bfotografie\b/u,
+  /\bholding\b/u,
+  /\bkamer\b/u,
+  /\blifestyle\b/u,
+  /\bomgeving\b/u,
+  /\bphotography\b/u,
+  /\bplaying\b/u,
+  /\bplank\b/u,
+  /\broom\b/u,
+  /\bshelf\b/u,
+] as const;
+
+const minifigureGalleryImageHints = [
+  /\bcharacters?\b/u,
+  /\bfiguren\b/u,
+  /\bfigures?\b/u,
+  /\bminifig(?:s|ure|ures)?\b/u,
+  /\bpersonages?\b/u,
+] as const;
+
+function decodeCatalogSetGalleryImageHint(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function normalizeCatalogSetGalleryImageHint(value: string): string {
+  return decodeCatalogSetGalleryImageHint(value)
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[\u0300-\u036f]/gu, '')
+    .replace(/\+/gu, ' plus ')
+    .replace(/&/gu, ' and ')
+    .replace(/[%(),.:/=?[\]{}\\]+/gu, ' ')
+    .replace(/[-_]+/gu, ' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+}
+
+function getCatalogSetGalleryImageHintText(
+  image: CatalogSetGallerySortableImage,
+): string {
+  return [image.attributionText, image.largeUrl, image.thumbnailUrl, image.url]
+    .flatMap((value) =>
+      typeof value === 'string' && value.trim().length > 0
+        ? [normalizeCatalogSetGalleryImageHint(value)]
+        : [],
+    )
+    .join(' ');
+}
+
+function hasCatalogSetGalleryImageHint(
+  hintText: string,
+  hints: readonly RegExp[],
+): boolean {
+  return hints.some((hint) => hint.test(hintText));
+}
+
 function getCatalogSetGalleryImageDisplayGroup(
-  image: Pick<CatalogSetImage, 'imageRole' | 'type'>,
+  image: CatalogSetGallerySortableImage,
 ): number {
+  const hintText = getCatalogSetGalleryImageHintText(image);
+  const isBoxBack =
+    image.imageRole === 'box_back' ||
+    hasCatalogSetGalleryImageHint(hintText, boxBackGalleryImageHints);
+  const hasBoxWithProductHint = hasCatalogSetGalleryImageHint(
+    hintText,
+    boxWithProductGalleryImageHints,
+  );
+  const isBoxWithProduct =
+    !isBoxBack &&
+    (hasBoxWithProductHint ||
+      ((image.imageRole === 'build' ||
+        image.imageRole === 'detail' ||
+        image.imageRole === 'model_secondary') &&
+        hasCatalogSetGalleryImageHint(hintText, boxGalleryImageHints)));
+  const isBoxFront =
+    (!isBoxBack && !isBoxWithProduct && image.imageRole === 'box_front') ||
+    (!isBoxBack &&
+      !isBoxWithProduct &&
+      hasCatalogSetGalleryImageHint(hintText, boxFrontGalleryImageHints));
+  const isDimensions = hasCatalogSetGalleryImageHint(
+    hintText,
+    dimensionsGalleryImageHints,
+  );
+  const isLifestyle =
+    image.imageRole === 'lifestyle_people' ||
+    image.imageRole === 'lifestyle_room' ||
+    hasCatalogSetGalleryImageHint(hintText, lifestyleGalleryImageHints);
+  const isMinifigure =
+    image.imageRole === 'minifigure' ||
+    image.type === 'minifig' ||
+    hasCatalogSetGalleryImageHint(hintText, minifigureGalleryImageHints);
+  if (isBoxBack) {
+    return catalogSetGalleryImageDisplayGroups.boxBack;
+  }
+
+  if (
+    image.imageRole === 'model_primary' ||
+    (image.type === 'hero' && !isDimensions && !isLifestyle && !isMinifigure)
+  ) {
+    return catalogSetGalleryImageDisplayGroups.primaryProduct;
+  }
+
+  if (isBoxWithProduct) {
+    return catalogSetGalleryImageDisplayGroups.boxWithProduct;
+  }
+
+  if (isBoxFront) {
+    return catalogSetGalleryImageDisplayGroups.boxFront;
+  }
+
+  if (isDimensions) {
+    return catalogSetGalleryImageDisplayGroups.dimensions;
+  }
+
+  if (isMinifigure) {
+    return catalogSetGalleryImageDisplayGroups.minifigure;
+  }
+
+  if (isLifestyle) {
+    return catalogSetGalleryImageDisplayGroups.lifestyle;
+  }
+
   switch (image.imageRole) {
-    case 'model_primary':
     case 'model_secondary':
-    case 'minifigure':
     case 'logo':
-      return 0;
-    case 'box_front':
-      return 1;
-    case 'lifestyle_people':
-    case 'lifestyle_room':
-      return 2;
+      return catalogSetGalleryImageDisplayGroups.product;
     case 'build':
     case 'detail':
-      return 3;
+      return catalogSetGalleryImageDisplayGroups.detail;
+    case 'minifigure':
+      return catalogSetGalleryImageDisplayGroups.minifigure;
+    case 'lifestyle_people':
+    case 'lifestyle_room':
+      return catalogSetGalleryImageDisplayGroups.lifestyle;
+    case 'box_front':
+      return catalogSetGalleryImageDisplayGroups.boxFront;
     case 'box_back':
-      return 4;
+      return catalogSetGalleryImageDisplayGroups.boxBack;
     case 'unknown':
-      return 3;
+      break;
   }
 
   switch (image.type) {
-    case 'hero':
     case 'minifig':
-      return 0;
+      return catalogSetGalleryImageDisplayGroups.minifigure;
+    case 'hero':
+      return catalogSetGalleryImageDisplayGroups.primaryProduct;
     case 'detail':
-      return 3;
+      return catalogSetGalleryImageDisplayGroups.detail;
     default:
-      return 3;
+      return catalogSetGalleryImageDisplayGroups.unknown;
   }
 }
 
 export function sortCatalogSetGalleryImages<
-  T extends Pick<CatalogSetImage, 'imageRole' | 'type'>,
+  T extends CatalogSetGallerySortableImage,
 >(images: readonly T[]): T[] {
   return images
     .map((image, index) => ({

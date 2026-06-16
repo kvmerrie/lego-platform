@@ -159,6 +159,41 @@ describe('commerce current-offer snapshots', () => {
     expect(result.snapshots[0]?.bestPriceMinor).toBe(19895);
   });
 
+  test('keeps a stale lower snapshot offer from becoming the card/detail best offer', () => {
+    const result = buildCommerceCurrentOfferSnapshots({
+      now,
+      syncSeeds: [
+        buildSeed({
+          merchantId: 'merchant-mediamarkt',
+          merchantName: 'MediaMarkt',
+          merchantSlug: 'mediamarkt',
+          observedAt: '2026-05-01T05:01:00.862Z',
+          priceMinor: 17500,
+          productUrl: 'https://example.com/lego-21061-mediamarkt',
+          seedId: 'seed-mediamarkt-21061',
+          setId: '21061',
+        }),
+        buildSeed({
+          merchantId: 'merchant-proshop',
+          merchantName: 'Proshop',
+          merchantSlug: 'proshop',
+          observedAt: '2026-05-19T06:06:05.983Z',
+          priceMinor: 17667,
+          productUrl: 'https://example.com/lego-21061-proshop',
+          seedId: 'seed-proshop-21061',
+          setId: '21061',
+        }),
+      ],
+    });
+
+    expect(result.snapshots[0]).toMatchObject({
+      bestMerchantSlug: 'proshop',
+      bestPriceMinor: 17667,
+      offerCount: 2,
+      setId: '21061',
+    });
+  });
+
   test('allows an extreme strategic manual price advantage to surface', () => {
     const result = buildCommerceCurrentOfferSnapshots({
       now,
@@ -424,9 +459,9 @@ describe('commerce current-offer snapshots', () => {
       ],
     });
 
-    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(3);
+    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(2);
     expect(result.summary.missingLiveSummaryReasonCounts).toEqual({
-      missing_live_due_to_set_scope: 2,
+      missing_live_due_to_set_scope: 1,
       missing_live_due_to_unit: 1,
     });
     expect(result.summary.missingLiveSummarySample).toEqual([
@@ -437,10 +472,6 @@ describe('commerce current-offer snapshots', () => {
       expect.objectContaining({
         reason: 'missing_live_due_to_unit',
         setId: '76454',
-      }),
-      expect.objectContaining({
-        reason: 'missing_live_due_to_set_scope',
-        setId: '76455',
       }),
     ]);
   });

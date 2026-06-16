@@ -71,7 +71,16 @@ export interface UniekeBricksFeedSyncResult
   merchantName: string;
   merchantSlug: string;
   normalizedRowCount: number;
+  originMode: UniekeBricksFeedOriginMode;
   parseFailureCount: number;
+}
+
+type UniekeBricksFeedOriginMode = 'ip' | 'public';
+
+interface UniekeBricksFeedRequest {
+  headers: HeadersInit;
+  originMode: UniekeBricksFeedOriginMode;
+  url: string;
 }
 
 const uniekeBricksFeedRetryDelayMs = 250;
@@ -86,6 +95,29 @@ function buildUniekeBricksFeedRequestHeaders(): HeadersInit {
     Pragma: 'no-cache',
     'User-Agent':
       'Mozilla/5.0 compatible BrickhuntBot/1.0; +https://www.brickhunt.nl',
+  };
+}
+
+function buildUniekeBricksFeedRequest(
+  config: UniekeBricksFeedConfig,
+): UniekeBricksFeedRequest {
+  const headers = buildUniekeBricksFeedRequestHeaders();
+
+  if (!config.feedOriginUrl) {
+    return {
+      headers,
+      originMode: 'public',
+      url: config.feedUrl,
+    };
+  }
+
+  return {
+    headers: {
+      ...headers,
+      Host: new URL(config.feedUrl).hostname,
+    },
+    originMode: 'ip',
+    url: config.feedOriginUrl,
   };
 }
 
@@ -120,10 +152,12 @@ async function readResponseBodySnippet(
 
 async function buildUniekeBricksFeedResponseError(
   response: Response,
+  originMode: UniekeBricksFeedOriginMode,
 ): Promise<Error> {
   const contentType = response.headers.get('content-type')?.trim();
   const bodySnippet = await readResponseBodySnippet(response);
   const diagnostics = [
+    `origin_mode=${originMode}`,
     `status_code=${response.status}`,
     response.statusText
       ? `status_text=${JSON.stringify(response.statusText)}`
@@ -134,6 +168,70 @@ async function buildUniekeBricksFeedResponseError(
 
   return new Error(
     `Unieke Bricks feed request failed with ${response.status} ${response.statusText}. upstream_http ${diagnostics.join(' ')}`,
+  );
+}
+
+function isLikelyUniekeBricksFeedXml({
+  bodyText,
+  contentType,
+}: {
+  bodyText: string;
+  contentType?: string;
+}): boolean {
+  const normalizedContentType = contentType?.toLowerCase() ?? '';
+  const trimmedBodyStart = bodyText.trimStart().slice(0, 200).toLowerCase();
+
+  if (
+    trimmedBodyStart.startsWith('<html') ||
+    trimmedBodyStart.includes('challenges.cloudflare.com') ||
+    trimmedBodyStart.includes('just a moment')
+  ) {
+    return false;
+  }
+
+  return (
+    normalizedContentType.includes('xml') ||
+    trimmedBodyStart.startsWith('<?xml') ||
+    trimmedBodyStart.startsWith('<rss') ||
+    trimmedBodyStart.startsWith('<feed')
+  );
+}
+
+function buildUniekeBricksInvalidFeedResponseError({
+  bodyText,
+  contentType,
+  originMode,
+}: {
+  bodyText: string;
+  contentType?: string;
+  originMode: UniekeBricksFeedOriginMode;
+}): Error {
+  const bodySnippet = normalizeResponseBodySnippet(bodyText);
+  const diagnostics = [
+    `origin_mode=${originMode}`,
+    contentType ? `content_type=${JSON.stringify(contentType)}` : '',
+    bodySnippet ? `body_snippet=${JSON.stringify(bodySnippet)}` : '',
+  ].filter(Boolean);
+  const normalizedBodyStart = bodyText.trimStart().slice(0, 200).toLowerCase();
+
+  if (!bodyText.trim()) {
+    return new Error(
+      `Unieke Bricks feed response had an empty body. upstream_invalid_response ${diagnostics.join(' ')}`,
+    );
+  }
+
+  if (
+    normalizedBodyStart.startsWith('<html') ||
+    normalizedBodyStart.includes('challenges.cloudflare.com') ||
+    normalizedBodyStart.includes('just a moment')
+  ) {
+    return new Error(
+      `Unieke Bricks feed returned HTML response instead of XML. upstream_invalid_response ${diagnostics.join(' ')}`,
+    );
+  }
+
+  return new Error(
+    `Unieke Bricks feed returned non-XML upstream response. upstream_invalid_response ${diagnostics.join(' ')}`,
   );
 }
 
@@ -527,16 +625,6 @@ function buildDebugInfo({
   };
 }
 
-function responseBodyToNodeStream(response: Response): NodeJS.ReadableStream {
-  if (!response.body) {
-    throw new Error('Unieke Bricks feed response did not include a body.');
-  }
-
-  return Readable.fromWeb(
-    response.body as Parameters<typeof Readable.fromWeb>[0],
-  );
-}
-
 async function fetchProducts({
   config,
   fetchFn,
@@ -547,26 +635,52 @@ async function fetchProducts({
   fetchFn: typeof fetch;
   maxProducts?: number;
   sleepFn: (delayMs: number) => Promise<void>;
-}): Promise<readonly UniekeBricksFeedProduct[]> {
-  let response = await fetchFn(config.feedUrl, {
-    headers: buildUniekeBricksFeedRequestHeaders(),
+}): Promise<{
+  originMode: UniekeBricksFeedOriginMode;
+  products: readonly UniekeBricksFeedProduct[];
+}> {
+  const request = buildUniekeBricksFeedRequest(config);
+  let response = await fetchFn(request.url, {
+    headers: request.headers,
   });
 
   if (!response.ok && shouldRetryUniekeBricksFeedStatus(response.status)) {
     await sleepFn(uniekeBricksFeedRetryDelayMs);
-    response = await fetchFn(config.feedUrl, {
-      headers: buildUniekeBricksFeedRequestHeaders(),
+    response = await fetchFn(request.url, {
+      headers: request.headers,
     });
   }
 
   if (!response.ok) {
-    throw await buildUniekeBricksFeedResponseError(response);
+    throw await buildUniekeBricksFeedResponseError(
+      response,
+      request.originMode,
+    );
   }
 
-  return parseUniekeBricksProductFeedXmlStream({
-    maxProducts,
-    stream: responseBodyToNodeStream(response),
-  });
+  const contentType = response.headers.get('content-type')?.trim();
+  const bodyText = await response.text();
+
+  if (
+    !isLikelyUniekeBricksFeedXml({
+      bodyText,
+      contentType,
+    })
+  ) {
+    throw buildUniekeBricksInvalidFeedResponseError({
+      bodyText,
+      contentType,
+      originMode: request.originMode,
+    });
+  }
+
+  return {
+    originMode: request.originMode,
+    products: await parseUniekeBricksProductFeedXmlStream({
+      maxProducts,
+      stream: Readable.from([bodyText]),
+    }),
+  };
 }
 
 export async function syncUniekeBricksFeed({
@@ -584,12 +698,13 @@ export async function syncUniekeBricksFeed({
     importAffiliateFeedRowsForMerchant;
   const sleepFn = dependencies?.sleepFn ?? sleep;
   const config = getUniekeBricksFeedConfigFn();
-  const products = await fetchProducts({
+  const feed = await fetchProducts({
     config,
     fetchFn,
     maxProducts: options?.maxProducts,
     sleepFn,
   });
+  const products = feed.products;
   const legoCandidates = products.filter(isLegoContext);
   const nonConstructionLegoProducts = legoCandidates.filter(
     isNonConstructionLegoProduct,
@@ -643,6 +758,7 @@ export async function syncUniekeBricksFeed({
     merchantName: config.merchantName,
     merchantSlug: config.merchantSlug,
     normalizedRowCount: normalizedRows.length,
+    originMode: feed.originMode,
     parseFailureCount: 0,
     skippedMissingSetNumberCount:
       importResult.skippedMissingSetNumberCount + missingSetNumberProductCount,

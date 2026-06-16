@@ -1,5 +1,6 @@
 import {
   dedupeCatalogOffersByPublicMerchant,
+  getCommercePurchasableOfferRejectionReason,
   getCatalogOfferMerchantSlug,
   getCatalogOfferPublicMerchantName,
   selectBestPurchasableOffer,
@@ -71,10 +72,13 @@ import {
   buildCanonicalUrl,
   buildSetDetailPath,
   cacheTags,
+  commerceCommercialUnitTypes,
   getDefaultFormattingLocale,
   getBricksetGalleryRenderMode,
+  getCommerceCommercialUnitComparisonGroup,
   getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
+  type CommerceCommercialUnitType,
   webPathnames,
 } from '@lego-platform/shared/config';
 import {
@@ -951,6 +955,22 @@ function isLowestComparableCatalogOffer({
   );
 }
 
+function getCatalogOfferCommercialUnitType(
+  catalogOffer: CatalogOffer,
+): CommerceCommercialUnitType | undefined {
+  const commercialUnitType =
+    'commercialUnitType' in catalogOffer
+      ? catalogOffer.commercialUnitType
+      : undefined;
+
+  return typeof commercialUnitType === 'string' &&
+    (commerceCommercialUnitTypes as readonly string[]).includes(
+      commercialUnitType,
+    )
+    ? (commercialUnitType as CommerceCommercialUnitType)
+    : undefined;
+}
+
 function toCatalogRuntimeOffer(
   catalogOffer: CatalogOffer,
 ): CatalogRuntimeOffer {
@@ -1396,13 +1416,38 @@ function buildOfferRankingLabel({
       currencyCode: catalogOffer.currency,
       minorUnits: Math.abs(priceDeltaMinor),
     });
+    const rejectionReason = getCommercePurchasableOfferRejectionReason({
+      commerceOffer: catalogOffer,
+    });
 
-    if (catalogOffer.availability === 'out_of_stock') {
+    if (rejectionReason === 'out_of_stock') {
       return `${lowerPriceLabel} lager, maar uitverkocht`;
     }
 
-    if (catalogOffer.availability === 'unknown') {
-      return `${lowerPriceLabel} lager, maar voorraad onbekend`;
+    if (rejectionReason === 'stale') {
+      return `${lowerPriceLabel} lager, maar niet recent genoeg`;
+    }
+
+    if (rejectionReason === 'unavailable') {
+      return `${lowerPriceLabel} lager, maar niet koopbaar`;
+    }
+
+    const bestOfferCommercialUnitType =
+      getCatalogOfferCommercialUnitType(bestOffer);
+    const catalogOfferCommercialUnitType =
+      getCatalogOfferCommercialUnitType(catalogOffer);
+    const bestOfferComparisonGroup = getCommerceCommercialUnitComparisonGroup(
+      bestOfferCommercialUnitType,
+    );
+    const catalogOfferComparisonGroup =
+      getCommerceCommercialUnitComparisonGroup(catalogOfferCommercialUnitType);
+
+    if (
+      bestOfferComparisonGroup !== 'unknown' &&
+      catalogOfferComparisonGroup !== 'unknown' &&
+      bestOfferComparisonGroup !== catalogOfferComparisonGroup
+    ) {
+      return `${lowerPriceLabel} lager, maar niet dezelfde aanbieding`;
     }
 
     return `${lowerPriceLabel} lager, maar niet de beste keuze nu`;
@@ -2334,12 +2379,13 @@ export default async function SetDetailPage({
       liveOffers: localizedSetDetailOffers,
       setId: catalogSetDetail.id,
     });
-  const offerRailBestOffer = selectBestPurchasableOffer(
+  const offerRailBestOfferResult = selectBestPurchasableOffer(
     localizedSetDetailOffers,
     {
       strategicTieBreakerOffer: sourceCurrentOfferSummary?.bestOffer ?? null,
     },
-  ).offer;
+  );
+  const offerRailBestOffer = offerRailBestOfferResult.offer;
   const currentOfferSummary: CatalogCurrentOfferSummary | undefined =
     offerRailBestOffer
       ? {
@@ -2457,6 +2503,22 @@ export default async function SetDetailPage({
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
   );
+  const currentOfferSummaryCanonicalOffers = currentOfferSummary
+    ? selectBestPurchasableOffer(
+        [...currentOfferSummary.offers, currentOfferSummary.bestOffer].filter(
+          (
+            offer,
+          ): offer is NonNullable<CatalogCurrentOfferSummary['bestOffer']> =>
+            Boolean(offer),
+        ),
+        {
+          strategicTieBreakerOffer: currentOfferSummary.bestOffer ?? null,
+        },
+      ).rankedOffers
+    : [];
+  const structuredDataOffers = offerRailBestOfferResult.rankedOffers.length
+    ? offerRailBestOfferResult.rankedOffers
+    : currentOfferSummaryCanonicalOffers;
   const jsonLd = measureSetPageSync({
     label: 'structured-data',
     slug,
@@ -2467,7 +2529,7 @@ export default async function SetDetailPage({
           catalogSetDetail,
           offers: hasTrackedAvailabilityFallback
             ? []
-            : localizedSetDetailOffers.map(withCatalogOfferPublicMerchantName),
+            : structuredDataOffers.map(withCatalogOfferPublicMerchantName),
           reviewSummary: reviewPayload.summary,
           reviews: reviewPayload.reviews,
         }),

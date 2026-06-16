@@ -224,6 +224,11 @@ function sortSnapshotOffers(
 
 function selectBestSnapshotOffer(
   offers: readonly CommerceCurrentOfferSnapshotOffer[],
+  {
+    now,
+  }: {
+    now: Date;
+  },
 ): CommerceCurrentOfferSnapshotOffer | undefined {
   const sortedOffers = sortSnapshotOffers(offers);
   const selectableOffers = sortedOffers.map((offer) => ({
@@ -243,7 +248,7 @@ function selectBestSnapshotOffer(
   }));
 
   return selectBestPurchasableOffer(selectableOffers, {
-    maxOfferAgeDays: Number.POSITIVE_INFINITY,
+    now,
     strategicTieBreakerOffer: selectableOffers[0] ?? null,
   }).offer?.snapshotOffer;
 }
@@ -335,7 +340,9 @@ function buildSnapshotForSet({
   setId: string;
 }): CommerceCurrentOfferSnapshot {
   const sortedOffers = sortSnapshotOffers(offers);
-  const bestOffer = selectBestSnapshotOffer(sortedOffers);
+  const bestOffer = selectBestSnapshotOffer(sortedOffers, {
+    now: new Date(computedAt),
+  });
   const comparableOffers = getComparableOffersForBestOffer({
     bestOffer,
     offers: sortedOffers,
