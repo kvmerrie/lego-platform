@@ -314,6 +314,58 @@ describe('Unieke Bricks feed sync server', () => {
     expect(importFeedRowsForMerchantFn).toHaveBeenCalled();
   });
 
+  test('calls fetch with the exact origin env URL and Host header for origin IP mode', async () => {
+    const originUrl =
+      'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml';
+    const fetchFn = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(sampleUniekeBricksFeedXml));
+    const importFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult());
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+      return undefined;
+    });
+
+    await syncUniekeBricksFeed({
+      dependencies: {
+        fetchFn,
+        getUniekeBricksFeedConfigFn: () => ({
+          feedOriginUrl: originUrl,
+          feedUrl:
+            'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/8qmhty7d03ku294ycsv6edyxbn20bqkh.xml',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+        }),
+        importFeedRowsForMerchantFn,
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(fetchFn).toHaveBeenCalledWith(
+      originUrl,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Host: 'uniekebricks.nl',
+        }),
+      }),
+    );
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[uniekebricks-feed-sync] fetch_request origin_mode=ip attempt=1 request_url_host="93.119.2.137" request_host_header="uniekebricks.nl"',
+    );
+    expect(
+      consoleLogSpy.mock.calls
+        .flat()
+        .some((message) =>
+          String(message).includes('8qmhty7d03ku294ycsv6edyxbn20bqkh.xml'),
+        ),
+    ).toBe(false);
+
+    consoleLogSpy.mockRestore();
+  });
+
   test('retries a blocked feed request once and imports after recovery', async () => {
     const importFeedRowsForMerchantFn = vi
       .fn()

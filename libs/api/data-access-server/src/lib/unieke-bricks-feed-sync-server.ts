@@ -121,6 +121,36 @@ function buildUniekeBricksFeedRequest(
   };
 }
 
+function getHeaderValue(headers: HeadersInit, key: string): string | undefined {
+  if (headers instanceof Headers) {
+    return headers.get(key) ?? undefined;
+  }
+
+  if (Array.isArray(headers)) {
+    const match = headers.find(
+      ([headerKey]) => headerKey.toLowerCase() === key.toLowerCase(),
+    );
+
+    return match?.[1];
+  }
+
+  const record = headers as Record<string, string>;
+
+  return record[key] ?? record[key.toLowerCase()];
+}
+
+function logUniekeBricksFeedRequest({
+  attempt,
+  request,
+}: {
+  attempt: number;
+  request: UniekeBricksFeedRequest;
+}) {
+  console.log(
+    `[uniekebricks-feed-sync] fetch_request origin_mode=${request.originMode} attempt=${attempt} request_url_host=${JSON.stringify(new URL(request.url).host)} request_host_header=${JSON.stringify(getHeaderValue(request.headers, 'Host') ?? '')}`,
+  );
+}
+
 function shouldRetryUniekeBricksFeedStatus(status: number): boolean {
   return retriableUniekeBricksFeedStatuses.has(status) || status >= 500;
 }
@@ -640,12 +670,20 @@ async function fetchProducts({
   products: readonly UniekeBricksFeedProduct[];
 }> {
   const request = buildUniekeBricksFeedRequest(config);
+  logUniekeBricksFeedRequest({
+    attempt: 1,
+    request,
+  });
   let response = await fetchFn(request.url, {
     headers: request.headers,
   });
 
   if (!response.ok && shouldRetryUniekeBricksFeedStatus(response.status)) {
     await sleepFn(uniekeBricksFeedRetryDelayMs);
+    logUniekeBricksFeedRequest({
+      attempt: 2,
+      request,
+    });
     response = await fetchFn(request.url, {
       headers: request.headers,
     });
