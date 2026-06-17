@@ -1,3 +1,6 @@
+import { EventEmitter } from 'node:events';
+import type { IncomingMessage } from 'node:http';
+import type { RequestOptions } from 'node:https';
 import { Readable } from 'node:stream';
 import { describe, expect, test, vi } from 'vitest';
 import { importAffiliateFeedRowsForMerchant } from './alternate-affiliate-feed-server';
@@ -98,6 +101,50 @@ function createImportResult(overrides = {}) {
     upsertedLatestCount: 2,
     upsertedSeedCount: 2,
     ...overrides,
+  };
+}
+
+function createHttpsRequestMock({
+  body = sampleUniekeBricksFeedXml,
+  contentType = 'application/xml',
+  statusCode = 200,
+  statusMessage = 'OK',
+}: {
+  body?: string;
+  contentType?: string;
+  statusCode?: number;
+  statusMessage?: string;
+} = {}) {
+  const calls: RequestOptions[] = [];
+  const httpsRequestFn = vi.fn(
+    (
+      options: RequestOptions,
+      callback: (response: IncomingMessage) => void,
+    ) => {
+      calls.push(options);
+
+      const request = new EventEmitter() as EventEmitter & {
+        end: ReturnType<typeof vi.fn>;
+      };
+
+      request.end = vi.fn(() => {
+        const response = Readable.from([body]) as IncomingMessage;
+
+        response.headers = {
+          'content-type': contentType,
+        };
+        response.statusCode = statusCode;
+        response.statusMessage = statusMessage;
+        callback(response);
+      });
+
+      return request;
+    },
+  );
+
+  return {
+    calls,
+    httpsRequestFn,
   };
 }
 
@@ -369,6 +416,77 @@ describe('Unieke Bricks feed sync server', () => {
     consoleLogSpy.mockRestore();
   });
 
+  test('uses HTTPS feed hostname with custom origin IP lookup in resolve-IP mode', async () => {
+    const { calls, httpsRequestFn } = createHttpsRequestMock();
+    const fetchFn = vi.fn<typeof fetch>();
+    const importFeedRowsForMerchantFn = vi
+      .fn()
+      .mockResolvedValue(createImportResult());
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {
+      return undefined;
+    });
+
+    const result = await syncUniekeBricksFeed({
+      dependencies: {
+        fetchFn,
+        getUniekeBricksFeedConfigFn: () => ({
+          feedOriginHostHeader: 'www.uniekebricks.nl',
+          feedOriginResolveIp: '93.119.2.137',
+          feedOriginUrl:
+            'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          feedUrl:
+            'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+        }),
+        httpsRequestFn,
+        importFeedRowsForMerchantFn,
+      },
+      options: {
+        dryRun: true,
+      },
+    });
+
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(httpsRequestFn).toHaveBeenCalledTimes(1);
+    expect(calls[0]).toMatchObject({
+      headers: expect.objectContaining({
+        Host: 'uniekebricks.nl',
+      }),
+      hostname: 'uniekebricks.nl',
+      method: 'GET',
+      path: '/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      port: 443,
+      protocol: 'https:',
+      servername: 'uniekebricks.nl',
+    });
+
+    const lookup = calls[0]?.lookup as (
+      hostname: string,
+      options: unknown,
+      callback: (
+        error: NodeJS.ErrnoException | null,
+        address: string,
+        family: number,
+      ) => void,
+    ) => void;
+    const lookupCallback = vi.fn();
+    lookup('uniekebricks.nl', {}, lookupCallback);
+    expect(lookupCallback).toHaveBeenCalledWith(null, '93.119.2.137', 4);
+    expect(result.originMode).toBe('resolve_ip');
+    expect(importFeedRowsForMerchantFn).toHaveBeenCalled();
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      '[uniekebricks-feed-sync] fetch_request origin_mode=resolve_ip attempt=1 request_url_host="uniekebricks.nl" resolve_ip="93.119.2.137"',
+    );
+    expect(
+      consoleLogSpy.mock.calls
+        .flat()
+        .some((message) => String(message).includes('/wp-content/uploads/')),
+    ).toBe(false);
+
+    consoleLogSpy.mockRestore();
+  });
+
   test('uses the configured origin Host header override in origin IP mode', async () => {
     const originUrl =
       'http://93.119.2.137/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
@@ -413,6 +531,108 @@ describe('Unieke Bricks feed sync server', () => {
     );
 
     consoleLogSpy.mockRestore();
+  });
+
+  test('rejects Cloudflare HTML responses from resolve-IP mode before importing', async () => {
+    const importFeedRowsForMerchantFn = vi.fn();
+    const { httpsRequestFn } = createHttpsRequestMock({
+      body: '<html><head><title>Just a moment...</title></head><body><script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script></body></html>',
+      contentType: 'text/html; charset=utf-8',
+    });
+
+    let caughtError: unknown;
+
+    try {
+      await syncUniekeBricksFeed({
+        dependencies: {
+          getUniekeBricksFeedConfigFn: () => ({
+            feedOriginHostHeader: 'uniekebricks.nl',
+            feedOriginResolveIp: '93.119.2.137',
+            feedUrl:
+              'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            merchantName: 'Unieke Bricks',
+            merchantSlug: 'uniekebricks',
+          }),
+          httpsRequestFn,
+          importFeedRowsForMerchantFn,
+        },
+        options: {
+          dryRun: false,
+        },
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toMatchObject({
+      name: 'Error',
+      message: expect.stringContaining(
+        'Unieke Bricks feed returned HTML response instead of XML.',
+      ),
+    });
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('origin_mode=resolve_ip'),
+      }),
+    );
+    expect(importFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(classifyScheduledJobFailure(caughtError)).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_invalid_response',
+      recoverable: true,
+    });
+  });
+
+  test('keeps resolve-IP 404 recoverable without importing rows or marking stale', async () => {
+    const importFeedRowsForMerchantFn = vi.fn();
+    const { httpsRequestFn } = createHttpsRequestMock({
+      body: '<html>Not found</html>',
+      contentType: 'text/html; charset=utf-8',
+      statusCode: 404,
+      statusMessage: 'Not Found',
+    });
+
+    let caughtError: unknown;
+
+    try {
+      await syncUniekeBricksFeed({
+        dependencies: {
+          getUniekeBricksFeedConfigFn: () => ({
+            feedOriginHostHeader: 'uniekebricks.nl',
+            feedOriginResolveIp: '93.119.2.137',
+            feedUrl:
+              'https://uniekebricks.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+            merchantName: 'Unieke Bricks',
+            merchantSlug: 'uniekebricks',
+          }),
+          httpsRequestFn,
+          importFeedRowsForMerchantFn,
+        },
+        options: {
+          dryRun: false,
+        },
+      });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toMatchObject({
+      name: 'Error',
+      message: expect.stringContaining(
+        'Unieke Bricks feed request failed with 404 Not Found.',
+      ),
+    });
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        message: expect.stringContaining('origin_mode=resolve_ip'),
+      }),
+    );
+    expect(importFeedRowsForMerchantFn).not.toHaveBeenCalled();
+    expect(classifyScheduledJobFailure(caughtError)).toEqual({
+      exitCode: 0,
+      failureType: 'upstream_http',
+      recoverable: true,
+    });
   });
 
   test('retries a blocked feed request once and imports after recovery', async () => {

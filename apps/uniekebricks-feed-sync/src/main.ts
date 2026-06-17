@@ -130,7 +130,11 @@ async function main() {
   }
 
   const feedConfig = getUniekeBricksFeedConfig();
-  const originMode = feedConfig.feedOriginUrl ? 'ip' : 'public';
+  const originMode = feedConfig.feedOriginResolveIp
+    ? 'resolve_ip'
+    : feedConfig.feedOriginUrl
+      ? 'ip'
+      : 'public';
 
   console.log(
     `[uniekebricks-feed-sync] start source=direct merchant=uniekebricks origin_mode=${originMode} mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')} report_stale_latest_path=${JSON.stringify(reportStaleLatestPath ?? '')}`,
@@ -263,9 +267,11 @@ async function main() {
 }
 
 main().catch((error) => {
-  const originMode = process.env.UNIEKE_BRICKS_FEED_ORIGIN_URL?.trim()
-    ? 'ip'
-    : 'public';
+  const originMode = process.env.UNIEKE_BRICKS_FEED_ORIGIN_RESOLVE_IP?.trim()
+    ? 'resolve_ip'
+    : process.env.UNIEKE_BRICKS_FEED_ORIGIN_URL?.trim()
+      ? 'ip'
+      : 'public';
   const classification = logScheduledJobFailure({
     context: `source=direct merchant=uniekebricks origin_mode=${originMode}`,
     error,

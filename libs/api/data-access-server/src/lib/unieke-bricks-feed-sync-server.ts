@@ -1,3 +1,10 @@
+import type {
+  ClientRequest,
+  IncomingHttpHeaders,
+  IncomingMessage,
+  OutgoingHttpHeaders,
+} from 'node:http';
+import { request as httpsRequest, type RequestOptions } from 'node:https';
 import { Readable } from 'node:stream';
 import {
   getUniekeBricksFeedConfig,
@@ -26,6 +33,7 @@ export interface UniekeBricksFeedProduct {
 export interface UniekeBricksFeedSyncDependencies {
   fetchFn?: typeof fetch;
   getUniekeBricksFeedConfigFn?: typeof getUniekeBricksFeedConfig;
+  httpsRequestFn?: HttpsRequestFn;
   importFeedRowsForMerchantFn?: typeof importAffiliateFeedRowsForMerchant;
   sleepFn?: (delayMs: number) => Promise<void>;
 }
@@ -75,11 +83,17 @@ export interface UniekeBricksFeedSyncResult
   parseFailureCount: number;
 }
 
-type UniekeBricksFeedOriginMode = 'ip' | 'public';
+type UniekeBricksFeedOriginMode = 'ip' | 'public' | 'resolve_ip';
+
+type HttpsRequestFn = (
+  options: RequestOptions,
+  callback: (response: IncomingMessage) => void,
+) => ClientRequest;
 
 interface UniekeBricksFeedRequest {
   headers: HeadersInit;
   originMode: UniekeBricksFeedOriginMode;
+  resolveIp?: string;
   url: string;
 }
 
@@ -102,6 +116,19 @@ function buildUniekeBricksFeedRequest(
   config: UniekeBricksFeedConfig,
 ): UniekeBricksFeedRequest {
   const headers = buildUniekeBricksFeedRequestHeaders();
+  const feedUrl = new URL(config.feedUrl);
+
+  if (config.feedOriginResolveIp) {
+    return {
+      headers: {
+        ...headers,
+        Host: feedUrl.hostname,
+      },
+      originMode: 'resolve_ip',
+      resolveIp: config.feedOriginResolveIp,
+      url: config.feedUrl,
+    };
+  }
 
   if (!config.feedOriginUrl) {
     return {
@@ -139,6 +166,24 @@ function getHeaderValue(headers: HeadersInit, key: string): string | undefined {
   return record[key] ?? record[key.toLowerCase()];
 }
 
+function toOutgoingRequestHeaders(headers: HeadersInit): OutgoingHttpHeaders {
+  if (headers instanceof Headers) {
+    const outgoingHeaders: OutgoingHttpHeaders = {};
+
+    headers.forEach((value, key) => {
+      outgoingHeaders[key] = value;
+    });
+
+    return outgoingHeaders;
+  }
+
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers);
+  }
+
+  return headers;
+}
+
 function logUniekeBricksFeedRequest({
   attempt,
   request,
@@ -146,8 +191,16 @@ function logUniekeBricksFeedRequest({
   attempt: number;
   request: UniekeBricksFeedRequest;
 }) {
+  const resolveIpDiagnostic = request.resolveIp
+    ? ` resolve_ip=${JSON.stringify(request.resolveIp)}`
+    : '';
+  const hostHeaderDiagnostic =
+    request.originMode === 'resolve_ip'
+      ? ''
+      : ` request_host_header=${JSON.stringify(getHeaderValue(request.headers, 'Host') ?? '')}`;
+
   console.log(
-    `[uniekebricks-feed-sync] fetch_request origin_mode=${request.originMode} attempt=${attempt} request_url_host=${JSON.stringify(new URL(request.url).host)} request_host_header=${JSON.stringify(getHeaderValue(request.headers, 'Host') ?? '')}`,
+    `[uniekebricks-feed-sync] fetch_request origin_mode=${request.originMode} attempt=${attempt} request_url_host=${JSON.stringify(new URL(request.url).host)}${resolveIpDiagnostic}${hostHeaderDiagnostic}`,
   );
 }
 
@@ -178,6 +231,142 @@ async function readResponseBodySnippet(
   } catch {
     return undefined;
   }
+}
+
+function toResponseHeaders(headers: IncomingHttpHeaders): Headers {
+  const responseHeaders = new Headers();
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        responseHeaders.append(key, item);
+      }
+      continue;
+    }
+
+    if (typeof value === 'string') {
+      responseHeaders.set(key, value);
+    }
+  }
+
+  return responseHeaders;
+}
+
+function buildResolveIpLookup({
+  expectedHostname,
+  resolveIp,
+}: {
+  expectedHostname: string;
+  resolveIp: string;
+}): NonNullable<RequestOptions['lookup']> {
+  return (hostname, options, callback) => {
+    const family = resolveIp.includes(':') ? 6 : 4;
+
+    if (hostname !== expectedHostname) {
+      callback(
+        new Error(
+          `Unexpected hostname ${hostname} while resolving Unieke Bricks origin feed.`,
+        ),
+        '',
+        0,
+      );
+      return;
+    }
+
+    if (options.all) {
+      callback(null, [
+        {
+          address: resolveIp,
+          family,
+        },
+      ]);
+      return;
+    }
+
+    callback(null, resolveIp, family);
+  };
+}
+
+async function fetchUniekeBricksFeedViaResolveIp({
+  httpsRequestFn,
+  request,
+}: {
+  httpsRequestFn: HttpsRequestFn;
+  request: UniekeBricksFeedRequest;
+}): Promise<Response> {
+  const requestUrl = new URL(request.url);
+  const resolveIp = request.resolveIp?.trim();
+
+  if (requestUrl.protocol !== 'https:') {
+    throw new Error(
+      `Unieke Bricks resolve-IP feed URL must use HTTPS. origin_mode=resolve_ip request_url_host=${JSON.stringify(requestUrl.host)}`,
+    );
+  }
+
+  if (!resolveIp) {
+    throw new Error(
+      'Unieke Bricks resolve-IP feed request is missing an origin IP. origin_mode=resolve_ip',
+    );
+  }
+
+  return await new Promise<Response>((resolve, reject) => {
+    const clientRequest = httpsRequestFn(
+      {
+        headers: toOutgoingRequestHeaders(request.headers),
+        hostname: requestUrl.hostname,
+        lookup: buildResolveIpLookup({
+          expectedHostname: requestUrl.hostname,
+          resolveIp,
+        }),
+        method: 'GET',
+        path: `${requestUrl.pathname}${requestUrl.search}`,
+        port: requestUrl.port ? Number(requestUrl.port) : 443,
+        protocol: 'https:',
+        servername: requestUrl.hostname,
+      },
+      (response) => {
+        const chunks: Buffer[] = [];
+
+        response.on('data', (chunk: Buffer | string) => {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        });
+        response.on('error', reject);
+        response.on('end', () => {
+          resolve(
+            new Response(Buffer.concat(chunks), {
+              headers: toResponseHeaders(response.headers),
+              status: response.statusCode ?? 502,
+              statusText: response.statusMessage,
+            }),
+          );
+        });
+      },
+    );
+
+    clientRequest.on('error', reject);
+    clientRequest.end();
+  });
+}
+
+async function fetchUniekeBricksFeedResponse({
+  fetchFn,
+  httpsRequestFn,
+  request,
+}: {
+  fetchFn: typeof fetch;
+  httpsRequestFn: HttpsRequestFn;
+  request: UniekeBricksFeedRequest;
+}): Promise<Response> {
+  if (request.originMode === 'resolve_ip') {
+    return await fetchUniekeBricksFeedViaResolveIp({
+      httpsRequestFn,
+      request,
+    });
+  }
+
+  return await fetchFn(request.url, {
+    headers: request.headers,
+  });
 }
 
 async function buildUniekeBricksFeedResponseError(
@@ -658,11 +847,13 @@ function buildDebugInfo({
 async function fetchProducts({
   config,
   fetchFn,
+  httpsRequestFn,
   maxProducts,
   sleepFn,
 }: {
   config: UniekeBricksFeedConfig;
   fetchFn: typeof fetch;
+  httpsRequestFn: HttpsRequestFn;
   maxProducts?: number;
   sleepFn: (delayMs: number) => Promise<void>;
 }): Promise<{
@@ -674,8 +865,10 @@ async function fetchProducts({
     attempt: 1,
     request,
   });
-  let response = await fetchFn(request.url, {
-    headers: request.headers,
+  let response = await fetchUniekeBricksFeedResponse({
+    fetchFn,
+    httpsRequestFn,
+    request,
   });
 
   if (!response.ok && shouldRetryUniekeBricksFeedStatus(response.status)) {
@@ -684,8 +877,10 @@ async function fetchProducts({
       attempt: 2,
       request,
     });
-    response = await fetchFn(request.url, {
-      headers: request.headers,
+    response = await fetchUniekeBricksFeedResponse({
+      fetchFn,
+      httpsRequestFn,
+      request,
     });
   }
 
@@ -734,11 +929,13 @@ export async function syncUniekeBricksFeed({
   const importFeedRowsForMerchantFn =
     dependencies?.importFeedRowsForMerchantFn ??
     importAffiliateFeedRowsForMerchant;
+  const httpsRequestFn = dependencies?.httpsRequestFn ?? httpsRequest;
   const sleepFn = dependencies?.sleepFn ?? sleep;
   const config = getUniekeBricksFeedConfigFn();
   const feed = await fetchProducts({
     config,
     fetchFn,
+    httpsRequestFn,
     maxProducts: options?.maxProducts,
     sleepFn,
   });

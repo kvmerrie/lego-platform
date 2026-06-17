@@ -105,7 +105,11 @@ export function classifyScheduledJobFailure(
   if (httpStatusMatch?.[1]) {
     const httpStatus = Number(httpStatusMatch[1]);
 
-    if (httpStatus === 404 && normalizedMessage.includes('origin_mode=ip')) {
+    if (
+      httpStatus === 404 &&
+      (normalizedMessage.includes('origin_mode=ip') ||
+        normalizedMessage.includes('origin_mode=resolve_ip'))
+    ) {
       return {
         exitCode: 0,
         failureType: 'upstream_http',
