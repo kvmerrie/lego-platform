@@ -32,9 +32,14 @@ import type {
   ThemeCommerceSnapshot,
 } from '@lego-platform/catalog/util';
 import {
+  applyCatalogSetPresentationTitle,
   buildCatalogThemeSlug,
   applyCatalogCollectionPresentation,
   CATALOG_BROWSE_PAGE_SIZE,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_POLICY,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE,
   CATALOG_MINIFIGURE_COLLECTION_SLUG,
   catalogDiscoveryVisualVariants,
   catalogDiscoverDealCandidateIds,
@@ -54,7 +59,9 @@ import {
   matchesCatalogMinifigureCollectionSignals,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
+  readCatalogRakutenLegoPresentationTitle,
   resolveCatalogReleaseDatePrecision,
+  resolveCatalogSetPresentationTitle,
   resolveBricksetGalleryImagePolicy,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
@@ -131,10 +138,6 @@ const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 const SET_DETAIL_RELATED_THEME_SNAPSHOT_SORT_KEY = 'same-theme';
 const SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE = 1;
 const SET_DETAIL_RELATED_THEME_SNAPSHOT_PAGE_SIZE = 20;
-const LEGO_NL_DISPLAY_TITLE_SOURCE = 'rakuten-lego-eu' as const;
-const LEGO_NL_DISPLAY_TITLE_LOCALE = 'nl-NL';
-const LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE = 'exact_set_number';
-const LEGO_NL_DISPLAY_TITLE_POLICY = 'metadata_only_pending_audit';
 const BRICKSET_SOURCE_METADATA_SOURCE = 'brickset';
 const BRICKSET_SOURCE_METADATA_LOCALE = 'en-US';
 const BRICKSET_SOURCE_METADATA_MATCH_CONFIDENCE = 'exact_set_number';
@@ -1597,22 +1600,6 @@ function toCanonicalCatalogSetFromRow({
   };
 }
 
-function readLegoNlDisplayTitle(metadataJson: unknown): string | undefined {
-  if (
-    !metadataJson ||
-    typeof metadataJson !== 'object' ||
-    Array.isArray(metadataJson)
-  ) {
-    return undefined;
-  }
-
-  const title = (metadataJson as { title?: unknown }).title;
-
-  return typeof title === 'string' && title.trim().length > 0
-    ? title.trim()
-    : undefined;
-}
-
 function decodeCatalogMetadataHtmlEntities(value: string): string {
   return value
     .replace(/&nbsp;/gi, ' ')
@@ -1769,17 +1756,20 @@ async function listLegoNlDisplayTitleSearchMatches({
   const { data, error } = await supabaseClient
     .from(CATALOG_SET_SOURCE_METADATA_TABLE)
     .select('catalog_set_id, metadata_json')
-    .eq('source', LEGO_NL_DISPLAY_TITLE_SOURCE)
-    .eq('locale', LEGO_NL_DISPLAY_TITLE_LOCALE)
-    .eq('match_confidence', LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE)
-    .eq('policy', LEGO_NL_DISPLAY_TITLE_POLICY);
+    .eq('source', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE)
+    .eq('locale', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE)
+    .eq(
+      'match_confidence',
+      CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+    )
+    .eq('policy', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_POLICY);
 
   if (error) {
     throw new Error('Unable to search LEGO NL display title metadata.');
   }
 
   for (const row of (data as CatalogSetSourceMetadataRow[] | null) ?? []) {
-    const title = readLegoNlDisplayTitle(row.metadata_json);
+    const title = readCatalogRakutenLegoPresentationTitle(row.metadata_json);
     const score = title
       ? getLegoNlDisplayTitleSearchScore({
           query,
@@ -2289,10 +2279,13 @@ async function getLegoNlProductDescriptionBySetId({
     .from(CATALOG_SET_SOURCE_METADATA_TABLE)
     .select('metadata_json')
     .eq('catalog_set_id', setId)
-    .eq('source', LEGO_NL_DISPLAY_TITLE_SOURCE)
-    .eq('locale', LEGO_NL_DISPLAY_TITLE_LOCALE)
-    .eq('match_confidence', LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE)
-    .eq('policy', LEGO_NL_DISPLAY_TITLE_POLICY)
+    .eq('source', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE)
+    .eq('locale', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE)
+    .eq(
+      'match_confidence',
+      CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+    )
+    .eq('policy', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_POLICY)
     .maybeSingle();
 
   if (error) {
@@ -2325,10 +2318,13 @@ async function listLegoNlDisplayTitleBySetId({
     const { data, error } = await supabaseClient
       .from(CATALOG_SET_SOURCE_METADATA_TABLE)
       .select('catalog_set_id, metadata_json')
-      .eq('source', LEGO_NL_DISPLAY_TITLE_SOURCE)
-      .eq('locale', LEGO_NL_DISPLAY_TITLE_LOCALE)
-      .eq('match_confidence', LEGO_NL_DISPLAY_TITLE_MATCH_CONFIDENCE)
-      .eq('policy', LEGO_NL_DISPLAY_TITLE_POLICY)
+      .eq('source', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE)
+      .eq('locale', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE)
+      .eq(
+        'match_confidence',
+        CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+      )
+      .eq('policy', CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_POLICY)
       .in('catalog_set_id', setIdChunk);
 
     if (error) {
@@ -2336,7 +2332,9 @@ async function listLegoNlDisplayTitleBySetId({
     }
 
     for (const row of (data as CatalogSetSourceMetadataRow[] | null) ?? []) {
-      const displayTitle = readLegoNlDisplayTitle(row.metadata_json);
+      const displayTitle = readCatalogRakutenLegoPresentationTitle(
+        row.metadata_json,
+      );
 
       if (displayTitle) {
         displayTitleBySetId.set(row.catalog_set_id, displayTitle);
@@ -2392,22 +2390,30 @@ function applyLegoNlDisplayTitles({
           missingMetadataCount += 1;
         }
 
-        return {
-          ...canonicalCatalogSet,
-          displayTitle: canonicalCatalogSet.name,
-          displayTitleSource: 'catalog' as const,
-        };
+        return applyCatalogSetPresentationTitle(
+          canonicalCatalogSet,
+          resolveCatalogSetPresentationTitle({
+            fallbackTitle: canonicalCatalogSet.name,
+          }),
+        );
       }
 
       appliedCount += 1;
 
-      return {
-        ...canonicalCatalogSet,
-        catalogName: canonicalCatalogSet.name,
-        displayTitle,
-        displayTitleSource: LEGO_NL_DISPLAY_TITLE_SOURCE,
-        name: displayTitle,
-      };
+      return applyCatalogSetPresentationTitle(
+        canonicalCatalogSet,
+        resolveCatalogSetPresentationTitle({
+          fallbackTitle: canonicalCatalogSet.name,
+          rakutenMetadata: {
+            locale: CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE,
+            matchConfidence:
+              CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+            metadataJson: { title: displayTitle },
+            policy: CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_POLICY,
+            source: CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE,
+          },
+        }),
+      );
     },
   );
 

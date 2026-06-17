@@ -268,6 +268,36 @@ describe('api v1 auth and set-status routes', () => {
     expect(migrationSql).toContain('with check (auth.uid() = user_id)');
   });
 
+  test('creates idempotent commerce merchant profiles migration for public presentation data', () => {
+    const migrationSql = readWorkspaceMigration(
+      'supabase/migrations/20260617110000_commerce_merchant_profiles.sql',
+    );
+
+    expect(migrationSql).toContain(
+      'create table if not exists public.commerce_merchant_profiles',
+    );
+    expect(migrationSql).toContain(
+      'merchant_id uuid primary key references public.commerce_merchants(id) on delete cascade',
+    );
+    expect(migrationSql).toContain('public_slug text not null unique');
+    expect(migrationSql).toContain(
+      'alter table public.commerce_merchant_profiles enable row level security;',
+    );
+    expect(migrationSql).toContain(
+      'create policy "Public can read public commerce merchant profiles"',
+    );
+    expect(migrationSql).toContain(
+      'create policy "Service role can manage commerce merchant profiles"',
+    );
+    expect(migrationSql).toContain("where merchants.slug = 'rakuten-lego-eu'");
+    expect(migrationSql).toContain("'lego'");
+    expect(migrationSql).toContain("'LEGO®'");
+    expect(migrationSql).toContain('on conflict (merchant_id) do update');
+    expect(migrationSql).toContain(
+      'public_slug = coalesce(\n    public.commerce_merchant_profiles.public_slug',
+    );
+  });
+
   test('returns public current offer summaries for many sets', async () => {
     const currentOfferSummaries = [
       {

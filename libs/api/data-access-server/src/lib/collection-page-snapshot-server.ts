@@ -11,6 +11,10 @@ import {
   type CatalogCollectionLandingPageSortKey,
   type CatalogCollectionPageSnapshotSlug,
   type CatalogHomepageSetCard,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+  CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE,
+  resolveCatalogSetPresentationTitle,
 } from '@lego-platform/catalog/util';
 import { resolvePublicMerchantDisplayName } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
@@ -20,9 +24,6 @@ export const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 
 const BRICKSET_SOURCE = 'brickset';
 const BRICKSET_LOCALE = 'en-US';
-const RAKUTEN_LEGO_SOURCE = 'rakuten-lego-eu';
-const RAKUTEN_LEGO_LOCALE = 'nl-NL';
-const EXACT_SET_NUMBER_MATCH = 'exact_set_number';
 const COLLECTION_SNAPSHOT_SOURCE = 'collection_snapshot_sync';
 const SNAPSHOT_PAGE_SIZE = 1000;
 const RECENT_RELEASE_LOOKBACK_DAYS = 210;
@@ -203,9 +204,18 @@ async function listCollectionSourceMetadata({
       .select(
         'catalog_set_id, set_number, source, locale, metadata_json, match_confidence, policy',
       )
-      .in('source', [BRICKSET_SOURCE, RAKUTEN_LEGO_SOURCE])
-      .in('locale', [BRICKSET_LOCALE, RAKUTEN_LEGO_LOCALE])
-      .eq('match_confidence', EXACT_SET_NUMBER_MATCH)
+      .in('source', [
+        BRICKSET_SOURCE,
+        CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE,
+      ])
+      .in('locale', [
+        BRICKSET_LOCALE,
+        CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE,
+      ])
+      .eq(
+        'match_confidence',
+        CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_MATCH_CONFIDENCE,
+      )
       .range(from, from + SNAPSHOT_PAGE_SIZE - 1);
 
     if (error) {
@@ -220,8 +230,8 @@ async function listCollectionSourceMetadata({
       }
 
       if (
-        row.source === RAKUTEN_LEGO_SOURCE &&
-        row.locale === RAKUTEN_LEGO_LOCALE
+        row.source === CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_SOURCE &&
+        row.locale === CATALOG_RAKUTEN_LEGO_PRESENTATION_TITLE_LOCALE
       ) {
         rakutenBySetId.set(row.catalog_set_id, row);
       }
@@ -445,20 +455,24 @@ function toSnapshotCard({
   );
   const effectivePieces =
     catalogSet.pieceCount > 0 ? catalogSet.pieceCount : bricksetPieces;
-  const displayTitle = readMetadataString(
-    rakutenMetadata?.metadata_json,
-    'title',
-  );
+  const presentationTitle = resolveCatalogSetPresentationTitle({
+    fallbackTitle: catalogSet.name,
+    rakutenMetadata: rakutenMetadata
+      ? {
+          locale: rakutenMetadata.locale,
+          matchConfidence: rakutenMetadata.match_confidence,
+          metadataJson: rakutenMetadata.metadata_json,
+          policy: rakutenMetadata.policy,
+          source: rakutenMetadata.source,
+        }
+      : undefined,
+  });
   const bestPriceMinor = priceSnapshot?.best_price_minor;
 
   return {
     ...(catalogSet.createdAt ? { createdAt: catalogSet.createdAt } : {}),
-    ...(displayTitle
-      ? {
-          displayTitle,
-          displayTitleSource: 'rakuten-lego-eu' as const,
-        }
-      : {}),
+    displayTitle: presentationTitle.title,
+    displayTitleSource: presentationTitle.source,
     ...(typeof effectivePieces === 'number'
       ? {
           effectivePieces,
@@ -466,7 +480,7 @@ function toSnapshotCard({
       : {}),
     id: catalogSet.setId,
     ...(catalogSet.imageUrl ? { imageUrl: catalogSet.imageUrl } : {}),
-    name: displayTitle ?? catalogSet.name,
+    name: presentationTitle.title,
     pieces: effectivePieces ?? catalogSet.pieceCount,
     ...(bestPriceMinor && bestPriceMinor > 0
       ? {

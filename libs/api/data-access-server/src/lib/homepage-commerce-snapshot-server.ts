@@ -27,6 +27,7 @@ import {
   type DealPageSnapshot,
   type DealPageSnapshotCard,
 } from './deal-page-snapshot-server';
+import { enrichCatalogSetsWithPresentationTitles } from './catalog-presentation-title-server';
 
 const HOMEPAGE_COMMERCE_TAB_LIMIT = 20;
 const HOMEPAGE_COMMERCE_SYNC_PAGE_SIZE = 40;
@@ -144,6 +145,11 @@ function toHomepageCardFromDeal(
   return {
     setId: card.id,
     slug: card.slug,
+    ...(card.catalogName ? { catalogName: card.catalogName } : {}),
+    displayTitle: card.displayTitle ?? card.name,
+    ...(card.displayTitleSource
+      ? { displayTitleSource: card.displayTitleSource }
+      : {}),
     name: card.name,
     imageUrl: getCardImageUrl(card),
     theme: card.publicTheme?.name ?? card.theme,
@@ -199,6 +205,11 @@ function toHomepageCardFromCurrentOffer({
   return {
     setId: catalogSet.setId,
     slug: catalogSet.slug,
+    ...(catalogSet.catalogName ? { catalogName: catalogSet.catalogName } : {}),
+    displayTitle: catalogSet.displayTitle ?? catalogSet.name,
+    ...(catalogSet.displayTitleSource
+      ? { displayTitleSource: catalogSet.displayTitleSource }
+      : {}),
     name: catalogSet.displayTitle ?? catalogSet.name,
     imageUrl: getCatalogSetImageUrl(catalogSet),
     theme: catalogSet.publicTheme?.name ?? catalogSet.primaryTheme,
@@ -245,6 +256,11 @@ function toHomepageCardFromCollection({
   return {
     setId: card.id,
     slug: card.slug,
+    ...(card.catalogName ? { catalogName: card.catalogName } : {}),
+    displayTitle: card.displayTitle ?? card.name,
+    ...(card.displayTitleSource
+      ? { displayTitleSource: card.displayTitleSource }
+      : {}),
     name: card.name,
     imageUrl: getCardImageUrl(card),
     theme: card.publicTheme?.name ?? card.theme,
@@ -806,8 +822,14 @@ export async function buildHomepageCommerceSnapshot({
   const currentOfferBySetId = new Map(
     resolvedCurrentOfferRows.map((row) => [row.set_id, row]),
   );
+  const presentationCatalogSets = catalogSets
+    ? resolvedCatalogSets
+    : await enrichCatalogSetsWithPresentationTitles({
+        catalogSets: resolvedCatalogSets,
+        supabaseClient,
+      });
   const catalogSetById = new Map(
-    resolvedCatalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
+    presentationCatalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
   );
   const historyRowsBySetId = groupHistoryRowsBySetId(resolvedPriceHistoryRows);
   const bestDeals = uniqueCardsBySetId(

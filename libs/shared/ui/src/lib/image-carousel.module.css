@@ -413,6 +413,10 @@
   padding: 0.62rem 0.82rem;
 }
 
+.detailGalleryShowAllButton {
+  font-size: var(--lego-gallery-action-font-size, 0.8125rem);
+}
+
 .detailGalleryActions {
   display: inline-flex;
   gap: var(--lego-space-2);

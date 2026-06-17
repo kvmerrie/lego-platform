@@ -15,6 +15,7 @@ import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { resolvePublicMerchantDisplayName } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { enrichCatalogSetsWithPresentationTitles } from './catalog-presentation-title-server';
 import { COLLECTION_PAGE_SNAPSHOTS_TABLE } from './collection-page-snapshot-server';
 
 const THEME_COMMERCE_SNAPSHOT_SOURCE = 'theme_commerce_snapshot_sync';
@@ -283,6 +284,11 @@ function toThemeCommerceCard({
   return {
     setId: catalogSet.setId,
     slug: catalogSet.slug,
+    ...(catalogSet.catalogName ? { catalogName: catalogSet.catalogName } : {}),
+    displayTitle: catalogSet.displayTitle ?? catalogSet.name,
+    ...(catalogSet.displayTitleSource
+      ? { displayTitleSource: catalogSet.displayTitleSource }
+      : {}),
     name: catalogSet.displayTitle ?? catalogSet.name,
     imageUrl: getCatalogSetImageUrl(catalogSet),
     ...(catalogSet.publicTheme ? { publicTheme: catalogSet.publicTheme } : {}),
@@ -551,7 +557,13 @@ export async function buildThemeCommerceSnapshots({
       ? Promise.resolve([...publicThemeRows])
       : listPublicThemeRows({ supabaseClient }),
   ]);
-  const setsByThemeSlug = groupCatalogSetsByThemeSlug(resolvedCatalogSets);
+  const presentationCatalogSets = catalogSets
+    ? resolvedCatalogSets
+    : await enrichCatalogSetsWithPresentationTitles({
+        catalogSets: resolvedCatalogSets,
+        supabaseClient,
+      });
+  const setsByThemeSlug = groupCatalogSetsByThemeSlug(presentationCatalogSets);
   const currentOfferBySetId = new Map(
     resolvedCurrentOfferRows.map((row) => [row.set_id, row]),
   );

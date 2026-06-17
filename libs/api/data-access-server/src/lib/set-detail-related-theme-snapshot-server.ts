@@ -7,6 +7,7 @@ import {
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { enrichCatalogSetsWithPresentationTitles } from './catalog-presentation-title-server';
 import { COLLECTION_PAGE_SNAPSHOTS_TABLE } from './collection-page-snapshot-server';
 
 const SET_DETAIL_RELATED_THEME_SNAPSHOT_SOURCE =
@@ -32,6 +33,9 @@ export interface CommerceCurrentOfferSnapshotRow {
 export interface SetDetailRelatedThemeSnapshotCard {
   id: string;
   slug: string;
+  catalogName?: string;
+  displayTitle?: string;
+  displayTitleSource?: CatalogCanonicalSet['displayTitleSource'];
   name: string;
   publicTheme?: CatalogCanonicalSet['publicTheme'];
   theme: string;
@@ -138,7 +142,12 @@ function toSnapshotCard({
   return {
     id: set.setId,
     slug: set.slug,
-    name: set.name,
+    ...(set.catalogName ? { catalogName: set.catalogName } : {}),
+    displayTitle: set.displayTitle ?? set.name,
+    ...(set.displayTitleSource
+      ? { displayTitleSource: set.displayTitleSource }
+      : {}),
+    name: set.displayTitle ?? set.name,
     ...(set.publicTheme ? { publicTheme: set.publicTheme } : {}),
     theme: set.primaryTheme,
     ...(set.secondaryLabels.length
@@ -268,7 +277,13 @@ export async function buildSetDetailRelatedThemeSnapshots({
     catalogSets ?? listCanonicalCatalogSets({ supabaseClient }),
     priceSnapshots ?? listCommerceCurrentOfferSnapshots({ supabaseClient }),
   ]);
-  const activeCatalogSets = resolvedCatalogSets
+  const presentationCatalogSets = catalogSets
+    ? resolvedCatalogSets
+    : await enrichCatalogSetsWithPresentationTitles({
+        catalogSets: resolvedCatalogSets,
+        supabaseClient,
+      });
+  const activeCatalogSets = presentationCatalogSets
     .filter((set) => set.status === 'active')
     .sort(compareRelatedThemeCurrentSets);
   const setsByThemeSlug = new Map<string, CatalogCanonicalSet[]>();
@@ -440,7 +455,13 @@ export async function refreshSetDetailRelatedThemeSnapshotsForSetIds({
 } = {}): Promise<SetDetailRelatedThemeSnapshotRefreshResult> {
   const resolvedCatalogSets =
     catalogSets ?? (await listCanonicalCatalogSets({ supabaseClient }));
-  const activeCatalogSets = resolvedCatalogSets.filter(
+  const presentationCatalogSets = catalogSets
+    ? resolvedCatalogSets
+    : await enrichCatalogSetsWithPresentationTitles({
+        catalogSets: resolvedCatalogSets,
+        supabaseClient,
+      });
+  const activeCatalogSets = presentationCatalogSets.filter(
     (catalogSet) => catalogSet.status === 'active',
   );
   const requestedSetIds = new Set(

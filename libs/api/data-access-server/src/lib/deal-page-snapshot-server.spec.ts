@@ -48,11 +48,33 @@ function createCommerceSnapshot(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createSupabaseClient(rows: readonly Record<string, unknown>[]) {
+function createSupabaseClient(
+  rows: readonly Record<string, unknown>[],
+  presentationTitleRows: readonly Record<string, unknown>[] = [],
+) {
   const upsertSnapshots = vi.fn().mockResolvedValue({ error: null });
 
   return {
     from: vi.fn((table: string) => {
+      if (table === 'catalog_set_source_metadata') {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                eq: vi.fn(() => ({
+                  eq: vi.fn(() => ({
+                    in: vi.fn().mockResolvedValue({
+                      data: presentationTitleRows,
+                      error: null,
+                    }),
+                  })),
+                })),
+              })),
+            })),
+          })),
+        };
+      }
+
       if (table === 'commerce_current_offer_snapshots') {
         return {
           select: vi.fn(() => ({
@@ -135,6 +157,46 @@ describe('deal page snapshot server', () => {
       '20000',
       '10000',
     ]);
+  });
+
+  test('uses the shared Dutch Rakuten presentation title for deal cards', async () => {
+    const result = await buildDealPageSnapshots({
+      listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+        createCatalogSet({
+          name: 'The Lord of the Rings: Rivendell',
+          setId: '10316',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+        }),
+      ]),
+      now: new Date('2026-05-31T10:00:00.000Z'),
+      supabaseClient: createSupabaseClient(
+        [
+          createCommerceSnapshot({
+            set_id: '10316',
+          }),
+        ],
+        [
+          {
+            catalog_set_id: '10316',
+            metadata_json: {
+              title: 'In de ban van de ringen: Rivendel',
+            },
+          },
+        ],
+      ) as never,
+    });
+
+    const recommendedSnapshot = result.snapshots.find(
+      (snapshot) => snapshot.sortKey === 'recommended',
+    );
+
+    expect(recommendedSnapshot?.items[0]).toMatchObject({
+      displayTitle: 'In de ban van de ringen: Rivendel',
+      displayTitleSource: 'rakuten-lego-eu',
+      id: '10316',
+      name: 'In de ban van de ringen: Rivendel',
+      slug: 'the-lord-of-the-rings-rivendell-10316',
+    });
   });
 
   test('builds the phase 2 deal categories from snapshot data', async () => {

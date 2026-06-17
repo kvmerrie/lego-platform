@@ -282,6 +282,81 @@ describe('homepage commerce snapshot builder', () => {
     });
   });
 
+  test('keeps shared presentation titles in homepage rails', async () => {
+    const fixtures = buildFixtures();
+    const result = await buildHomepageCommerceSnapshot({
+      ...fixtures,
+      catalogSets: [
+        ...fixtures.catalogSets.filter((set) => set.setId !== '1002'),
+        catalogSet('1002', {
+          catalogName: 'The Lord of the Rings: Rivendell',
+          displayTitle: 'In de ban van de ringen: Rivendel',
+          displayTitleSource: 'rakuten-lego-eu',
+          name: 'In de ban van de ringen: Rivendel',
+        }),
+      ],
+      now: new Date(generatedAt),
+    });
+
+    expect(result.snapshot.buyRail.popularThisWeek[0]).toMatchObject({
+      catalogName: 'The Lord of the Rings: Rivendell',
+      displayTitle: 'In de ban van de ringen: Rivendel',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'In de ban van de ringen: Rivendel',
+      setId: '1002',
+      slug: 'set-1002',
+    });
+  });
+
+  test('keeps shared presentation titles from deal and collection rails', async () => {
+    const fixtures = buildFixtures();
+    const result = await buildHomepageCommerceSnapshot({
+      ...fixtures,
+      collectionSnapshots: [
+        {
+          ...fixtures.collectionSnapshots[0],
+          items: [
+            {
+              ...fixtures.collectionSnapshots[0].items[0],
+              catalogName: 'The Lord of the Rings: Rivendell',
+              displayTitle: 'In de ban van de ringen: Rivendel',
+              displayTitleSource: 'rakuten-lego-eu',
+              name: 'In de ban van de ringen: Rivendel',
+            },
+          ],
+        },
+      ],
+      dealSnapshots: [
+        {
+          ...fixtures.dealSnapshots[0],
+          items: [
+            {
+              ...fixtures.dealSnapshots[0].items[0],
+              catalogName: 'The Lord of the Rings: Rivendell',
+              displayTitle: 'In de ban van de ringen: Rivendel',
+              displayTitleSource: 'rakuten-lego-eu',
+              name: 'In de ban van de ringen: Rivendel',
+            },
+          ],
+        },
+      ],
+      now: new Date(generatedAt),
+    });
+
+    expect(result.snapshot.buyRail.bestDeals[0]).toMatchObject({
+      displayTitle: 'In de ban van de ringen: Rivendel',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'In de ban van de ringen: Rivendel',
+      setId: '1001',
+    });
+    expect(result.snapshot.buyRail.giftsUnder100[0]).toMatchObject({
+      displayTitle: 'In de ban van de ringen: Rivendel',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'In de ban van de ringen: Rivendel',
+      setId: '1003',
+    });
+  });
+
   test('uses the under-100 collection snapshot for gifts under EUR 100', async () => {
     const result = await buildHomepageCommerceSnapshot({
       ...buildFixtures(),

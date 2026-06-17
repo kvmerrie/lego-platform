@@ -220,6 +220,7 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="#theme-browse"');
     expect(markup).toContain('interactiveSurfaceLight');
+    expect(markup).not.toContain('introHeroBreadcrumbs');
     expect(markup).not.toContain('_introVisualStage_');
     expect(markup).not.toContain('Klaar voor themabeeld');
     expect(markup.indexOf('href="#theme-browse"')).toBeLessThan(
@@ -454,6 +455,10 @@ describe('CatalogFeatureThemePage', () => {
   });
 
   it('uses curated public theme visual metadata when provided', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/catalog-feature-theme-page.module.css'),
+      'utf-8',
+    );
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemePage
         themePage={{
@@ -487,8 +492,14 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain(
       `--theme-page-text:${getAccessibleForegroundColor('#e0b84f')}`,
     );
+    expect(markup).toContain('introHeroBreadcrumbs');
     expect(markup).toContain('data-hero-button-tone="black"');
     expect(markup).toContain('interactiveSurfaceLight');
+    expect(css).toContain('.introHeroBreadcrumbs {');
+    expect(css).toContain('--lego-breadcrumb-link: currentColor;');
+    expect(css).toContain('--lego-breadcrumb-link-hover: currentColor;');
+    expect(css).toContain('--lego-button-focus-ring-color: currentColor;');
+    expect(css).toContain('color: var(--theme-page-text);');
   });
 
   it('uses white hero buttons on dark public theme visuals', () => {
@@ -522,6 +533,7 @@ describe('CatalogFeatureThemePage', () => {
 
     expect(markup).toContain('--theme-page-surface:#305b23');
     expect(markup).toContain('--theme-page-text:#ffffff');
+    expect(markup).toContain('introHeroBreadcrumbs');
     expect(markup).toContain('data-hero-button-tone="white"');
     expect(markup).toContain('interactiveSurfaceDark');
   });

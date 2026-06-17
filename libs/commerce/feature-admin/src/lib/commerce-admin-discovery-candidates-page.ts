@@ -37,6 +37,7 @@ type CandidateFilter =
 type ConfidenceFilter =
   | CommerceAdminCatalogDiscoveryCandidateConfidence
   | 'all';
+type DiscoveryLaneFilter = 'merchant' | 'official';
 type DiscoveryBulkProgressStatus =
   | 'completed'
   | 'failed'
@@ -54,6 +55,17 @@ interface DiscoveryBulkProgressItem {
   status: DiscoveryBulkProgressStatus;
   title: string;
   warnings: readonly string[];
+}
+
+interface MerchantDiscoverySummary {
+  firstMerchantSource?: string;
+  lowestPriceCurrencyCode?: string;
+  lowestPriceMinor?: number;
+  merchantCount: number;
+  merchants: readonly {
+    name: string;
+    slug: string;
+  }[];
 }
 
 function toApiErrorMessage(error: unknown): string {
@@ -76,6 +88,17 @@ function formatConfidence(
   confidence: CommerceAdminCatalogDiscoveryCandidateConfidence,
 ): string {
   return confidence.toUpperCase();
+}
+
+function readStringField(
+  value: Readonly<Record<string, unknown>>,
+  key: string,
+): string | undefined {
+  const fieldValue = value[key];
+
+  return typeof fieldValue === 'string' && fieldValue.trim()
+    ? fieldValue.trim()
+    : undefined;
 }
 
 function statusTone(
@@ -118,6 +141,70 @@ function bulkStatusTone(
   return 'neutral';
 }
 
+function getCandidateDiscoveryLane(
+  candidate: CommerceAdminCatalogDiscoveryCandidate,
+): DiscoveryLaneFilter {
+  return candidate.source === 'merchant_discovery' ||
+    candidate.evidence['discoveryLane'] === 'merchant' ||
+    candidate.sourcePayload['discoveryLane'] === 'merchant'
+    ? 'merchant'
+    : 'official';
+}
+
+function getMerchantDiscoverySummary(
+  candidate: CommerceAdminCatalogDiscoveryCandidate,
+): MerchantDiscoverySummary | null {
+  const merchantDiscovery = candidate.evidence['merchantDiscovery'];
+  const sourcePayload = candidate.sourcePayload;
+  const payload =
+    merchantDiscovery && typeof merchantDiscovery === 'object'
+      ? (merchantDiscovery as Readonly<Record<string, unknown>>)
+      : sourcePayload;
+  const merchantsValue = payload['merchants'];
+  const merchants = Array.isArray(merchantsValue)
+    ? merchantsValue
+        .map((merchant) => {
+          if (!merchant || typeof merchant !== 'object') {
+            return null;
+          }
+
+          const merchantRecord = merchant as Readonly<Record<string, unknown>>;
+          const slug = readStringField(merchantRecord, 'slug');
+          const name = readStringField(merchantRecord, 'name') ?? slug;
+
+          return slug && name ? { name, slug } : null;
+        })
+        .filter(
+          (merchant): merchant is { name: string; slug: string } =>
+            merchant !== null,
+        )
+    : [];
+  const merchantCount =
+    typeof payload['merchantCount'] === 'number'
+      ? payload['merchantCount']
+      : merchants.length;
+  const lowestPriceMinor =
+    typeof payload['lowestPriceMinor'] === 'number'
+      ? payload['lowestPriceMinor']
+      : candidate.sourcePriceMinor;
+  const lowestPriceCurrencyCode =
+    readStringField(payload, 'lowestPriceCurrencyCode') ??
+    candidate.sourceCurrencyCode;
+  const firstMerchantSource = readStringField(payload, 'firstMerchantSource');
+
+  if (!merchantCount && merchants.length === 0) {
+    return null;
+  }
+
+  return {
+    firstMerchantSource,
+    lowestPriceCurrencyCode,
+    lowestPriceMinor,
+    merchantCount,
+    merchants,
+  };
+}
+
 @Component({
   selector: 'lego-commerce-admin-discovery-candidates-page',
   imports: [
@@ -145,6 +232,18 @@ function bulkStatusTone(
           (click)="recomputeConfidence()"
         >
           Recompute confidence
+        </button>
+        <button
+          class="admin-button admin-button--subtle"
+          type="button"
+          [disabled]="
+            isLoading() ||
+            environmentIsReadOnly() ||
+            busyAction() === 'sync-merchant-candidates'
+          "
+          (click)="syncMerchantCandidates()"
+        >
+          Sync merchant lane
         </button>
         <button
           class="admin-button admin-button--primary"
@@ -189,6 +288,35 @@ function bulkStatusTone(
             </lego-admin-status-badge>
           </div>
         </lego-admin-section-header>
+
+        <div
+          class="admin-discovery-lanes"
+          role="tablist"
+          aria-label="Discovery lanes"
+        >
+          <button
+            class="admin-discovery-lane"
+            [class.admin-discovery-lane--active]="laneFilter() === 'official'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="laneFilter() === 'official'"
+            (click)="laneFilter.set('official')"
+          >
+            <span>Official Candidates</span>
+            <strong>{{ laneCount('official') }}</strong>
+          </button>
+          <button
+            class="admin-discovery-lane"
+            [class.admin-discovery-lane--active]="laneFilter() === 'merchant'"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="laneFilter() === 'merchant'"
+            (click)="laneFilter.set('merchant')"
+          >
+            <span>Merchant Candidates</span>
+            <strong>{{ laneCount('merchant') }}</strong>
+          </button>
+        </div>
 
         <div class="admin-toolbar admin-toolbar--filters">
           <input
@@ -438,7 +566,24 @@ function bulkStatusTone(
                       </span>
                     }
                   </td>
-                  <td>{{ candidate.source }}</td>
+                  <td>
+                    <strong>{{ getLaneLabel(candidate) }}</strong>
+                    <span class="admin-data-table__cell-meta">
+                      {{ candidate.source }}
+                    </span>
+                    @if (getMerchantSummary(candidate); as merchantSummary) {
+                      <span class="admin-data-table__cell-meta">
+                        {{ merchantSummary.merchantCount }} merchants ·
+                        {{ formatMerchantPrice(merchantSummary) }} · first
+                        {{ merchantSummary.firstMerchantSource || 'unknown' }}
+                      </span>
+                      @if (merchantSummary.merchants.length > 0) {
+                        <span class="admin-data-table__cell-meta">
+                          {{ formatMerchantNames(merchantSummary) }}
+                        </span>
+                      }
+                    }
+                  </td>
                   <td>
                     <strong>{{
                       formatConfidence(candidate.operatorConfidence)
@@ -645,6 +790,16 @@ function bulkStatusTone(
             <dd>{{ getCandidateTitle(candidate) }}</dd>
             <dt>Source</dt>
             <dd>{{ candidate.source }}</dd>
+            <dt>Lane</dt>
+            <dd>{{ getLaneLabel(candidate) }}</dd>
+            @if (getMerchantSummary(candidate); as merchantSummary) {
+              <dt>Merchants</dt>
+              <dd>
+                {{ merchantSummary.merchantCount }} ·
+                {{ formatMerchantPrice(merchantSummary) }} · first
+                {{ merchantSummary.firstMerchantSource || 'unknown' }}
+              </dd>
+            }
             <dt>Strict confidence</dt>
             <dd>{{ formatConfidence(candidate.confidence) }}</dd>
             <dt>Operator confidence</dt>
@@ -756,6 +911,31 @@ function bulkStatusTone(
     `
       :host {
         display: block;
+      }
+
+      .admin-discovery-lanes {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .admin-discovery-lane {
+        align-items: center;
+        background: var(--admin-surface-muted);
+        border: 1px solid var(--admin-border-subtle, #d9dee8);
+        border-radius: 0.375rem;
+        color: var(--admin-text, #0f172a);
+        cursor: pointer;
+        display: inline-flex;
+        gap: 0.5rem;
+        min-height: 2.25rem;
+        padding: 0.35rem 0.65rem;
+      }
+
+      .admin-discovery-lane--active {
+        background: var(--admin-surface, #fff);
+        border-color: var(--admin-focus-ring, #2563eb);
       }
 
       .admin-discovery-image {
@@ -951,6 +1131,7 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
   readonly isLoading = signal(false);
   readonly search = signal('');
   readonly confidenceFilter = signal<ConfidenceFilter>('all');
+  readonly laneFilter = signal<DiscoveryLaneFilter>('official');
   readonly selectedCandidate =
     signal<CommerceAdminCatalogDiscoveryCandidate | null>(null);
   readonly statusFilter = signal<CandidateFilter>('actionable');
@@ -961,6 +1142,10 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
 
     return this.candidates()
       .filter((candidate) => {
+        if (getCandidateDiscoveryLane(candidate) !== this.laneFilter()) {
+          return false;
+        }
+
         if (
           statusFilter === 'actionable' &&
           !['failed', 'new', 'onboarding_started', 'processing'].includes(
@@ -990,6 +1175,13 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
           candidate.normalizedSetId.toLowerCase().includes(query) ||
           candidate.sourceSetNumber.toLowerCase().includes(query) ||
           candidate.source.toLowerCase().includes(query) ||
+          this.getLaneLabel(candidate).toLowerCase().includes(query) ||
+          (this.getMerchantSummary(candidate)?.merchants.some(
+            (merchant) =>
+              merchant.name.toLowerCase().includes(query) ||
+              merchant.slug.toLowerCase().includes(query),
+          ) ??
+            false) ||
           (candidate.sourceProductTitle ?? '').toLowerCase().includes(query)
         );
       })
@@ -1041,8 +1233,11 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
   });
   readonly newCount = computed(
     () =>
-      this.candidates().filter((candidate) => candidate.status === 'new')
-        .length,
+      this.candidates().filter(
+        (candidate) =>
+          candidate.status === 'new' &&
+          getCandidateDiscoveryLane(candidate) === this.laneFilter(),
+      ).length,
   );
 
   async ngOnInit(): Promise<void> {
@@ -1293,8 +1488,46 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
     confidence: CommerceAdminCatalogDiscoveryCandidateConfidence,
   ): number {
     return this.candidates().filter(
-      (candidate) => candidate.operatorConfidence === confidence,
+      (candidate) =>
+        candidate.operatorConfidence === confidence &&
+        getCandidateDiscoveryLane(candidate) === this.laneFilter(),
     ).length;
+  }
+
+  laneCount(lane: DiscoveryLaneFilter): number {
+    return this.candidates().filter(
+      (candidate) => getCandidateDiscoveryLane(candidate) === lane,
+    ).length;
+  }
+
+  getLaneLabel(candidate: CommerceAdminCatalogDiscoveryCandidate): string {
+    return getCandidateDiscoveryLane(candidate) === 'merchant'
+      ? 'Merchant'
+      : 'Official';
+  }
+
+  getMerchantSummary(
+    candidate: CommerceAdminCatalogDiscoveryCandidate,
+  ): MerchantDiscoverySummary | null {
+    return getMerchantDiscoverySummary(candidate);
+  }
+
+  formatMerchantPrice(summary: MerchantDiscoverySummary): string {
+    if (typeof summary.lowestPriceMinor !== 'number') {
+      return 'geen prijs';
+    }
+
+    return new Intl.NumberFormat('nl-NL', {
+      currency: summary.lowestPriceCurrencyCode ?? 'EUR',
+      style: 'currency',
+    }).format(summary.lowestPriceMinor / 100);
+  }
+
+  formatMerchantNames(summary: MerchantDiscoverySummary): string {
+    return summary.merchants
+      .slice(0, 4)
+      .map((merchant) => merchant.name)
+      .join(', ');
   }
 
   displayStatus(status: CommerceAdminCatalogDiscoveryCandidateStatus): string {
@@ -1659,6 +1892,31 @@ export class CommerceAdminDiscoveryCandidatesPageComponent implements OnInit {
         await this.commerceAdminApi.recomputeCatalogDiscoveryCandidateConfidence();
       this.feedbackMessage.set(
         `Confidence herberekend: ${result.modifiedCount}/${result.processedCount} bijgewerkt · HIGH ${result.highCount} · MEDIUM ${result.mediumCount} · LOW ${result.lowCount}.`,
+      );
+      await this.loadCandidates();
+    } catch (error) {
+      this.errorMessage.set(toApiErrorMessage(error));
+    } finally {
+      this.busyAction.set(null);
+    }
+  }
+
+  async syncMerchantCandidates(): Promise<void> {
+    if (this.environmentIsReadOnly()) {
+      this.errorMessage.set('Merchant lane sync disabled: read-only runtime.');
+      return;
+    }
+
+    this.busyAction.set('sync-merchant-candidates');
+    this.feedbackMessage.set(null);
+    this.errorMessage.set(null);
+
+    try {
+      const result =
+        await this.commerceAdminApi.syncMerchantCatalogDiscoveryCandidates();
+      this.laneFilter.set('merchant');
+      this.feedbackMessage.set(
+        `Merchant lane gesynchroniseerd: ${result.persistedCandidateCount}/${result.uniqueCandidateCount} candidates · ${result.merchantOfferCount} offers · ${result.noiseFilteredCount} noise gefilterd.`,
       );
       await this.loadCandidates();
     } catch (error) {

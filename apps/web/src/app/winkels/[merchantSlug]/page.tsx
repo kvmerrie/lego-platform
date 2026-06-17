@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import React from 'react';
 import {
   getMerchantDeals,
@@ -14,6 +14,7 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
+  buildCommerceMerchantPath,
   buildCanonicalUrl,
   buildSetDetailPath,
   buildWebPath,
@@ -27,6 +28,10 @@ import styles from '../merchant-pages.module.css';
 export const revalidate = false;
 
 const merchantsPath = buildWebPath(webPathnames.merchants);
+
+function normalizeRequestedMerchantSlug(value: string): string {
+  return value.trim().toLocaleLowerCase('nl-NL');
+}
 
 function formatMerchantPrice({
   currencyCode,
@@ -208,15 +213,26 @@ export async function generateMetadata({
   }
 
   const title = `LEGO aanbiedingen bij ${merchantDeals.merchant.name} | Brickhunt`;
-  const canonicalUrl = buildCanonicalUrl(`${merchantsPath}/${merchantSlug}`);
+  const canonicalUrl =
+    merchantDeals.merchant.seoPresentation.canonicalUrl ??
+    buildCanonicalUrl(
+      buildCommerceMerchantPath(
+        merchantDeals.merchant.slug,
+        merchantDeals.merchant.seoPresentation,
+      ),
+    );
+  const seoTitle = merchantDeals.merchant.seoPresentation.seoTitle ?? title;
+  const seoDescription = merchantDeals.merchant.seoPresentation.seoDescription;
 
   return {
-    title,
+    title: seoTitle,
+    ...(seoDescription ? { description: seoDescription } : {}),
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title,
+      title: seoTitle,
+      ...(seoDescription ? { description: seoDescription } : {}),
       type: 'website',
       url: canonicalUrl,
     },
@@ -235,8 +251,23 @@ export default async function MerchantDealsPage({
     return notFound();
   }
 
+  const canonicalMerchantPath = buildCommerceMerchantPath(
+    merchantDeals.merchant.slug,
+    merchantDeals.merchant.seoPresentation,
+  );
+
+  if (
+    normalizeRequestedMerchantSlug(merchantSlug) !==
+    merchantDeals.merchant.publicSlug
+  ) {
+    permanentRedirect(canonicalMerchantPath);
+  }
+
   const bestSavingsDeal = getBestSavingsDeal(merchantDeals);
   const totalDealCount = merchantDeals.dealCount;
+  const heroDescription =
+    merchantDeals.merchant.seoPresentation.shortDescription ??
+    `De sets waar ${merchantDeals.merchant.name} nu de laagste actuele prijs heeft. Klik door naar de set als je eerst details wilt zien.`;
 
   return (
     <ShellWeb>
@@ -251,10 +282,7 @@ export default async function MerchantDealsPage({
             <h1 className={styles.heroTitle}>
               LEGO aanbiedingen bij {merchantDeals.merchant.name}
             </h1>
-            <p className={styles.heroDescription}>
-              De sets waar {merchantDeals.merchant.name} nu de laagste actuele
-              prijs heeft. Klik door naar de set als je eerst details wilt zien.
-            </p>
+            <p className={styles.heroDescription}>{heroDescription}</p>
           </div>
           <dl className={styles.stats} aria-label="Merchant dealstatistieken">
             <div className={styles.stat}>

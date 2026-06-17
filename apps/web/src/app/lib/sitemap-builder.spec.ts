@@ -266,6 +266,53 @@ describe('sitemap generation', () => {
     );
   });
 
+  it('includes merchant pages with public merchant slugs in the static sitemap segment', async () => {
+    const entries = await collectDealsSitemapEntries({
+      allowIndexing: true,
+      dataAccess: {
+        getActiveCommerceMerchantsOverview: vi.fn().mockResolvedValue([
+          {
+            merchant: {
+              seoPresentation: {
+                displayName: 'LEGO®',
+                publicSlug: 'lego',
+              },
+              slug: 'rakuten-lego-eu',
+            },
+          },
+          {
+            merchant: {
+              slug: 'goodbricks',
+            },
+          },
+          {
+            merchant: {
+              seoPresentation: {
+                displayName: 'Source Shop',
+                publicSlug: 'source-shop',
+              },
+              slug: 'source-shop-eu',
+            },
+          },
+        ]),
+        getEditorialPageBySlug: vi.fn(),
+        listEditorialPageSlugs: vi.fn().mockResolvedValue([]),
+      } as never,
+    });
+    const urls = entries.map((entry) => entry.url);
+
+    expect(urls).toContain('https://www.brickhunt.nl/winkels');
+    expect(urls).toContain('https://www.brickhunt.nl/winkels/lego');
+    expect(urls).toContain('https://www.brickhunt.nl/winkels/goodbricks');
+    expect(urls).toContain('https://www.brickhunt.nl/winkels/source-shop');
+    expect(urls).not.toContain(
+      'https://www.brickhunt.nl/winkels/rakuten-lego-eu',
+    );
+    expect(urls).not.toContain(
+      'https://www.brickhunt.nl/winkels/source-shop-eu',
+    );
+  });
+
   it('excludes empty theme pages when they are detectable', async () => {
     const entries = await collectThemeSitemapEntries({
       allowIndexing: true,

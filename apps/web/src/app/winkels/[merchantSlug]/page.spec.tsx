@@ -6,6 +6,7 @@ const merchantPageMocks = vi.hoisted(() => ({
   catalogSetCard: vi.fn(),
   getMerchantDeals: vi.fn(),
   notFound: vi.fn(),
+  permanentRedirect: vi.fn(),
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
@@ -44,6 +45,7 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 
 vi.mock('next/navigation', () => ({
   notFound: merchantPageMocks.notFound,
+  permanentRedirect: merchantPageMocks.permanentRedirect,
 }));
 
 function createMerchantDeals(overrides: Record<string, unknown> = {}) {
@@ -57,6 +59,12 @@ function createMerchantDeals(overrides: Record<string, unknown> = {}) {
       isActive: true,
       name: 'Goodbricks',
       notes: '',
+      publicSlug: 'goodbricks',
+      seoPresentation: {
+        canonicalUrl: 'https://www.brickhunt.nl/winkels/goodbricks',
+        displayName: 'Goodbricks',
+        publicSlug: 'goodbricks',
+      },
       slug: 'goodbricks',
       sourceType: 'affiliate',
       updatedAt: '2026-06-12T09:00:00.000Z',
@@ -81,6 +89,12 @@ function createDeal() {
       isActive: true,
       name: 'Goodbricks',
       notes: '',
+      publicSlug: 'goodbricks',
+      seoPresentation: {
+        canonicalUrl: 'https://www.brickhunt.nl/winkels/goodbricks',
+        displayName: 'Goodbricks',
+        publicSlug: 'goodbricks',
+      },
       slug: 'goodbricks',
       sourceType: 'affiliate',
       updatedAt: '2026-06-12T09:00:00.000Z',
@@ -91,6 +105,12 @@ function createDeal() {
       isActive: true,
       name: 'bol',
       notes: '',
+      publicSlug: 'bol',
+      seoPresentation: {
+        canonicalUrl: 'https://www.brickhunt.nl/winkels/bol',
+        displayName: 'bol',
+        publicSlug: 'bol',
+      },
       slug: 'bol',
       sourceType: 'affiliate',
       updatedAt: '2026-06-12T09:00:00.000Z',
@@ -120,6 +140,9 @@ describe('merchant deals page', () => {
     merchantPageMocks.notFound.mockImplementation(() => {
       throw new Error('NEXT_NOT_FOUND');
     });
+    merchantPageMocks.permanentRedirect.mockImplementation(() => {
+      throw new Error('NEXT_REDIRECT');
+    });
     merchantPageMocks.getMerchantDeals.mockResolvedValue(createMerchantDeals());
   });
 
@@ -137,6 +160,127 @@ describe('merchant deals page', () => {
     );
     expect(markup).not.toContain('Alleen bij deze winkel');
     expect(merchantPageMocks.catalogSetCard).not.toHaveBeenCalled();
+  });
+
+  it('renders the LEGO merchant page from the public lego slug', async () => {
+    merchantPageMocks.getMerchantDeals.mockResolvedValue(
+      createMerchantDeals({
+        merchant: {
+          createdAt: '2026-06-12T09:00:00.000Z',
+          id: 'merchant-rakuten-lego-eu',
+          isActive: true,
+          name: 'LEGO®',
+          notes: '',
+          publicSlug: 'lego',
+          seoPresentation: {
+            canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+            displayName: 'LEGO®',
+            publicSlug: 'lego',
+            seoDescription:
+              'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+            seoTitle: 'LEGO aanbiedingen en prijzen vergelijken',
+            shortDescription:
+              'Officiële LEGO winkel met actuele prijzen en aanbiedingen.',
+          },
+          slug: 'rakuten-lego-eu',
+          sourceType: 'affiliate',
+          updatedAt: '2026-06-12T09:00:00.000Z',
+        },
+      }),
+    );
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({ merchantSlug: 'lego' }),
+      }),
+    );
+
+    expect(merchantPageMocks.getMerchantDeals).toHaveBeenCalledWith('lego');
+    expect(markup).toContain('LEGO aanbiedingen bij LEGO®');
+    expect(markup).toContain(
+      'Officiële LEGO winkel met actuele prijzen en aanbiedingen.',
+    );
+    expect(merchantPageMocks.permanentRedirect).not.toHaveBeenCalled();
+  });
+
+  it('redirects the legacy Rakuten LEGO merchant route to the public LEGO route', async () => {
+    merchantPageMocks.getMerchantDeals.mockResolvedValue(
+      createMerchantDeals({
+        merchant: {
+          createdAt: '2026-06-12T09:00:00.000Z',
+          id: 'merchant-rakuten-lego-eu',
+          isActive: true,
+          name: 'LEGO®',
+          notes: '',
+          publicSlug: 'lego',
+          seoPresentation: {
+            canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+            displayName: 'LEGO®',
+            publicSlug: 'lego',
+          },
+          slug: 'rakuten-lego-eu',
+          sourceType: 'affiliate',
+          updatedAt: '2026-06-12T09:00:00.000Z',
+        },
+      }),
+    );
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({ merchantSlug: 'rakuten-lego-eu' }),
+      }),
+    ).rejects.toThrow('NEXT_REDIRECT');
+    expect(merchantPageMocks.permanentRedirect).toHaveBeenCalledWith(
+      '/winkels/lego',
+    );
+  });
+
+  it('uses merchant SEO metadata for title, description, and canonical URL', async () => {
+    merchantPageMocks.getMerchantDeals.mockResolvedValue(
+      createMerchantDeals({
+        merchant: {
+          createdAt: '2026-06-12T09:00:00.000Z',
+          id: 'merchant-rakuten-lego-eu',
+          isActive: true,
+          name: 'LEGO®',
+          notes: '',
+          publicSlug: 'lego',
+          seoPresentation: {
+            canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+            displayName: 'LEGO®',
+            publicSlug: 'lego',
+            seoDescription:
+              'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+            seoTitle: 'LEGO aanbiedingen en prijzen vergelijken',
+          },
+          slug: 'rakuten-lego-eu',
+          sourceType: 'affiliate',
+          updatedAt: '2026-06-12T09:00:00.000Z',
+        },
+      }),
+    );
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.generateMetadata({
+        params: Promise.resolve({ merchantSlug: 'lego' }),
+      }),
+    ).resolves.toMatchObject({
+      alternates: {
+        canonical: 'https://www.brickhunt.nl/winkels/lego',
+      },
+      description:
+        'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+      openGraph: {
+        description:
+          'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+        title: 'LEGO aanbiedingen en prijzen vergelijken',
+        url: 'https://www.brickhunt.nl/winkels/lego',
+      },
+      title: 'LEGO aanbiedingen en prijzen vergelijken',
+    });
   });
 
   it('passes set detail href and affiliate CTA context to existing deal cards', async () => {

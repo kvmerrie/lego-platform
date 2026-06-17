@@ -610,6 +610,25 @@ describe('Breadcrumbs', () => {
     expect(css).toContain('white-space: nowrap;');
     expect(css).toContain('@media (max-width: 23.75rem)');
   });
+
+  it('uses calm readable breadcrumb link and current item styling', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/lib/shared-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      'font-size: var(--lego-breadcrumb-font-size, 0.8125rem);',
+    );
+    expect(css).toContain(
+      'color: var(--lego-breadcrumb-link, var(--lego-info));',
+    );
+    expect(css).toContain(
+      'color: var(--lego-breadcrumb-current, var(--lego-text-muted));',
+    );
+    expect(css).toContain('.breadcrumbLink:hover');
+    expect(css).toContain('text-decoration-color: currentColor;');
+  });
 });
 
 describe('SectionHeading', () => {

@@ -52,6 +52,11 @@ const nextConfig = {
         destination: '/laatste-kans-lego-sets',
         statusCode: 301,
       },
+      {
+        source: '/winkels/rakuten-lego-eu',
+        destination: '/winkels/lego',
+        statusCode: 301,
+      },
     ];
   },
   async rewrites() {

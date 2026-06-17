@@ -218,6 +218,23 @@ async function createAdminCatalogServer({
       processedCount: 4,
       skippedCount: 1,
     })),
+    syncMerchantDiscoveryCandidates: vi.fn(async () => ({
+      discoveredSetCount: 4,
+      existingCatalogMatchCount: 0,
+      existingDiscoveryCandidateCount: 1,
+      highConfidenceCount: 1,
+      invalidSetNumberCount: 0,
+      lowConfidenceCount: 0,
+      mediumConfidenceCount: 1,
+      merchantOfferCount: 3,
+      missingRebrickableMatchCount: 0,
+      noiseFilteredCount: 1,
+      nonNewFilteredCount: 0,
+      persistedCandidateCount: 2,
+      skippedExistingOfficialCandidateCount: 0,
+      skippedTerminalMerchantCandidateCount: 0,
+      uniqueCandidateCount: 2,
+    })),
     updateDiscoveryCandidateStatus: vi.fn(async ({ status }) =>
       createDiscoveryCandidate({
         status,
@@ -806,6 +823,23 @@ describe('admin catalog routes', () => {
         processedCount: 0,
         skippedCount: 0,
       })),
+      syncMerchantDiscoveryCandidates: vi.fn(async () => ({
+        discoveredSetCount: 0,
+        existingCatalogMatchCount: 0,
+        existingDiscoveryCandidateCount: 0,
+        highConfidenceCount: 0,
+        invalidSetNumberCount: 0,
+        lowConfidenceCount: 0,
+        mediumConfidenceCount: 0,
+        merchantOfferCount: 0,
+        missingRebrickableMatchCount: 0,
+        noiseFilteredCount: 0,
+        nonNewFilteredCount: 0,
+        persistedCandidateCount: 0,
+        skippedExistingOfficialCandidateCount: 0,
+        skippedTerminalMerchantCandidateCount: 0,
+        uniqueCandidateCount: 0,
+      })),
       updateDiscoveryCandidateStatus: vi.fn(async () =>
         createDiscoveryCandidate({
           status: 'ignored',
@@ -1111,6 +1145,27 @@ describe('admin catalog routes', () => {
       processedCount: 4,
       skippedCount: 1,
     });
+
+    await server.close();
+  });
+
+  test('syncs merchant discovery candidates for review', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/discovery-candidates/sync-merchant-candidates',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.syncMerchantDiscoveryCandidates).toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        merchantOfferCount: 3,
+        persistedCandidateCount: 2,
+        uniqueCandidateCount: 2,
+      }),
+    );
 
     await server.close();
   });

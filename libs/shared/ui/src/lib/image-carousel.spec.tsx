@@ -3795,6 +3795,9 @@ describe('ImageGallery', () => {
       ".detailGallery[data-has-multiple-images='true'] .detailGalleryControls {",
     );
     expect(css).toContain('left: calc(160px + var(--lego-space-3));');
+    expect(css).toContain(
+      '.detailGalleryShowAllButton {\n  font-size: var(--lego-gallery-action-font-size, 0.8125rem);',
+    );
     expect(css).not.toContain(
       ".detailGallery[data-has-multiple-images='true'] .articleZoomOverlay {",
     );

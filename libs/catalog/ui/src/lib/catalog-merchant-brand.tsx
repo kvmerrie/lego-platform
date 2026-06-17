@@ -31,7 +31,7 @@ const MERCHANT_FAVICON_BY_KEY: Record<string, string> = {
   'media-markt': 'mediamarkt.png',
   misterbricks: 'misterbricks.png',
   proshop: 'proshop.png',
-  'rakuten-lego-eu': 'rakuten-lego-eu.png',
+  'rakuten-lego-eu': 'lego-nl.png',
   top1toys: 'top1toys.png',
   'top-1-toys': 'top1toys.png',
   uniekebricks: 'uniekebricks.png',

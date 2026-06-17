@@ -22,6 +22,7 @@ import {
   type CatalogDiscoveryCandidateStatus,
 } from '@lego-platform/catalog/data-access-server';
 import {
+  buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets,
   type CatalogBulkOnboardingRunReadResult,
   type CatalogBulkOnboardingStartResult,
   enrichCatalogSetMinifigSummariesBestEffort,
@@ -33,6 +34,7 @@ import {
   recomputeCatalogDiscoveryCandidateConfidence,
   revalidatePublicWeb,
   startCatalogBulkOnboardingRun,
+  type MerchantCatalogDiscoveryCandidatePipelineResult,
 } from '@lego-platform/api/data-access-server';
 import {
   buildCatalogThemeSlug,
@@ -91,6 +93,7 @@ export interface AdminCatalogService {
     processedCount: number;
     skippedCount: number;
   }>;
+  syncMerchantDiscoveryCandidates(): Promise<MerchantCatalogDiscoveryCandidatePipelineResult>;
   getBulkOnboardingRun(
     runId: string,
   ): Promise<CatalogBulkOnboardingRunReadResult>;
@@ -219,6 +222,22 @@ export interface AdminCatalogDiscoveryCandidateBulkImportResult {
   warningCount: number;
 }
 
+function isMerchantCatalogDiscoveryCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): boolean {
+  return (
+    candidate.source === 'merchant_discovery' ||
+    candidate.evidence['discoveryLane'] === 'merchant' ||
+    candidate.sourcePayload['discoveryLane'] === 'merchant'
+  );
+}
+
+function getDiscoveryCandidateDescriptionSource(
+  candidate: CatalogDiscoveryCandidate,
+): 'none' | 'rebrickable' {
+  return candidate.rebrickablePayload ? 'rebrickable' : 'none';
+}
+
 function createAdminCatalogService(): AdminCatalogService {
   const importDiscoveryCandidate = async ({
     candidateId,
@@ -241,6 +260,8 @@ function createAdminCatalogService(): AdminCatalogService {
         });
       const catalogSet = candidateCreateResult.catalogSet;
       const metadataIncomplete = candidateCreateResult.metadataIncomplete;
+      const merchantDiscoveryCandidate =
+        isMerchantCatalogDiscoveryCandidate(candidate);
 
       const importResult = await enrichImportedCatalogSet({
         catalogSet,
@@ -249,10 +270,21 @@ function createAdminCatalogService(): AdminCatalogService {
       return updateCatalogDiscoveryCandidateReviewStatus({
         evidence: {
           ...candidate.evidence,
+          ...(merchantDiscoveryCandidate
+            ? {
+                catalogEntryStatus: 'partial_catalog_entry',
+                catalogSource: 'merchant_discovery',
+                descriptionSource:
+                  getDiscoveryCandidateDescriptionSource(candidate),
+                officialDescriptionMissing: true,
+              }
+            : {}),
           enrichmentStatus: importResult.enrichmentStatus,
-          importMode: metadataIncomplete
-            ? 'discovery_candidate_evidence'
-            : 'local_rebrickable_mirror',
+          importMode: merchantDiscoveryCandidate
+            ? 'merchant_discovery'
+            : metadataIncomplete
+              ? 'discovery_candidate_evidence'
+              : 'local_rebrickable_mirror',
           importResult: {
             ...importResult,
             durationMs: Date.now() - startedAt,
@@ -276,7 +308,9 @@ function createAdminCatalogService(): AdminCatalogService {
       await updateCatalogDiscoveryCandidateReviewStatus({
         evidence: {
           ...candidate.evidence,
-          importMode: 'discovery_candidate_evidence',
+          importMode: isMerchantCatalogDiscoveryCandidate(candidate)
+            ? 'merchant_discovery'
+            : 'discovery_candidate_evidence',
         },
         id: candidate.id,
         importError:
@@ -320,6 +354,8 @@ function createAdminCatalogService(): AdminCatalogService {
       ),
     recomputeDiscoveryCandidateConfidence: () =>
       recomputeCatalogDiscoveryCandidateConfidence(),
+    syncMerchantDiscoveryCandidates: () =>
+      buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets(),
     getBulkOnboardingRun: async (runId) =>
       getCatalogBulkOnboardingRun({
         options: {
@@ -1407,6 +1443,26 @@ export function createAdminCatalogRoutes({
             message: toBadRequestMessage(
               error,
               'Discovery confidence kon niet worden herberekend.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post(
+      `${apiPaths.adminCatalogDiscoveryCandidates}/sync-merchant-candidates`,
+      async function (_request, reply) {
+        if (isProductionEnvironment()) {
+          return rejectProductionMutation(reply);
+        }
+
+        try {
+          return await catalogService.syncMerchantDiscoveryCandidates();
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Merchant discovery candidates konden niet worden opgebouwd.',
             ),
           });
         }

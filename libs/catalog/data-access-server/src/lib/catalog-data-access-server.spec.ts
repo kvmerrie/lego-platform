@@ -3753,6 +3753,121 @@ describe('catalog data access server', () => {
     );
   });
 
+  test('creates a merchant-discovery imported set as a partial catalog entry without official LEGO description', async () => {
+    const { canonicalInsert, sourceMetadataUpsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient({
+        canonicalInsertResult: {
+          data: createCatalogOverlayRow({
+            image_url: 'https://cdn.rebrickable.com/media/sets/31214-1.jpg',
+            name: 'LOVE',
+            piece_count: 791,
+            release_year: 2025,
+            set_id: '31214',
+            slug: 'love-31214',
+            source_set_number: '31214-1',
+            theme: undefined,
+          }),
+          error: null,
+        },
+        rebrickableSetRows: [
+          {
+            img_url: 'https://cdn.rebrickable.com/media/sets/31214-1.jpg',
+            name: 'LOVE',
+            num_parts: 791,
+            set_img_url: null,
+            set_num: '31214-1',
+            theme_id: 709,
+            year: 2025,
+          },
+        ],
+        rebrickableThemeRows: [
+          {
+            id: 709,
+            name: 'Art',
+            parent_id: null,
+          },
+        ],
+      });
+
+    await createCatalogSetFromDiscoveryCandidate({
+      candidate: {
+        autoCreateEligible: false,
+        confidence: 'high',
+        confidenceScore: 92,
+        evidence: {
+          discoveryLane: 'merchant',
+          merchantDiscovery: {
+            firstMerchantSource: 'goodbricks',
+            lowestPriceMinor: 12999,
+            merchantCount: 2,
+          },
+          officialDescriptionMissing: true,
+          operatorConfidence: 'high',
+          operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        },
+        firstSeenAt: '2026-06-12T08:00:00.000Z',
+        id: 'candidate-31214',
+        lastSeenAt: '2026-06-12T10:00:00.000Z',
+        normalizedSetId: '31214',
+        operatorConfidence: 'high',
+        operatorConfidenceReasons: ['local_rebrickable_mirror_match'],
+        rebrickablePayload: {
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/31214-1.jpg',
+          name: 'LOVE',
+          pieces: 791,
+          releaseYear: 2025,
+          setId: '31214',
+          slug: 'love-31214',
+          source: 'rebrickable',
+          sourceSetNumber: '31214-1',
+          theme: 'Art',
+        },
+        requiredFieldsPresent: true,
+        source: 'merchant_discovery',
+        sourceCurrencyCode: 'EUR',
+        sourcePayload: {
+          discoveryLane: 'merchant',
+          firstMerchantSource: 'goodbricks',
+          merchantCount: 2,
+        },
+        sourcePriceMinor: 12999,
+        sourceProductTitle: 'LOVE',
+        sourceProductUrl: 'https://goodbricks.example/31214',
+        sourceSetNumber: '31214-1',
+        status: 'new',
+      },
+      supabaseClient,
+    });
+
+    expect(canonicalInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'LOVE',
+        primary_theme_id: 'theme:art',
+        source_theme_id: 'rebrickable:709',
+        source_set_number: '31214-1',
+      }),
+    );
+    expect(sourceMetadataUpsert).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          metadata_json: expect.objectContaining({
+            catalogSource: 'merchant_discovery',
+            catalog_source: 'merchant_discovery',
+            catalogEntryStatus: 'partial_catalog_entry',
+            catalog_entry_status: 'partial_catalog_entry',
+            descriptionSource: 'rebrickable',
+            description_source: 'rebrickable',
+            officialDescriptionMissing: true,
+            official_description_missing: true,
+            status: 'partial_catalog_entry',
+          }),
+          source: 'merchant_discovery',
+        }),
+      ]),
+      expect.anything(),
+    );
+  });
+
   test('creates a discovery-imported set with local Rebrickable source theme instead of generic Rakuten category', async () => {
     const { canonicalInsert, supabaseClient, themeMappingUpsert } =
       createCatalogOverlaySupabaseClient({

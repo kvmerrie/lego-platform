@@ -79,6 +79,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(markup).toContain('LEGO voor volwassenen');
     expect(markup).not.toContain('--collection-page-surface:');
     expect(markup).not.toContain('--collection-page-text:');
+    expect(markup).not.toContain('introHeroBreadcrumbs');
     expect(markup).toContain('data-hero-button-tone="black"');
     expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).toContain('X-wing Starfighter');
@@ -332,6 +333,7 @@ describe('CatalogFeatureCollectionLandingPage', () => {
 
     expect(markup).toContain('--collection-page-surface:#123047');
     expect(markup).toContain('--collection-page-text:#ffffff');
+    expect(markup).toContain('introHeroBreadcrumbs');
     expect(markup).toContain('data-hero-button-tone="white"');
     expect(markup).toContain('interactiveSurfaceDark');
     expect(markup).toContain('heroMediaFrame');
@@ -340,6 +342,11 @@ describe('CatalogFeatureCollectionLandingPage', () => {
     expect(css).not.toContain('--lego-button-accent-background');
     expect(css).not.toContain('--lego-button-secondary-border-color');
     expect(css).toContain('--catalog-hero-media-object-fit: contain;');
+    expect(css).toContain('.introHeroBreadcrumbs {');
+    expect(css).toContain('--lego-breadcrumb-link: currentColor;');
+    expect(css).toContain('--lego-breadcrumb-link-hover: currentColor;');
+    expect(css).toContain('--lego-button-focus-ring-color: currentColor;');
+    expect(css).toContain('color: var(--collection-page-text);');
   });
 
   it('renders a compact empty state when collection data is missing', () => {

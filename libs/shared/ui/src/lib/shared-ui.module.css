@@ -833,8 +833,8 @@
 
   .breadcrumbNav {
     color: var(--lego-breadcrumb-muted, var(--lego-text-muted));
-    font-size: var(--lego-text-role-meta-size);
-    line-height: var(--lego-text-role-meta-line-height);
+    font-size: var(--lego-breadcrumb-font-size, 0.8125rem);
+    line-height: var(--lego-breadcrumb-line-height, 1.45);
   }
 
   .breadcrumbList {
@@ -856,7 +856,7 @@
   }
 
   .breadcrumbLink {
-    color: var(--lego-breadcrumb-link, var(--lego-accent));
+    color: var(--lego-breadcrumb-link, var(--lego-info));
     font-size: inherit;
     line-height: inherit;
     min-width: 0;
@@ -864,11 +864,15 @@
   }
 
   .breadcrumbLink:hover {
-    color: var(--lego-breadcrumb-link-hover, var(--lego-accent-hover));
+    color: var(
+      --lego-breadcrumb-link-hover,
+      color-mix(in srgb, var(--lego-info) 84%, black 16%)
+    );
+    text-decoration-color: currentColor;
   }
 
   .breadcrumbCurrent {
-    color: var(--lego-breadcrumb-current, var(--lego-text));
+    color: var(--lego-breadcrumb-current, var(--lego-text-muted));
     font-size: inherit;
     font-weight: var(--lego-font-weight-semibold);
     line-height: inherit;

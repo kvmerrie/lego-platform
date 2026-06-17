@@ -8,6 +8,7 @@ import {
   MetaSignal,
   Panel,
 } from '@lego-platform/shared/ui';
+import { buildCommerceMerchantPath } from '@lego-platform/shared/config';
 import type { CatalogMerchantPresentation } from '@lego-platform/catalog/util';
 import {
   buildBrickhuntAnalyticsAttributes,
@@ -42,6 +43,7 @@ export interface CatalogDecisionOffer {
   merchantLabel: string;
   merchantName?: string;
   merchantPresentation?: CatalogMerchantPresentation;
+  merchantPublicSlug?: string;
   merchantSlug?: string;
   price: string;
   rankingLabel?: string;
@@ -203,11 +205,21 @@ function getHeroEvidenceLines(offer: CatalogDecisionOffer): string[] {
   ]).filter((line) => !isHeroTrustLikeEvidence(line));
 }
 
-function getHeroMerchantHref(merchantSlug?: string): string | undefined {
+function getHeroMerchantHref({
+  merchantPublicSlug,
+  merchantSlug,
+}: {
+  merchantPublicSlug?: string;
+  merchantSlug?: string;
+}): string | undefined {
   const normalizedSlug = merchantSlug?.trim();
+  const normalizedPublicSlug = merchantPublicSlug?.trim();
 
   return normalizedSlug
-    ? `/winkels/${encodeURIComponent(normalizedSlug)}`
+    ? buildCommerceMerchantPath(
+        normalizedSlug,
+        normalizedPublicSlug ? { publicSlug: normalizedPublicSlug } : undefined,
+      )
     : undefined;
 }
 
@@ -348,6 +360,7 @@ export function CatalogHeroMerchantBrand({
     merchantLabel: string;
     merchantName?: string;
     merchantPresentation?: CatalogMerchantPresentation;
+    merchantPublicSlug?: string;
     merchantSlug?: string;
   };
 }) {
@@ -359,6 +372,10 @@ export function CatalogHeroMerchantBrand({
   const merchantLabel =
     merchant?.merchantPresentation?.label ??
     [prefix, merchantName].filter(Boolean).join(' ');
+  const merchantHref = getHeroMerchantHref({
+    merchantPublicSlug: merchant?.merchantPublicSlug,
+    merchantSlug: merchant?.merchantSlug,
+  });
 
   return (
     <div
@@ -374,11 +391,11 @@ export function CatalogHeroMerchantBrand({
           {prefix ? (
             <span className={styles.bestDealMerchantPrefix}>{prefix}</span>
           ) : null}
-          {getHeroMerchantHref(merchant.merchantSlug) ? (
+          {merchantHref ? (
             <a
               aria-label={`Bekijk winkel ${merchantName}`}
               className={styles.bestDealMerchantLink}
-              href={getHeroMerchantHref(merchant.merchantSlug)}
+              href={merchantHref}
             >
               <CatalogMerchantBrand
                 className={styles.bestDealMerchantBrand}
@@ -552,6 +569,7 @@ function CatalogDecisionOfferCard({
                 merchantLabel: merchantName,
                 merchantName,
                 merchantPresentation: resolvedOffer.merchantPresentation,
+                merchantPublicSlug: resolvedOffer.merchantPublicSlug,
                 merchantSlug: resolvedOffer.merchantSlug,
               }
             : undefined

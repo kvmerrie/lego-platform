@@ -5,6 +5,7 @@ import {
 } from '@lego-platform/catalog/util';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { enrichCatalogSetsWithPresentationTitles } from './catalog-presentation-title-server';
 
 export const DEAL_PAGE_SNAPSHOT_SLUG = 'deals';
 export const DEAL_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
@@ -639,6 +640,7 @@ function toDealSnapshotCard({
       : undefined;
 
   return {
+    ...(catalogSet.catalogName ? { catalogName: catalogSet.catalogName } : {}),
     ...(catalogSet.createdAt ? { createdAt: catalogSet.createdAt } : {}),
     bestPriceMinor,
     dealScore: metrics.dealScore,
@@ -650,6 +652,10 @@ function toDealSnapshotCard({
       : {}),
     ...(catalogSet.imageUrl ? { imageUrl: catalogSet.imageUrl } : {}),
     id: catalogSet.setId,
+    displayTitle: catalogSet.displayTitle ?? catalogSet.name,
+    ...(catalogSet.displayTitleSource
+      ? { displayTitleSource: catalogSet.displayTitleSource }
+      : {}),
     name: catalogSet.displayTitle ?? catalogSet.name,
     pieces: catalogSet.pieceCount,
     priceContext: {
@@ -1092,10 +1098,14 @@ export async function buildDealPageSnapshots({
   Omit<DealPageSnapshotBuildResult, 'dryRun' | 'upsertedCount'>
 > {
   const generatedAt = now.toISOString();
-  const [catalogSets, offerSnapshotResult] = await Promise.all([
+  const [rawCatalogSets, offerSnapshotResult] = await Promise.all([
     listCanonicalCatalogSetsFn({ includeInactive: false, supabaseClient }),
     listDealCurrentOfferSnapshots({ supabaseClient }),
   ]);
+  const catalogSets = await enrichCatalogSetsWithPresentationTitles({
+    catalogSets: rawCatalogSets,
+    supabaseClient,
+  });
   const offerSnapshots = offerSnapshotResult.snapshotBySetId;
   const debugCounters = createDebugCounters();
 

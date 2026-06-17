@@ -95,6 +95,10 @@ import {
   resolveIndexNowEnabled,
   resolvePublicSiteAllowIndexing,
   brickfeverEnvKeys,
+  buildCommerceMerchantPath,
+  getCommerceMerchantPublicSlug,
+  resolveCommerceMerchantInternalSlug,
+  resolveCommerceMerchantSeoPresentation,
   awinProshopEnvKeys,
   misterBricksEnvKeys,
   rakutenLegoEnvKeys,
@@ -124,6 +128,85 @@ describe('platform config', () => {
         merchantName: 'LEGO EU',
       }),
     ).toBe('LEGO®');
+  });
+
+  test('keeps Rakuten LEGO as internal merchant identity while exposing LEGO as public slug', () => {
+    expect(getCommerceMerchantPublicSlug('rakuten-lego-eu')).toBe('lego');
+    expect(resolveCommerceMerchantInternalSlug('lego')).toBe('rakuten-lego-eu');
+    expect(resolveCommerceMerchantInternalSlug('goodbricks')).toBe(
+      'goodbricks',
+    );
+    expect(buildCommerceMerchantPath('rakuten-lego-eu')).toBe('/winkels/lego');
+    expect(buildCommerceMerchantPath('goodbricks')).toBe('/winkels/goodbricks');
+  });
+
+  test('resolves merchant SEO presentation metadata with slug fallback', () => {
+    expect(
+      resolveCommerceMerchantSeoPresentation({
+        affiliateNetwork: 'Rakuten',
+        merchantName: 'LEGO EU',
+        merchantSlug: 'rakuten-lego-eu',
+      }),
+    ).toMatchObject({
+      affiliateNetwork: 'Rakuten',
+      brandColor: '#ffd500',
+      brandTextColor: '#111111',
+      canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+      displayName: 'LEGO®',
+      faviconUrl: '/merchant-favicons/lego-nl.png',
+      publicSlug: 'lego',
+      seoDescription:
+        'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+      seoTitle: 'LEGO aanbiedingen en prijzen vergelijken',
+      shortDescription:
+        'Officiële LEGO winkel met actuele prijzen en aanbiedingen.',
+    });
+    expect(
+      resolveCommerceMerchantSeoPresentation({
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+      }),
+    ).toMatchObject({
+      canonicalUrl: 'https://www.brickhunt.nl/winkels/goodbricks',
+      displayName: 'Goodbricks',
+      publicSlug: 'goodbricks',
+    });
+  });
+
+  test('lets Supabase merchant profile metadata override the config fallback', () => {
+    expect(
+      buildCommerceMerchantPath('source-shop-eu', {
+        displayName: 'Source Shop',
+        publicSlug: 'source-shop',
+      }),
+    ).toBe('/winkels/source-shop');
+    expect(
+      resolveCommerceMerchantSeoPresentation({
+        merchantName: 'Rakuten LEGO EU',
+        merchantSlug: 'rakuten-lego-eu',
+        profile: {
+          brandColor: '#ffd500',
+          brandTextColor: '#111111',
+          canonicalPath: '/winkels/lego',
+          displayName: 'LEGO®',
+          publicSlug: 'lego',
+          seoDescription:
+            'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+          seoTitle: 'LEGO profiel uit Supabase',
+          shortDescription: 'Supabase profiel voor LEGO.',
+        },
+      }),
+    ).toMatchObject({
+      brandColor: '#ffd500',
+      brandTextColor: '#111111',
+      canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+      displayName: 'LEGO®',
+      publicSlug: 'lego',
+      seoDescription:
+        'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+      seoTitle: 'LEGO profiel uit Supabase',
+      shortDescription: 'Supabase profiel voor LEGO.',
+    });
   });
 });
 

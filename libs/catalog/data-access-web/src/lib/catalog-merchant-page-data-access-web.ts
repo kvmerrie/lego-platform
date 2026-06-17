@@ -1,11 +1,16 @@
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
+  type CommerceMerchantSeoPresentationProfile,
+  resolveCommerceMerchantInternalSlug,
+  resolveCommerceMerchantSeoPresentation,
+  type CommerceMerchantSeoPresentation,
   getBrowserSupabaseConfig,
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import { createClient } from '@supabase/supabase-js';
 
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
+const COMMERCE_MERCHANT_PROFILES_TABLE = 'commerce_merchant_profiles';
 const COMMERCE_MERCHANT_PAGE_SNAPSHOTS_TABLE =
   'commerce_merchant_page_snapshots';
 const MERCHANT_PAGE_ROW_PAGE_SIZE = 1000;
@@ -55,6 +60,23 @@ interface CommerceMerchantPageMerchantRow {
   updated_at: string;
 }
 
+interface CommerceMerchantProfileRow {
+  brand_color: string | null;
+  brand_text_color: string | null;
+  canonical_path: string | null;
+  display_name: string;
+  favicon_url: string | null;
+  internal_slug: string;
+  is_public: boolean;
+  logo_url: string | null;
+  long_description: string | null;
+  merchant_id: string;
+  public_slug: string;
+  seo_description: string | null;
+  seo_title: string | null;
+  short_description: string | null;
+}
+
 interface CommerceMerchantPageSnapshotRow {
   generated_at: string;
   merchant_id: string;
@@ -64,6 +86,15 @@ interface CommerceMerchantPageSnapshotRow {
   source_version: string | null;
 }
 
+interface CommerceMerchantPublicProfile
+  extends CommerceMerchantSeoPresentationProfile {
+  displayName: string;
+  internalSlug: string;
+  isPublic: boolean;
+  merchantId: string;
+  publicSlug: string;
+}
+
 export interface CommerceMerchantPageMerchant {
   affiliateNetwork?: string;
   createdAt: string;
@@ -71,6 +102,8 @@ export interface CommerceMerchantPageMerchant {
   isActive: boolean;
   name: string;
   notes: string;
+  publicSlug: string;
+  seoPresentation: CommerceMerchantSeoPresentation;
   slug: string;
   sourceType: CommerceMerchantSourceType;
   updatedAt: string;
@@ -238,14 +271,24 @@ function getAllowedMerchantSourceType(
 
 function toMerchantPageMerchant(
   row: CommerceMerchantPageMerchantRow,
+  profile?: CommerceMerchantPublicProfile,
 ): CommerceMerchantPageMerchant {
+  const seoPresentation = resolveCommerceMerchantSeoPresentation({
+    affiliateNetwork: row.affiliate_network,
+    merchantName: row.name,
+    merchantSlug: row.slug,
+    profile,
+  });
+
   return {
     affiliateNetwork: row.affiliate_network ?? undefined,
     createdAt: row.created_at,
     id: row.id,
     isActive: row.is_active,
-    name: row.name,
+    name: seoPresentation.displayName,
     notes: row.notes ?? '',
+    publicSlug: seoPresentation.publicSlug,
+    seoPresentation,
     slug: row.slug,
     sourceType: getAllowedMerchantSourceType(row.source_type),
     updatedAt: row.updated_at,
@@ -254,6 +297,65 @@ function toMerchantPageMerchant(
 
 function normalizeMerchantSlug(value: string): string {
   return value.trim().toLocaleLowerCase('nl-NL');
+}
+
+function toOptionalString(value?: string | null): string | undefined {
+  const trimmedValue = value?.trim();
+
+  return trimmedValue || undefined;
+}
+
+function toCommerceMerchantPublicProfile(
+  row: CommerceMerchantProfileRow,
+): CommerceMerchantPublicProfile {
+  const brandColor = toOptionalString(row.brand_color);
+  const brandTextColor = toOptionalString(row.brand_text_color);
+  const canonicalPath = toOptionalString(row.canonical_path);
+  const faviconUrl = toOptionalString(row.favicon_url);
+  const logoUrl = toOptionalString(row.logo_url);
+  const longDescription = toOptionalString(row.long_description);
+  const seoDescription = toOptionalString(row.seo_description);
+  const seoTitle = toOptionalString(row.seo_title);
+  const shortDescription = toOptionalString(row.short_description);
+
+  return {
+    ...(brandColor ? { brandColor } : {}),
+    ...(brandTextColor ? { brandTextColor } : {}),
+    ...(canonicalPath ? { canonicalPath } : {}),
+    displayName: row.display_name,
+    ...(faviconUrl ? { faviconUrl } : {}),
+    internalSlug: normalizeMerchantSlug(row.internal_slug),
+    isPublic: row.is_public,
+    ...(logoUrl ? { logoUrl } : {}),
+    ...(longDescription ? { longDescription } : {}),
+    merchantId: row.merchant_id,
+    publicSlug: normalizeMerchantSlug(row.public_slug),
+    ...(seoDescription ? { seoDescription } : {}),
+    ...(seoTitle ? { seoTitle } : {}),
+    ...(shortDescription ? { shortDescription } : {}),
+  };
+}
+
+function getProfileByInternalSlug(
+  profiles: readonly CommerceMerchantPublicProfile[],
+): Map<string, CommerceMerchantPublicProfile> {
+  return new Map(
+    profiles.map(
+      (profile) =>
+        [normalizeMerchantSlug(profile.internalSlug), profile] as const,
+    ),
+  );
+}
+
+function getProfileByPublicSlug(
+  profiles: readonly CommerceMerchantPublicProfile[],
+): Map<string, CommerceMerchantPublicProfile> {
+  return new Map(
+    profiles.map(
+      (profile) =>
+        [normalizeMerchantSlug(profile.publicSlug), profile] as const,
+    ),
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -282,6 +384,46 @@ function isMerchant(value: unknown): value is CommerceMerchantPageMerchant {
   );
 }
 
+function withMerchantSeoPresentation(
+  merchant: CommerceMerchantPageMerchant,
+  profileByInternalSlug?: ReadonlyMap<string, CommerceMerchantPublicProfile>,
+): CommerceMerchantPageMerchant {
+  const profile = profileByInternalSlug?.get(
+    normalizeMerchantSlug(merchant.slug),
+  );
+  const seoPresentation = resolveCommerceMerchantSeoPresentation({
+    affiliateNetwork: merchant.affiliateNetwork,
+    merchantName: merchant.name,
+    merchantSlug: merchant.slug,
+    profile,
+  });
+
+  return {
+    ...merchant,
+    name: seoPresentation.displayName,
+    publicSlug: seoPresentation.publicSlug,
+    seoPresentation,
+  };
+}
+
+function withDealMerchantSeoPresentation(
+  deal: CommerceMerchantDeal,
+  profileByInternalSlug?: ReadonlyMap<string, CommerceMerchantPublicProfile>,
+): CommerceMerchantDeal {
+  return {
+    ...deal,
+    merchant: withMerchantSeoPresentation(deal.merchant, profileByInternalSlug),
+    ...(deal.nextBestMerchant
+      ? {
+          nextBestMerchant: withMerchantSeoPresentation(
+            deal.nextBestMerchant,
+            profileByInternalSlug,
+          ),
+        }
+      : {}),
+  };
+}
+
 function isMerchantDeal(value: unknown): value is CommerceMerchantDeal {
   return (
     isRecord(value) &&
@@ -296,8 +438,17 @@ function isMerchantDeal(value: unknown): value is CommerceMerchantDeal {
   );
 }
 
-function toMerchantDealArray(value: unknown): CommerceMerchantDeal[] {
-  return Array.isArray(value) ? value.filter(isMerchantDeal) : [];
+function toMerchantDealArray(
+  value: unknown,
+  profileByInternalSlug?: ReadonlyMap<string, CommerceMerchantPublicProfile>,
+): CommerceMerchantDeal[] {
+  return Array.isArray(value)
+    ? value
+        .filter(isMerchantDeal)
+        .map((deal) =>
+          withDealMerchantSeoPresentation(deal, profileByInternalSlug),
+        )
+    : [];
 }
 
 function toNonNegativeInteger(value: unknown): number {
@@ -307,8 +458,10 @@ function toNonNegativeInteger(value: unknown): number {
 }
 
 function normalizeSnapshotPayload({
+  profileByInternalSlug,
   row,
 }: {
+  profileByInternalSlug?: ReadonlyMap<string, CommerceMerchantPublicProfile>;
   row: CommerceMerchantPageSnapshotRow;
 }): NormalizedMerchantSnapshot | undefined {
   if (!isRecord(row.snapshot)) {
@@ -321,8 +474,14 @@ function normalizeSnapshotPayload({
     return undefined;
   }
 
-  const bestDeals = toMerchantDealArray(snapshot.bestDeals);
-  const onlyAtMerchantDeals = toMerchantDealArray(snapshot.onlyAtMerchantDeals);
+  const bestDeals = toMerchantDealArray(
+    snapshot.bestDeals,
+    profileByInternalSlug,
+  );
+  const onlyAtMerchantDeals = toMerchantDealArray(
+    snapshot.onlyAtMerchantDeals,
+    profileByInternalSlug,
+  );
 
   return {
     bestDealCount: toNonNegativeInteger(snapshot.bestDealCount),
@@ -342,8 +501,10 @@ function normalizeSnapshotPayload({
 }
 
 async function listActiveMerchantPageMerchants({
+  profileByInternalSlug,
   supabaseClient,
 }: {
+  profileByInternalSlug?: ReadonlyMap<string, CommerceMerchantPublicProfile>;
   supabaseClient: CommerceMerchantPageSupabaseClient;
 }): Promise<CommerceMerchantPageMerchant[]> {
   const selectedQuery = supabaseClient
@@ -365,7 +526,48 @@ async function listActiveMerchantPageMerchants({
     query: orderedQuery,
   });
 
-  return rows.filter((row) => row.is_active).map(toMerchantPageMerchant);
+  return rows
+    .filter((row) => row.is_active)
+    .map((row) =>
+      toMerchantPageMerchant(
+        row,
+        profileByInternalSlug?.get(normalizeMerchantSlug(row.slug)),
+      ),
+    );
+}
+
+async function listMerchantProfiles({
+  supabaseClient,
+}: {
+  supabaseClient: CommerceMerchantPageSupabaseClient;
+}): Promise<CommerceMerchantPublicProfile[]> {
+  const selectedQuery = supabaseClient
+    .from(COMMERCE_MERCHANT_PROFILES_TABLE)
+    .select(
+      'merchant_id, internal_slug, public_slug, display_name, seo_title, seo_description, short_description, long_description, logo_url, favicon_url, brand_color, brand_text_color, canonical_path, is_public',
+    ) as unknown as CommerceMerchantPageQuery<CommerceMerchantProfileRow>;
+  const publicQuery = applyQueryEq({
+    column: 'is_public',
+    query: selectedQuery,
+    value: true,
+  });
+  const orderedQuery = applyQueryOrder({
+    column: 'public_slug',
+    query: publicQuery,
+  });
+
+  try {
+    const rows = await readMerchantPageRows({
+      errorMessage: 'Unable to load commerce merchant profiles.',
+      query: orderedQuery,
+    });
+
+    return rows
+      .filter((row) => row.is_public)
+      .map(toCommerceMerchantPublicProfile);
+  } catch {
+    return [];
+  }
 }
 
 async function listMerchantPageSnapshotRows({
@@ -483,20 +685,30 @@ export async function getActiveCommerceMerchantsOverview({
   }
 
   let merchants: CommerceMerchantPageMerchant[];
+  let merchantProfiles: CommerceMerchantPublicProfile[];
   let snapshotRows: CommerceMerchantPageSnapshotRow[];
 
   try {
-    [merchants, snapshotRows] = await Promise.all([
-      listActiveMerchantPageMerchants({ supabaseClient }),
+    [merchantProfiles, snapshotRows] = await Promise.all([
+      listMerchantProfiles({ supabaseClient }),
       listMerchantPageSnapshotRows({ supabaseClient }),
     ]);
+    merchants = await listActiveMerchantPageMerchants({
+      profileByInternalSlug: getProfileByInternalSlug(merchantProfiles),
+      supabaseClient,
+    });
   } catch {
     return [];
   }
 
+  const profileByInternalSlug = getProfileByInternalSlug(merchantProfiles);
+
   const snapshotByMerchantSlug = new Map(
     snapshotRows.flatMap((row) => {
-      const snapshot = normalizeSnapshotPayload({ row });
+      const snapshot = normalizeSnapshotPayload({
+        profileByInternalSlug,
+        row,
+      });
 
       return snapshot
         ? [[normalizeMerchantSlug(row.merchant_slug), snapshot] as const]
@@ -531,24 +743,40 @@ export async function getMerchantDeals(
     supabaseClient?: CommerceMerchantPageSupabaseClient;
   } = {},
 ): Promise<CommerceMerchantDealsResult | null> {
-  const normalizedMerchantSlug = normalizeMerchantSlug(merchantSlug);
+  const normalizedRequestedSlug = normalizeMerchantSlug(merchantSlug);
 
-  if (!normalizedMerchantSlug || !supabaseClient) {
+  if (!normalizedRequestedSlug || !supabaseClient) {
     return null;
   }
 
   let merchants: CommerceMerchantPageMerchant[];
+  let profileByInternalSlug: Map<string, CommerceMerchantPublicProfile>;
 
   try {
-    merchants = await listActiveMerchantPageMerchants({ supabaseClient });
+    const merchantProfiles = await listMerchantProfiles({ supabaseClient });
+    const profileByPublicSlug = getProfileByPublicSlug(merchantProfiles);
+    profileByInternalSlug = getProfileByInternalSlug(merchantProfiles);
+    const resolvedProfile = profileByPublicSlug.get(normalizedRequestedSlug);
+    const normalizedMerchantSlug = normalizeMerchantSlug(
+      resolvedProfile?.internalSlug ??
+        resolveCommerceMerchantInternalSlug(merchantSlug),
+    );
+
+    merchants = (
+      await listActiveMerchantPageMerchants({
+        profileByInternalSlug,
+        supabaseClient,
+      })
+    ).filter(
+      (candidateMerchant) =>
+        normalizeMerchantSlug(candidateMerchant.slug) ===
+        normalizedMerchantSlug,
+    );
   } catch {
     return null;
   }
 
-  const merchant = merchants.find(
-    (candidateMerchant) =>
-      normalizeMerchantSlug(candidateMerchant.slug) === normalizedMerchantSlug,
-  );
+  const merchant = merchants[0];
 
   if (!merchant) {
     return null;
@@ -559,7 +787,7 @@ export async function getMerchantDeals(
     supabaseClient,
   });
   const snapshot = snapshotRow
-    ? normalizeSnapshotPayload({ row: snapshotRow })
+    ? normalizeSnapshotPayload({ profileByInternalSlug, row: snapshotRow })
     : undefined;
 
   return toMerchantDealsResult({

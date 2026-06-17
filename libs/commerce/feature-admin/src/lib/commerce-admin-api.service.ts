@@ -500,6 +500,24 @@ export interface CommerceAdminDiscoveryConfidenceRecomputeResult {
   skippedCount: number;
 }
 
+export interface CommerceAdminMerchantDiscoverySyncResult {
+  discoveredSetCount: number;
+  existingCatalogMatchCount: number;
+  existingDiscoveryCandidateCount: number;
+  highConfidenceCount: number;
+  invalidSetNumberCount: number;
+  lowConfidenceCount: number;
+  mediumConfidenceCount: number;
+  merchantOfferCount: number;
+  missingRebrickableMatchCount: number;
+  noiseFilteredCount: number;
+  nonNewFilteredCount: number;
+  persistedCandidateCount: number;
+  skippedExistingOfficialCandidateCount: number;
+  skippedTerminalMerchantCandidateCount: number;
+  uniqueCandidateCount: number;
+}
+
 const adminApiPaths = {
   adminCacheRevalidation: '/api/admin/cache/revalidate',
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
@@ -699,6 +717,15 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.post<CommerceAdminDiscoveryConfidenceRecomputeResult>(
         `${adminApiPaths.adminCatalogDiscoveryCandidates}/recompute-confidence`,
+        {},
+      ),
+    );
+  }
+
+  async syncMerchantCatalogDiscoveryCandidates(): Promise<CommerceAdminMerchantDiscoverySyncResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminMerchantDiscoverySyncResult>(
+        `${adminApiPaths.adminCatalogDiscoveryCandidates}/sync-merchant-candidates`,
         {},
       ),
     );

@@ -1278,8 +1278,6 @@
 
   .pageIntroBreadcrumbs {
     align-self: start;
-    font-size: var(--lego-text-role-eyebrow-size);
-    line-height: var(--lego-text-role-eyebrow-line-height);
     padding-inline: var(--catalog-page-intro-inline-padding);
   }
 
@@ -1599,12 +1597,13 @@
       --lego-surface-padding-md-inline,
       var(--lego-section-inline-padding, var(--lego-space-3))
     );
-    gap: var(--lego-space-2);
+    gap: 0;
     padding-block-start: var(--lego-space-2);
   }
 
   .detailBreadcrumbs {
     min-width: 0;
+    padding-block-start: var(--lego-space-2);
   }
 
   .detailPageIntroContent {
@@ -5159,11 +5158,6 @@
   }
 
   @media (min-width: 64rem) {
-    .detailPageIntro {
-      gap: var(--lego-space-3);
-      padding-block-start: var(--lego-space-3);
-    }
-
     .detailHero {
       align-items: start;
       overflow: visible;

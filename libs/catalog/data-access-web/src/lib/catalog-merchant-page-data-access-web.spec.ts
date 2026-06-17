@@ -106,17 +106,19 @@ function createSupabaseClient(tables: InMemoryTables) {
 
 function merchantRow({
   active = true,
+  affiliateNetwork = 'awin',
   id,
   name,
   slug,
 }: {
   active?: boolean;
+  affiliateNetwork?: string;
   id: string;
   name: string;
   slug: string;
 }) {
   return {
-    affiliate_network: 'awin',
+    affiliate_network: affiliateNetwork,
     created_at: '2026-06-12T09:00:00.000Z',
     id,
     is_active: active,
@@ -125,6 +127,38 @@ function merchantRow({
     slug,
     source_type: 'affiliate',
     updated_at: '2026-06-12T09:00:00.000Z',
+  };
+}
+
+function merchantProfileRow({
+  displayName = 'LEGO®',
+  internalSlug = 'rakuten-lego-eu',
+  merchantId = 'merchant-rakuten-lego-eu',
+  publicSlug = 'lego',
+  seoTitle = 'LEGO profiel uit Supabase',
+}: {
+  displayName?: string;
+  internalSlug?: string;
+  merchantId?: string;
+  publicSlug?: string;
+  seoTitle?: string;
+} = {}) {
+  return {
+    brand_color: '#ffd500',
+    brand_text_color: '#111111',
+    canonical_path: `/winkels/${publicSlug}`,
+    display_name: displayName,
+    favicon_url: '/merchant-favicons/lego-nl.png',
+    internal_slug: internalSlug,
+    is_public: true,
+    logo_url: '/merchant-favicons/lego-nl.png',
+    long_description: null,
+    merchant_id: merchantId,
+    public_slug: publicSlug,
+    seo_description:
+      'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+    seo_title: seoTitle,
+    short_description: 'Supabase profiel voor LEGO.',
   };
 }
 
@@ -229,6 +263,7 @@ function createMerchantSnapshotTables(
   overrides: Partial<InMemoryTables> = {},
 ): InMemoryTables {
   return {
+    commerce_merchant_profiles: [],
     commerce_merchant_page_snapshots: [merchantSnapshotRow()],
     commerce_merchants: [
       merchantRow({
@@ -308,6 +343,68 @@ describe('commerce merchant page snapshot reader', () => {
       dealCount: 0,
       onlyAtMerchantDeals: [],
       snapshotMissing: true,
+    });
+  });
+
+  test('reads LEGO public profile rows and resolves the public slug to the internal merchant', async () => {
+    const tables = createMerchantSnapshotTables({
+      commerce_merchant_page_snapshots: [
+        merchantSnapshotRow({
+          bestDeals: [
+            snapshotDeal({
+              merchantName: 'Rakuten LEGO EU',
+              merchantSlug: 'rakuten-lego-eu',
+              nextBestMerchantName: 'Goodbricks',
+              nextBestMerchantSlug: 'goodbricks',
+            }),
+          ],
+          merchantName: 'Rakuten LEGO EU',
+          merchantSlug: 'rakuten-lego-eu',
+        }),
+      ],
+      commerce_merchant_profiles: [merchantProfileRow()],
+      commerce_merchants: [
+        merchantRow({
+          affiliateNetwork: 'Rakuten',
+          id: 'merchant-rakuten-lego-eu',
+          name: 'Rakuten LEGO EU',
+          slug: 'rakuten-lego-eu',
+        }),
+      ],
+    });
+
+    const result = await getMerchantDeals('lego', {
+      supabaseClient: createSupabaseClient(tables) as never,
+    });
+
+    expect(result).toMatchObject({
+      comparableDeals: [
+        {
+          latestOfferId: 'seed-rakuten-lego-eu-10316',
+          merchant: {
+            name: 'LEGO®',
+            publicSlug: 'lego',
+            seoPresentation: {
+              seoTitle: 'LEGO profiel uit Supabase',
+            },
+            slug: 'rakuten-lego-eu',
+          },
+          productUrl: 'https://rakuten-lego-eu.example/10316',
+        },
+      ],
+      merchant: {
+        affiliateNetwork: 'Rakuten',
+        name: 'LEGO®',
+        publicSlug: 'lego',
+        seoPresentation: {
+          canonicalUrl: 'https://www.brickhunt.nl/winkels/lego',
+          seoDescription:
+            'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+          seoTitle: 'LEGO profiel uit Supabase',
+        },
+        slug: 'rakuten-lego-eu',
+      },
+      snapshotMissing: false,
     });
   });
 
@@ -398,6 +495,15 @@ describe('commerce merchant page snapshot reader', () => {
     expect(overview.map((item) => item.merchant.slug)).toEqual([
       'rakuten-lego-eu',
     ]);
+    expect(overview[0]?.merchant).toMatchObject({
+      name: 'LEGO®',
+      publicSlug: 'lego',
+      seoPresentation: {
+        displayName: 'LEGO®',
+        publicSlug: 'lego',
+      },
+      slug: 'rakuten-lego-eu',
+    });
     await expect(
       getMerchantDeals('lego-nl', {
         supabaseClient: createSupabaseClient(tables) as never,
@@ -409,6 +515,29 @@ describe('commerce merchant page snapshot reader', () => {
       }),
     ).resolves.toMatchObject({
       merchant: {
+        name: 'LEGO®',
+        publicSlug: 'lego',
+        slug: 'rakuten-lego-eu',
+      },
+      snapshotMissing: false,
+    });
+    await expect(
+      getMerchantDeals('lego', {
+        supabaseClient: createSupabaseClient(tables) as never,
+      }),
+    ).resolves.toMatchObject({
+      comparableDeals: [
+        {
+          merchant: {
+            name: 'LEGO®',
+            publicSlug: 'lego',
+            slug: 'rakuten-lego-eu',
+          },
+        },
+      ],
+      merchant: {
+        name: 'LEGO®',
+        publicSlug: 'lego',
         slug: 'rakuten-lego-eu',
       },
       snapshotMissing: false,

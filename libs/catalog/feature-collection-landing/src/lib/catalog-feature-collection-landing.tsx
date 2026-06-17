@@ -148,6 +148,7 @@ export function CatalogFeatureCollectionLandingPage({
         }
       : {}),
   } as CSSProperties;
+  const hasCustomHeroSurface = Boolean(config.visual?.backgroundColor);
   const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
   const normalizedPageSize =
     typeof pageSize === 'number' && pageSize > 0
@@ -170,7 +171,9 @@ export function CatalogFeatureCollectionLandingPage({
         as="header"
         breadcrumbs={{
           ariaLabel: 'Paginapad',
-          className: styles.introBreadcrumbs,
+          className: hasCustomHeroSurface
+            ? `${styles.introBreadcrumbs} ${styles.introHeroBreadcrumbs}`
+            : styles.introBreadcrumbs,
           items: [
             {
               href: buildWebPath(webPathnames.home),

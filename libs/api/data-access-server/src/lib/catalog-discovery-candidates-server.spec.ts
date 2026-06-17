@@ -1,5 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
+import type { CommerceAffiliateDiscoveredSet } from '@lego-platform/commerce/util';
 import {
+  buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets,
   buildCatalogDiscoveryCandidatesFromRakutenMissingSets,
   recomputeCatalogDiscoveryCandidateConfidence,
 } from './catalog-discovery-candidates-server';
@@ -66,7 +68,275 @@ function createExistingCandidate(
   } as const;
 }
 
+function createLocalMirrorMetadata(
+  overrides: Partial<{
+    imageUrl: string;
+    name: string;
+    pieces: number;
+    releaseYear: number;
+    setId: string;
+    sourceSetNumber: string;
+    theme: string;
+    themeId: number;
+  }> = {},
+) {
+  const setId = overrides.setId ?? '31214';
+  const sourceSetNumber = overrides.sourceSetNumber ?? `${setId}-1`;
+  const name = overrides.name ?? 'LOVE';
+  const imageUrl =
+    overrides.imageUrl ??
+    `https://cdn.rebrickable.com/media/sets/${sourceSetNumber}/1000.jpg`;
+  const pieces = overrides.pieces ?? 791;
+  const releaseYear = overrides.releaseYear ?? 2025;
+  const theme = overrides.theme ?? 'Art';
+
+  return {
+    catalogSetInput: {
+      imageUrl,
+      name,
+      pieces,
+      releaseYear,
+      setId,
+      slug: `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${setId}`,
+      source: 'rebrickable' as const,
+      sourceSetNumber,
+      theme,
+    },
+    imgUrl: imageUrl,
+    name,
+    numParts: pieces,
+    setImgUrl: imageUrl,
+    setNum: sourceSetNumber,
+    themeId: overrides.themeId ?? 709,
+    themeName: theme,
+    year: releaseYear,
+  };
+}
+
+function createMerchantDiscoveredSet(
+  overrides: Partial<CommerceAffiliateDiscoveredSet> = {},
+): CommerceAffiliateDiscoveredSet {
+  return {
+    affiliate: {
+      id: 'merchant-goodbricks',
+      name: 'GoodBricks',
+      slug: 'goodbricks',
+    },
+    confidence: 'high',
+    createdAt: '2026-06-12T08:00:00.000Z',
+    currencyCode: 'EUR',
+    firstSeenAt: '2026-06-12T08:00:00.000Z',
+    id: 'discovered-31214-goodbricks',
+    imageUrl: 'https://img.example/31214.jpg',
+    lastSeenAt: '2026-06-12T09:00:00.000Z',
+    normalizedSetId: '31214',
+    priceMinor: 13999,
+    productTitle: 'LEGO Art LOVE 31214 bouwset',
+    productUrl: 'https://goodbricks.example/31214',
+    rawPayload: {
+      condition: 'new',
+    },
+    sourceSetNumber: '31214-1',
+    status: 'new',
+    updatedAt: '2026-06-12T09:00:00.000Z',
+    ...overrides,
+  };
+}
+
 describe('catalog discovery candidate pipeline', () => {
+  test('builds merchant discovery candidates from full-set affiliate offers with a local Rebrickable match', async () => {
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `merchant-candidate-${index}`,
+        operatorConfidence: input.evidence['operatorConfidence'],
+        operatorConfidenceReasons: input.evidence['operatorConfidenceReasons'],
+      })),
+    );
+
+    const result =
+      await buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets({
+        dependencies: {
+          getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () =>
+            createLocalMirrorMetadata(),
+          ),
+          getNow: () => new Date('2026-06-12T10:00:00.000Z'),
+          listCanonicalCatalogSetsFn: vi.fn(async () => []),
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+          listCommerceAffiliateDiscoveredSetsFn: vi.fn(async () => [
+            createMerchantDiscoveredSet(),
+            createMerchantDiscoveredSet({
+              affiliate: {
+                id: 'merchant-misterbricks',
+                name: 'MisterBricks',
+                slug: 'misterbricks',
+              },
+              firstSeenAt: '2026-06-12T08:30:00.000Z',
+              id: 'discovered-31214-misterbricks',
+              priceMinor: 12999,
+              productUrl: 'https://misterbricks.example/31214',
+            }),
+          ]),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+    expect(result).toMatchObject({
+      highConfidenceCount: 1,
+      merchantOfferCount: 2,
+      persistedCandidateCount: 1,
+      uniqueCandidateCount: 1,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [
+        expect.objectContaining({
+          autoCreateEligible: false,
+          evidence: expect.objectContaining({
+            catalogSource: 'merchant_discovery',
+            descriptionSource: 'rebrickable',
+            discoveryLane: 'merchant',
+            firstMerchantSource: 'goodbricks',
+            merchantDiscovery: expect.objectContaining({
+              lowestPriceMinor: 12999,
+              merchantCount: 2,
+            }),
+            officialDescriptionMissing: true,
+            operatorConfidence: 'high',
+            operatorConfidenceReasons: expect.arrayContaining([
+              'local_rebrickable_mirror_match',
+              'multiple_merchants',
+            ]),
+          }),
+          normalizedSetId: '31214',
+          requiredFieldsPresent: true,
+          source: 'merchant_discovery',
+          sourcePriceMinor: 12999,
+          sourceProductTitle: 'LOVE',
+        }),
+      ],
+    });
+  });
+
+  test('filters merchant discovery noise before catalog candidates are persisted', async () => {
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `merchant-candidate-${index}`,
+      })),
+    );
+
+    const result =
+      await buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets({
+        dependencies: {
+          getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () =>
+            createLocalMirrorMetadata(),
+          ),
+          listCanonicalCatalogSetsFn: vi.fn(async () => []),
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+          listCommerceAffiliateDiscoveredSetsFn: vi.fn(async () => [
+            createMerchantDiscoveredSet({
+              id: 'random-box',
+              productTitle: 'LEGO 71050 random box complete serie',
+            }),
+            createMerchantDiscoveredSet({
+              id: 'damage-box',
+              productTitle: 'LEGO Art LOVE 31214 damaged box',
+            }),
+            createMerchantDiscoveredSet({
+              id: 'used-box',
+              productTitle: 'LEGO Art LOVE 31214 bouwset',
+              rawPayload: { condition: 'used' },
+            }),
+          ]),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+    expect(result).toMatchObject({
+      noiseFilteredCount: 2,
+      nonNewFilteredCount: 1,
+      persistedCandidateCount: 0,
+      uniqueCandidateCount: 0,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [],
+    });
+  });
+
+  test('does not let merchant discovery overwrite an existing official candidate', async () => {
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `merchant-candidate-${index}`,
+      })),
+    );
+
+    const result =
+      await buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets({
+        dependencies: {
+          getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () =>
+            createLocalMirrorMetadata(),
+          ),
+          listCanonicalCatalogSetsFn: vi.fn(async () => []),
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => [
+            createExistingCandidate({
+              evidence: {
+                discoveryLane: 'official',
+                rakutenStrictCandidate: true,
+              },
+              normalizedSetId: '31214',
+              source: 'rakuten-lego-eu',
+              sourceSetNumber: '31214-1',
+            }),
+          ]),
+          listCommerceAffiliateDiscoveredSetsFn: vi.fn(async () => [
+            createMerchantDiscoveredSet(),
+          ]),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+    expect(result).toMatchObject({
+      existingDiscoveryCandidateCount: 1,
+      persistedCandidateCount: 0,
+      skippedExistingOfficialCandidateCount: 1,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [],
+    });
+  });
+
+  test('requires a local Rebrickable match for merchant discovery candidates', async () => {
+    const upsertCatalogDiscoveryCandidatesFn = vi.fn(async ({ inputs }) =>
+      inputs.map((input, index) => ({
+        ...input,
+        id: `merchant-candidate-${index}`,
+      })),
+    );
+
+    const result =
+      await buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets({
+        dependencies: {
+          getLocalRebrickableSetMirrorMetadataFn: vi.fn(async () => undefined),
+          listCanonicalCatalogSetsFn: vi.fn(async () => []),
+          listCatalogDiscoveryCandidatesBySetIdsFn: vi.fn(async () => []),
+          listCommerceAffiliateDiscoveredSetsFn: vi.fn(async () => [
+            createMerchantDiscoveredSet(),
+          ]),
+          upsertCatalogDiscoveryCandidatesFn,
+        },
+      });
+
+    expect(result).toMatchObject({
+      missingRebrickableMatchCount: 1,
+      persistedCandidateCount: 0,
+      uniqueCandidateCount: 1,
+    });
+    expect(upsertCatalogDiscoveryCandidatesFn).toHaveBeenCalledWith({
+      inputs: [],
+    });
+  });
+
   test('discovery without enrichment makes zero Rebrickable calls and dedupes duplicate feed products', async () => {
     const lookupBricksetSetMetadataFn = vi.fn();
     const searchCatalogMissingSetsFn = vi.fn();

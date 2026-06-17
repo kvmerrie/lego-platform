@@ -1,6 +1,7 @@
 import {
   createCatalogSet,
   getLocalRebrickableSetMirrorMetadata,
+  listCanonicalCatalogSets,
   listCatalogDiscoveryCandidates,
   listCatalogDiscoveryCandidatesBySetIds,
   searchCatalogMissingSets,
@@ -13,8 +14,15 @@ import {
 } from '@lego-platform/catalog/data-access-server';
 import {
   getCanonicalCatalogSetId,
+  type CatalogCanonicalSet,
   type CatalogExternalSetSearchResult,
 } from '@lego-platform/catalog/util';
+import { listCommerceAffiliateDiscoveredSets } from '@lego-platform/commerce/data-access-server';
+import type { CommerceAffiliateDiscoveredSet } from '@lego-platform/commerce/util';
+import {
+  classifyCommerceCommercialUnitType,
+  type CommerceCommercialUnitType,
+} from '@lego-platform/shared/config';
 import {
   lookupBricksetSetMetadata,
   type BricksetSetMetadataLookupResult,
@@ -46,7 +54,17 @@ export interface CatalogDiscoveryCandidatePipelineDependencies {
   upsertCatalogDiscoveryCandidatesFn?: typeof upsertCatalogDiscoveryCandidates;
 }
 
+export interface MerchantCatalogDiscoveryCandidatePipelineDependencies {
+  getLocalRebrickableSetMirrorMetadataFn?: typeof getLocalRebrickableSetMirrorMetadata;
+  getNow?: () => Date;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  listCommerceAffiliateDiscoveredSetsFn?: typeof listCommerceAffiliateDiscoveredSets;
+  listCatalogDiscoveryCandidatesBySetIdsFn?: typeof listCatalogDiscoveryCandidatesBySetIds;
+  upsertCatalogDiscoveryCandidatesFn?: typeof upsertCatalogDiscoveryCandidates;
+}
+
 export const CATALOG_DISCOVERY_DEFAULT_MAX_ENRICHMENT_LOOKUPS = 25;
+export const MERCHANT_CATALOG_DISCOVERY_SOURCE = 'merchant_discovery';
 
 export interface CatalogDiscoveryCandidatePipelineOptions {
   autoCreateHighConfidenceCatalogSets?: boolean;
@@ -80,6 +98,29 @@ export interface RecomputeCatalogDiscoveryCandidateConfidenceResult {
   modifiedCount: number;
   processedCount: number;
   skippedCount: number;
+}
+
+export interface MerchantCatalogDiscoveryCandidatePipelineOptions {
+  limit?: number;
+  setIds?: readonly string[];
+}
+
+export interface MerchantCatalogDiscoveryCandidatePipelineResult {
+  discoveredSetCount: number;
+  existingCatalogMatchCount: number;
+  existingDiscoveryCandidateCount: number;
+  highConfidenceCount: number;
+  invalidSetNumberCount: number;
+  lowConfidenceCount: number;
+  mediumConfidenceCount: number;
+  merchantOfferCount: number;
+  missingRebrickableMatchCount: number;
+  noiseFilteredCount: number;
+  nonNewFilteredCount: number;
+  persistedCandidateCount: number;
+  skippedExistingOfficialCandidateCount: number;
+  skippedTerminalMerchantCandidateCount: number;
+  uniqueCandidateCount: number;
 }
 
 function normalizeSourceSetNumber(setNumber: string): string {
@@ -332,6 +373,8 @@ function scoreCatalogDiscoveryCandidate({
 }
 
 const TRUSTED_RAKUTEN_LEGO_SOURCE = 'rakuten-lego-eu';
+const MERCHANT_DISCOVERY_LANE = 'merchant';
+const OFFICIAL_DISCOVERY_LANE = 'official';
 const LEGO_LIKE_SET_NUMBER_PATTERN = /^\d{5,6}(?:-\d+)?$/u;
 const LIKELY_POWERED_UP_PART_PATTERN =
   /\b(afstandsbediening|remote control|remote|powered[\s-]?up|motor|hub|battery box|batterijbox|lichtsteen|light brick)\b/iu;
@@ -339,9 +382,335 @@ const LIKELY_ACCESSORY_PATTERN =
   /\b(zwaard|sword|sleutelhanger|keychain|peper[\s-]?en[\s-]?zout(?:set)?|salt|pepper|mok|mug|beker|rugzak|backpack|tas|bag|display case|vitrine|opberg|storage|accessoire|accessory|gear|kostuum|costume)\b/iu;
 const BRICKLINK_DESIGNER_PROGRAM_PATTERN =
   /\b(bricklink|designer program|bdp|limited edition|limited case|crowdfunding|crowdfunded)\b/iu;
+const MERCHANT_DISCOVERY_NOISE_PATTERN =
+  /\b(schade|beschadig(?:d|de)|damage(?:d)? box|damaged|open doos|opened box|geopend|tweedehands|used|pre[-\s]?owned|zonder doos|no box|onderdelen|reserveonderdelen|spare parts?|parts only|losse stenen|bricks only)\b/iu;
+
+type MerchantCatalogDiscoveryCandidateOffer = Pick<
+  CommerceAffiliateDiscoveredSet,
+  | 'currencyCode'
+  | 'firstSeenAt'
+  | 'id'
+  | 'imageUrl'
+  | 'lastSeenAt'
+  | 'normalizedSetId'
+  | 'priceMinor'
+  | 'productTitle'
+  | 'productUrl'
+  | 'rawPayload'
+  | 'sourceSetNumber'
+> & {
+  affiliate: CommerceAffiliateDiscoveredSet['affiliate'];
+  commercialUnitType: CommerceCommercialUnitType;
+};
 
 function hasValidLegoLikeSetNumber(value: string): boolean {
   return LEGO_LIKE_SET_NUMBER_PATTERN.test(value.trim());
+}
+
+function readRecordString(
+  payload: Readonly<Record<string, unknown>>,
+  key: string,
+): string | undefined {
+  const value = payload[key];
+
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function getMerchantDiscoveryRawCondition(
+  discoveredSet: CommerceAffiliateDiscoveredSet,
+): string | undefined {
+  return (
+    readRecordString(discoveredSet.rawPayload, 'condition') ??
+    readRecordString(discoveredSet.rawPayload, 'conditionLabel') ??
+    readRecordString(discoveredSet.rawPayload, 'state')
+  );
+}
+
+function hasMerchantDiscoveryNewCondition(
+  discoveredSet: CommerceAffiliateDiscoveredSet,
+): boolean {
+  const rawCondition = getMerchantDiscoveryRawCondition(discoveredSet);
+
+  if (!rawCondition) {
+    return true;
+  }
+
+  const normalizedCondition = rawCondition.trim().toLowerCase();
+
+  return normalizedCondition === 'new' || normalizedCondition === 'nieuw';
+}
+
+function getMerchantDiscoveryNoiseText(
+  discoveredSet: CommerceAffiliateDiscoveredSet,
+): string {
+  return [
+    discoveredSet.productTitle,
+    discoveredSet.productUrl,
+    readRecordString(discoveredSet.rawPayload, 'category'),
+    readRecordString(discoveredSet.rawPayload, 'description'),
+    readRecordString(discoveredSet.rawPayload, 'productDescription'),
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function hasMerchantDiscoveryNoise(
+  discoveredSet: CommerceAffiliateDiscoveredSet,
+): boolean {
+  return MERCHANT_DISCOVERY_NOISE_PATTERN.test(
+    getMerchantDiscoveryNoiseText(discoveredSet),
+  );
+}
+
+function getMerchantDiscoveryCommercialUnitType(
+  discoveredSet: CommerceAffiliateDiscoveredSet,
+): CommerceCommercialUnitType {
+  return classifyCommerceCommercialUnitType({
+    notes: [
+      readRecordString(discoveredSet.rawPayload, 'category'),
+      readRecordString(discoveredSet.rawPayload, 'description'),
+      readRecordString(discoveredSet.rawPayload, 'productDescription'),
+    ]
+      .filter(Boolean)
+      .join(' '),
+    productTitle: discoveredSet.productTitle,
+    productUrl: discoveredSet.productUrl,
+    setId: discoveredSet.normalizedSetId,
+  });
+}
+
+function isMerchantCatalogDiscoveryCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): boolean {
+  return (
+    candidate.source === MERCHANT_CATALOG_DISCOVERY_SOURCE ||
+    candidate.evidence['discoveryLane'] === MERCHANT_DISCOVERY_LANE ||
+    candidate.sourcePayload['discoveryLane'] === MERCHANT_DISCOVERY_LANE
+  );
+}
+
+function isTerminalMerchantCatalogDiscoveryCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): boolean {
+  return [
+    'ignored',
+    'imported',
+    'non_set',
+    'onboarding_started',
+    'processing',
+    'rejected',
+    'reviewed',
+  ].includes(candidate.status);
+}
+
+function buildExistingCatalogSetIds(
+  catalogSets: readonly CatalogCanonicalSet[],
+): ReadonlySet<string> {
+  return new Set(
+    catalogSets.flatMap((catalogSet) =>
+      [catalogSet.setId, catalogSet.sourceSetNumber]
+        .filter((setId): setId is string => Boolean(setId))
+        .map(getCanonicalCatalogSetId),
+    ),
+  );
+}
+
+function selectFirstMerchantOffer(
+  offers: readonly MerchantCatalogDiscoveryCandidateOffer[],
+): MerchantCatalogDiscoveryCandidateOffer {
+  return [...offers].sort(
+    (left, right) =>
+      left.firstSeenAt.localeCompare(right.firstSeenAt) ||
+      left.affiliate.slug.localeCompare(right.affiliate.slug),
+  )[0];
+}
+
+function selectLowestPriceMerchantOffer(
+  offers: readonly MerchantCatalogDiscoveryCandidateOffer[],
+): MerchantCatalogDiscoveryCandidateOffer {
+  return [...offers].sort((left, right) => {
+    const leftPrice = left.priceMinor ?? Number.MAX_SAFE_INTEGER;
+    const rightPrice = right.priceMinor ?? Number.MAX_SAFE_INTEGER;
+
+    return (
+      leftPrice - rightPrice ||
+      right.lastSeenAt.localeCompare(left.lastSeenAt) ||
+      left.affiliate.slug.localeCompare(right.affiliate.slug)
+    );
+  })[0];
+}
+
+function buildMerchantDiscoveryMerchantSummaries(
+  offers: readonly MerchantCatalogDiscoveryCandidateOffer[],
+): {
+  merchantCount: number;
+  merchants: readonly {
+    id: string;
+    name: string;
+    offerCount: number;
+    slug: string;
+  }[];
+} {
+  const offerCountByMerchantSlug = new Map<string, number>();
+  const merchantBySlug = new Map<
+    string,
+    CommerceAffiliateDiscoveredSet['affiliate']
+  >();
+
+  for (const offer of offers) {
+    merchantBySlug.set(offer.affiliate.slug, offer.affiliate);
+    offerCountByMerchantSlug.set(
+      offer.affiliate.slug,
+      (offerCountByMerchantSlug.get(offer.affiliate.slug) ?? 0) + 1,
+    );
+  }
+
+  const merchants = [...merchantBySlug.values()]
+    .sort((left, right) => left.slug.localeCompare(right.slug))
+    .map((merchant) => ({
+      id: merchant.id,
+      name: merchant.name,
+      offerCount: offerCountByMerchantSlug.get(merchant.slug) ?? 0,
+      slug: merchant.slug,
+    }));
+
+  return {
+    merchantCount: merchants.length,
+    merchants,
+  };
+}
+
+function toMerchantCatalogDiscoveryCandidateInput({
+  localMirrorMetadata,
+  now,
+  offers,
+}: {
+  localMirrorMetadata: LocalRebrickableSetMirrorMetadata;
+  now: string;
+  offers: readonly MerchantCatalogDiscoveryCandidateOffer[];
+}): CatalogDiscoveryCandidateInput {
+  const rebrickableResult = localMirrorMetadata.catalogSetInput;
+  const normalizedSetId = rebrickableResult.setId;
+  const sourceSetNumber = rebrickableResult.sourceSetNumber;
+  const requiredFieldsPresent = hasRequiredCatalogFields(rebrickableResult);
+  const firstOffer = selectFirstMerchantOffer(offers);
+  const lowestPriceOffer = selectLowestPriceMerchantOffer(offers);
+  const { merchantCount, merchants } =
+    buildMerchantDiscoveryMerchantSummaries(offers);
+  const titleMatchScore = Math.max(
+    ...offers.map((offer) =>
+      getTitleMatchScore({
+        feedTitle: offer.productTitle,
+        rebrickableTitle: rebrickableResult.name,
+      }),
+    ),
+  );
+  const confidenceScore = Math.min(
+    100,
+    70 +
+      Math.min(merchantCount, 3) * 5 +
+      (lowestPriceOffer.priceMinor ? 5 : 0) +
+      titleMatchScore,
+  );
+  const operatorConfidence: CatalogDiscoveryCandidateConfidence =
+    confidenceScore >= 85 && titleMatchScore > 0 ? 'high' : 'medium';
+  const operatorConfidenceReasons = [
+    'merchant_feed_offer',
+    'local_rebrickable_mirror_match',
+    'full_set',
+    'new_condition',
+    merchantCount > 1 ? 'multiple_merchants' : 'single_merchant',
+    titleMatchScore > 0 ? 'title_match' : 'title_unverified',
+  ];
+  const merchantOffers = offers.map((offer) => ({
+    affiliateId: offer.affiliate.id,
+    currencyCode: offer.currencyCode,
+    discoveredSetId: offer.id,
+    firstSeenAt: offer.firstSeenAt,
+    imageUrl: offer.imageUrl,
+    lastSeenAt: offer.lastSeenAt,
+    merchantName: offer.affiliate.name,
+    merchantSlug: offer.affiliate.slug,
+    priceMinor: offer.priceMinor,
+    productTitle: offer.productTitle,
+    productUrl: offer.productUrl,
+    sourceSetNumber: offer.sourceSetNumber,
+  }));
+  const merchantEvidence = {
+    firstMerchantSource: firstOffer.affiliate.slug,
+    lowestPriceCurrencyCode: lowestPriceOffer.currencyCode,
+    lowestPriceMinor: lowestPriceOffer.priceMinor,
+    merchantCount,
+    merchantOffers,
+    merchants,
+    offerCount: offers.length,
+  };
+
+  return {
+    autoCreateEligible: false,
+    confidence: operatorConfidence,
+    confidenceScore,
+    evidence: {
+      catalogSource: MERCHANT_CATALOG_DISCOVERY_SOURCE,
+      commercialUnitType: 'full_set',
+      condition: 'new',
+      descriptionSource: 'rebrickable',
+      discoveryLane: MERCHANT_DISCOVERY_LANE,
+      firstMerchantSource: firstOffer.affiliate.slug,
+      officialDescriptionMissing: true,
+      importStatus: 'partial_catalog_entry',
+      localRebrickableMirrorMatch: true,
+      merchantDiscoveryCandidate: true,
+      merchantDiscovery: merchantEvidence,
+      operatorConfidence,
+      operatorConfidenceReasons,
+      rebrickable_name: localMirrorMetadata.name,
+      rebrickable_set_num: localMirrorMetadata.setNum,
+      theme_id: localMirrorMetadata.themeId,
+      titleMatchScore,
+      year: localMirrorMetadata.year,
+    },
+    firstSeenAt:
+      offers
+        .map((offer) => offer.firstSeenAt)
+        .sort((left, right) => left.localeCompare(right))[0] ??
+      firstOffer.firstSeenAt,
+    lastSeenAt: now,
+    normalizedSetId,
+    rebrickablePayload: {
+      imageUrl: rebrickableResult.imageUrl,
+      name: rebrickableResult.name,
+      pieces: rebrickableResult.pieces,
+      releaseDate: rebrickableResult.releaseDate,
+      releaseDatePrecision: rebrickableResult.releaseDatePrecision,
+      releaseYear: rebrickableResult.releaseYear,
+      setId: rebrickableResult.setId,
+      slug: rebrickableResult.slug,
+      source: rebrickableResult.source,
+      sourceSetNumber: rebrickableResult.sourceSetNumber,
+      theme: rebrickableResult.theme,
+    },
+    requiredFieldsPresent,
+    source: MERCHANT_CATALOG_DISCOVERY_SOURCE,
+    ...(lowestPriceOffer.currencyCode
+      ? { sourceCurrencyCode: lowestPriceOffer.currencyCode }
+      : {}),
+    sourcePayload: {
+      discoveryLane: MERCHANT_DISCOVERY_LANE,
+      firstMerchantSource: firstOffer.affiliate.slug,
+      merchantCount,
+      merchants,
+      offers: merchantOffers,
+      sourceType: 'affiliate_merchants',
+    },
+    ...(lowestPriceOffer.priceMinor
+      ? { sourcePriceMinor: lowestPriceOffer.priceMinor }
+      : {}),
+    sourceProductTitle: rebrickableResult.name,
+    sourceProductUrl: lowestPriceOffer.productUrl,
+    sourceSetNumber,
+    status: 'new',
+  };
 }
 
 function resolveOperatorConfidence({
@@ -508,6 +877,9 @@ function toCandidateInput({
       confidenceScore: scored.score,
       evidence: {
         bricksetExactMatch: Boolean(bricksetRecord),
+        catalogSource: OFFICIAL_DISCOVERY_LANE,
+        descriptionSource: candidate.source,
+        discoveryLane: OFFICIAL_DISCOVERY_LANE,
         imageAvailable: Boolean(rebrickableResult?.imageUrl?.trim()),
         ...(localMirrorMetadata
           ? {
@@ -705,6 +1077,195 @@ function hasCandidateConfidenceChanged({
     JSON.stringify(candidate.rebrickablePayload ?? null) !==
       JSON.stringify(input.rebrickablePayload ?? null)
   );
+}
+
+export async function buildCatalogDiscoveryCandidatesFromMerchantDiscoveredSets({
+  dependencies = {},
+  options = {},
+}: {
+  dependencies?: MerchantCatalogDiscoveryCandidatePipelineDependencies;
+  options?: MerchantCatalogDiscoveryCandidatePipelineOptions;
+} = {}): Promise<MerchantCatalogDiscoveryCandidatePipelineResult> {
+  const {
+    getLocalRebrickableSetMirrorMetadataFn = getLocalRebrickableSetMirrorMetadata,
+    getNow = () => new Date(),
+    listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+    listCatalogDiscoveryCandidatesBySetIdsFn = listCatalogDiscoveryCandidatesBySetIds,
+    listCommerceAffiliateDiscoveredSetsFn = listCommerceAffiliateDiscoveredSets,
+    upsertCatalogDiscoveryCandidatesFn = upsertCatalogDiscoveryCandidates,
+  } = dependencies;
+  const safeLimit = Math.min(
+    1000,
+    Math.max(1, Math.floor(options.limit ?? 500)),
+  );
+  const allowedSetIds = new Set(
+    (options.setIds ?? []).map((setId) => getCanonicalCatalogSetId(setId)),
+  );
+  const [catalogSets, discoveredSets] = await Promise.all([
+    listCanonicalCatalogSetsFn({ includeInactive: true }),
+    listCommerceAffiliateDiscoveredSetsFn({
+      status: 'new',
+    }),
+  ]);
+  const existingCatalogSetIds = buildExistingCatalogSetIds(catalogSets);
+  const offersBySetId = new Map<
+    string,
+    MerchantCatalogDiscoveryCandidateOffer[]
+  >();
+  let existingCatalogMatchCount = 0;
+  let invalidSetNumberCount = 0;
+  let merchantOfferCount = 0;
+  let noiseFilteredCount = 0;
+  let nonNewFilteredCount = 0;
+
+  for (const discoveredSet of discoveredSets.slice(0, safeLimit)) {
+    if (discoveredSet.status !== 'new') {
+      continue;
+    }
+
+    const normalizedSetId = getCanonicalCatalogSetId(
+      discoveredSet.normalizedSetId,
+    );
+
+    if (allowedSetIds.size > 0 && !allowedSetIds.has(normalizedSetId)) {
+      continue;
+    }
+
+    if (
+      !hasValidLegoLikeSetNumber(normalizedSetId) &&
+      !hasValidLegoLikeSetNumber(discoveredSet.sourceSetNumber)
+    ) {
+      invalidSetNumberCount += 1;
+      continue;
+    }
+
+    if (existingCatalogSetIds.has(normalizedSetId)) {
+      existingCatalogMatchCount += 1;
+      continue;
+    }
+
+    if (!hasMerchantDiscoveryNewCondition(discoveredSet)) {
+      nonNewFilteredCount += 1;
+      continue;
+    }
+
+    const commercialUnitType =
+      getMerchantDiscoveryCommercialUnitType(discoveredSet);
+
+    if (
+      commercialUnitType !== 'full_set' ||
+      hasMerchantDiscoveryNoise(discoveredSet)
+    ) {
+      noiseFilteredCount += 1;
+      continue;
+    }
+
+    merchantOfferCount += 1;
+    offersBySetId.set(normalizedSetId, [
+      ...(offersBySetId.get(normalizedSetId) ?? []),
+      {
+        affiliate: discoveredSet.affiliate,
+        commercialUnitType,
+        currencyCode: discoveredSet.currencyCode,
+        firstSeenAt: discoveredSet.firstSeenAt,
+        id: discoveredSet.id,
+        imageUrl: discoveredSet.imageUrl,
+        lastSeenAt: discoveredSet.lastSeenAt,
+        normalizedSetId: discoveredSet.normalizedSetId,
+        priceMinor: discoveredSet.priceMinor,
+        productTitle: discoveredSet.productTitle,
+        productUrl: discoveredSet.productUrl,
+        rawPayload: discoveredSet.rawPayload,
+        sourceSetNumber: discoveredSet.sourceSetNumber,
+      },
+    ]);
+  }
+
+  const uniqueSetIds = [...offersBySetId.keys()];
+  const existingCandidates = uniqueSetIds.length
+    ? await listCatalogDiscoveryCandidatesBySetIdsFn({
+        setIds: uniqueSetIds,
+      })
+    : [];
+  const existingCandidateBySetId = new Map(
+    existingCandidates.map((candidate) => [
+      candidate.normalizedSetId,
+      candidate,
+    ]),
+  );
+  const now = getNow().toISOString();
+  const inputs: CatalogDiscoveryCandidateInput[] = [];
+  let existingDiscoveryCandidateCount = 0;
+  let missingRebrickableMatchCount = 0;
+  let skippedExistingOfficialCandidateCount = 0;
+  let skippedTerminalMerchantCandidateCount = 0;
+
+  for (const [normalizedSetId, offers] of offersBySetId) {
+    const existingCandidate = existingCandidateBySetId.get(normalizedSetId);
+
+    if (existingCandidate) {
+      existingDiscoveryCandidateCount += 1;
+
+      if (!isMerchantCatalogDiscoveryCandidate(existingCandidate)) {
+        skippedExistingOfficialCandidateCount += 1;
+        continue;
+      }
+
+      if (isTerminalMerchantCatalogDiscoveryCandidate(existingCandidate)) {
+        skippedTerminalMerchantCandidateCount += 1;
+        continue;
+      }
+    }
+
+    const localMirrorMetadata = await lookupLocalRebrickableMirrorBestEffort({
+      getLocalRebrickableSetMirrorMetadataFn,
+      setNumberOrId: offers[0]?.sourceSetNumber || normalizedSetId,
+    });
+
+    if (
+      !localMirrorMetadata ||
+      !hasRequiredCatalogFields(localMirrorMetadata.catalogSetInput)
+    ) {
+      missingRebrickableMatchCount += 1;
+      continue;
+    }
+
+    inputs.push(
+      toMerchantCatalogDiscoveryCandidateInput({
+        localMirrorMetadata,
+        now,
+        offers,
+      }),
+    );
+  }
+
+  const persistedCandidates = await upsertCatalogDiscoveryCandidatesFn({
+    inputs,
+  });
+
+  return {
+    discoveredSetCount: discoveredSets.length,
+    existingCatalogMatchCount,
+    existingDiscoveryCandidateCount,
+    highConfidenceCount: persistedCandidates.filter(
+      (candidate) => candidate.operatorConfidence === 'high',
+    ).length,
+    invalidSetNumberCount,
+    lowConfidenceCount: persistedCandidates.filter(
+      (candidate) => candidate.operatorConfidence === 'low',
+    ).length,
+    mediumConfidenceCount: persistedCandidates.filter(
+      (candidate) => candidate.operatorConfidence === 'medium',
+    ).length,
+    merchantOfferCount,
+    missingRebrickableMatchCount,
+    noiseFilteredCount,
+    nonNewFilteredCount,
+    persistedCandidateCount: persistedCandidates.length,
+    skippedExistingOfficialCandidateCount,
+    skippedTerminalMerchantCandidateCount,
+    uniqueCandidateCount: uniqueSetIds.length,
+  };
 }
 
 export async function recomputeCatalogDiscoveryCandidateConfidence({

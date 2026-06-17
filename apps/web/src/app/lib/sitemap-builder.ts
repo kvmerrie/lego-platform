@@ -1,4 +1,5 @@
 import {
+  getActiveCommerceMerchantsOverview,
   listCatalogSetSlugs,
   listCatalogThemePageSlugs,
   getCatalogThemePageBySlug,
@@ -15,6 +16,7 @@ import {
 import {
   buildArticlePath,
   buildArticleThemePath,
+  buildCommerceMerchantPath,
   buildCanonicalUrl,
   buildSetDetailPath,
   buildThemePath,
@@ -47,6 +49,7 @@ interface SitemapEntryInput {
 
 interface SitemapDataAccess {
   getCatalogThemePageBySlug: typeof getCatalogThemePageBySlug;
+  getActiveCommerceMerchantsOverview: typeof getActiveCommerceMerchantsOverview;
   getEditorialPageBySlug: typeof getEditorialPageBySlug;
   listCatalogSetSlugs: typeof listCatalogSetSlugs;
   listCatalogThemePageSlugs: typeof listCatalogThemePageSlugs;
@@ -55,6 +58,7 @@ interface SitemapDataAccess {
 }
 
 const sitemapDataAccess: SitemapDataAccess = {
+  getActiveCommerceMerchantsOverview,
   getCatalogThemePageBySlug,
   getEditorialPageBySlug,
   listCatalogSetSlugs,
@@ -334,7 +338,8 @@ export async function collectDealsSitemapEntries({
   dataAccess?: Pick<
     SitemapDataAccess,
     'getEditorialPageBySlug' | 'listEditorialPageSlugs'
-  >;
+  > &
+    Partial<Pick<SitemapDataAccess, 'getActiveCommerceMerchantsOverview'>>;
 } = {}): Promise<SitemapUrlEntry[]> {
   if (!getAllowIndexing(allowIndexing)) {
     return [];
@@ -350,6 +355,8 @@ export async function collectDealsSitemapEntries({
       }),
     ),
   );
+  const merchantsOverview =
+    (await dataAccess.getActiveCommerceMerchantsOverview?.()) ?? [];
 
   return uniqueSitemapEntries([
     createSitemapUrlEntry({
@@ -392,6 +399,23 @@ export async function collectDealsSitemapEntries({
       allowIndexing,
       pathname: buildWebPath(webPathnames.affiliateDisclosure),
     }),
+    ...(merchantsOverview.length
+      ? [
+          createSitemapUrlEntry({
+            allowIndexing,
+            pathname: buildWebPath(webPathnames.merchants),
+          }),
+          ...merchantsOverview.map((item) =>
+            createSitemapUrlEntry({
+              allowIndexing,
+              pathname: buildCommerceMerchantPath(
+                item.merchant.slug,
+                item.merchant.seoPresentation,
+              ),
+            }),
+          ),
+        ]
+      : []),
     ...editorialPages.map((editorialPage) =>
       editorialPage?.slug &&
       !legacyEditorialPageSlugsExcludedFromSitemap.has(editorialPage.slug)

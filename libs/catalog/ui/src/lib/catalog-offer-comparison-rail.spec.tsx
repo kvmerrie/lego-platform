@@ -455,6 +455,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
     ).toBe('/merchant-favicons/lego-nl.png');
     expect(
       getMerchantFaviconUrl({
+        merchantSlug: 'rakuten-lego-eu',
+        merchantLabel: 'LEGO®',
+      }),
+    ).toBe('/merchant-favicons/lego-nl.png');
+    expect(
+      getMerchantFaviconUrl({
         merchantLabel: 'Unieke Bricks',
       }),
     ).toBe('/merchant-favicons/uniekebricks.png');

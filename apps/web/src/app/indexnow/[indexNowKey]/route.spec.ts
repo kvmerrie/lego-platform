@@ -60,6 +60,32 @@ describe('IndexNow key file route', () => {
     });
   });
 
+  test('redirects the legacy Rakuten LEGO merchant URL with a permanent 301', async () => {
+    const createNextConfig = require('../../../../next.config.js') as (
+      phase?: unknown,
+      context?: unknown,
+    ) => Promise<{
+      redirects(): Promise<
+        Array<{
+          destination: string;
+          source: string;
+          statusCode: number;
+        }>
+      >;
+    }>;
+
+    const nextConfig = await createNextConfig(undefined, {
+      defaultConfig: {},
+    });
+    const redirects = await nextConfig.redirects();
+
+    expect(redirects).toContainEqual({
+      destination: '/winkels/lego',
+      source: '/winkels/rakuten-lego-eu',
+      statusCode: 301,
+    });
+  });
+
   test('returns 404 for a wrong key', async () => {
     process.env.INDEXNOW_KEY =
       '87c4a7164ee6fd0edca6efa8cb96fc0589c7a6bfaaee14d27e49c0d9aabd770e';

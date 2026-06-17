@@ -1,4 +1,7 @@
-import type { CatalogPublicThemeReference } from './catalog-util';
+import type {
+  CatalogPublicThemeReference,
+  CatalogSetDisplayTitleSource,
+} from './catalog-util';
 
 export const THEME_COMMERCE_SNAPSHOT_SORT_KEY = 'intent-v1';
 export const THEME_COMMERCE_SNAPSHOT_PAGE = 1;
@@ -9,6 +12,9 @@ export type ThemeCommerceSnapshotHealth = 'empty' | 'healthy' | 'partial';
 export interface ThemeCommerceCard {
   setId: string;
   slug: string;
+  catalogName?: string;
+  displayTitle?: string;
+  displayTitleSource?: CatalogSetDisplayTitleSource;
   name: string;
   imageUrl: string;
   publicTheme?: CatalogPublicThemeReference;

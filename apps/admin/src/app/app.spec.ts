@@ -60,6 +60,23 @@ describe('App', () => {
             updateCatalogDiscoveryCandidateStatus: async () => {
               throw new Error('not used');
             },
+            syncMerchantCatalogDiscoveryCandidates: async () => ({
+              discoveredSetCount: 0,
+              existingCatalogMatchCount: 0,
+              existingDiscoveryCandidateCount: 0,
+              highConfidenceCount: 0,
+              invalidSetNumberCount: 0,
+              lowConfidenceCount: 0,
+              mediumConfidenceCount: 0,
+              merchantOfferCount: 0,
+              missingRebrickableMatchCount: 0,
+              noiseFilteredCount: 0,
+              nonNewFilteredCount: 0,
+              persistedCandidateCount: 0,
+              skippedExistingOfficialCandidateCount: 0,
+              skippedTerminalMerchantCandidateCount: 0,
+              uniqueCandidateCount: 0,
+            }),
             listBenchmarkSets: async () => [],
             createBenchmarkSet: async () => undefined,
             deleteBenchmarkSet: async () => undefined,

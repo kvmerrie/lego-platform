@@ -140,6 +140,63 @@ describe('collection page snapshots', () => {
     );
   });
 
+  test('uses Dutch Rakuten titles on collection page cards and falls back otherwise', async () => {
+    listCanonicalCatalogSetsMock.mockResolvedValue([
+      createCatalogSet({
+        name: 'The Lord of the Rings: Rivendell',
+        setId: '10316',
+        slug: 'the-lord-of-the-rings-rivendell-10316',
+        sourceSetNumber: '10316',
+      }),
+      createCatalogSet({
+        name: 'Millennium Falcon',
+        setId: '75192',
+        slug: 'millennium-falcon-75192',
+        sourceSetNumber: '75192',
+      }),
+    ]);
+    const { client } = createSupabaseClient({
+      sourceMetadata: [
+        {
+          catalog_set_id: '10316',
+          locale: 'nl-NL',
+          match_confidence: 'exact_set_number',
+          metadata_json: {
+            title: 'In de ban van de ringen: Rivendel',
+          },
+          policy: 'metadata_only_pending_audit',
+          set_number: '10316',
+          source: 'rakuten-lego-eu',
+        },
+      ],
+    });
+
+    const result = await buildCollectionPageSnapshots({
+      collectionSlugs: ['nieuwe-lego-sets'],
+      now: new Date('2026-05-30T00:00:00.000Z'),
+      supabaseClient: client,
+    });
+
+    expect(result.snapshots[0]?.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          displayTitle: 'In de ban van de ringen: Rivendel',
+          displayTitleSource: 'rakuten-lego-eu',
+          id: '10316',
+          name: 'In de ban van de ringen: Rivendel',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+        }),
+        expect.objectContaining({
+          displayTitle: 'Millennium Falcon',
+          displayTitleSource: 'catalog',
+          id: '75192',
+          name: 'Millennium Falcon',
+          slug: 'millennium-falcon-75192',
+        }),
+      ]),
+    );
+  });
+
   test('keeps retiring snapshots released, near-term, and signal-backed', async () => {
     listCanonicalCatalogSetsMock.mockResolvedValue([
       createCatalogSet({

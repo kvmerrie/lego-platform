@@ -1,6 +1,7 @@
 export * from './lib/catalog-util';
 export * from './lib/brickset-gallery-policy';
 export * from './lib/catalog-merchant-presentation';
+export * from './lib/catalog-presentation-title';
 export * from './lib/collection-commerce-snapshot';
 export * from './lib/collection-landing-pages';
 export * from './lib/homepage-commerce-snapshot';

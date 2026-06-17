@@ -18,13 +18,7 @@
 }
 
 .introBreadcrumbs {
-  --lego-breadcrumb-current: var(--collection-page-text);
-  --lego-breadcrumb-link: color-mix(
-    in srgb,
-    var(--collection-page-text) 82%,
-    transparent
-  );
-  --lego-breadcrumb-link-hover: var(--collection-page-text);
+  --lego-breadcrumb-current: var(--collection-page-muted);
   --lego-breadcrumb-muted: color-mix(
     in srgb,
     var(--collection-page-text) 76%,
@@ -35,6 +29,26 @@
     var(--collection-page-text) 22%,
     transparent
   );
+}
+
+.introHeroBreadcrumbs {
+  --lego-breadcrumb-current: color-mix(in srgb, currentColor 72%, transparent);
+  --lego-breadcrumb-link: currentColor;
+  --lego-breadcrumb-link-hover: currentColor;
+  --lego-breadcrumb-muted: color-mix(in srgb, currentColor 76%, transparent);
+  --lego-breadcrumb-separator: color-mix(
+    in srgb,
+    currentColor 34%,
+    transparent
+  );
+  --lego-button-focus-ring-color: currentColor;
+  --lego-button-focus-ring-gap-color: var(--collection-page-surface);
+  color: var(--collection-page-text);
+}
+
+.introHeroBreadcrumbs a {
+  --lego-button-focus-ring-color: currentColor;
+  --lego-button-focus-ring-gap-color: var(--collection-page-surface);
 }
 
 .introContent {

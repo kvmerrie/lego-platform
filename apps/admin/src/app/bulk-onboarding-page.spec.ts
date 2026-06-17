@@ -89,7 +89,7 @@ function createDiscoveryCandidate(
     normalizedSetId: searchResult.setId,
     operatorConfidence: 'high',
     operatorConfidenceReasons: ['exact_enriched_match'],
-    rebrickablePayload: searchResult,
+    rebrickablePayload: { ...searchResult },
     requiredFieldsPresent: true,
     source: 'catalog_discovery',
     sourcePayload: {},

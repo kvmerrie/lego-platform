@@ -93,14 +93,242 @@ export function resolvePublicMerchantDisplayName({
   const normalizedMerchantSlug = merchantSlug?.trim().toLowerCase();
   const normalizedMerchantName = merchantName.trim();
 
-  if (
-    normalizedMerchantSlug === 'rakuten-lego-eu' ||
-    normalizedMerchantName.toLowerCase() === 'lego eu'
-  ) {
-    return 'LEGO®';
+  return (
+    getCommerceMerchantSeoPresentationOverride({
+      merchantName: normalizedMerchantName,
+      merchantSlug: normalizedMerchantSlug,
+    })?.displayName ||
+    normalizedMerchantName ||
+    merchantName
+  );
+}
+
+export interface CommerceMerchantSeoPresentation {
+  affiliateNetwork?: string;
+  brandColor?: string;
+  brandTextColor?: string;
+  canonicalUrl?: string;
+  displayName: string;
+  faviconUrl?: string;
+  logoUrl?: string;
+  longDescription?: string;
+  publicSlug: string;
+  seoDescription?: string;
+  seoTitle?: string;
+  shortDescription?: string;
+}
+
+export type CommerceMerchantSeoPresentationProfile = Partial<
+  Omit<CommerceMerchantSeoPresentation, 'canonicalUrl' | 'displayName'>
+> & {
+  canonicalPath?: string;
+  displayName?: string;
+  isPublic?: boolean;
+};
+
+const commerceMerchantSeoPresentationOverrides: Record<
+  string,
+  Omit<CommerceMerchantSeoPresentation, 'canonicalUrl'>
+> = {
+  'rakuten-lego-eu': {
+    affiliateNetwork: 'Rakuten',
+    brandColor: '#ffd500',
+    brandTextColor: '#111111',
+    displayName: 'LEGO®',
+    faviconUrl: '/merchant-favicons/lego-nl.png',
+    logoUrl: '/merchant-favicons/lego-nl.png',
+    publicSlug: 'lego',
+    seoDescription:
+      'Vergelijk actuele LEGO prijzen en aanbiedingen bij de officiële LEGO winkel op Brickhunt.',
+    seoTitle: 'LEGO aanbiedingen en prijzen vergelijken',
+    shortDescription:
+      'Officiële LEGO winkel met actuele prijzen en aanbiedingen.',
+  },
+};
+
+function normalizeCommerceMerchantSlug(value?: string | null): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function getCommerceMerchantSeoPresentationOverride({
+  merchantName,
+  merchantSlug,
+}: {
+  merchantName?: string | null;
+  merchantSlug?: string | null;
+}): Omit<CommerceMerchantSeoPresentation, 'canonicalUrl'> | undefined {
+  const normalizedMerchantSlug = normalizeCommerceMerchantSlug(merchantSlug);
+
+  if (normalizedMerchantSlug) {
+    const slugOverride =
+      commerceMerchantSeoPresentationOverrides[normalizedMerchantSlug];
+
+    if (slugOverride) {
+      return slugOverride;
+    }
   }
 
-  return normalizedMerchantName || merchantName;
+  const normalizedMerchantName = (merchantName ?? '').trim().toLowerCase();
+
+  if (normalizedMerchantName === 'lego eu') {
+    return commerceMerchantSeoPresentationOverrides['rakuten-lego-eu'];
+  }
+
+  return undefined;
+}
+
+function getProfilePublicSlug(
+  profile?: CommerceMerchantSeoPresentationProfile | null,
+): string | undefined {
+  const publicSlug = normalizeCommerceMerchantSlug(profile?.publicSlug);
+
+  return publicSlug || undefined;
+}
+
+function getProfileCanonicalPath({
+  merchantSlug,
+  profile,
+}: {
+  merchantSlug: string;
+  profile?: CommerceMerchantSeoPresentationProfile | null;
+}): string {
+  const canonicalPath = profile?.canonicalPath?.trim();
+
+  if (canonicalPath) {
+    return canonicalPath;
+  }
+
+  return `${buildWebPath(webPathnames.merchants)}/${getCommerceMerchantPublicSlug(
+    merchantSlug,
+    profile,
+  )}`;
+}
+
+export function getCommerceMerchantPublicSlug(
+  merchantSlug: string,
+  profile?: CommerceMerchantSeoPresentationProfile | null,
+): string {
+  const normalizedMerchantSlug = normalizeCommerceMerchantSlug(merchantSlug);
+  const profilePublicSlug = getProfilePublicSlug(profile);
+
+  if (profilePublicSlug) {
+    return profilePublicSlug;
+  }
+
+  return (
+    getCommerceMerchantSeoPresentationOverride({
+      merchantSlug: normalizedMerchantSlug,
+    })?.publicSlug || normalizedMerchantSlug
+  );
+}
+
+export function resolveCommerceMerchantInternalSlug(
+  merchantPublicOrInternalSlug: string,
+): string {
+  const normalizedSlug = normalizeCommerceMerchantSlug(
+    merchantPublicOrInternalSlug,
+  );
+
+  for (const [internalSlug, presentation] of Object.entries(
+    commerceMerchantSeoPresentationOverrides,
+  )) {
+    if (presentation.publicSlug === normalizedSlug) {
+      return internalSlug;
+    }
+  }
+
+  return normalizedSlug;
+}
+
+export function buildCommerceMerchantPath(
+  merchantSlug: string,
+  profile?: CommerceMerchantSeoPresentationProfile | null,
+): string {
+  const publicSlug = getCommerceMerchantPublicSlug(merchantSlug, profile);
+
+  return `${buildWebPath(webPathnames.merchants)}/${encodeURIComponent(
+    publicSlug,
+  )}`;
+}
+
+export function resolveCommerceMerchantSeoPresentation({
+  affiliateNetwork,
+  merchantName,
+  merchantSlug,
+  profile,
+}: {
+  affiliateNetwork?: string | null;
+  merchantName: string;
+  merchantSlug: string;
+  profile?: CommerceMerchantSeoPresentationProfile | null;
+}): CommerceMerchantSeoPresentation {
+  const normalizedMerchantSlug = normalizeCommerceMerchantSlug(merchantSlug);
+  const override = getCommerceMerchantSeoPresentationOverride({
+    merchantName,
+    merchantSlug: normalizedMerchantSlug,
+  });
+  const publicSlug =
+    getProfilePublicSlug(profile) ||
+    override?.publicSlug ||
+    normalizedMerchantSlug;
+  const displayName =
+    profile?.displayName?.trim() ||
+    override?.displayName ||
+    merchantName.trim() ||
+    merchantName;
+  const affiliateNetworkValue =
+    affiliateNetwork ?? profile?.affiliateNetwork ?? override?.affiliateNetwork;
+
+  return {
+    ...(affiliateNetworkValue
+      ? { affiliateNetwork: affiliateNetworkValue }
+      : {}),
+    ...(profile?.brandColor || override?.brandColor
+      ? { brandColor: profile?.brandColor ?? override?.brandColor }
+      : {}),
+    ...(profile?.brandTextColor || override?.brandTextColor
+      ? {
+          brandTextColor: profile?.brandTextColor ?? override?.brandTextColor,
+        }
+      : {}),
+    canonicalUrl: buildCanonicalUrl(
+      getProfileCanonicalPath({
+        merchantSlug: normalizedMerchantSlug,
+        profile: {
+          ...profile,
+          publicSlug,
+        },
+      }),
+    ),
+    displayName,
+    ...(profile?.faviconUrl || override?.faviconUrl
+      ? { faviconUrl: profile?.faviconUrl ?? override?.faviconUrl }
+      : {}),
+    ...(profile?.logoUrl || override?.logoUrl
+      ? { logoUrl: profile?.logoUrl ?? override?.logoUrl }
+      : {}),
+    ...(profile?.longDescription || override?.longDescription
+      ? {
+          longDescription:
+            profile?.longDescription ?? override?.longDescription,
+        }
+      : {}),
+    publicSlug,
+    ...(profile?.seoDescription || override?.seoDescription
+      ? {
+          seoDescription: profile?.seoDescription ?? override?.seoDescription,
+        }
+      : {}),
+    ...(profile?.seoTitle || override?.seoTitle
+      ? { seoTitle: profile?.seoTitle ?? override?.seoTitle }
+      : {}),
+    ...(profile?.shortDescription || override?.shortDescription
+      ? {
+          shortDescription:
+            profile?.shortDescription ?? override?.shortDescription,
+        }
+      : {}),
+  };
 }
 
 export function buildPublicSiteRobotsPolicy({

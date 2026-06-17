@@ -240,6 +240,47 @@ describe('Catalog commerce UI', () => {
     );
   });
 
+  it('uses the public LEGO merchant URL for internal Rakuten LEGO slugs', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPanel
+        primaryOffer={{
+          checkedLabel: 'Recent gecontroleerd',
+          ctaHref: 'https://example.com/lego',
+          ctaLabel: 'Bekijk bij LEGO®',
+          merchantLabel: 'LEGO®',
+          merchantName: 'LEGO®',
+          merchantSlug: 'rakuten-lego-eu',
+          price: '€ 59,99',
+          stockLabel: 'Op voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/winkels/lego"');
+    expect(markup).not.toContain('/winkels/rakuten-lego-eu');
+  });
+
+  it('uses an explicit public merchant slug when offer data provides one', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPanel
+        primaryOffer={{
+          checkedLabel: 'Recent gecontroleerd',
+          ctaHref: 'https://example.com/source-shop',
+          ctaLabel: 'Bekijk bij Source Shop',
+          merchantLabel: 'Source Shop',
+          merchantName: 'Source Shop',
+          merchantPublicSlug: 'source-shop',
+          merchantSlug: 'source-shop-eu',
+          price: '€ 59,99',
+          stockLabel: 'Op voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/winkels/source-shop"');
+    expect(markup).not.toContain('/winkels/source-shop-eu');
+  });
+
   it('keeps warning merchant offers visible with calmer CTA tone', () => {
     const markup = renderToStaticMarkup(
       <CatalogPriceDecisionPrimary

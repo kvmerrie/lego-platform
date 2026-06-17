@@ -556,6 +556,8 @@ interface CatalogDiscoveryCandidateRow {
 }
 
 const RAKUTEN_LEGO_SOURCE = 'rakuten-lego-eu';
+const MERCHANT_CATALOG_DISCOVERY_SOURCE = 'merchant_discovery';
+const MERCHANT_DISCOVERY_LANE = 'merchant';
 const RAKUTEN_LEGO_NL_LOCALE = 'nl-NL';
 const RAKUTEN_LEGO_EXACT_MATCH_CONFIDENCE = 'exact_set_number';
 const RAKUTEN_LEGO_DEFAULT_METADATA_POLICY = 'metadata_only_pending_audit';
@@ -5237,6 +5239,40 @@ function buildReferencePriceEvidence(
   };
 }
 
+function isMerchantDiscoveryImportCandidate(
+  candidate: CatalogDiscoveryCandidate,
+): boolean {
+  return (
+    candidate.source === MERCHANT_CATALOG_DISCOVERY_SOURCE ||
+    candidate.evidence['discoveryLane'] === MERCHANT_DISCOVERY_LANE ||
+    candidate.sourcePayload['discoveryLane'] === MERCHANT_DISCOVERY_LANE
+  );
+}
+
+function getDiscoveryCandidateCatalogSource(
+  candidate: CatalogDiscoveryCandidate,
+): string {
+  return isMerchantDiscoveryImportCandidate(candidate)
+    ? MERCHANT_CATALOG_DISCOVERY_SOURCE
+    : candidate.source;
+}
+
+function getDiscoveryCandidateDescriptionSource({
+  candidate,
+  localMirrorMetadata,
+}: {
+  candidate: CatalogDiscoveryCandidate;
+  localMirrorMetadata?: LocalRebrickableSetMirrorMetadata;
+}): string {
+  if (!isMerchantDiscoveryImportCandidate(candidate)) {
+    return candidate.source;
+  }
+
+  return localMirrorMetadata || candidate.rebrickablePayload
+    ? 'rebrickable'
+    : 'none';
+}
+
 function buildCatalogSetInputFromDiscoveryCandidate(
   candidate: CatalogDiscoveryCandidate,
   localMirrorMetadata?: LocalRebrickableSetMirrorMetadata,
@@ -5379,6 +5415,12 @@ async function upsertDiscoveryCandidateImportMetadata({
     localMirrorMetadata,
   });
   const bricksetName = getDiscoveryCandidateBricksetName(candidate);
+  const catalogSource = getDiscoveryCandidateCatalogSource(candidate);
+  const descriptionSource = getDiscoveryCandidateDescriptionSource({
+    candidate,
+    localMirrorMetadata,
+  });
+  const merchantDiscoveryImport = isMerchantDiscoveryImportCandidate(candidate);
 
   await upsertCatalogSetSourceMetadata({
     inputs: [
@@ -5391,7 +5433,11 @@ async function upsertDiscoveryCandidateImportMetadata({
           aliases: [trustedDisplayTitle, rebrickableName, bricksetName].filter(
             (alias): alias is string => Boolean(alias),
           ),
+          catalogSource,
+          catalog_source: catalogSource,
           candidateId: candidate.id,
+          descriptionSource,
+          description_source: descriptionSource,
           discovered_at: candidate.firstSeenAt,
           evidence: candidate.evidence,
           discoveryOperatorConfidence: candidate.operatorConfidence,
@@ -5402,6 +5448,15 @@ async function upsertDiscoveryCandidateImportMetadata({
           indexingPolicy: missingFields.length
             ? 'metadata_incomplete_needs_enrichment'
             : 'source_evidence_complete',
+          ...(merchantDiscoveryImport
+            ? {
+                catalogEntryStatus: 'partial_catalog_entry',
+                catalog_entry_status: 'partial_catalog_entry',
+                officialDescriptionMissing: true,
+                official_description_missing: true,
+                status: 'partial_catalog_entry',
+              }
+            : {}),
           metadataQuality: missingFields.length
             ? 'needs_enrichment'
             : 'source_evidence',

@@ -1,3 +1,5 @@
+import type { CatalogSetDisplayTitleSource } from './catalog-util';
+
 export const HOMEPAGE_COMMERCE_SNAPSHOT_COLLECTION_SLUG = 'homepage-commerce';
 export const HOMEPAGE_COMMERCE_SNAPSHOT_SORT_KEY = 'intent-v1';
 export const HOMEPAGE_COMMERCE_SNAPSHOT_PAGE = 1;
@@ -6,6 +8,9 @@ export const HOMEPAGE_COMMERCE_SNAPSHOT_PAGE_SIZE = 1;
 export interface HomepageCommerceCard {
   setId: string;
   slug: string;
+  catalogName?: string;
+  displayTitle?: string;
+  displayTitleSource?: CatalogSetDisplayTitleSource;
   name: string;
   imageUrl: string;
   theme?: string;

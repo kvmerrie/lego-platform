@@ -9,6 +9,7 @@ import {
   CatalogSectionShell,
 } from '@lego-platform/catalog/ui';
 import {
+  buildCommerceMerchantPath,
   buildCanonicalUrl,
   buildWebPath,
   webPathnames,
@@ -63,7 +64,10 @@ function MerchantOverviewCard({
     (deal) => typeof deal.savingsMinor === 'number',
   );
   const previewDealNames = item.previewDeals.map((deal) => deal.set.name);
-  const merchantHref = `${merchantsPath}/${item.merchant.slug}`;
+  const merchantHref = buildCommerceMerchantPath(
+    item.merchant.slug,
+    item.merchant.seoPresentation,
+  );
 
   return (
     <a className={styles.merchantCard} href={merchantHref}>

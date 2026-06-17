@@ -1,8 +1,11 @@
 import type { CatalogCanonicalSet } from '@lego-platform/catalog/util';
+import { resolveCommerceMerchantSeoPresentation } from '@lego-platform/shared/config';
 import { describe, expect, test } from 'vitest';
 import {
   buildCommerceMerchantPageSnapshotRecords,
+  getMerchantPageRevalidationPaths,
   type CommerceMerchantPageSnapshotMerchant,
+  type CommerceMerchantPageSnapshotProfile,
 } from './commerce-merchant-page-snapshot-server';
 
 type CurrentSnapshotInput = Parameters<
@@ -20,16 +23,55 @@ function merchant({
   name: string;
   slug: string;
 }): CommerceMerchantPageSnapshotMerchant {
+  const seoPresentation = resolveCommerceMerchantSeoPresentation({
+    affiliateNetwork: 'awin',
+    merchantName: name,
+    merchantSlug: slug,
+  });
+
   return {
     affiliateNetwork: 'awin',
     createdAt: '2026-06-12T09:00:00.000Z',
     id,
     isActive: active,
-    name,
+    name: seoPresentation.displayName,
     notes: '',
+    publicSlug: seoPresentation.publicSlug,
+    seoPresentation,
     slug,
     sourceType: 'affiliate',
     updatedAt: '2026-06-12T09:00:00.000Z',
+  };
+}
+
+function merchantProfile({
+  displayName = 'LEGO®',
+  internalSlug = 'rakuten-lego-eu',
+  merchantId = 'merchant-rakuten-lego-eu',
+  publicSlug = 'lego',
+  seoTitle = 'LEGO profiel uit Supabase',
+}: {
+  displayName?: string;
+  internalSlug?: string;
+  merchantId?: string;
+  publicSlug?: string;
+  seoTitle?: string;
+} = {}): CommerceMerchantPageSnapshotProfile {
+  return {
+    brandColor: '#ffd500',
+    brandTextColor: '#111111',
+    canonicalPath: `/winkels/${publicSlug}`,
+    displayName,
+    faviconUrl: '/merchant-favicons/lego-nl.png',
+    internalSlug,
+    isPublic: true,
+    logoUrl: '/merchant-favicons/lego-nl.png',
+    merchantId,
+    publicSlug,
+    seoDescription:
+      'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+    seoTitle,
+    shortDescription: 'Supabase profiel voor LEGO.',
   };
 }
 
@@ -125,6 +167,28 @@ const activeMerchants = [
 ] as const;
 
 describe('commerce merchant page snapshot builder', () => {
+  test('uses public merchant slugs for merchant page revalidation paths', () => {
+    expect(
+      getMerchantPageRevalidationPaths(['rakuten-lego-eu', 'goodbricks']),
+    ).toEqual(['/winkels', '/winkels/lego', '/winkels/goodbricks']);
+  });
+
+  test('uses merchant profile public slugs for merchant page revalidation paths', () => {
+    expect(
+      getMerchantPageRevalidationPaths(
+        ['source-shop-eu', 'goodbricks'],
+        [
+          merchantProfile({
+            displayName: 'Source Shop',
+            internalSlug: 'source-shop-eu',
+            merchantId: 'merchant-source-shop-eu',
+            publicSlug: 'source-shop',
+          }),
+        ],
+      ),
+    ).toEqual(['/winkels', '/winkels/source-shop', '/winkels/goodbricks']);
+  });
+
   test('ranks best deals where the merchant is cheapest', () => {
     const records = buildCommerceMerchantPageSnapshotRecords({
       catalogSets: [catalogSet({ id: '10316' })],
@@ -175,6 +239,52 @@ describe('commerce merchant page snapshot builder', () => {
       records.find((record) => record.merchantSlug === 'lego')?.snapshot
         .dealCount,
     ).toBe(0);
+  });
+
+  test('uses presentation titles on merchant page deals without changing merchant identity', () => {
+    const records = buildCommerceMerchantPageSnapshotRecords({
+      catalogSets: [
+        catalogSet({
+          id: '10316',
+          name: 'In de ban van de ringen: Rivendel',
+        }),
+      ],
+      currentSnapshots: [
+        currentSnapshot({
+          offers: [
+            snapshotOffer({
+              merchantId: 'merchant-lego',
+              merchantName: 'LEGO',
+              merchantSlug: 'lego',
+              priceMinor: 10_000,
+              setId: '10316',
+            }),
+            snapshotOffer({
+              merchantId: 'merchant-bol',
+              merchantName: 'bol',
+              merchantSlug: 'bol',
+              priceMinor: 12_000,
+              setId: '10316',
+            }),
+          ],
+          setId: '10316',
+        }),
+      ],
+      merchantProfiles: [merchantProfile()],
+      merchants: activeMerchants,
+    });
+
+    const legoRecord = records.find((record) => record.merchantSlug === 'lego');
+
+    expect(legoRecord?.snapshot.bestDeals[0]?.set).toMatchObject({
+      id: '10316',
+      name: 'In de ban van de ringen: Rivendel',
+      slug: 'in-de-ban-van-de-ringen:-rivendel-10316',
+    });
+    expect(legoRecord?.snapshot.bestDeals[0]?.merchant).toMatchObject({
+      publicSlug: 'lego',
+      slug: 'lego',
+    });
   });
 
   test('separates only-at-this-merchant deals from savings deals', () => {
@@ -307,12 +417,70 @@ describe('commerce merchant page snapshot builder', () => {
       'rakuten-lego-eu',
     ]);
     expect(records[0]).toMatchObject({
+      merchantName: 'LEGO®',
+      merchantSlug: 'rakuten-lego-eu',
       snapshot: {
         dealCount: 1,
         merchant: {
+          name: 'LEGO®',
+          publicSlug: 'lego',
           slug: 'rakuten-lego-eu',
         },
         onlyAtMerchantDealCount: 1,
+      },
+    });
+  });
+
+  test('embeds Supabase merchant profile metadata while keeping the internal merchant slug', () => {
+    const records = buildCommerceMerchantPageSnapshotRecords({
+      catalogSets: [catalogSet({ id: '10316' })],
+      currentSnapshots: [
+        currentSnapshot({
+          offers: [
+            snapshotOffer({
+              merchantId: 'merchant-rakuten-lego-eu',
+              merchantName: 'Rakuten LEGO EU',
+              merchantSlug: 'rakuten-lego-eu',
+              priceMinor: 9_000,
+              setId: '10316',
+            }),
+          ],
+          setId: '10316',
+        }),
+      ],
+      merchantProfiles: [merchantProfile()],
+      merchants: [
+        merchant({
+          id: 'merchant-rakuten-lego-eu',
+          name: 'Rakuten LEGO EU',
+          slug: 'rakuten-lego-eu',
+        }),
+      ],
+    });
+
+    expect(records[0]).toMatchObject({
+      merchantName: 'LEGO®',
+      merchantSlug: 'rakuten-lego-eu',
+      snapshot: {
+        merchant: {
+          name: 'LEGO®',
+          publicSlug: 'lego',
+          seoPresentation: {
+            seoDescription:
+              'Supabase profieltekst voor de officiële LEGO winkel op Brickhunt.',
+            seoTitle: 'LEGO profiel uit Supabase',
+          },
+          slug: 'rakuten-lego-eu',
+        },
+        onlyAtMerchantDeals: [
+          {
+            merchant: {
+              name: 'LEGO®',
+              publicSlug: 'lego',
+              slug: 'rakuten-lego-eu',
+            },
+          },
+        ],
       },
     });
   });

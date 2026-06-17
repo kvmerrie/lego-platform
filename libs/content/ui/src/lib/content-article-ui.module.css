@@ -56,8 +56,6 @@
 
 .breadcrumbs {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-eyebrow-size);
-  line-height: var(--lego-text-role-eyebrow-line-height);
 }
 
 .breadcrumbs + .hero {

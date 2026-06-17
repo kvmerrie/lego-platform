@@ -114,6 +114,7 @@ export function CatalogFeatureThemePage({
           : {}),
       } as CSSProperties)
     : undefined;
+  const hasCustomHeroSurface = Boolean(themeVisual?.backgroundColor);
 
   return (
     <div
@@ -124,7 +125,9 @@ export function CatalogFeatureThemePage({
       <CatalogPageIntro
         breadcrumbs={{
           ariaLabel: 'Themacontext',
-          className: styles.introBreadcrumbs,
+          className: hasCustomHeroSurface
+            ? `${styles.introBreadcrumbs} ${styles.introHeroBreadcrumbs}`
+            : styles.introBreadcrumbs,
           items: [
             {
               href: buildWebPath(webPathnames.themes),
