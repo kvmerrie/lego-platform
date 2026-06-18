@@ -3,6 +3,7 @@ import {
   CATALOG_BROWSE_PAGE_SIZE,
   type CatalogHomepageSetCard,
 } from '@lego-platform/catalog/util';
+import { resolvePublicMerchantDisplayName } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { enrichCatalogSetsWithPresentationTitles } from './catalog-presentation-title-server';
@@ -293,6 +294,8 @@ export interface DealPageSnapshotCard extends CatalogHomepageSetCard {
     decisionLabel?: string;
     decisionNote?: string;
     merchantLabel: string;
+    merchantName?: string;
+    merchantSlug?: string;
     primaryActionHref?: string;
     pricePositionLabel?: string;
     pricePositionTone?: 'info' | 'neutral' | 'positive' | 'warning';
@@ -506,13 +509,6 @@ function getDealMetrics({
     typeof legoReferencePriceMinor === 'number'
       ? Math.round((savingsVsLegoMinor / legoReferencePriceMinor) * 100)
       : undefined;
-  const marketSpreadMinor =
-    typeof snapshot.next_best_price_minor === 'number' &&
-    snapshot.next_best_price_minor > bestPriceMinor
-      ? snapshot.next_best_price_minor - bestPriceMinor
-      : typeof snapshot.price_spread_minor === 'number'
-        ? snapshot.price_spread_minor
-        : 0;
   const pieces = catalogSet.pieceCount;
   const pricePerBrickMinor =
     pieces > 0 ? Math.round(bestPriceMinor / pieces) : undefined;
@@ -638,6 +634,10 @@ function toDealSnapshotCard({
     typeof metrics.pricePerBrickMinor === 'number'
       ? `${metrics.pricePerBrickMinor} cent per steen`
       : undefined;
+  const merchantName = resolvePublicMerchantDisplayName({
+    merchantName: snapshot.best_merchant_name,
+    merchantSlug: snapshot.best_merchant_slug ?? undefined,
+  });
 
   return {
     ...(catalogSet.catalogName ? { catalogName: catalogSet.catalogName } : {}),
@@ -676,8 +676,12 @@ function toDealSnapshotCard({
                 metrics.discountPercent >= 10
               ? 'Goede deal'
               : 'Beste prijs',
-      decisionNote: `Laagst bij ${snapshot.best_merchant_name}`,
-      merchantLabel: `Laagst bij ${snapshot.best_merchant_name}`,
+      decisionNote: `Laagst bij ${merchantName}`,
+      merchantLabel: `Laagst bij ${merchantName}`,
+      merchantName,
+      ...(snapshot.best_merchant_slug
+        ? { merchantSlug: snapshot.best_merchant_slug }
+        : {}),
       primaryActionHref: snapshot.best_product_url,
       pricePositionLabel:
         typeof metrics.discountPercent === 'number'

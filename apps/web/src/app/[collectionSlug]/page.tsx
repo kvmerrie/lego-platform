@@ -120,6 +120,12 @@ function buildCollectionSnapshotCardPriceContext(
         }
       : {}),
     merchantLabel: snapshotPriceContext.merchantLabel,
+    ...(snapshotPriceContext.merchantName
+      ? { merchantName: snapshotPriceContext.merchantName }
+      : {}),
+    ...(snapshotPriceContext.merchantSlug
+      ? { merchantSlug: snapshotPriceContext.merchantSlug }
+      : {}),
     ...(snapshotPriceContext.primaryActionHref
       ? {
           primaryActionHref: snapshotPriceContext.primaryActionHref,

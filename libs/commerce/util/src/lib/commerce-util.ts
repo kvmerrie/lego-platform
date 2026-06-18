@@ -46,6 +46,11 @@ export type CommerceMerchantReliabilityTier =
   | 'production_feed'
   | 'strategic_manual';
 
+export const commercePartnerWidgetModes = ['all', 'top3', 'winner'] as const;
+
+export type CommercePartnerWidgetMode =
+  (typeof commercePartnerWidgetModes)[number];
+
 export type CommerceOfferSeedValidationStatus =
   (typeof commerceOfferSeedValidationStatuses)[number];
 
@@ -64,8 +69,49 @@ export interface CommerceMerchantSupportProfile {
   defaultSeedGeneration: boolean;
   defaultRefresh: boolean;
   operatorLabel: string;
+  partnerWidget?: CommerceMerchantPartnerWidgetConfig;
   reliabilityTier: CommerceMerchantReliabilityTier;
   tier: CommerceMerchantSupportTier;
+}
+
+export interface CommerceMerchantPartnerWidgetConfig {
+  allowedModes?: readonly CommercePartnerWidgetMode[];
+  allowedOrigins: readonly string[];
+  enabled: boolean;
+}
+
+export interface CommercePartnerWidgetMerchant {
+  partnerWidget?: CommerceMerchantPartnerWidgetConfig;
+  slug: string;
+}
+
+export interface CommercePartnerWidgetRequestLike {
+  headers?:
+    | Headers
+    | {
+        [key: string]: string | readonly string[] | undefined;
+      };
+}
+
+export interface CommercePartnerWidgetOffer {
+  availability?: string;
+  checkedAt: string;
+  merchantName: string;
+  merchantSlug: string;
+  priceCents: number;
+  setId: string;
+}
+
+export type CommercePartnerWidgetStatus = 'winner' | 'top3' | 'checked';
+
+export interface CommercePartnerWidgetRanking {
+  isCheapest: boolean;
+  isTop3: boolean;
+  lowestPrice: number;
+  merchantOffer: CommercePartnerWidgetOffer;
+  rank: number;
+  status: CommercePartnerWidgetStatus;
+  totalMerchantsCompared: number;
 }
 
 const commerceMerchantSupportProfiles = {
@@ -126,6 +172,21 @@ const commerceMerchantSupportProfiles = {
     operatorLabel: 'Primary',
   },
   uniekebricks: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+    partnerWidget: {
+      enabled: true,
+      allowedOrigins: [
+        'https://www.uniekebricks.nl',
+        'https://uniekebricks.nl',
+      ],
+      allowedModes: ['all', 'top3', 'winner'],
+    },
+  },
+  brickspoint: {
     tier: 'primary',
     reliabilityTier: 'production_feed',
     defaultSeedGeneration: false,
@@ -212,6 +273,7 @@ export interface CommerceMerchant {
   isActive: boolean;
   name: string;
   notes: string;
+  partnerWidget?: CommerceMerchantPartnerWidgetConfig;
   slug: string;
   sourceType: CommerceMerchantSourceType;
   updatedAt: string;
@@ -633,6 +695,7 @@ export const commerceMerchantSearchableSlugs = [
   'kruidvat',
   'misterbricks',
   'lego-nl',
+  'brickspoint',
   'proshop',
   'smyths-toys',
   'top1toys',
@@ -653,6 +716,221 @@ export function getCommerceMerchantSupportProfile(
       normalizedMerchantSlug as keyof typeof commerceMerchantSupportProfiles
     ] ?? defaultCommerceMerchantSupportProfile
   );
+}
+
+export function getCommerceMerchantPartnerWidgetConfig(
+  merchantSlug: string,
+): CommerceMerchantPartnerWidgetConfig | undefined {
+  return getCommerceMerchantSupportProfile(merchantSlug).partnerWidget;
+}
+
+export function isCommercePartnerWidgetMode(
+  value: string,
+): value is CommercePartnerWidgetMode {
+  return commercePartnerWidgetModes.includes(
+    value as CommercePartnerWidgetMode,
+  );
+}
+
+function getCommercePartnerWidgetHeaderValue(
+  request: CommercePartnerWidgetRequestLike,
+  headerName: string,
+): string | undefined {
+  const headers = request.headers;
+
+  if (!headers) {
+    return undefined;
+  }
+
+  if (headers instanceof Headers) {
+    return headers.get(headerName) ?? undefined;
+  }
+
+  const value = headers[headerName] ?? headers[headerName.toLowerCase()];
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const normalizedValue = rawValue?.trim();
+
+  return normalizedValue ? normalizedValue : undefined;
+}
+
+export function normalizeCommercePartnerWidgetOrigin(
+  value?: string | null,
+): string | undefined {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue || normalizedValue === 'null') {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(normalizedValue);
+
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      return undefined;
+    }
+
+    return url.origin.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+export function getCommercePartnerWidgetRequestOrigin(
+  request: CommercePartnerWidgetRequestLike,
+): string | undefined {
+  const originHeader = getCommercePartnerWidgetHeaderValue(request, 'origin');
+
+  if (originHeader) {
+    return normalizeCommercePartnerWidgetOrigin(originHeader);
+  }
+
+  return normalizeCommercePartnerWidgetOrigin(
+    getCommercePartnerWidgetHeaderValue(request, 'referer') ??
+      getCommercePartnerWidgetHeaderValue(request, 'referrer'),
+  );
+}
+
+export function isAllowedCommercePartnerWidgetMode({
+  merchant,
+  mode,
+}: {
+  merchant: CommercePartnerWidgetMerchant;
+  mode: CommercePartnerWidgetMode;
+}): boolean {
+  const allowedModes = merchant.partnerWidget?.allowedModes;
+
+  return !allowedModes?.length || allowedModes.includes(mode);
+}
+
+export function getAllowedPartnerWidgetRequestOrigin(
+  request: CommercePartnerWidgetRequestLike,
+  merchant: CommercePartnerWidgetMerchant,
+): string | undefined {
+  if (merchant.partnerWidget?.enabled !== true) {
+    return undefined;
+  }
+
+  const requestOrigin = getCommercePartnerWidgetRequestOrigin(request);
+
+  if (!requestOrigin) {
+    return undefined;
+  }
+
+  const allowedOrigins = merchant.partnerWidget.allowedOrigins
+    .map((allowedOrigin) => normalizeCommercePartnerWidgetOrigin(allowedOrigin))
+    .filter((allowedOrigin): allowedOrigin is string => Boolean(allowedOrigin));
+
+  return allowedOrigins.includes(requestOrigin) ? requestOrigin : undefined;
+}
+
+export function isAllowedPartnerWidgetRequest(
+  request: CommercePartnerWidgetRequestLike,
+  merchant: CommercePartnerWidgetMerchant,
+): boolean {
+  return Boolean(getAllowedPartnerWidgetRequestOrigin(request, merchant));
+}
+
+function isRankableCommercePartnerWidgetOffer(
+  offer: CommercePartnerWidgetOffer,
+): boolean {
+  return (
+    Number.isInteger(offer.priceCents) &&
+    offer.priceCents > 0 &&
+    offer.availability !== 'out_of_stock'
+  );
+}
+
+function compareCommercePartnerWidgetMerchantOffers(
+  left: CommercePartnerWidgetOffer,
+  right: CommercePartnerWidgetOffer,
+): number {
+  return (
+    left.priceCents - right.priceCents ||
+    right.checkedAt.localeCompare(left.checkedAt) ||
+    left.merchantName.localeCompare(right.merchantName, 'nl') ||
+    left.merchantSlug.localeCompare(right.merchantSlug)
+  );
+}
+
+export function getCommercePartnerWidgetRanking({
+  merchantSlug,
+  offers,
+}: {
+  merchantSlug: string;
+  offers: readonly CommercePartnerWidgetOffer[];
+}): CommercePartnerWidgetRanking | undefined {
+  const normalizedMerchantSlug = normalizeCommerceSlug(merchantSlug);
+  const bestOfferByMerchantSlug = new Map<string, CommercePartnerWidgetOffer>();
+
+  for (const offer of offers) {
+    if (!isRankableCommercePartnerWidgetOffer(offer)) {
+      continue;
+    }
+
+    const normalizedOfferMerchantSlug = normalizeCommerceSlug(
+      offer.merchantSlug,
+    );
+    const existingOffer = bestOfferByMerchantSlug.get(
+      normalizedOfferMerchantSlug,
+    );
+
+    if (
+      !existingOffer ||
+      compareCommercePartnerWidgetMerchantOffers(offer, existingOffer) < 0
+    ) {
+      bestOfferByMerchantSlug.set(normalizedOfferMerchantSlug, offer);
+    }
+  }
+
+  const merchantOffers = [...bestOfferByMerchantSlug.values()].sort(
+    compareCommercePartnerWidgetMerchantOffers,
+  );
+  const merchantOffer = bestOfferByMerchantSlug.get(normalizedMerchantSlug);
+
+  if (!merchantOffer || merchantOffers.length === 0) {
+    return undefined;
+  }
+
+  const rankedPrices = [
+    ...new Set(merchantOffers.map((offer) => offer.priceCents)),
+  ].sort((left, right) => left - right);
+  const rank = rankedPrices.indexOf(merchantOffer.priceCents) + 1;
+
+  if (rank <= 0) {
+    return undefined;
+  }
+
+  const lowestPrice = rankedPrices[0];
+  const isCheapest = merchantOffer.priceCents === lowestPrice;
+  const isTop3 = rank <= 3;
+
+  return {
+    isCheapest,
+    isTop3,
+    lowestPrice,
+    merchantOffer,
+    rank,
+    status: isCheapest ? 'winner' : isTop3 ? 'top3' : 'checked',
+    totalMerchantsCompared: merchantOffers.length,
+  };
+}
+
+export function shouldRenderCommercePartnerWidgetMode({
+  mode,
+  status,
+}: {
+  mode: CommercePartnerWidgetMode;
+  status: CommercePartnerWidgetStatus;
+}): boolean {
+  if (mode === 'winner') {
+    return status === 'winner';
+  }
+
+  if (mode === 'top3') {
+    return status === 'winner' || status === 'top3';
+  }
+
+  return true;
 }
 
 export function getCommerceMerchantSupportTier(
@@ -970,6 +1248,8 @@ export function buildCommerceMerchantSearchUrl({
       return `https://misterbricks.nl/catalogsearch/result/?q=${encodedQuery}`;
     case 'uniekebricks':
       return `https://uniekebricks.nl/?s=${encodedQuery}&post_type=product`;
+    case 'brickspoint':
+      return `https://brickspoint.nl/?s=${encodedQuery}&post_type=product`;
     case 'lego-nl':
       return `https://www.lego.com/nl-nl/search?q=${encodedQuery}`;
     case 'proshop':

@@ -287,6 +287,7 @@ Available feed commands:
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
 - `pnpm sync:brickfever-feed`
+- `pnpm sync:brickspoint-feed`
 - `pnpm sync:uniekebricks-feed`
 
 `pnpm sync:awin-feed` remains as a temporary backwards-compatible alias for
@@ -308,6 +309,7 @@ Recommended feed cadence:
 | MediaMarkt       | TradeDoubler    | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
 | MisterBricks     | Channable       | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
 | Brickfever       | Direct XML      | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
+| Brickspoint      | WooCommerce XML | once daily after feed refresh             | Direct non-affiliate feed; Google Merchant XML from WooCommerce.      |
 | Unieke Bricks    | WooCommerce XML | once daily after feed refresh             | Direct non-affiliate feed; Google Merchant XML from WooCommerce.      |
 | Coppenswarenhuis | TradeTracker    | once daily after feed refresh             | Strategic/manual until availability quality is consistently reliable. |
 
@@ -574,6 +576,33 @@ Brickfever job notes:
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync only uses the explicit `lego_set_id` field as LEGO set number; it never uses EAN, URLs, product IDs or title-only matches as set numbers
 
+Brickspoint uses a WooCommerce Product Feed Pro Google Merchant XML feed and
+writes through the same strict offer import path as MisterBricks, Brickfever and
+Unieke Bricks. The merchant is stored as a direct non-affiliate source and
+contributes price-comparison offers only.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:brickspoint-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the Brickspoint feed refresh window
+
+Brickspoint job notes:
+
+- keep `BRICKSPOINT_FEED_URL`, `BRICKSPOINT_MERCHANT_SLUG`, `BRICKSPOINT_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- `BRICKSPOINT_FEED_URL` is the public WooCommerce Product Feed Pro XML URL and should stay HTTPS on `brickspoint.nl`
+- the importer only runs after the response looks like XML; HTML/Cloudflare challenge responses are treated as recoverable upstream failures and do not mark stale rows
+- use `pnpm sync:brickspoint-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:brickspoint-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/brickspoint-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync uses title and description matches for LEGO set numbers; it never uses GTIN, feed product IDs or URL IDs as set numbers
+- after a write import, run the normal commerce sync or `pnpm sync:merchant-page-snapshots` so `/winkels` includes the latest merchant snapshot
+
 Unieke Bricks uses a WooCommerce Product Feed Pro Google Merchant XML feed and
 writes through the same strict offer import path as MisterBricks and
 Brickfever. The merchant is stored as a direct non-affiliate source and
@@ -723,6 +752,7 @@ pnpm nx run lidl-feed-sync:run -- --report-stale-latest-path tmp/lidl-stale-late
 pnpm nx run mediamarkt-feed-sync:run -- --dry-run --report-stale-latest-path tmp/mediamarkt-stale-latest.json
 pnpm nx run misterbricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/misterbricks-stale-latest.json
 pnpm nx run brickfever-feed-sync:run -- --dry-run --report-stale-latest-path tmp/brickfever-stale-latest.json
+pnpm nx run brickspoint-feed-sync:run -- --dry-run --report-stale-latest-path tmp/brickspoint-stale-latest.json
 pnpm nx run uniekebricks-feed-sync:run -- --dry-run --report-stale-latest-path tmp/uniekebricks-stale-latest.json
 pnpm nx run coppenswarenhuis-feed-sync:run -- --dry-run --report-stale-latest-path tmp/coppenswarenhuis-stale-latest.json
 ```

@@ -867,6 +867,7 @@ export async function upsertCommerceCurrentOfferSnapshots({
   let upsertedCount = 0;
 
   for (const [chunkIndex, chunk] of chunks.entries()) {
+    const chunkStartedAt = Date.now();
     const { error } = await supabaseClient
       .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
       .upsert(chunk, {
@@ -900,13 +901,16 @@ export async function upsertCommerceCurrentOfferSnapshots({
       chunkCount: chunks.length,
       chunkIndex,
       chunkSize: chunk.length,
+      duration_ms: Date.now() - chunkStartedAt,
       upsertedSoFar: upsertedCount,
     });
   }
 
   console.info('[commerce-current-offer-snapshots] upsert_complete', {
     chunkCount: chunks.length,
+    chunkSize: CURRENT_OFFER_SNAPSHOT_UPSERT_CHUNK_SIZE,
     duration_ms: Date.now() - startedAt,
+    rowCount: rows.length,
     snapshotCount: snapshots.length,
   });
 

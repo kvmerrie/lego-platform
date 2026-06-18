@@ -140,11 +140,18 @@ describe('theme commerce snapshot builder', () => {
     expect(result.snapshots[0].featuredDeals.map((card) => card.setId)).toEqual(
       ['10316', '10315'],
     );
+    expect(result.snapshots[0].featuredDeals[0]).toMatchObject({
+      currentPriceMinor: 42_999,
+      merchantName: 'Brickshop',
+      merchantSlug: 'brickshop',
+      setId: '10316',
+    });
     expect(
       result.snapshots[0].browsePriceContextBySetId['10315'],
     ).toMatchObject({
       priceLabel: 'Vanaf € 129,99',
       merchantName: 'Brickshop',
+      merchantSlug: 'brickshop',
       ctaUrl: 'https://merchant.example/10315',
     });
     expect(JSON.stringify(result.snapshots[0])).not.toContain('offers');

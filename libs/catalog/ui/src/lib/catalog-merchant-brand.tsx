@@ -16,6 +16,7 @@ const MERCHANT_FAVICON_BY_KEY: Record<string, string> = {
   amazon: 'amazon-nl.ico',
   bol: 'bol.ico',
   brickfever: 'brickfever.png',
+  brickspoint: 'brickspoint.jpg',
   conrad: 'conrad.webp',
   coolblue: 'coolblue.png',
   coppens: 'coppenswarenhuis.png',

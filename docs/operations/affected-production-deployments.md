@@ -99,6 +99,7 @@ Manual-only cron projects:
 - `lidl-feed-sync`
 - `mediamarkt-feed-sync`
 - `misterbricks-feed-sync`
+- `brickspoint-feed-sync`
 - `wishlist-alerts`
 
 When one of these projects changes, the workflow logs a warning such as:

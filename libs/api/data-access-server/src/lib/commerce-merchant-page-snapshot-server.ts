@@ -110,7 +110,14 @@ interface CommerceMerchantPageSnapshotProfileRow {
 }
 
 interface CommerceMerchantPageSnapshotCurrentOfferRow {
+  best_availability: string | null;
   best_checked_at: string | null;
+  best_merchant_id: string | null;
+  best_merchant_name: string | null;
+  best_merchant_slug: string | null;
+  best_offer_seed_id: string | null;
+  best_price_minor: number | null;
+  best_product_url: string | null;
   comparable_offer_count: number | null;
   computed_at: string | null;
   condition: string;
@@ -500,6 +507,61 @@ function getLowestOfferByMerchant(
   return [...offerByMerchantId.values()].sort(compareMerchantOffersForSet);
 }
 
+function getCanonicalBestMerchantSnapshotOffer({
+  currentSnapshot,
+  offers,
+}: {
+  currentSnapshot: CommerceMerchantPageSnapshotCurrentOfferRow;
+  offers: readonly EligibleMerchantSnapshotOffer[];
+}): EligibleMerchantSnapshotOffer | undefined {
+  if (
+    !currentSnapshot.best_offer_seed_id &&
+    !currentSnapshot.best_merchant_id &&
+    !currentSnapshot.best_merchant_slug
+  ) {
+    return undefined;
+  }
+
+  return offers.find((offer) => {
+    if (
+      currentSnapshot.best_offer_seed_id &&
+      offer.offerSeedId !== currentSnapshot.best_offer_seed_id
+    ) {
+      return false;
+    }
+
+    if (
+      currentSnapshot.best_merchant_id &&
+      offer.merchant.id !== currentSnapshot.best_merchant_id
+    ) {
+      return false;
+    }
+
+    if (
+      currentSnapshot.best_merchant_slug &&
+      offer.merchant.slug !== currentSnapshot.best_merchant_slug
+    ) {
+      return false;
+    }
+
+    if (
+      typeof currentSnapshot.best_price_minor === 'number' &&
+      offer.priceMinor !== currentSnapshot.best_price_minor
+    ) {
+      return false;
+    }
+
+    if (
+      currentSnapshot.best_product_url &&
+      offer.productUrl !== currentSnapshot.best_product_url
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 function toMerchantDeal({
   comparedMerchantCount,
   nextBestOffer,
@@ -642,7 +704,10 @@ function buildDealsFromCurrentSnapshots({
       })
       .sort(compareMerchantOffersForSet);
     const lowestOffersByMerchant = getLowestOfferByMerchant(eligibleOffers);
-    const bestOffer = lowestOffersByMerchant[0];
+    const bestOffer = getCanonicalBestMerchantSnapshotOffer({
+      currentSnapshot,
+      offers: lowestOffersByMerchant,
+    });
 
     for (const offer of lowestOffersByMerchant) {
       const merchantSlug = normalizeMerchantSlug(offer.merchant.slug);
@@ -662,26 +727,20 @@ function buildDealsFromCurrentSnapshots({
       continue;
     }
 
-    for (const offer of lowestOffersByMerchant) {
-      if (offer.priceMinor !== bestOffer.priceMinor) {
-        continue;
-      }
+    const nextBestOffer = lowestOffersByMerchant.find(
+      (candidate) => candidate.merchant.id !== bestOffer.merchant.id,
+    );
+    const merchantSlug = normalizeMerchantSlug(bestOffer.merchant.slug);
+    const deal = toMerchantDeal({
+      comparedMerchantCount: lowestOffersByMerchant.length,
+      nextBestOffer,
+      offer: bestOffer,
+    });
 
-      const nextBestOffer = lowestOffersByMerchant.find(
-        (candidate) => candidate.merchant.id !== offer.merchant.id,
-      );
-      const merchantSlug = normalizeMerchantSlug(offer.merchant.slug);
-      const deal = toMerchantDeal({
-        comparedMerchantCount: lowestOffersByMerchant.length,
-        nextBestOffer,
-        offer,
-      });
-
-      dealsByMerchantSlug.set(merchantSlug, [
-        ...(dealsByMerchantSlug.get(merchantSlug) ?? []),
-        deal,
-      ]);
-    }
+    dealsByMerchantSlug.set(merchantSlug, [
+      ...(dealsByMerchantSlug.get(merchantSlug) ?? []),
+      deal,
+    ]);
   }
 
   for (const [merchantSlug, deals] of dealsByMerchantSlug) {
@@ -857,7 +916,7 @@ async function listCurrentOfferSnapshotRows({
   const selectedQuery = supabaseClient
     .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
     .select(
-      'set_id, region_code, currency_code, condition, offer_count, comparable_offer_count, next_best_price_minor, offers, best_checked_at, computed_at',
+      'set_id, region_code, currency_code, condition, best_availability, best_checked_at, best_merchant_id, best_merchant_name, best_merchant_slug, best_offer_seed_id, best_price_minor, best_product_url, offer_count, comparable_offer_count, next_best_price_minor, offers, computed_at',
     ) as unknown as CommerceMerchantPageSnapshotQuery<CommerceMerchantPageSnapshotCurrentOfferRow>;
   const regionQuery = applyQueryEq({
     column: 'region_code',

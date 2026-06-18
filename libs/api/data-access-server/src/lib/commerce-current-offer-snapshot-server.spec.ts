@@ -556,6 +556,7 @@ describe('commerce current-offer snapshots', () => {
         chunkCount: 14,
         chunkIndex: 0,
         chunkSize: 100,
+        duration_ms: expect.any(Number),
         upsertedSoFar: 100,
       }),
     );
@@ -563,6 +564,9 @@ describe('commerce current-offer snapshots', () => {
       '[commerce-current-offer-snapshots] upsert_complete',
       expect.objectContaining({
         chunkCount: 14,
+        chunkSize: 100,
+        duration_ms: expect.any(Number),
+        rowCount: 1383,
         snapshotCount: 1383,
       }),
     );

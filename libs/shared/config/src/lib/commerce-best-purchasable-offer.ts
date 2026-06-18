@@ -61,6 +61,18 @@ export interface BestPurchasableOfferResult<
   debugSignals: BestPurchasableOfferDebugSignals;
 }
 
+export interface CanonicalBestOfferContract {
+  availability: BestPurchasableOfferAvailability;
+  checkedAt: string;
+  currency: AppCurrencyCode;
+  currentPriceMinor: number;
+  deeplink: string;
+  merchantName: string;
+  merchantSlug: string;
+  selectionReason: BestPurchasableOfferSelectionReason;
+  setId: string;
+}
+
 export interface SelectBestPurchasableOfferOptions<
   Offer extends CommerceOfferLike = CommerceOfferLike,
 > {
@@ -394,4 +406,38 @@ export function selectBestPurchasableOffer<Offer extends CommerceOfferLike>(
     rankedOffers,
     debugSignals,
   };
+}
+
+export function toCanonicalBestOfferContract<Offer extends CommerceOfferLike>({
+  offer,
+  selectionReason,
+}: Pick<BestPurchasableOfferResult<Offer>, 'offer' | 'selectionReason'>):
+  | CanonicalBestOfferContract
+  | undefined {
+  if (!offer) {
+    return undefined;
+  }
+
+  return {
+    availability: offer.availability,
+    checkedAt: offer.checkedAt,
+    currency: offer.currency,
+    currentPriceMinor: offer.priceCents,
+    deeplink: offer.url,
+    merchantName: getCommerceOfferPublicMerchantName(offer),
+    merchantSlug: getCommerceOfferMerchantSlug(offer) ?? offer.merchant,
+    selectionReason,
+    setId: offer.setId,
+  };
+}
+
+export function selectCanonicalBestOfferContract<
+  Offer extends CommerceOfferLike,
+>(
+  commerceOffers: readonly Offer[],
+  options: SelectBestPurchasableOfferOptions<Offer> = {},
+): CanonicalBestOfferContract | undefined {
+  return toCanonicalBestOfferContract(
+    selectBestPurchasableOffer(commerceOffers, options),
+  );
 }

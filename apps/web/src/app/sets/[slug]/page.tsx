@@ -162,6 +162,10 @@ function isSetPageSimilarRailDebugEnabled(): boolean {
   return process.env['DEBUG_SET_PAGE_SIMILAR_RAIL'] === 'true';
 }
 
+function isCommerceConsistencyDebugEnabled(): boolean {
+  return process.env['DEBUG_COMMERCE_CONSISTENCY'] === 'true';
+}
+
 function getSetPagePerfNumber({
   defaultValue,
   envName,
@@ -239,6 +243,93 @@ function logSetPagePerf({
     label,
     slug,
     status,
+  });
+}
+
+type CommerceConsistencyDebugOffer = Pick<
+  CatalogOffer,
+  | 'availability'
+  | 'checkedAt'
+  | 'currency'
+  | 'merchant'
+  | 'merchantName'
+  | 'priceCents'
+  | 'setId'
+  | 'url'
+> & {
+  merchantSlug?: string;
+};
+
+function toCommerceConsistencyDebugOffer(
+  offer?: CommerceConsistencyDebugOffer | null,
+) {
+  if (!offer) {
+    return undefined;
+  }
+
+  return {
+    availability: offer.availability,
+    checkedAt: offer.checkedAt,
+    merchantName: getCatalogOfferPublicMerchantName(offer),
+    merchantSlug: getCatalogOfferMerchantSlug(offer) ?? offer.merchant,
+    priceMinor: offer.priceCents,
+    url: offer.url,
+  };
+}
+
+function logCommerceConsistencyDebug({
+  cardPriceContext,
+  canonicalOffer,
+  heroOffer,
+  railOffer,
+  schemaOffer,
+  setId,
+  snapshotOffer,
+}: {
+  cardPriceContext?: ReturnType<typeof buildCurrentSetCardPriceContext>;
+  canonicalOffer?: CommerceConsistencyDebugOffer | null;
+  heroOffer?: CommerceConsistencyDebugOffer | null;
+  railOffer?: CommerceConsistencyDebugOffer | null;
+  schemaOffer?: CommerceConsistencyDebugOffer | null;
+  setId: string;
+  snapshotOffer?: CommerceConsistencyDebugOffer | null;
+}) {
+  if (!isCommerceConsistencyDebugEnabled()) {
+    return;
+  }
+
+  const canonical = toCommerceConsistencyDebugOffer(canonicalOffer);
+  const hero = toCommerceConsistencyDebugOffer(heroOffer);
+  const rail = toCommerceConsistencyDebugOffer(railOffer);
+  const schema = toCommerceConsistencyDebugOffer(schemaOffer);
+  const snapshot = toCommerceConsistencyDebugOffer(snapshotOffer);
+  const matchesCanonical = (
+    offer?: ReturnType<typeof toCommerceConsistencyDebugOffer>,
+  ) =>
+    !canonical ||
+    !offer ||
+    (offer.merchantSlug === canonical.merchantSlug &&
+      offer.priceMinor === canonical.priceMinor &&
+      offer.url === canonical.url);
+
+  console.info('[commerce-consistency]', {
+    cardMerchantSlug: cardPriceContext?.merchantSlug,
+    cardPrice: cardPriceContext?.currentPrice,
+    canonicalMerchantSlug: canonical?.merchantSlug,
+    canonicalPriceMinor: canonical?.priceMinor,
+    heroMerchantSlug: hero?.merchantSlug,
+    heroPriceMinor: hero?.priceMinor,
+    railMerchantSlug: rail?.merchantSlug,
+    railPriceMinor: rail?.priceMinor,
+    schemaMerchantSlug: schema?.merchantSlug,
+    schemaPriceMinor: schema?.priceMinor,
+    setId,
+    snapshotMerchantSlug: snapshot?.merchantSlug,
+    snapshotPriceMinor: snapshot?.priceMinor,
+    surfacesMatchCanonical:
+      matchesCanonical(hero) &&
+      matchesCanonical(rail) &&
+      matchesCanonical(schema),
   });
 }
 
@@ -2503,7 +2594,7 @@ export default async function SetDetailPage({
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
   );
-  const currentOfferSummaryCanonicalOffers = currentOfferSummary
+  const currentOfferSummaryCanonicalOffer = currentOfferSummary
     ? selectBestPurchasableOffer(
         [...currentOfferSummary.offers, currentOfferSummary.bestOffer].filter(
           (
@@ -2514,11 +2605,19 @@ export default async function SetDetailPage({
         {
           strategicTieBreakerOffer: currentOfferSummary.bestOffer ?? null,
         },
-      ).rankedOffers
-    : [];
-  const structuredDataOffers = offerRailBestOfferResult.rankedOffers.length
-    ? offerRailBestOfferResult.rankedOffers
-    : currentOfferSummaryCanonicalOffers;
+      ).offer
+    : undefined;
+  const structuredDataCanonicalOffer =
+    offerRailBestOffer ?? currentOfferSummaryCanonicalOffer;
+  logCommerceConsistencyDebug({
+    cardPriceContext: currentDealPriceContext,
+    canonicalOffer: structuredDataCanonicalOffer,
+    heroOffer: bestOffer,
+    railOffer: offerRailBestOffer,
+    schemaOffer: structuredDataCanonicalOffer,
+    setId: catalogSetDetail.id,
+    snapshotOffer: snapshotCurrentOfferSummary?.bestOffer,
+  });
   const jsonLd = measureSetPageSync({
     label: 'structured-data',
     slug,
@@ -2529,7 +2628,15 @@ export default async function SetDetailPage({
           catalogSetDetail,
           offers: hasTrackedAvailabilityFallback
             ? []
-            : structuredDataOffers.map(withCatalogOfferPublicMerchantName),
+            : [structuredDataCanonicalOffer]
+                .filter(
+                  (
+                    offer,
+                  ): offer is NonNullable<
+                    typeof structuredDataCanonicalOffer
+                  > => Boolean(offer),
+                )
+                .map(withCatalogOfferPublicMerchantName),
           reviewSummary: reviewPayload.summary,
           reviews: reviewPayload.reviews,
         }),

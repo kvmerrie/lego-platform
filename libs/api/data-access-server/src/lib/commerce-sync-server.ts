@@ -633,6 +633,38 @@ export async function runCommerceSync({
           followRailSetCount: 0,
           overlapRemovedCount: 0,
           payloadBytes: 0,
+          titleAudit: {
+            bestDeals: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+            popularThisWeek: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+            giftsUnder100: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+            smartToFollow: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+            biggestPriceDrops: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+            waitCanPayOff: {
+              fallbackTitleCount: 0,
+              missingNlTitleCount: 0,
+              nlTitleAppliedCount: 0,
+            },
+          },
           tabCounts: {
             bestDeals: 0,
             popularThisWeek: 0,

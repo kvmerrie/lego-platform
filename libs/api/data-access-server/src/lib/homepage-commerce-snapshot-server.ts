@@ -67,6 +67,15 @@ export interface HomepageCommerceSnapshotSummary {
   followRailSetCount: number;
   overlapRemovedCount: number;
   payloadBytes: number;
+  titleAudit: Record<
+    | keyof HomepageCommerceSnapshot['buyRail']
+    | keyof HomepageCommerceSnapshot['followRail'],
+    {
+      fallbackTitleCount: number;
+      missingNlTitleCount: number;
+      nlTitleAppliedCount: number;
+    }
+  >;
   tabCounts: {
     bestDeals: number;
     popularThisWeek: number;
@@ -160,10 +169,12 @@ function toHomepageCardFromDeal(
       card.priceContext.decisionLabel ?? card.priceContext.pricePositionLabel,
     confidenceLabel: card.priceContext.coverageLabel,
     ctaUrl: card.priceContext.primaryActionHref,
-    merchantName: card.priceContext.merchantLabel.replace(
-      /^Laagst bij\s+/u,
-      '',
-    ),
+    merchantName:
+      card.priceContext.merchantName ??
+      card.priceContext.merchantLabel.replace(/^Laagst bij\s+/u, ''),
+    ...(card.priceContext.merchantSlug
+      ? { merchantSlug: card.priceContext.merchantSlug }
+      : {}),
   };
 }
 
@@ -235,6 +246,42 @@ function toHomepageCardFromCurrentOffer({
       : {}),
     ...(followRecommended ? { followRecommended: true } : {}),
   };
+}
+
+function applyPresentationTitleToHomepageCard({
+  card,
+  catalogSetById,
+}: {
+  card: HomepageCommerceCard;
+  catalogSetById: ReadonlyMap<string, CatalogCanonicalSet>;
+}): HomepageCommerceCard {
+  const catalogSet = catalogSetById.get(card.setId);
+
+  if (!catalogSet) {
+    return card;
+  }
+
+  return {
+    ...card,
+    ...(catalogSet.catalogName ? { catalogName: catalogSet.catalogName } : {}),
+    displayTitle: catalogSet.displayTitle ?? catalogSet.name,
+    ...(catalogSet.displayTitleSource
+      ? { displayTitleSource: catalogSet.displayTitleSource }
+      : {}),
+    name: catalogSet.displayTitle ?? catalogSet.name,
+  };
+}
+
+function applyPresentationTitlesToHomepageCards({
+  cards,
+  catalogSetById,
+}: {
+  cards: readonly HomepageCommerceCard[];
+  catalogSetById: ReadonlyMap<string, CatalogCanonicalSet>;
+}): HomepageCommerceCard[] {
+  return cards.map((card) =>
+    applyPresentationTitleToHomepageCard({ card, catalogSetById }),
+  );
 }
 
 function toHomepageCardFromCollection({
@@ -746,6 +793,16 @@ function createSummary(
     followRailSetCount: followRailSetIds.size,
     overlapRemovedCount: 0,
     payloadBytes: Buffer.byteLength(JSON.stringify(snapshot)),
+    titleAudit: {
+      bestDeals: summarizeTitleAudit(snapshot.buyRail.bestDeals),
+      popularThisWeek: summarizeTitleAudit(snapshot.buyRail.popularThisWeek),
+      giftsUnder100: summarizeTitleAudit(snapshot.buyRail.giftsUnder100),
+      smartToFollow: summarizeTitleAudit(snapshot.followRail.smartToFollow),
+      biggestPriceDrops: summarizeTitleAudit(
+        snapshot.followRail.biggestPriceDrops,
+      ),
+      waitCanPayOff: summarizeTitleAudit(snapshot.followRail.waitCanPayOff),
+    },
     tabCounts: {
       bestDeals: snapshot.buyRail.bestDeals.length,
       popularThisWeek: snapshot.buyRail.popularThisWeek.length,
@@ -754,6 +811,19 @@ function createSummary(
       biggestPriceDrops: snapshot.followRail.biggestPriceDrops.length,
       waitCanPayOff: snapshot.followRail.waitCanPayOff.length,
     },
+  };
+}
+
+function summarizeTitleAudit(cards: readonly HomepageCommerceCard[]) {
+  const nlTitleAppliedCount = cards.filter(
+    (card) => card.displayTitleSource === 'rakuten-lego-eu',
+  ).length;
+  const fallbackTitleCount = cards.length - nlTitleAppliedCount;
+
+  return {
+    fallbackTitleCount,
+    missingNlTitleCount: fallbackTitleCount,
+    nlTitleAppliedCount,
   };
 }
 
@@ -829,6 +899,9 @@ export async function buildHomepageCommerceSnapshot({
         supabaseClient,
       });
   const catalogSetById = new Map(
+    resolvedCatalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
+  );
+  const presentationCatalogSetById = new Map(
     presentationCatalogSets.map((catalogSet) => [catalogSet.setId, catalogSet]),
   );
   const historyRowsBySetId = groupHistoryRowsBySetId(resolvedPriceHistoryRows);
@@ -883,14 +956,32 @@ export async function buildHomepageCommerceSnapshot({
   const snapshot: HomepageCommerceSnapshot = {
     generatedAt,
     buyRail: {
-      bestDeals,
-      popularThisWeek,
-      giftsUnder100,
+      bestDeals: applyPresentationTitlesToHomepageCards({
+        cards: bestDeals,
+        catalogSetById: presentationCatalogSetById,
+      }),
+      popularThisWeek: applyPresentationTitlesToHomepageCards({
+        cards: popularThisWeek,
+        catalogSetById: presentationCatalogSetById,
+      }),
+      giftsUnder100: applyPresentationTitlesToHomepageCards({
+        cards: giftsUnder100,
+        catalogSetById: presentationCatalogSetById,
+      }),
     },
     followRail: {
-      smartToFollow,
-      biggestPriceDrops,
-      waitCanPayOff,
+      smartToFollow: applyPresentationTitlesToHomepageCards({
+        cards: smartToFollow,
+        catalogSetById: presentationCatalogSetById,
+      }),
+      biggestPriceDrops: applyPresentationTitlesToHomepageCards({
+        cards: biggestPriceDrops,
+        catalogSetById: presentationCatalogSetById,
+      }),
+      waitCanPayOff: applyPresentationTitlesToHomepageCards({
+        cards: waitCanPayOff,
+        catalogSetById: presentationCatalogSetById,
+      }),
     },
   };
 

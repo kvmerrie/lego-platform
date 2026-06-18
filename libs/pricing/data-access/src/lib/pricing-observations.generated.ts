@@ -15,6 +15,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10252",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10252",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23,6 +34,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10255",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 30999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10255",
@@ -80,6 +102,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "10261",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "10263",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -92,6 +125,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10263",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10263",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -100,6 +144,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10264",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10264",
@@ -144,6 +199,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10270",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10270",
@@ -210,6 +276,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "10280",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10280",
@@ -377,6 +454,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "10281",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "10291",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -386,6 +474,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10291",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10291",
@@ -419,6 +518,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10293",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10293",
@@ -499,6 +609,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10295",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10295",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -573,6 +694,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10297",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10298",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10298",
@@ -653,6 +796,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10300",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10300",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -730,6 +884,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10302",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10302",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -771,6 +936,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "10305",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 47999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10305",
@@ -859,6 +1035,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "10309",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10309",
@@ -961,6 +1148,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10311",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10311",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -991,6 +1189,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10312",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10312",
@@ -1046,6 +1255,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "10313",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10313",
@@ -1115,6 +1335,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10314",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10314",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1167,6 +1398,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10315",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10315",
@@ -1280,6 +1522,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10317",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10317",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1346,6 +1599,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10318",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 20999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10318",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1354,6 +1618,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10320",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 25999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10320",
@@ -1442,6 +1717,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10326",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10326",
@@ -1629,6 +1915,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "unknown",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T12:35:55.722Z"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10328",
@@ -1830,6 +2127,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10330",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10330",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1926,6 +2234,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "10332",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10332",
@@ -2036,6 +2355,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10334",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10335",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10335",
@@ -2157,6 +2498,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.785Z"
+  },
+  {
+    "setId": "10338",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10338",
@@ -2776,6 +3128,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10347",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10347",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2985,6 +3348,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10348",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10348",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3051,6 +3425,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10349",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10349",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3081,6 +3466,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10350",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10350",
@@ -3139,6 +3535,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10351",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10351",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3191,6 +3598,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10352",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10352",
@@ -3315,6 +3733,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10353",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10353",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3389,6 +3818,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "10356",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 37999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10356",
@@ -3469,6 +3909,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10357",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10357",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3488,6 +3939,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "10358",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10358",
@@ -3656,6 +4118,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10359",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10359",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -3763,6 +4236,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10361",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10361",
@@ -3884,6 +4368,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10362",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10362",
@@ -4049,6 +4544,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "10365",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10365",
@@ -4283,6 +4789,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10368",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10368",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4415,6 +4932,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10369",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10369",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4478,6 +5006,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "10372",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10372",
@@ -4646,6 +5185,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10374",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10374",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -4687,6 +5237,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10375",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10375",
@@ -6659,6 +7220,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10448",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10448",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -7781,6 +8353,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10462",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10462",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -7822,6 +8405,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "10463",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10463",
@@ -7968,6 +8562,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10464",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10464",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8020,6 +8625,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "10465",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10465",
@@ -8174,6 +8790,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "10467",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10467",
@@ -8361,6 +8988,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10469",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10469",
@@ -8658,6 +9296,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10472",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10472",
@@ -9288,6 +9937,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10478",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10478",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9387,6 +10047,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10479",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "10479",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9472,6 +10143,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "10480",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "10480",
@@ -10563,6 +11245,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:01:47.655Z"
   },
   {
+    "setId": "11018",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "11023",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -10605,6 +11298,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "11023",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11023",
@@ -10825,6 +11529,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "11026",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11026",
@@ -11356,6 +12071,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11045",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11045",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11642,6 +12368,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11201",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11201",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11683,6 +12420,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "11202",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2449,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11202",
@@ -12060,6 +12808,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11206",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11206",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12368,6 +13127,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11209",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11209",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12464,6 +13234,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "11211",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11211",
@@ -12698,6 +13479,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11216",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11216",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12772,6 +13564,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "11217",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11217",
@@ -12863,6 +13666,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11221",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11221",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12918,6 +13732,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11370",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11370",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12937,6 +13762,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "11371",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11371",
@@ -13116,6 +13952,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11373",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6749,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11373",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13179,6 +14026,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "11375",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11375",
@@ -13270,6 +14128,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11376",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11376",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13278,6 +14147,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "11378",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11378",
@@ -13344,6 +14224,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-09T06:16:23.043Z"
+  },
+  {
+    "setId": "11380",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11380",
@@ -13443,6 +14334,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:18.664Z"
+  },
+  {
+    "setId": "11384",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11384",
@@ -13578,6 +14480,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11501",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11501",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13688,6 +14601,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11502",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11502",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13707,6 +14631,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "11503",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11503",
@@ -13820,6 +14755,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11504",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11504",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13919,6 +14865,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11505",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11505",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13993,6 +14950,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:42:21.730Z"
+  },
+  {
+    "setId": "11506",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11506",
@@ -14073,6 +15041,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11508",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11508",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14147,6 +15126,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T05:01:30.634Z"
+  },
+  {
+    "setId": "11509",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11509",
@@ -14282,6 +15272,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11510",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11510",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14367,6 +15368,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "11511",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "11511",
@@ -14458,6 +15470,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "11514",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "11514",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14546,6 +15569,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21034",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21034",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14590,6 +15624,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21037",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21037",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14620,6 +15665,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21042",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21042",
@@ -14733,6 +15789,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21058",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21058",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14832,6 +15899,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21060",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15699,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21060",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14862,6 +15940,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.785Z"
+  },
+  {
+    "setId": "21061",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21061",
@@ -15030,6 +16119,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21062",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21062",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -15118,6 +16218,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21063",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21063",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -15203,6 +16314,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "21064",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21064",
@@ -16636,6 +17758,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21323",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 38999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21323",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16653,6 +17786,39 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 39999,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "21324",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-02T12:11:25.844Z"
+  },
+  {
+    "setId": "21324",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21324",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
@@ -16691,6 +17857,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21325",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21325",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -16710,6 +17887,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-27T18:50:56.984Z"
+  },
+  {
+    "setId": "21326",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21326",
@@ -16754,6 +17942,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "21330",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 28999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21330",
@@ -16866,6 +18065,39 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "21333",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21338",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21338",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
     "setId": "21339",
     "merchantId": "brickfever",
     "regionCode": "NL",
@@ -16875,6 +18107,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "21339",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21339",
@@ -17065,6 +18308,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21347",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21347",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17117,6 +18371,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 35999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21348",
@@ -17175,6 +18440,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21349",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21349",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17229,6 +18505,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "21350",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "21351",
     "merchantId": "proshop",
     "regionCode": "NL",
@@ -17238,6 +18525,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21351",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21351",
@@ -17285,6 +18583,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21352",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21352",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17293,6 +18602,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "21353",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 30999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21353",
@@ -17337,6 +18657,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21354",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21354",
@@ -17392,6 +18723,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "21356",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21356",
@@ -17516,6 +18858,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21357",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21357",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17560,6 +18913,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21358",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21358",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17590,6 +18954,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21359",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 25599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21359",
@@ -17659,6 +19034,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21360",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 20999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21360",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17678,6 +19064,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "21361",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21361",
@@ -17846,6 +19243,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21365",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21365",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17945,12 +19353,100 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21366",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21366",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "proshop",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12795,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13290,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "brickfever",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13399,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "21367",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
   },
@@ -18030,6 +19526,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "21368",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21368",
@@ -18118,6 +19625,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "21376",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "21583",
@@ -19320,6 +20838,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30653",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30653",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19328,6 +20857,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "30655",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30655",
@@ -19372,6 +20912,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "30659",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30659",
@@ -19452,6 +21003,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30661",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 445,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30661",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19529,6 +21091,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30663",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30663",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19573,6 +21146,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30665",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30665",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19606,6 +21190,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30666",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 449,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30666",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19628,6 +21223,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30670",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30670",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19650,6 +21256,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30671",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 449,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30671",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19669,6 +21286,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30672",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30672",
@@ -19716,6 +21344,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30673",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30673",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19760,6 +21399,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30675",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30675",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19804,6 +21454,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30676",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 439,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30676",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19834,6 +21495,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30677",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 425,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30677",
@@ -19870,6 +21542,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30679",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30679",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19900,6 +21583,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "30682",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 495,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30682",
@@ -19969,6 +21663,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30688",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30688",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -19988,6 +21693,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30689",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30689",
@@ -20013,6 +21729,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30690",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30690",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20035,6 +21762,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30691",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30691",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20054,6 +21792,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30692",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30692",
@@ -20098,6 +21847,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30693",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30693",
@@ -20145,6 +21905,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30694",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30694",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20164,6 +21935,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30695",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30695",
@@ -20211,6 +21993,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30696",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30696",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20255,6 +22048,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30697",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30697",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20285,6 +22089,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30698",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30698",
@@ -20343,6 +22158,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30699",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30699",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20387,6 +22213,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30701",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30701",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20420,6 +22257,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30702",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30702",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20450,6 +22298,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30703",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30703",
@@ -20494,6 +22353,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "30704",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30704",
@@ -20574,6 +22444,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30706",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30706",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20604,6 +22485,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30707",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30707",
@@ -20651,6 +22543,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30708",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30708",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20681,6 +22584,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30709",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30709",
@@ -20772,6 +22686,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30711",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30711",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20813,6 +22738,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "30712",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30712",
@@ -20860,6 +22796,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30714",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30714",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -20901,6 +22848,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "30715",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30715",
@@ -20956,6 +22914,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30716",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30716",
@@ -21003,6 +22972,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30717",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30717",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21047,6 +23027,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30718",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30718",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21091,6 +23082,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30719",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30719",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21121,6 +23123,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "30720",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30720",
@@ -21157,6 +23170,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30721",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30721",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21201,6 +23225,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30722",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30722",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21245,6 +23280,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30723",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30723",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21275,6 +23321,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30724",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30724",
@@ -21322,6 +23379,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30725",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30725",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21366,6 +23434,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30726",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30726",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21396,6 +23475,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30727",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30727",
@@ -21443,6 +23533,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30728",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30728",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21542,6 +23643,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30733",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30733",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21583,6 +23695,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30734",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "blind_bag",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30734",
@@ -21630,6 +23753,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "30735",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "30735",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21671,6 +23805,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "30736",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "30736",
@@ -21814,6 +23959,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-31T05:01:18.031Z"
+  },
+  {
+    "setId": "31136",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31136",
@@ -22177,6 +24333,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "31147",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31148",
@@ -22730,6 +24897,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31157",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31157",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22793,6 +24971,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "31159",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31159",
@@ -23115,6 +25304,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31162",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31162",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23291,6 +25491,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31164",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31164",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23420,6 +25631,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "31166",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31166",
@@ -23599,6 +25821,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31167",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31167",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23684,6 +25917,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "31168",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31168",
@@ -24116,6 +26360,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31173",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31173",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24314,6 +26569,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31208",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31208",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24377,6 +26643,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "31209",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31212",
@@ -24534,6 +26811,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31213",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31213",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24633,6 +26921,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31214",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31214",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -24696,6 +26995,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "31215",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31215",
@@ -25117,6 +27427,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31220",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31220",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25205,6 +27526,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31376",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31376",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25268,6 +27600,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "31377",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31377",
@@ -25370,6 +27713,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31379",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31379",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25466,6 +27820,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "31380",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31380",
@@ -25601,6 +27966,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31381",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31381",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25686,6 +28062,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "31382",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31382",
@@ -25807,6 +28194,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "31383",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31383",
@@ -25964,6 +28362,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31384",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31384",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26074,6 +28483,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31385",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31385",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26148,6 +28568,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "31386",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31386",
@@ -26236,6 +28667,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "31387",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31387",
@@ -26360,6 +28802,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31389",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7649,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31389",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26456,6 +28909,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "31390",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "31390",
@@ -26569,6 +29033,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31392",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "31392",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26657,6 +29132,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40220",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40220",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26712,6 +29198,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40460",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40460",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26756,6 +29253,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40468",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40468",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26778,6 +29286,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40478",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40478",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26786,6 +29305,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40483",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40483",
@@ -26808,6 +29338,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "40491",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40491",
@@ -26887,6 +29428,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:06:05.983Z"
   },
   {
+    "setId": "40499",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40516",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -26918,6 +29470,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "40516",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40518",
@@ -26962,6 +29525,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40519",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40519",
@@ -27020,6 +29594,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40524",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40524",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27075,6 +29660,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40539",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1750,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40539",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27108,6 +29704,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40563",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40563",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27127,6 +29734,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "40564",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40564",
@@ -27174,6 +29792,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40569",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40569",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27218,6 +29847,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40573",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40573",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27240,6 +29880,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40575",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40575",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27259,6 +29910,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "40611",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40611",
@@ -27294,6 +29956,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "40619",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40630",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40630",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
@@ -27301,6 +29985,28 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3499,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40632",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40632",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
@@ -27314,6 +30020,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "40638",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40638",
@@ -27426,6 +30143,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "40647",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40649",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40649",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -27479,6 +30218,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40674",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40674",
@@ -27559,6 +30309,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40697",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40697",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27614,6 +30375,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40709",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1290,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40709",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27655,6 +30427,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "40711",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40711",
@@ -27867,6 +30650,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40725",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40725",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28009,6 +30803,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:46:07.001Z"
   },
   {
+    "setId": "40743",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40744",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -28018,6 +30823,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "40744",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40744",
@@ -28098,6 +30914,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40746",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40746",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28164,6 +30991,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40747",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40747",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28172,6 +31010,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40749",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40749",
@@ -28194,6 +31043,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40751",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40751",
@@ -28230,6 +31090,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40791",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40791",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28249,6 +31120,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40794",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40794",
@@ -28274,6 +31156,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40795",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40795",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28282,6 +31175,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40797",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40797",
@@ -28318,6 +31222,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40801",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40801",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28340,6 +31255,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40802",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40802",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28362,6 +31288,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40803",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40803",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28381,6 +31318,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40804",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40804",
@@ -28417,12 +31365,67 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40805",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40805",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4699,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40806",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5995,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "40806",
+    "merchantId": "brickfever",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "40806",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40806",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
@@ -28593,6 +31596,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40809",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40809",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28626,6 +31640,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40811",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40811",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -28656,6 +31681,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40812",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40812",
@@ -28867,6 +31903,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:41:15.541Z"
   },
   {
+    "setId": "40814",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40815",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -28944,6 +31991,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:41:15.541Z"
   },
   {
+    "setId": "40815",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40816",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -29011,6 +32069,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40817",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40817",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29033,6 +32102,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40818",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40818",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29041,6 +32121,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40819",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40819",
@@ -29063,6 +32154,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40820",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40820",
@@ -29129,6 +32231,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40822",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40822",
@@ -29308,6 +32421,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40860",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40860",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29341,6 +32465,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40861",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40861",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29363,6 +32498,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40863",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40863",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29382,6 +32528,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40867",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40867",
@@ -29406,6 +32563,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:46:07.001Z"
   },
   {
+    "setId": "40871",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40878",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -29415,6 +32583,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40878",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40878",
@@ -29437,6 +32616,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40879",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40879",
@@ -29473,6 +32663,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40891",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40891",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29481,6 +32682,39 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40906",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40906",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40913",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40913",
@@ -29506,6 +32740,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40915",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40915",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29527,6 +32772,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "40917",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40920",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "40920",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -29569,6 +32836,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40921",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40922",
@@ -29580,6 +32858,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40922",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40922",
@@ -29605,6 +32894,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40923",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40923",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29627,6 +32927,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40924",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40924",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29635,6 +32946,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40925",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40925",
@@ -29660,6 +32982,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40952",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40952",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29668,6 +33001,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40953",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40953",
@@ -29704,6 +33048,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "40954",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "40954",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29712,6 +33067,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "40955",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40955",
@@ -29745,6 +33111,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "40957",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "40957",
@@ -29800,6 +33177,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "41716",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3695,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "41716",
@@ -30287,6 +33675,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "41843",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "41843",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30364,6 +33763,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42096",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42096",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30383,6 +33793,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42115",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 35899,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42115",
@@ -30438,6 +33859,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "42129",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42129",
@@ -30628,6 +34060,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42143",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 39999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42143",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30691,6 +34134,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42146",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 67999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42146",
@@ -30903,6 +34357,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42154",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42154",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30944,6 +34409,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42155",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42155",
@@ -31222,6 +34698,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42161",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42161",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -31252,6 +34739,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "42163",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42163",
@@ -31296,6 +34794,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "42164",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42164",
@@ -31428,6 +34937,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42167",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42167",
@@ -31596,6 +35116,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42170",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42170",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -31673,6 +35204,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42171",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42171",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -31736,6 +35278,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42172",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 36999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42172",
@@ -32388,6 +35941,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42184",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42184",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32685,6 +36249,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42199",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2379,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42199",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -32781,6 +36356,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "42200",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2379,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42200",
@@ -33488,6 +37074,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42206",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42206",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33683,6 +37280,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42208",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42208",
@@ -33917,6 +37525,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42210",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42210",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34049,6 +37668,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42212",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42212",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34167,6 +37797,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42213",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42213",
@@ -34962,6 +38603,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42223",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6374,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42223",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35124,6 +38776,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "42225",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42225",
@@ -35314,6 +38977,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42227",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42227",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35413,6 +39087,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42228",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 21999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42228",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -35476,6 +39161,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42229",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42229",
@@ -35608,6 +39304,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42231",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12749,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42231",
@@ -36150,6 +39857,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42607",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42607",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36180,6 +39898,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "42608",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42608",
@@ -36447,6 +40176,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42622",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42622",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36477,6 +40217,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-09T18:36:04.573Z"
+  },
+  {
+    "setId": "42623",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42623",
@@ -36568,6 +40319,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42625",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42625",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36645,6 +40407,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42635",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42635",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -36719,6 +40492,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "42641",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42641",
@@ -36829,6 +40613,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-24T12:10:57.518Z"
+  },
+  {
+    "setId": "42643",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42643",
@@ -38977,6 +42772,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42676",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42676",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40198,6 +44004,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42693",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42693",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40283,6 +44100,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:36:33.891Z"
+  },
+  {
+    "setId": "42694",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42694",
@@ -40572,6 +44400,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42697",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42697",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40803,6 +44642,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42700",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42700",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -40946,6 +44796,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42702",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42702",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41020,6 +44881,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "42703",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "42703",
@@ -41155,6 +45027,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42704",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42704",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41265,6 +45148,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42705",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "42705",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41328,6 +45222,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "43008",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43008",
@@ -41408,6 +45313,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43011",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43011",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41471,6 +45387,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "43012",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43012",
@@ -41573,6 +45500,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43013",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43013",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41669,6 +45607,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "43014",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43014",
@@ -41801,6 +45750,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "43015",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43015",
@@ -41955,6 +45915,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "43017",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43017",
@@ -42145,6 +46116,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43019",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43019",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42211,6 +46193,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43020",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43020",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42241,6 +46234,28 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "43021",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43021",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
     "setId": "43022",
@@ -42307,6 +46322,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "43022",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43022",
@@ -42395,6 +46421,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "43023",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43023",
@@ -42519,6 +46556,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43027",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43027",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -42549,6 +46597,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "43032",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2124,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43032",
@@ -43168,6 +47227,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43230",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43230",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43256,6 +47326,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43232",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43232",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43311,6 +47392,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43235",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43235",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43341,6 +47433,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "43237",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43237",
@@ -43506,6 +47609,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "43243",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43243",
@@ -43773,6 +47887,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43247",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43247",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -43858,6 +47983,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "43248",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43248",
@@ -44928,6 +49064,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43268",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43268",
     "merchantId": "lidl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45291,6 +49438,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43271",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43271",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45464,6 +49622,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "43273",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43273",
@@ -45665,6 +49834,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43276",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43276",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45728,6 +49908,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "43277",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43277",
@@ -45852,6 +50043,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43279",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43279",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -45948,6 +50150,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "43280",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43280",
@@ -46160,6 +50373,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43282",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43282",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46245,6 +50469,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "43283",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43283",
@@ -46578,6 +50813,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43286",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43286",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -46740,6 +50986,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T05:01:07.250Z"
+  },
+  {
+    "setId": "43288",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43288",
@@ -46941,6 +51198,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43290",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43290",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47106,6 +51374,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43292",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43292",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47213,6 +51492,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "43293",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43293",
@@ -47334,6 +51624,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "43294",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43294",
@@ -47480,6 +51781,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43296",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43296",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47587,6 +51899,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "43297",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43297",
@@ -47700,6 +52023,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43299",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43299",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47810,6 +52144,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43300",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43300",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -47884,6 +52229,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "43302",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 34999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "43302",
@@ -48008,6 +52364,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43304",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43304",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48063,6 +52430,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43305",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "43305",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48095,6 +52473,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "43306",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "43307",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -48115,6 +52504,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "43307",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "45200",
@@ -48225,6 +52625,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "60205",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60205",
@@ -48360,6 +52771,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60238",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60238",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -48467,6 +52889,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "60304",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60304",
@@ -49119,6 +53552,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60368",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60368",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49284,6 +53728,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60400",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60400",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49383,6 +53838,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60402",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60402",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49468,6 +53934,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "60404",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60404",
@@ -49592,6 +54069,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60407",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60407",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -49611,6 +54099,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-27T06:50:56.620Z"
+  },
+  {
+    "setId": "60409",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60409",
@@ -49655,6 +54154,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "60411",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60411",
@@ -50076,6 +54586,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60423",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60423",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50494,6 +55015,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60444",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60444",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50601,6 +55133,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "60445",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60445",
@@ -50714,6 +55257,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60447",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60447",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -50799,6 +55353,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "60451",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60451",
@@ -51052,6 +55617,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T05:01:07.250Z"
+  },
+  {
+    "setId": "60454",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60454",
@@ -51627,6 +56203,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60465",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60465",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -51835,6 +56422,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-09T18:25:52.341Z"
   },
   {
+    "setId": "60467",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "60469",
     "merchantId": "coolblue",
     "regionCode": "NL",
@@ -51899,6 +56497,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "60469",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60469",
@@ -52009,6 +56618,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "60470",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60470",
@@ -52287,6 +56907,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60478",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60478",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52496,6 +57127,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60480",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60480",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52595,6 +57237,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60481",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60481",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -52669,6 +57322,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "60482",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60482",
@@ -52779,6 +57443,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "60483",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60483",
@@ -52936,6 +57611,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60485",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60485",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53021,6 +57707,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "60486",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60486",
@@ -53123,6 +57820,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60487",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60487",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53211,6 +57919,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60488",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60488",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53285,6 +58004,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "60489",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60489",
@@ -53420,6 +58150,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60490",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60490",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53497,6 +58238,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60491",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60491",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53571,6 +58323,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "60492",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60492",
@@ -53684,6 +58447,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60493",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3799,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60493",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -53758,6 +58532,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:25:53.134Z"
+  },
+  {
+    "setId": "60494",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60494",
@@ -53926,6 +58711,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60496",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60496",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54033,6 +58829,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "60497",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4675,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60497",
@@ -54146,6 +58953,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60498",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60498",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54253,6 +59071,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "60499",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60499",
@@ -54366,6 +59195,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60500",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2549,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60500",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54407,6 +59247,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "60501",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60502",
@@ -54872,6 +59723,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60506",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60506",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54982,6 +59844,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60508",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60508",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -54990,6 +59863,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "60509",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "60509",
@@ -55081,6 +59965,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60511",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7649,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60511",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55136,6 +60031,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "60512",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "60512",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55166,6 +60072,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "71039",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4699,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71039",
@@ -55246,6 +60163,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71045",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71045",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55254,6 +60182,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "display_box",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "71046",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71046",
@@ -55301,6 +60240,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71047",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71047",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55334,6 +60284,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71048",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71048",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55353,6 +60314,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "display_box",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "71049",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71049",
@@ -55455,6 +60427,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71050",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71050",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -55518,6 +60501,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "71051",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71051",
@@ -55595,6 +60589,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "display_box",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "71052",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71052",
@@ -55782,6 +60787,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "71411",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 26999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71411",
@@ -56101,6 +61117,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "71426",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71426",
@@ -56456,6 +61483,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71440",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71440",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -56541,6 +61579,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "71441",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71441",
@@ -56816,6 +61865,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "71459",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71459",
@@ -57314,6 +62374,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71488",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71488",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -57377,6 +62448,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "71490",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71490",
@@ -58326,6 +63408,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71741",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 34499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71741",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -58565,6 +63658,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "71799",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 37999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71799",
@@ -58862,6 +63966,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "71822",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71822",
@@ -59998,6 +65113,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71840",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2124,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71840",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60086,6 +65212,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71842",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3824,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71842",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60149,6 +65286,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "71843",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71843",
@@ -60713,6 +65861,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71848",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71848",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -60820,6 +65979,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "71849",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71849",
@@ -60999,6 +66169,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71851",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71851",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61095,6 +66276,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:35:58.192Z"
+  },
+  {
+    "setId": "71853",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71853",
@@ -61758,6 +66950,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71860",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71860",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61766,6 +66969,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "71861",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71861",
@@ -61821,6 +67035,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "71862",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71862",
@@ -61923,6 +67148,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71863",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71863",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -61997,6 +67233,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "71864",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71864",
@@ -62110,6 +67357,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71866",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71866",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62195,6 +67453,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "71867",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6599,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71867",
@@ -62330,6 +67599,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71868",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7649,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71868",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62426,6 +67706,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "71869",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11049,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71869",
@@ -62539,6 +67830,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71870",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11899,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71870",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62649,6 +67951,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71871",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7649,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "71871",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -62745,6 +68058,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "71872",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "71872",
@@ -63298,6 +68622,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72037",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14449,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "72037",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -63372,6 +68707,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "72038",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "72038",
@@ -63603,6 +68949,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "72041",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "72041",
@@ -63859,6 +69216,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72043",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "72043",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64013,6 +69381,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72050",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "72050",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64109,6 +69488,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "72151",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "72151",
@@ -64288,6 +69678,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75192",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 62999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75192",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64351,6 +69752,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "75210",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75210",
@@ -64431,6 +69843,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75290",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 39999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75290",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64507,6 +69930,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:06:05.983Z"
   },
   {
+    "setId": "75304",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75305",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "75305",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -64527,6 +69972,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "75319",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75319",
@@ -64560,6 +70016,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "75323",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75323",
@@ -64640,6 +70107,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75327",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75327",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64717,6 +70195,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75329",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75329",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64736,6 +70225,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "75331",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 59999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75331",
@@ -64791,6 +70291,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75332",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75332",
@@ -64871,6 +70382,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75333",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75333",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -64934,6 +70456,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:41:49.864Z"
+  },
+  {
+    "setId": "75337",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75337",
@@ -65011,6 +70544,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "75343",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75343",
@@ -65146,6 +70690,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75347",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75347",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65245,6 +70800,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75349",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75349",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65310,6 +70876,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "75351",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "75353",
     "merchantId": "brickfever",
     "regionCode": "NL",
@@ -65319,6 +70896,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75353",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75353",
@@ -65432,6 +71020,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75357",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75357",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65495,6 +71094,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75358",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75358",
@@ -65564,6 +71174,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75361",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75361",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65583,6 +71204,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75362",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75362",
@@ -65671,6 +71303,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 59999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75367",
@@ -65850,6 +71493,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75372",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75372",
     "merchantId": "joybuy",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -65891,6 +71545,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:36:33.891Z"
+  },
+  {
+    "setId": "75373",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75373",
@@ -66114,6 +71779,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75375",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7224,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75375",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -66279,6 +71955,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75379",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75379",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -66433,6 +72120,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75384",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75384",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -66474,6 +72172,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75386",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75386",
@@ -66642,6 +72351,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75389",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75389",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -66661,6 +72381,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-20T18:10:52.420Z"
+  },
+  {
+    "setId": "75391",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75391",
@@ -66939,6 +72670,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75399",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75399",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -67024,6 +72766,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "75400",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75400",
@@ -67742,6 +73495,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75407",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75407",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -68050,6 +73814,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75411",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75411",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -68138,6 +73913,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75412",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75412",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -68190,6 +73976,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "75413",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75413",
@@ -68432,6 +74229,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "75415",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75415",
@@ -69029,6 +74837,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75432",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75432",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -69125,6 +74944,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "75433",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75433",
@@ -69315,6 +75145,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75434",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75434",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -69367,6 +75208,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T00:02:28.958Z"
+  },
+  {
+    "setId": "75435",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75435",
@@ -69656,6 +75508,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75438",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75438",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -69741,6 +75604,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75439",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75439",
@@ -70162,6 +76036,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75444",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75444",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -70258,6 +76143,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75445",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75445",
@@ -70423,6 +76319,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75447",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12749,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75447",
@@ -70987,6 +76894,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75460",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75460",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -71006,6 +76924,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "75461",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75461",
@@ -71262,6 +77191,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75637",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75637",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -71358,6 +77298,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "75638",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75638",
@@ -71468,6 +77419,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "75639",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75639",
@@ -71669,6 +77631,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75642",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75642",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -71790,6 +77763,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75644",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75644",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -71853,6 +77837,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "75645",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75645",
@@ -72007,6 +78002,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-09T18:36:04.573Z"
+  },
+  {
+    "setId": "75681",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75681",
@@ -72681,6 +78687,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75892",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "75892",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -72722,6 +78739,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "75980",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "75980",
@@ -72857,6 +78885,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76161",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76161",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -72876,6 +78915,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "76193",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76193",
@@ -73085,6 +79135,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "76218",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76218",
@@ -73616,6 +79677,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76271",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76271",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -73682,6 +79754,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76276",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76276",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -73712,6 +79795,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "76277",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76277",
@@ -73767,6 +79861,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "76278",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76278",
@@ -73935,6 +80040,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76284",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76284",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -74078,6 +80194,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76292",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76292",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -74086,6 +80213,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76294",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76294",
@@ -74174,6 +80312,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "76296",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76296",
@@ -74342,6 +80491,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76300",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76300",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -74361,6 +80521,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "76301",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76301",
@@ -75244,6 +81415,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76314",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76314",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -75802,6 +81984,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76321",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76321",
@@ -76509,6 +82702,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76327",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76327",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -76572,6 +82776,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "76329",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76329",
@@ -77807,6 +84022,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76346",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76346",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -77972,6 +84198,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76349",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4249,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76349",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -78090,6 +84327,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "76350",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76350",
@@ -78225,6 +84473,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76354",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 31499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76354",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -78280,6 +84539,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76405",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 48999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76405",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -78321,6 +84591,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "76417",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 47999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76417",
@@ -78453,6 +84734,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "76424",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76424",
@@ -78610,6 +84902,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76428",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76428",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -78684,6 +84987,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-14T06:27:19.247Z"
+  },
+  {
+    "setId": "76429",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76429",
@@ -78852,6 +85166,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76441",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76441",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -78926,6 +85251,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "76442",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76442",
@@ -79457,6 +85793,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76448",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76448",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -79930,6 +86277,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76453",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76453",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -80004,6 +86362,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "76454",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76454",
@@ -80092,6 +86461,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "76456",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2964,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76456",
@@ -80799,6 +87179,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76466",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76466",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -81151,6 +87542,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76471",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76471",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -81349,6 +87751,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76474",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76474",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -81445,6 +87858,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "76475",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76475",
@@ -81745,6 +88169,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76900",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76900",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -81797,6 +88232,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76904",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6699,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76904",
@@ -81830,6 +88276,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76905",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76905",
@@ -81954,6 +88411,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76917",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76917",
     "merchantId": "brickfever",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -81995,6 +88463,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "76919",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76919",
@@ -82053,6 +88532,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76921",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76921",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -82094,6 +88584,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "76922",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76922",
@@ -82182,6 +88683,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:01:47.655Z"
+  },
+  {
+    "setId": "76924",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76924",
@@ -82339,6 +88851,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76935",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "76935",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -82347,6 +88870,39 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76964",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "76964",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "76964",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76967",
@@ -82644,6 +89200,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:06:05.983Z"
+  },
+  {
+    "setId": "76970",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76970",
@@ -82963,6 +89530,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "76975",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "76975",
@@ -83535,6 +90113,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "77005",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77005",
@@ -84231,6 +90820,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77056",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77056",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -84415,6 +91015,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:41:15.541Z"
+  },
+  {
+    "setId": "77058",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77058",
@@ -85231,6 +91842,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
   {
+    "setId": "77092",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "77117",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -85518,6 +92140,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77237",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77237",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -85661,6 +92294,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77238",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77238",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -85746,6 +92390,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "77239",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77239",
@@ -85870,6 +92525,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77240",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77240",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -85922,6 +92588,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "77241",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77241",
@@ -85988,6 +92665,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "77242",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77242",
@@ -86112,6 +92800,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77243",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77243",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -86230,6 +92929,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "77244",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77244",
@@ -86373,6 +93083,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "77245",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77245",
@@ -86519,6 +93240,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77246",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77246",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -86626,6 +93358,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:25:27.019Z"
+  },
+  {
+    "setId": "77248",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77248",
@@ -86750,6 +93493,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77249",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77249",
     "merchantId": "conrad",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -86857,6 +93611,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "77250",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77250",
@@ -87003,6 +93768,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77251",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77251",
     "merchantId": "proshop",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -87066,6 +93842,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "77252",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77252",
@@ -87234,6 +94021,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77254",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77254",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -87330,6 +94128,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "77255",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77255",
@@ -87454,6 +94263,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77256",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77256",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -87561,6 +94381,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "77257",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77257",
@@ -87696,6 +94527,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77258",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77258",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -87759,6 +94601,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:11:18.316Z"
+  },
+  {
+    "setId": "77259",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77259",
@@ -87938,6 +94791,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77261",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77261",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88056,6 +94920,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-05T12:10:57.851Z"
+  },
+  {
+    "setId": "77262",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77262",
@@ -88268,6 +95143,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77977",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77977",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88345,6 +95231,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77978",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2549,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77978",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88411,6 +95308,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77981",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77981",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88463,6 +95371,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:50:58.737Z"
+  },
+  {
+    "setId": "77982",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5949,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77982",
@@ -88532,6 +95451,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77983",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77983",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88562,6 +95492,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:16:05.628Z"
+  },
+  {
+    "setId": "77984",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "77984",
@@ -88653,6 +95594,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77985",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "77985",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88708,6 +95660,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "80103",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "80103",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -88730,12 +95693,56 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "80109",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "80109",
     "merchantId": "uniekebricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-16T11:19:18.511Z"
+  },
+  {
+    "setId": "80117",
+    "merchantId": "rakuten-lego-eu",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "80117",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
+    "setId": "80117",
+    "merchantId": "uniekebricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-16T11:19:18.511Z"
   },
@@ -88762,6 +95769,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:46:07.001Z"
   },
   {
+    "setId": "80118",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "80120",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -88773,6 +95791,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-06-15T06:46:07.001Z"
   },
   {
+    "setId": "80120",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
+  },
+  {
     "setId": "80121",
     "merchantId": "rakuten-lego-eu",
     "regionCode": "NL",
@@ -88782,6 +95811,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-06-15T06:46:07.001Z"
+  },
+  {
+    "setId": "80121",
+    "merchantId": "brickspoint",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-06-18T15:42:29.013Z"
   },
   {
     "setId": "80121",

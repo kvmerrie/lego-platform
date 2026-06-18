@@ -30,6 +30,8 @@ export interface UniekeBricksFeedProduct {
   title?: string;
 }
 
+export type DirectWooCommerceFeedProduct = UniekeBricksFeedProduct;
+
 export interface UniekeBricksFeedSyncDependencies {
   fetchFn?: typeof fetch;
   getUniekeBricksFeedConfigFn?: typeof getUniekeBricksFeedConfig;
@@ -490,6 +492,12 @@ function isLegoContext(product: UniekeBricksFeedProduct): boolean {
   );
 }
 
+export function isDirectWooCommerceLegoContext(
+  product: DirectWooCommerceFeedProduct,
+): boolean {
+  return isLegoContext(product);
+}
+
 function isNonConstructionLegoProduct(
   product: UniekeBricksFeedProduct,
 ): boolean {
@@ -498,6 +506,12 @@ function isNonConstructionLegoProduct(
   return /\b(nintendo switch|playstation|ps5|xbox|videogame|software|game|boek|book|boeken|kleding|shirt|pyjama|rugzak|tas|beker|drinkfles|sleutelhanger|keychain|watch|horloge|lamp|storage|opberg|etui|puzzel|puzzle|poster|kalender|calendar|minifigure display|display case)\b/iu.test(
     text,
   );
+}
+
+export function isDirectWooCommerceNonConstructionLegoProduct(
+  product: DirectWooCommerceFeedProduct,
+): boolean {
+  return isNonConstructionLegoProduct(product);
 }
 
 function extractFiveDigitSetNumbers(value?: string): readonly string[] {
@@ -522,6 +536,12 @@ export function resolveUniekeBricksSetNumber(
     extractFiveDigitSetNumbers(product.title)[0] ??
     extractFiveDigitSetNumbers(stripHtml(product.description))[0]
   );
+}
+
+export function resolveDirectWooCommerceSetNumber(
+  product: DirectWooCommerceFeedProduct,
+): string | undefined {
+  return resolveUniekeBricksSetNumber(product);
 }
 
 function resolveUniekeBricksBrand(
@@ -644,8 +664,19 @@ function buildSetNumberCandidateFields(
   return candidateFields;
 }
 
-export function normalizeUniekeBricksFeedProductToFeedRow(
-  product: UniekeBricksFeedProduct,
+export function buildDirectWooCommerceSetNumberCandidateFields(
+  product: DirectWooCommerceFeedProduct,
+): Record<string, string> {
+  return buildSetNumberCandidateFields(product);
+}
+
+export function normalizeDirectWooCommerceFeedProductToFeedRow(
+  product: DirectWooCommerceFeedProduct,
+  {
+    sourceMetadataSource,
+  }: {
+    sourceMetadataSource: string;
+  },
 ): AlternateAffiliateFeedRow {
   return {
     affiliateDeeplink: product.link ?? '',
@@ -663,9 +694,17 @@ export function normalizeUniekeBricksFeedProductToFeedRow(
     sourceMetadata: {
       availability: product.availability,
       condition: product.condition,
-      source: 'uniekebricks-direct-feed',
+      source: sourceMetadataSource,
     },
   };
+}
+
+export function normalizeUniekeBricksFeedProductToFeedRow(
+  product: UniekeBricksFeedProduct,
+): AlternateAffiliateFeedRow {
+  return normalizeDirectWooCommerceFeedProductToFeedRow(product, {
+    sourceMetadataSource: 'uniekebricks-direct-feed',
+  });
 }
 
 export async function parseUniekeBricksProductFeedXmlStream({
@@ -749,6 +788,19 @@ export async function parseUniekeBricksProductFeedXmlStream({
   });
 
   return products;
+}
+
+export async function parseDirectWooCommerceProductFeedXmlStream({
+  maxProducts,
+  stream,
+}: {
+  maxProducts?: number;
+  stream: NodeJS.ReadableStream;
+}): Promise<readonly DirectWooCommerceFeedProduct[]> {
+  return await parseUniekeBricksProductFeedXmlStream({
+    maxProducts,
+    stream,
+  });
 }
 
 function toUniekeBricksFeedProduct(

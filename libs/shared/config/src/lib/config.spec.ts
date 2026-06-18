@@ -8,6 +8,7 @@ import {
   getAwinProshopFeedConfig,
   getAdminPromotionConfig,
   getBrickfeverFeedConfig,
+  getBrickspointFeedConfig,
   getBricksetGalleryRenderMode,
   buildArticlePath,
   buildCanonicalUrl,
@@ -24,6 +25,7 @@ import {
   getMissingAwinJoybuyEnvKeys,
   getMissingAwinProshopEnvKeys,
   getMissingBrickfeverEnvKeys,
+  getMissingBrickspointEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
@@ -72,6 +74,7 @@ import {
   hasAwinProshopFeedConfig,
   hasBrowserSupabaseConfig,
   hasBrickfeverFeedConfig,
+  hasBrickspointFeedConfig,
   hasIndexNowConfig,
   hasMisterBricksFeedConfig,
   hasPublicWebRevalidationConfig,
@@ -109,6 +112,7 @@ import {
   webNavigation,
   platformConfig,
   resolvePublicMerchantDisplayName,
+  brickspointEnvKeys,
 } from './config';
 
 describe('platform config', () => {
@@ -1407,6 +1411,51 @@ describe('shared config Brickfever feed helpers', () => {
 
     expect(hasBrickfeverFeedConfig()).toBe(false);
     expect(getMissingBrickfeverEnvKeys()).toEqual([brickfeverEnvKeys.feedUrl]);
+  });
+});
+
+describe('shared config Brickspoint feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Brickspoint feed config with sensible merchant defaults', () => {
+    process.env.BRICKSPOINT_FEED_URL =
+      'https://brickspoint.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+
+    expect(hasBrickspointFeedConfig()).toBe(true);
+    expect(getMissingBrickspointEnvKeys()).toEqual([]);
+    expect(getBrickspointFeedConfig()).toEqual({
+      feedUrl:
+        'https://brickspoint.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      merchantSlug: 'brickspoint',
+      merchantName: 'Brickspoint',
+    });
+  });
+
+  test('allows explicit Brickspoint merchant overrides', () => {
+    process.env.BRICKSPOINT_FEED_URL =
+      'https://brickspoint.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml';
+    process.env.BRICKSPOINT_MERCHANT_SLUG = 'brickspoint-direct';
+    process.env.BRICKSPOINT_MERCHANT_NAME = 'Brickspoint Direct';
+
+    expect(getBrickspointFeedConfig()).toEqual({
+      feedUrl:
+        'https://brickspoint.nl/wp-content/uploads/woo-product-feed-pro/xml/feed.xml',
+      merchantSlug: 'brickspoint-direct',
+      merchantName: 'Brickspoint Direct',
+    });
+  });
+
+  test('reports the missing Brickspoint feed URL', () => {
+    delete process.env.BRICKSPOINT_FEED_URL;
+
+    expect(hasBrickspointFeedConfig()).toBe(false);
+    expect(getMissingBrickspointEnvKeys()).toEqual([
+      brickspointEnvKeys.feedUrl,
+    ]);
   });
 });
 

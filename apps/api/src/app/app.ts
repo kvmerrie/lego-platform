@@ -12,6 +12,7 @@ import adminArticlesRoutes from './routes/admin-articles';
 import adminEditorialAgentRoutes from './routes/admin-editorial-agent';
 import adminCacheRevalidationRoutes from './routes/admin-cache-revalidation';
 import adminReviewsRoutes from './routes/admin-reviews';
+import publicPartnerWidgetRoutes from './routes/public-partner-widget';
 
 export type AppOptions = Record<string, never>;
 
@@ -22,6 +23,7 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   await fastify.register(rootRoutes, { ...opts });
   await fastify.register(healthRoutes, { ...opts });
   await fastify.register(apiV1Routes, { ...opts });
+  await fastify.register(publicPartnerWidgetRoutes, { ...opts });
   await fastify.register(adminCatalogRoutes, { ...opts });
   await fastify.register(adminArticlesRoutes, { ...opts });
   await fastify.register(adminEditorialAgentRoutes, { ...opts });

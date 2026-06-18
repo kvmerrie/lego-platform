@@ -1999,8 +1999,13 @@ describe('set detail page JSON-LD', () => {
     expect(html).toMatch(/€(?: |\u00a0)175,00/u);
     expect(html).toMatch(/€(?: |\u00a0)1,67 lager, maar niet recent genoeg/u);
     expect(html).toContain('https://partner.example/21061-proshop');
-    expect(html).toContain('"lowPrice":176.67');
+    expect(html).toContain('"offers":{"@type":"Offer"');
+    expect(html).toContain('"price":176.67');
+    expect(html).toContain(
+      '"seller":{"@type":"Organization","name":"Proshop"}',
+    );
     expect(html).not.toContain('https://partner.example/21061-mediamarkt');
+    expect(html).not.toContain('"@type":"AggregateOffer"');
     expect(html).not.toContain('"lowPrice":175');
     expect(html).toContain('Op voorraad');
     expect(html).toContain('9 winkels nagekeken');

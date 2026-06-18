@@ -48,6 +48,8 @@ function dealCard(id: string, url = `https://merchant.example/${id}`) {
       currentPrice: 'Vanaf EUR 79,99',
       decisionLabel: 'Sterke deal',
       merchantLabel: 'Laagst bij Toy Shop',
+      merchantName: 'Toy Shop',
+      merchantSlug: 'toy-shop',
       primaryActionHref: url,
       reviewedLabel: 'Snapshot bijgewerkt',
     },
@@ -227,6 +229,19 @@ function buildFixtures() {
   };
 }
 
+function withPresentationTitle(
+  set: CatalogCanonicalSet,
+  displayTitle: string,
+): CatalogCanonicalSet {
+  return {
+    ...set,
+    catalogName: set.name,
+    displayTitle,
+    displayTitleSource: 'rakuten-lego-eu',
+    name: displayTitle,
+  };
+}
+
 describe('homepage commerce snapshot builder', () => {
   test('builds all six homepage commerce tabs', async () => {
     const result = await buildHomepageCommerceSnapshot({
@@ -245,6 +260,20 @@ describe('homepage commerce snapshot builder', () => {
       'biggestPriceDrops',
       'waitCanPayOff',
     ]);
+    expect(result.snapshot.buyRail.bestDeals[0]).toMatchObject({
+      currentPriceMinor: 7999,
+      ctaUrl: 'https://canonical.example/best-deal',
+      merchantName: 'Toy Shop',
+      merchantSlug: 'toy-shop',
+      setId: '1001',
+    });
+    expect(result.snapshot.buyRail.popularThisWeek[0]).toMatchObject({
+      currentPriceMinor: 8999,
+      ctaUrl: 'https://merchant.example/1002',
+      merchantName: 'Toy Shop',
+      merchantSlug: 'toy-shop',
+      setId: '1002',
+    });
   });
 
   test('prevents overlap between buy rail and follow rail', async () => {
@@ -310,8 +339,14 @@ describe('homepage commerce snapshot builder', () => {
 
   test('keeps shared presentation titles from deal and collection rails', async () => {
     const fixtures = buildFixtures();
+    const catalogSets = fixtures.catalogSets.map((set) =>
+      set.setId === '1001' || set.setId === '1003'
+        ? withPresentationTitle(set, 'In de ban van de ringen: Rivendel')
+        : set,
+    );
     const result = await buildHomepageCommerceSnapshot({
       ...fixtures,
+      catalogSets,
       collectionSnapshots: [
         {
           ...fixtures.collectionSnapshots[0],
@@ -344,16 +379,108 @@ describe('homepage commerce snapshot builder', () => {
     });
 
     expect(result.snapshot.buyRail.bestDeals[0]).toMatchObject({
+      catalogName: 'Beste deal',
       displayTitle: 'In de ban van de ringen: Rivendel',
       displayTitleSource: 'rakuten-lego-eu',
       name: 'In de ban van de ringen: Rivendel',
       setId: '1001',
     });
     expect(result.snapshot.buyRail.giftsUnder100[0]).toMatchObject({
+      catalogName: 'Cadeau onder honderd',
       displayTitle: 'In de ban van de ringen: Rivendel',
       displayTitleSource: 'rakuten-lego-eu',
       name: 'In de ban van de ringen: Rivendel',
       setId: '1003',
+    });
+  });
+
+  test('uses NL presentation titles in all homepage commerce tabs', async () => {
+    const fixtures = buildFixtures();
+    const catalogSets = fixtures.catalogSets.map((set) => {
+      switch (set.setId) {
+        case '1001':
+          return withPresentationTitle(set, 'Beste deal NL');
+        case '1002':
+          return withPresentationTitle(set, 'Populaire koopset NL');
+        case '1003':
+          return withPresentationTitle(set, 'Cadeau onder honderd NL');
+        case '2001':
+          return withPresentationTitle(set, 'Slim volgmodel NL');
+        case '2002':
+          return withPresentationTitle(set, 'Prijsdaling model NL');
+        case '2003':
+          return withPresentationTitle(set, 'Wachten kan lonen model NL');
+        default:
+          return set;
+      }
+    });
+    const result = await buildHomepageCommerceSnapshot({
+      ...fixtures,
+      catalogSets,
+      now: new Date(generatedAt),
+    });
+
+    expect(result.snapshot.buyRail.bestDeals[0]).toMatchObject({
+      displayTitle: 'Beste deal NL',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'Beste deal NL',
+      setId: '1001',
+    });
+    expect(result.snapshot.buyRail.popularThisWeek[0]).toMatchObject({
+      displayTitle: 'Populaire koopset NL',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'Populaire koopset NL',
+      setId: '1002',
+    });
+    expect(result.snapshot.buyRail.giftsUnder100[0]).toMatchObject({
+      displayTitle: 'Cadeau onder honderd NL',
+      displayTitleSource: 'rakuten-lego-eu',
+      name: 'Cadeau onder honderd NL',
+      setId: '1003',
+    });
+    expect(result.snapshot.followRail.smartToFollow).toContainEqual(
+      expect.objectContaining({
+        displayTitle: 'Slim volgmodel NL',
+        displayTitleSource: 'rakuten-lego-eu',
+        name: 'Slim volgmodel NL',
+        setId: '2001',
+      }),
+    );
+    expect(result.snapshot.followRail.biggestPriceDrops).toContainEqual(
+      expect.objectContaining({
+        displayTitle: 'Prijsdaling model NL',
+        displayTitleSource: 'rakuten-lego-eu',
+        name: 'Prijsdaling model NL',
+        setId: '2002',
+      }),
+    );
+    expect(result.snapshot.followRail.waitCanPayOff).toContainEqual(
+      expect.objectContaining({
+        displayTitle: 'Wachten kan lonen model NL',
+        displayTitleSource: 'rakuten-lego-eu',
+        name: 'Wachten kan lonen model NL',
+        setId: '2003',
+      }),
+    );
+  });
+
+  test('keeps fallback titles when no NL Rakuten title exists', async () => {
+    const result = await buildHomepageCommerceSnapshot({
+      ...buildFixtures(),
+      now: new Date(generatedAt),
+    });
+
+    expect(result.snapshot.followRail.smartToFollow).toContainEqual(
+      expect.objectContaining({
+        displayTitle: 'Slim volgmodel',
+        name: 'Slim volgmodel',
+        setId: '2001',
+      }),
+    );
+    expect(result.summary.titleAudit.smartToFollow).toMatchObject({
+      fallbackTitleCount: expect.any(Number),
+      missingNlTitleCount: expect.any(Number),
+      nlTitleAppliedCount: 0,
     });
   });
 

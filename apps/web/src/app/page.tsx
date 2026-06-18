@@ -197,6 +197,7 @@ function toHomepageFeatureSetListRenderItems({
             properties: {
               cardSurface,
               ...(card.merchantName ? { merchantName: card.merchantName } : {}),
+              ...(card.merchantSlug ? { merchantSlug: card.merchantSlug } : {}),
               offerPlacement: 'card_primary_cta',
               offerRole: 'best',
               pageSurface: 'homepage',
@@ -217,6 +218,8 @@ function toHomepageFeatureSetListRenderItems({
           ...(card.dealLabel ? { decisionLabel: card.dealLabel } : {}),
           ...(card.merchantName ? { decisionNote: merchantLabel } : {}),
           merchantLabel,
+          ...(card.merchantName ? { merchantName: card.merchantName } : {}),
+          ...(card.merchantSlug ? { merchantSlug: card.merchantSlug } : {}),
           ...(includeCommerceCta && card.ctaUrl
             ? { primaryActionHref: card.ctaUrl }
             : {}),
@@ -227,6 +230,7 @@ function toHomepageFeatureSetListRenderItems({
     const wishlistAnalyticsContext: HomepageWishlistAnalyticsContext = {
       cardSurface,
       ...(card.merchantName ? { merchantName: card.merchantName } : {}),
+      ...(card.merchantSlug ? { merchantSlug: card.merchantSlug } : {}),
       pageSurface: 'homepage',
       sectionId,
       setId: card.setId,
@@ -253,6 +257,7 @@ function toHomepageFeatureSetListRenderItems({
           cardSurface,
           hasCommerceCta: Boolean(includeCommerceCta && card.ctaUrl),
           ...(card.merchantName ? { merchantName: card.merchantName } : {}),
+          ...(card.merchantSlug ? { merchantSlug: card.merchantSlug } : {}),
           pageSurface: 'homepage',
           rankPosition: index + 1,
           sectionId,

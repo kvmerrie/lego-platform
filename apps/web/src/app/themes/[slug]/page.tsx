@@ -313,6 +313,8 @@ function buildThemeDealCardPriceContext(
     merchantLabel: card.merchantName
       ? `Laagst bij ${card.merchantName}`
       : 'Laagste bekende prijs',
+    ...(card.merchantName ? { merchantName: card.merchantName } : {}),
+    ...(card.merchantSlug ? { merchantSlug: card.merchantSlug } : {}),
     ...(card.ctaUrl ? { primaryActionHref: card.ctaUrl } : {}),
     pricePositionLabel: card.dealLabel ?? 'Beste prijs',
     pricePositionTone: 'positive',
@@ -352,6 +354,12 @@ function buildThemeBrowseCardPriceContext(
     merchantLabel: priceContext.merchantName
       ? `Laagst bij ${priceContext.merchantName}`
       : (basePriceContext?.merchantLabel ?? 'Laagste bekende prijs'),
+    ...(priceContext.merchantName
+      ? { merchantName: priceContext.merchantName }
+      : {}),
+    ...(priceContext.merchantSlug
+      ? { merchantSlug: priceContext.merchantSlug }
+      : {}),
     ...(priceContext.ctaUrl ? { primaryActionHref: priceContext.ctaUrl } : {}),
     reviewedLabel: basePriceContext?.reviewedLabel ?? 'Snapshot bijgewerkt',
   };

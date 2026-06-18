@@ -418,6 +418,12 @@ describe('CatalogOfferComparisonRail overlay', () => {
     ).toBe('/merchant-favicons/uniekebricks.png');
     expect(
       getMerchantFaviconUrl({
+        merchantLabel: 'Brickspoint',
+        merchantSlug: 'brickspoint',
+      }),
+    ).toBe('/merchant-favicons/brickspoint.jpg');
+    expect(
+      getMerchantFaviconUrl({
         merchantLabel: 'Top1Toys',
         merchantSlug: 'top1toys',
       }),

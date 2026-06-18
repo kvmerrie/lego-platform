@@ -134,8 +134,17 @@ function currentSnapshot({
   offers: readonly ReturnType<typeof snapshotOffer>[];
   setId: string;
 }): CurrentSnapshotInput {
+  const bestOffer = offers[0];
+
   return {
+    best_availability: bestOffer?.availability ?? null,
     best_checked_at: '2026-06-12T10:00:00.000Z',
+    best_merchant_id: bestOffer?.merchantId ?? null,
+    best_merchant_name: bestOffer?.merchantName ?? null,
+    best_merchant_slug: bestOffer?.merchantSlug ?? null,
+    best_offer_seed_id: bestOffer?.offerSeedId ?? null,
+    best_price_minor: bestOffer?.priceMinor ?? null,
+    best_product_url: bestOffer?.url ?? null,
     comparable_offer_count: offers.length,
     computed_at: '2026-06-12T10:05:00.000Z',
     condition: 'new',
@@ -237,6 +246,51 @@ describe('commerce merchant page snapshot builder', () => {
     });
     expect(
       records.find((record) => record.merchantSlug === 'lego')?.snapshot
+        .dealCount,
+    ).toBe(0);
+  });
+
+  test('uses the canonical current-offer snapshot best merchant for equal prices', () => {
+    const records = buildCommerceMerchantPageSnapshotRecords({
+      catalogSets: [catalogSet({ id: '10316' })],
+      currentSnapshots: [
+        currentSnapshot({
+          offers: [
+            snapshotOffer({
+              merchantId: 'merchant-goodbricks',
+              merchantName: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              priceMinor: 10_000,
+              setId: '10316',
+            }),
+            snapshotOffer({
+              merchantId: 'merchant-bol',
+              merchantName: 'bol',
+              merchantSlug: 'bol',
+              priceMinor: 10_000,
+              setId: '10316',
+            }),
+          ],
+          setId: '10316',
+        }),
+      ],
+      merchants: activeMerchants,
+    });
+
+    expect(
+      records.find((record) => record.merchantSlug === 'goodbricks')?.snapshot
+        .bestDeals[0],
+    ).toMatchObject({
+      merchant: expect.objectContaining({
+        slug: 'goodbricks',
+      }),
+      priceMinor: 10_000,
+      set: {
+        id: '10316',
+      },
+    });
+    expect(
+      records.find((record) => record.merchantSlug === 'bol')?.snapshot
         .dealCount,
     ).toBe(0);
   });

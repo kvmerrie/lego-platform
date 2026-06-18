@@ -9,6 +9,7 @@ export {
   getCommercePurchasableOfferRejectionReason,
   getCommerceOfferMerchantSlug as getCatalogOfferMerchantSlug,
   getCommerceOfferPublicMerchantName as getCatalogOfferPublicMerchantName,
+  selectCanonicalBestOfferContract,
   selectBestPurchasableOffer,
 } from '@lego-platform/shared/config';
 export type {
@@ -16,6 +17,7 @@ export type {
   BestPurchasableOfferRejectionReason,
   BestPurchasableOfferResult,
   BestPurchasableOfferSelectionReason,
+  CanonicalBestOfferContract,
   SelectBestPurchasableOfferOptions,
 } from '@lego-platform/shared/config';
 

@@ -36,6 +36,7 @@
     "sync:mediamarkt-feed": "pnqpm nx run mediamarkt-feed-sync:run",
     "sync:misterbricks-feed": "pnpm nx run misterbricks-feed-sync:run",
     "sync:brickfever-feed": "pnpm nx run brickfever-feed-sync:run",
+    "sync:brickspoint-feed": "pnpm nx run brickspoint-feed-sync:run",
     "sync:uniekebricks-feed": "pnpm nx run uniekebricks-feed-sync:run",
     "sync:brickset-enrichment": "pnpm nx run brickset-enrichment-sync:run",
     "sync:set-images": "pnpm nx run catalog-set-image-sync:run",

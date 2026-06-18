@@ -34,5 +34,6 @@ export * from './lib/tradetracker-lidl-feed-sync-server';
 export * from './lib/tradedoubler-mediamarkt-sync-server';
 export * from './lib/misterbricks-feed-sync-server';
 export * from './lib/brickfever-feed-sync-server';
+export * from './lib/brickspoint-feed-sync-server';
 export * from './lib/unieke-bricks-feed-sync-server';
 export * from './lib/brickset-enrichment-sync-server';

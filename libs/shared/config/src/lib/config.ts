@@ -902,6 +902,12 @@ export const brickfeverEnvKeys = {
   merchantName: 'BRICKFEVER_MERCHANT_NAME',
 } as const;
 
+export const brickspointEnvKeys = {
+  feedUrl: 'BRICKSPOINT_FEED_URL',
+  merchantSlug: 'BRICKSPOINT_MERCHANT_SLUG',
+  merchantName: 'BRICKSPOINT_MERCHANT_NAME',
+} as const;
+
 export const uniekeBricksEnvKeys = {
   feedUrl: 'UNIEKE_BRICKS_FEED_URL',
   feedOriginHostHeader: 'UNIEKE_BRICKS_FEED_ORIGIN_HOST_HEADER',
@@ -1032,6 +1038,12 @@ export interface MisterBricksFeedConfig {
 }
 
 export interface BrickfeverFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface BrickspointFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -2277,6 +2289,21 @@ export function getBrickfeverFeedConfig(
   };
 }
 
+export function getBrickspointFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): BrickspointFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: brickspointEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[brickspointEnvKeys.merchantSlug]?.trim() || 'brickspoint',
+    merchantName:
+      environment[brickspointEnvKeys.merchantName]?.trim() || 'Brickspoint',
+  };
+}
+
 export function getUniekeBricksFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): UniekeBricksFeedConfig {
@@ -2414,6 +2441,20 @@ export function getMissingBrickfeverEnvKeys(
   return environment[brickfeverEnvKeys.feedUrl]
     ? []
     : [brickfeverEnvKeys.feedUrl];
+}
+
+export function hasBrickspointFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[brickspointEnvKeys.feedUrl]);
+}
+
+export function getMissingBrickspointEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[brickspointEnvKeys.feedUrl]
+    ? []
+    : [brickspointEnvKeys.feedUrl];
 }
 
 export function hasUniekeBricksFeedConfig(
