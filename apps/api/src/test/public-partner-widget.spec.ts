@@ -84,6 +84,7 @@ async function createPartnerWidgetServer({
         }
       : undefined,
   ),
+  isDevPreviewRuntime = vi.fn(() => false),
   getPartnerWidgetConfig = vi.fn(() => partnerWidgetConfig),
   listCatalogCurrentOfferSummariesBySetIds = vi.fn(async () => [
     createCurrentOfferSummary([
@@ -123,6 +124,7 @@ async function createPartnerWidgetServer({
   await server.register(
     createPublicPartnerWidgetRoutes({
       getCatalogSetById,
+      isDevPreviewRuntime,
       getPartnerWidgetConfig,
       listCatalogCurrentOfferSummariesBySetIds,
       listCommerceMerchants,
@@ -133,19 +135,31 @@ async function createPartnerWidgetServer({
 }
 
 function widgetUrl({
+  devPreview,
   merchantSlug = 'uniekebricks',
   mode = 'all',
   setId = '10316',
+  status,
 }: {
+  devPreview?: string;
   merchantSlug?: string;
   mode?: string;
   setId?: string;
+  status?: string;
 } = {}) {
   const params = new URLSearchParams({
     merchantSlug,
     mode,
     setId,
   });
+
+  if (devPreview) {
+    params.set('devPreview', devPreview);
+  }
+
+  if (status) {
+    params.set('status', status);
+  }
 
   return `${partnerWidgetApiPath}?${params.toString()}`;
 }
@@ -253,6 +267,113 @@ describe('public partner widget endpoint', () => {
     });
 
     expect(response.statusCode).toBe(403);
+
+    await server.close();
+  });
+
+  test('allows dev preview bypass without Origin in non-production', async () => {
+    const server = await createPartnerWidgetServer({
+      isDevPreviewRuntime: vi.fn(() => true),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl({ devPreview: '1' }),
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['x-brickhunt-dev-widget-preview']).toBe('1');
+    expect(response.json()).toMatchObject({
+      merchantSlug: 'uniekebricks',
+      status: 'winner',
+    });
+
+    await server.close();
+  });
+
+  test('ignores dev preview bypass in production', async () => {
+    const server = await createPartnerWidgetServer({
+      isDevPreviewRuntime: vi.fn(() => false),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl({ devPreview: '1' }),
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.headers['x-brickhunt-dev-widget-preview']).toBeUndefined();
+
+    await server.close();
+  });
+
+  test('serves mock states only during dev preview', async () => {
+    const devServer = await createPartnerWidgetServer({
+      isDevPreviewRuntime: vi.fn(() => true),
+    });
+    const productionServer = await createPartnerWidgetServer({
+      isDevPreviewRuntime: vi.fn(() => false),
+    });
+
+    const devResponse = await devServer.inject({
+      method: 'GET',
+      url: widgetUrl({
+        devPreview: '1',
+        merchantSlug: 'future-woocommerce-shop',
+        status: 'top3',
+      }),
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+    });
+    const productionResponse = await productionServer.inject({
+      method: 'GET',
+      url: widgetUrl({
+        devPreview: '1',
+        status: 'top3',
+      }),
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+    });
+
+    expect(devResponse.statusCode).toBe(200);
+    expect(devResponse.headers['x-brickhunt-dev-widget-preview']).toBe('1');
+    expect(devResponse.json()).toMatchObject({
+      merchantSlug: 'future-woocommerce-shop',
+      rank: 2,
+      status: 'top3',
+    });
+    expect(productionResponse.statusCode).toBe(403);
+
+    await devServer.close();
+    await productionServer.close();
+  });
+
+  test('returns mock no-data as 204 during dev preview', async () => {
+    const server = await createPartnerWidgetServer({
+      isDevPreviewRuntime: vi.fn(() => true),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl({
+        devPreview: '1',
+        status: 'no-data',
+      }),
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['x-brickhunt-dev-widget-preview']).toBe('1');
 
     await server.close();
   });
@@ -456,24 +577,30 @@ function flushPartnerBadgePromises() {
 }
 
 async function runPartnerBadgeScript({
+  attributes = '',
   response,
 }: {
+  attributes?: string;
   response: {
+    headers?: {
+      get: (headerName: string) => string | null;
+    };
     json?: () => Promise<unknown>;
     ok: boolean;
     status: number;
   };
 }) {
   const dom = new JSDOM(
-    '<!doctype html><html><body><main><script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="10316" data-merchant-slug="uniekebricks" data-mode="all"></script></main></body></html>',
+    `<!doctype html><html><body><main><script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="10316" data-merchant-slug="uniekebricks" data-mode="all" ${attributes}></script></main></body></html>`,
     {
       runScripts: 'outside-only',
       url: 'https://www.uniekebricks.nl/lego/rivendell/',
     },
   );
   const script = dom.window.document.querySelector('script');
-  const fetchMock = vi.fn(async (input: string) => {
+  const fetchMock = vi.fn(async (input: string, init?: unknown) => {
     void input;
+    void init;
 
     return response;
   });
@@ -518,31 +645,181 @@ describe('partner badge embed script', () => {
     ).toBeNull();
   });
 
-  test('renders a Brickhunt link for a valid response', async () => {
+  test('works without optional attributes and defaults to compact layout', async () => {
     const { dom, fetchMock } = await runPartnerBadgeScript({
       response: {
         ok: true,
         status: 200,
         json: async () => ({
           brickhuntUrl:
-            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316?existing=1',
           status: 'winner',
         }),
       },
     });
     const badge = dom.window.document.querySelector('brickhunt-partner-badge');
-    const link = badge?.shadowRoot?.querySelector('a');
+    const link = badge?.shadowRoot?.querySelector('.cta');
+    const poweredLink = badge?.shadowRoot?.querySelector('.powered a');
+    const poweredIcon = badge?.shadowRoot?.querySelector('.powered img');
+    const section = badge?.shadowRoot?.querySelector('section');
     const fetchUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    const fetchOptions = fetchMock.mock.calls[0]?.[1] as
+      | { headers?: Record<string, string> }
+      | undefined;
+    const linkUrl = new URL(link?.getAttribute('href') ?? '');
+    const poweredUrl = new URL(poweredLink?.getAttribute('href') ?? '');
 
     expect(fetchUrl.origin).toBe('https://www.brickhunt.nl');
     expect(fetchUrl.pathname).toBe('/api/public/partner-widget');
     expect(fetchUrl.searchParams.get('setId')).toBe('10316');
     expect(fetchUrl.searchParams.get('merchantSlug')).toBe('uniekebricks');
-    expect(link?.getAttribute('href')).toBe(
-      'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+    expect(fetchUrl.searchParams.get('devPreview')).toBeNull();
+    expect(fetchOptions?.headers).toBeUndefined();
+    expect(section?.className).toContain('winner');
+    expect(section?.className).toContain('compact');
+    expect(section?.textContent).toContain(
+      'Beste prijs gevalideerd door Brickhunt',
     );
+    expect(section?.textContent).toContain('Powered by Brickhunt');
+    expect(poweredIcon?.getAttribute('src')).toBe(
+      'https://www.brickhunt.nl/favicon-32x32.png',
+    );
+    expect(poweredIcon?.getAttribute('alt')).toBe('');
+    expect(linkUrl.origin).toBe('https://www.brickhunt.nl');
+    expect(linkUrl.pathname).toBe('/sets/lord-of-the-rings-rivendell-10316');
+    expect(linkUrl.searchParams.get('existing')).toBe('1');
+    expect(linkUrl.searchParams.get('utm_source')).toBe('partner_badge');
+    expect(linkUrl.searchParams.get('utm_medium')).toBe('widget');
+    expect(linkUrl.searchParams.get('utm_campaign')).toBe('uniekebricks');
+    expect(linkUrl.searchParams.get('utm_content')).toBe('winner_compact_all');
     expect(link?.getAttribute('target')).toBe('_blank');
     expect(link?.getAttribute('rel')).toBe('noopener sponsored');
-    expect(link?.textContent).toBe('Bekijk prijsvergelijking');
+    expect(link?.textContent).toBe('Bekijk validatie');
+    expect(poweredUrl.origin).toBe('https://www.brickhunt.nl');
+    expect(poweredUrl.pathname).toBe('/');
+    expect(poweredUrl.searchParams.get('utm_source')).toBe('partner_badge');
+    expect(poweredUrl.searchParams.get('utm_medium')).toBe('powered_by');
+    expect(poweredUrl.searchParams.get('utm_campaign')).toBe('uniekebricks');
+    expect(poweredUrl.searchParams.get('utm_content')).toBe(
+      'winner_compact_all',
+    );
+    expect(poweredLink?.getAttribute('target')).toBe('_blank');
+    expect(poweredLink?.getAttribute('rel')).toBe('noopener sponsored');
+    expect(poweredLink?.textContent).toBe('Brickhunt');
+  });
+
+  test('renders the card layout with configurable API base URL', async () => {
+    const { dom, fetchMock } = await runPartnerBadgeScript({
+      attributes:
+        'data-api-base-url="https://api.brickhunt.test" data-dev-preview="true" data-layout="card" data-mock-status="top3"',
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          merchantName: 'Unieke Bricks',
+          merchantPrice: 34999,
+          status: 'top3',
+        }),
+      },
+    });
+    const badge = dom.window.document.querySelector('brickhunt-partner-badge');
+    const section = badge?.shadowRoot?.querySelector('section');
+    const fetchUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    const fetchOptions = fetchMock.mock.calls[0]?.[1] as
+      | { headers?: Record<string, string> }
+      | undefined;
+
+    expect(fetchUrl.origin).toBe('https://api.brickhunt.test');
+    expect(fetchUrl.searchParams.get('devPreview')).toBe('1');
+    expect(fetchUrl.searchParams.get('status')).toBe('top3');
+    expect(fetchOptions?.headers).toEqual({
+      'x-brickhunt-dev-widget-preview': '1',
+    });
+    expect(section?.className).toContain('top3');
+    expect(section?.className).toContain('card');
+    expect(section?.textContent).toContain(
+      '\u20ac\u00a0349,99 bij Unieke Bricks',
+    );
+  });
+
+  test.each([
+    {
+      body: 'Brickhunt heeft bevestigd dat deze webshop momenteel de beste prijs heeft voor deze LEGO-set.',
+      status: 'winner',
+      title: 'Beste prijs gevalideerd',
+    },
+    {
+      body: 'Brickhunt heeft bevestigd dat deze prijs tot de beste aanbiedingen behoort.',
+      status: 'top3',
+      title: 'Topaanbieding gevalideerd',
+    },
+    {
+      body: 'Brickhunt heeft deze prijs gecontroleerd en vergeleken met andere LEGO-winkels.',
+      status: 'checked',
+      title: 'Prijs gecontroleerd',
+    },
+  ])('renders card copy for %s', async ({ body, status, title }) => {
+    const { dom } = await runPartnerBadgeScript({
+      attributes: 'data-layout="card"',
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          merchantName: 'Unieke Bricks',
+          merchantPrice: 34999,
+          merchantSlug: 'uniekebricks',
+          status,
+        }),
+      },
+    });
+    const section = dom.window.document
+      .querySelector('brickhunt-partner-badge')
+      ?.shadowRoot?.querySelector('section');
+    const link = section?.querySelector('.cta');
+    const linkUrl = new URL(link?.getAttribute('href') ?? '');
+
+    expect(section?.className).toContain('card');
+    expect(section?.textContent).toContain(title);
+    expect(section?.textContent).toContain(body);
+    expect(link?.textContent).toBe('Bekijk validatie');
+    expect(linkUrl.searchParams.get('utm_content')).toBe(`${status}_card_all`);
+  });
+
+  test.each([
+    {
+      compactTitle: 'Beste prijs gevalideerd door Brickhunt',
+      status: 'winner',
+    },
+    {
+      compactTitle: 'Topaanbieding gevalideerd door Brickhunt',
+      status: 'top3',
+    },
+    {
+      compactTitle: 'Prijs gecontroleerd door Brickhunt',
+      status: 'checked',
+    },
+  ])('renders compact copy for %s', async ({ compactTitle, status }) => {
+    const { dom } = await runPartnerBadgeScript({
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          status,
+        }),
+      },
+    });
+    const section = dom.window.document
+      .querySelector('brickhunt-partner-badge')
+      ?.shadowRoot?.querySelector('section');
+
+    expect(section?.className).toContain('compact');
+    expect(section?.textContent).toContain(compactTitle);
+    expect(section?.textContent).not.toContain('Vergelijk prijzen');
   });
 });

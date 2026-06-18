@@ -231,21 +231,27 @@ function selectBestSnapshotOffer(
   },
 ): CommerceCurrentOfferSnapshotOffer | undefined {
   const sortedOffers = sortSnapshotOffers(offers);
-  const selectableOffers = sortedOffers.map((offer) => ({
-    availability: offer.availability,
-    checkedAt: offer.checkedAt,
-    commercialUnitType: offer.commercialUnitType,
-    condition: offer.condition,
-    currency: offer.currency,
-    market: offer.market,
-    merchant: 'other' as const,
-    merchantName: offer.merchantName,
-    merchantSlug: offer.merchantSlug,
-    priceCents: offer.priceMinor,
-    setId: offer.setId,
-    snapshotOffer: offer,
-    url: offer.url,
-  }));
+  const selectableOffers = sortedOffers
+    .filter(
+      (offer) =>
+        getCommerceCommercialUnitComparisonGroup(offer.commercialUnitType) ===
+        'set_package',
+    )
+    .map((offer) => ({
+      availability: offer.availability,
+      checkedAt: offer.checkedAt,
+      commercialUnitType: offer.commercialUnitType,
+      condition: offer.condition,
+      currency: offer.currency,
+      market: offer.market,
+      merchant: 'other' as const,
+      merchantName: offer.merchantName,
+      merchantSlug: offer.merchantSlug,
+      priceCents: offer.priceMinor,
+      setId: offer.setId,
+      snapshotOffer: offer,
+      url: offer.url,
+    }));
 
   return selectBestPurchasableOffer(selectableOffers, {
     now,

@@ -25,6 +25,9 @@ export const COLLECTION_PAGE_SNAPSHOTS_TABLE = 'collection_page_snapshots';
 const BRICKSET_SOURCE = 'brickset';
 const BRICKSET_LOCALE = 'en-US';
 const COLLECTION_SNAPSHOT_SOURCE = 'collection_snapshot_sync';
+const COLLECTION_PAGE_SNAPSHOT_UPSERT_CHUNK_SIZE = 25;
+const COLLECTION_PAGE_SNAPSHOT_UPSERT_ON_CONFLICT =
+  'collection_slug,sort_key,page,page_size';
 const SNAPSHOT_PAGE_SIZE = 1000;
 const RECENT_RELEASE_LOOKBACK_DAYS = 210;
 const RECENT_RELEASE_LOOKAHEAD_DAYS = 45;
@@ -34,6 +37,32 @@ type CollectionPageSnapshotSupabaseClient = Pick<
   SupabaseClient,
   'from' | 'rpc'
 >;
+
+interface CollectionPageSnapshotRow {
+  collection_slug: string;
+  generated_at: string;
+  items_json: readonly CollectionPageSnapshotCard[];
+  page: number;
+  page_size: number;
+  snapshot_source: string;
+  sort_key: string;
+  source_version: string | null;
+  total_count: number;
+}
+
+interface CollectionPageSnapshotDuplicateKey {
+  key: string;
+  collectionSlug: string;
+  sortKey: string;
+  page: number;
+  pageSize: number;
+}
+
+interface CollectionPageSnapshotPayloadValidationIssue {
+  errors: readonly string[];
+  key: Partial<CollectionPageSnapshotDuplicateKey>;
+  rowIndex: number;
+}
 
 interface CatalogSetSourceMetadataRow {
   catalog_set_id: string;
@@ -111,6 +140,7 @@ export interface CollectionPageSnapshotBuildResult {
     >
   >;
   upsertedCount: number;
+  upsertError?: string;
 }
 
 function chunkRows<T>(rows: readonly T[], size: number): T[][] {
@@ -1104,7 +1134,7 @@ function compareSnapshotCards({
 
 function toSnapshotRows(
   snapshots: readonly CollectionPageSnapshot[],
-): Record<string, unknown>[] {
+): CollectionPageSnapshotRow[] {
   return snapshots.map((snapshot) => ({
     collection_slug: snapshot.collectionSlug,
     generated_at: snapshot.generatedAt,
@@ -1116,6 +1146,248 @@ function toSnapshotRows(
     source_version: snapshot.sourceVersion ?? null,
     total_count: snapshot.totalCount,
   }));
+}
+
+function getCollectionPageSnapshotConflictKey(
+  row: Pick<
+    CollectionPageSnapshotRow,
+    'collection_slug' | 'page' | 'page_size' | 'sort_key'
+  >,
+): string {
+  return [
+    String(row.collection_slug),
+    String(row.sort_key),
+    String(row.page),
+    String(row.page_size),
+  ].join('|');
+}
+
+function toCollectionPageSnapshotKey(
+  row: Pick<
+    CollectionPageSnapshotRow,
+    'collection_slug' | 'page' | 'page_size' | 'sort_key'
+  >,
+): CollectionPageSnapshotDuplicateKey {
+  return {
+    collectionSlug: String(row.collection_slug),
+    key: getCollectionPageSnapshotConflictKey(row),
+    page: row.page,
+    pageSize: row.page_size,
+    sortKey: String(row.sort_key),
+  };
+}
+
+function getApproximateJsonByteSize(value: unknown): number {
+  return Buffer.byteLength(JSON.stringify(value));
+}
+
+function readSupabaseErrorField(
+  error: unknown,
+  field: 'code' | 'details' | 'hint' | 'message',
+): string | null {
+  if (error && typeof error === 'object' && field in error) {
+    const value = (error as Record<string, unknown>)[field];
+
+    return typeof value === 'string' ? value : null;
+  }
+
+  if (field === 'message' && error instanceof Error) {
+    return error.message;
+  }
+
+  return null;
+}
+
+function validateCollectionPageSnapshotRow(
+  row: CollectionPageSnapshotRow,
+): string[] {
+  const errors: string[] = [];
+
+  if (typeof row.collection_slug !== 'string' || !row.collection_slug.trim()) {
+    errors.push('collection_slug is required');
+  }
+
+  if (typeof row.sort_key !== 'string' || !row.sort_key.trim()) {
+    errors.push('sort_key is required');
+  }
+
+  if (!Number.isInteger(row.page) || row.page <= 0) {
+    errors.push('page must be a positive integer');
+  }
+
+  if (!Number.isInteger(row.page_size) || row.page_size <= 0) {
+    errors.push('page_size must be a positive integer');
+  }
+
+  if (!Number.isInteger(row.total_count) || row.total_count < 0) {
+    errors.push('total_count must be a non-negative integer');
+  }
+
+  if (!Array.isArray(row.items_json)) {
+    errors.push('items_json must be an array');
+  }
+
+  if (
+    typeof row.generated_at !== 'string' ||
+    Number.isNaN(Date.parse(row.generated_at))
+  ) {
+    errors.push('generated_at must be an ISO timestamp');
+  }
+
+  if (
+    typeof row.snapshot_source !== 'string' ||
+    row.snapshot_source !== COLLECTION_SNAPSHOT_SOURCE
+  ) {
+    errors.push(`snapshot_source must be ${COLLECTION_SNAPSHOT_SOURCE}`);
+  }
+
+  return errors;
+}
+
+function createCollectionPageSnapshotPayloadShape(
+  rows: readonly CollectionPageSnapshotRow[],
+) {
+  return rows.slice(0, 5).map((row) => ({
+    approximatePayloadBytes: getApproximateJsonByteSize(row),
+    collectionSlug: row.collection_slug,
+    itemsLength: Array.isArray(row.items_json) ? row.items_json.length : null,
+    keys: Object.keys(row).sort(),
+    page: row.page,
+    pageSize: row.page_size,
+    sortKey: row.sort_key,
+  }));
+}
+
+function assertValidCollectionPageSnapshotRows({
+  rows,
+  snapshotCount,
+}: {
+  rows: readonly CollectionPageSnapshotRow[];
+  snapshotCount: number;
+}): void {
+  const issues: CollectionPageSnapshotPayloadValidationIssue[] = [];
+
+  rows.forEach((row, rowIndex) => {
+    const errors = validateCollectionPageSnapshotRow(row);
+
+    if (errors.length > 0) {
+      issues.push({
+        errors,
+        key: toCollectionPageSnapshotKey(row),
+        rowIndex,
+      });
+    }
+  });
+
+  if (issues.length === 0) {
+    return;
+  }
+
+  const diagnostics = {
+    event: 'collection_page_snapshot_invalid_payload',
+    invalidRowCount: issues.length,
+    issues: issues.slice(0, 10),
+    onConflict: COLLECTION_PAGE_SNAPSHOT_UPSERT_ON_CONFLICT,
+    rowCount: rows.length,
+    samplePayloadShape: createCollectionPageSnapshotPayloadShape(rows),
+    snapshotCount,
+    tableName: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+  };
+
+  console.error('[collection-page-snapshots] invalid_payload', diagnostics);
+
+  throw new Error(
+    `Invalid collection page snapshot payload. ${JSON.stringify(diagnostics)}`,
+  );
+}
+
+function dedupeCollectionPageSnapshotRows(
+  rows: readonly CollectionPageSnapshotRow[],
+): {
+  duplicateKeys: readonly CollectionPageSnapshotDuplicateKey[];
+  rows: readonly CollectionPageSnapshotRow[];
+} {
+  const rowByKey = new Map<string, CollectionPageSnapshotRow>();
+  const duplicateKeys: CollectionPageSnapshotDuplicateKey[] = [];
+
+  for (const row of rows) {
+    const key = getCollectionPageSnapshotConflictKey(row);
+
+    if (rowByKey.has(key)) {
+      duplicateKeys.push(toCollectionPageSnapshotKey(row));
+    }
+
+    rowByKey.set(key, row);
+  }
+
+  return {
+    duplicateKeys,
+    rows: [...rowByKey.values()],
+  };
+}
+
+function chunkCollectionPageSnapshotRows(
+  rows: readonly CollectionPageSnapshotRow[],
+): CollectionPageSnapshotRow[][] {
+  const rowsByCollectionSlug = new Map<string, CollectionPageSnapshotRow[]>();
+  const chunks: CollectionPageSnapshotRow[][] = [];
+
+  for (const row of rows) {
+    const collectionRows = rowsByCollectionSlug.get(row.collection_slug) ?? [];
+
+    collectionRows.push(row);
+    rowsByCollectionSlug.set(row.collection_slug, collectionRows);
+  }
+
+  for (const collectionRows of rowsByCollectionSlug.values()) {
+    chunks.push(
+      ...chunkRows(collectionRows, COLLECTION_PAGE_SNAPSHOT_UPSERT_CHUNK_SIZE),
+    );
+  }
+
+  return chunks;
+}
+
+function createCollectionPageSnapshotUpsertDiagnostics({
+  chunk,
+  chunkCount,
+  chunkIndex,
+  duplicateKeys,
+  error,
+  rowCount,
+  snapshotCount,
+}: {
+  chunk: readonly CollectionPageSnapshotRow[];
+  chunkCount: number;
+  chunkIndex: number;
+  duplicateKeys: readonly CollectionPageSnapshotDuplicateKey[];
+  error: unknown;
+  rowCount: number;
+  snapshotCount: number;
+}) {
+  const sampleKeys = chunk.slice(0, 5).map(toCollectionPageSnapshotKey);
+
+  return {
+    affectedCollectionSlug: sampleKeys[0]?.collectionSlug,
+    affectedPageKey: sampleKeys[0],
+    chunkCount,
+    chunkIndex,
+    chunkSize: chunk.length,
+    code: readSupabaseErrorField(error, 'code'),
+    details: readSupabaseErrorField(error, 'details'),
+    duplicateKeyCount: duplicateKeys.length,
+    duplicateKeySample: duplicateKeys.slice(0, 10),
+    hint: readSupabaseErrorField(error, 'hint'),
+    message:
+      readSupabaseErrorField(error, 'message') ??
+      (error instanceof Error ? error.message : String(error)),
+    onConflict: COLLECTION_PAGE_SNAPSHOT_UPSERT_ON_CONFLICT,
+    rowCount,
+    samplePayloadShape: createCollectionPageSnapshotPayloadShape(chunk),
+    sampleSnapshotKeys: sampleKeys,
+    snapshotCount,
+    tableName: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+  };
 }
 
 export async function buildCollectionPageSnapshots({
@@ -1338,17 +1610,63 @@ export async function upsertCollectionPageSnapshots({
   snapshots: readonly CollectionPageSnapshot[];
   supabaseClient?: CollectionPageSnapshotSupabaseClient;
 }): Promise<number> {
-  let upsertedCount = 0;
+  if (!snapshots.length) {
+    return 0;
+  }
 
-  for (const chunk of chunkRows(toSnapshotRows(snapshots), 100)) {
+  let upsertedCount = 0;
+  const snapshotRows = toSnapshotRows(snapshots);
+
+  assertValidCollectionPageSnapshotRows({
+    rows: snapshotRows,
+    snapshotCount: snapshots.length,
+  });
+
+  const { duplicateKeys, rows } =
+    dedupeCollectionPageSnapshotRows(snapshotRows);
+
+  if (duplicateKeys.length > 0) {
+    console.warn('[collection-page-snapshots] duplicate_keys_deduped', {
+      duplicateKeyCount: duplicateKeys.length,
+      duplicateKeySample: duplicateKeys.slice(0, 10),
+      event: 'collection_page_snapshot_duplicate_keys_deduped',
+      onConflict: COLLECTION_PAGE_SNAPSHOT_UPSERT_ON_CONFLICT,
+      rowCount: rows.length,
+      snapshotCount: snapshots.length,
+      tableName: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+    });
+  }
+
+  const chunks = chunkCollectionPageSnapshotRows(rows);
+
+  for (const [chunkIndex, chunk] of chunks.entries()) {
     const { error } = await supabaseClient
       .from(COLLECTION_PAGE_SNAPSHOTS_TABLE)
       .upsert(chunk, {
-        onConflict: 'collection_slug,sort_key,page,page_size',
+        onConflict: COLLECTION_PAGE_SNAPSHOT_UPSERT_ON_CONFLICT,
       });
 
     if (error) {
-      throw new Error('Unable to upsert collection page snapshots.');
+      const diagnostics = createCollectionPageSnapshotUpsertDiagnostics({
+        chunk,
+        chunkCount: chunks.length,
+        chunkIndex,
+        duplicateKeys,
+        error,
+        rowCount: rows.length,
+        snapshotCount: snapshots.length,
+      });
+
+      console.error('[collection-page-snapshots] upsert_failed', {
+        ...diagnostics,
+        event: 'collection_page_snapshot_upsert_failed',
+      });
+
+      throw new Error(
+        `Unable to upsert collection page snapshots. ${JSON.stringify(
+          diagnostics,
+        )}`,
+      );
     }
 
     upsertedCount += chunk.length;
@@ -1360,12 +1678,14 @@ export async function upsertCollectionPageSnapshots({
 export async function syncCollectionPageSnapshots({
   collectionSlugs,
   dryRun = true,
+  failOnUpsertError = true,
   now = new Date(),
   pageSize = CATALOG_BROWSE_PAGE_SIZE,
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
   collectionSlugs?: readonly string[];
   dryRun?: boolean;
+  failOnUpsertError?: boolean;
   now?: Date;
   pageSize?: number;
   supabaseClient?: CollectionPageSnapshotSupabaseClient;
@@ -1376,16 +1696,35 @@ export async function syncCollectionPageSnapshots({
     pageSize,
     supabaseClient,
   });
-  const upsertedCount = dryRun
-    ? 0
-    : await upsertCollectionPageSnapshots({
+  let upsertError: string | undefined;
+  let upsertedCount = 0;
+
+  if (!dryRun) {
+    try {
+      upsertedCount = await upsertCollectionPageSnapshots({
         snapshots: buildResult.snapshots,
         supabaseClient,
       });
+    } catch (error) {
+      if (failOnUpsertError) {
+        throw error;
+      }
+
+      upsertError = error instanceof Error ? error.message : String(error);
+
+      console.error('[collection-page-snapshots] upsert_non_critical_failure', {
+        event: 'collection_page_snapshot_upsert_non_critical_failure',
+        message: upsertError,
+        snapshotCount: buildResult.snapshots.length,
+        tableName: COLLECTION_PAGE_SNAPSHOTS_TABLE,
+      });
+    }
+  }
 
   return {
     ...buildResult,
     dryRun,
+    ...(upsertError ? { upsertError } : {}),
     upsertedCount,
   };
 }

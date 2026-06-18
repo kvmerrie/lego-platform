@@ -91,6 +91,22 @@ export interface CommercePartnerWidgetRequestLike {
     | {
         [key: string]: string | readonly string[] | undefined;
       };
+  query?: {
+    [key: string]: boolean | number | string | readonly string[] | undefined;
+  };
+}
+
+export interface CommercePartnerWidgetRuntimeEnvironment {
+  [key: string]: string | undefined;
+  APP_ENV?: string;
+  BRICKHUNT_DEPLOY_ENV?: string;
+  BRICKHUNT_ENV?: string;
+  NODE_ENV?: string;
+  VERCEL_ENV?: string;
+}
+
+export interface CommercePartnerWidgetRequestOptions {
+  allowDevPreview?: boolean;
 }
 
 export interface CommercePartnerWidgetOffer {
@@ -113,6 +129,11 @@ export interface CommercePartnerWidgetRanking {
   status: CommercePartnerWidgetStatus;
   totalMerchantsCompared: number;
 }
+
+const commercePartnerWidgetProductionEnvironmentNames = new Set([
+  'prod',
+  'production',
+]);
 
 const commerceMerchantSupportProfiles = {
   'lego-nl': {
@@ -753,6 +774,105 @@ function getCommercePartnerWidgetHeaderValue(
   return normalizedValue ? normalizedValue : undefined;
 }
 
+function getCommercePartnerWidgetQueryValue(
+  request: CommercePartnerWidgetRequestLike,
+  queryName: string,
+): string | undefined {
+  const query = request.query;
+
+  if (!query) {
+    return undefined;
+  }
+
+  const value = query[queryName];
+
+  if (typeof value === 'boolean' || typeof value === 'number') {
+    return String(value);
+  }
+
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const normalizedValue = rawValue?.trim();
+
+  return normalizedValue ? normalizedValue : undefined;
+}
+
+function isTruthyCommercePartnerWidgetControlValue(value?: string): boolean {
+  const normalizedValue = value?.trim().toLowerCase();
+
+  return (
+    normalizedValue === '1' ||
+    normalizedValue === 'true' ||
+    normalizedValue === 'yes'
+  );
+}
+
+function normalizeCommercePartnerWidgetRuntimeValue(
+  value?: string,
+): string | undefined {
+  const normalizedValue = value?.trim().toLowerCase();
+
+  return normalizedValue || undefined;
+}
+
+function getCommercePartnerWidgetDeploymentEnvironment(
+  environment: CommercePartnerWidgetRuntimeEnvironment,
+): string | undefined {
+  return normalizeCommercePartnerWidgetRuntimeValue(
+    environment.BRICKHUNT_DEPLOY_ENV ??
+      environment.BRICKHUNT_ENV ??
+      environment.APP_ENV ??
+      environment.VERCEL_ENV,
+  );
+}
+
+export function isCommercePartnerWidgetInternalRuntime(
+  environment: CommercePartnerWidgetRuntimeEnvironment,
+): boolean {
+  const deploymentEnvironment =
+    getCommercePartnerWidgetDeploymentEnvironment(environment);
+
+  if (deploymentEnvironment) {
+    return !commercePartnerWidgetProductionEnvironmentNames.has(
+      deploymentEnvironment,
+    );
+  }
+
+  const nodeEnvironment = normalizeCommercePartnerWidgetRuntimeValue(
+    environment.NODE_ENV,
+  );
+
+  return Boolean(nodeEnvironment && nodeEnvironment !== 'production');
+}
+
+export function isCommercePartnerWidgetDevPreviewRequested(
+  request: CommercePartnerWidgetRequestLike,
+): boolean {
+  return (
+    isTruthyCommercePartnerWidgetControlValue(
+      getCommercePartnerWidgetHeaderValue(
+        request,
+        'x-brickhunt-dev-widget-preview',
+      ),
+    ) ||
+    isTruthyCommercePartnerWidgetControlValue(
+      getCommercePartnerWidgetQueryValue(request, 'devPreview'),
+    )
+  );
+}
+
+export function isCommercePartnerWidgetDevPreviewAllowed({
+  environment,
+  request,
+}: {
+  environment: CommercePartnerWidgetRuntimeEnvironment;
+  request: CommercePartnerWidgetRequestLike;
+}): boolean {
+  return (
+    isCommercePartnerWidgetInternalRuntime(environment) &&
+    isCommercePartnerWidgetDevPreviewRequested(request)
+  );
+}
+
 export function normalizeCommercePartnerWidgetOrigin(
   value?: string | null,
 ): string | undefined {
@@ -805,6 +925,7 @@ export function isAllowedCommercePartnerWidgetMode({
 export function getAllowedPartnerWidgetRequestOrigin(
   request: CommercePartnerWidgetRequestLike,
   merchant: CommercePartnerWidgetMerchant,
+  options: CommercePartnerWidgetRequestOptions = {},
 ): string | undefined {
   if (merchant.partnerWidget?.enabled !== true) {
     return undefined;
@@ -814,6 +935,13 @@ export function getAllowedPartnerWidgetRequestOrigin(
 
   if (!requestOrigin) {
     return undefined;
+  }
+
+  if (
+    options.allowDevPreview &&
+    isCommercePartnerWidgetDevPreviewRequested(request)
+  ) {
+    return requestOrigin;
   }
 
   const allowedOrigins = merchant.partnerWidget.allowedOrigins
@@ -826,8 +954,22 @@ export function getAllowedPartnerWidgetRequestOrigin(
 export function isAllowedPartnerWidgetRequest(
   request: CommercePartnerWidgetRequestLike,
   merchant: CommercePartnerWidgetMerchant,
+  options: CommercePartnerWidgetRequestOptions = {},
 ): boolean {
-  return Boolean(getAllowedPartnerWidgetRequestOrigin(request, merchant));
+  if (merchant.partnerWidget?.enabled !== true) {
+    return false;
+  }
+
+  if (
+    options.allowDevPreview &&
+    isCommercePartnerWidgetDevPreviewRequested(request)
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    getAllowedPartnerWidgetRequestOrigin(request, merchant, options),
+  );
 }
 
 function isRankableCommercePartnerWidgetOffer(

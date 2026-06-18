@@ -19,7 +19,7 @@ function buildSeed({
   notes = '',
   observedAt = '2026-05-19T08:00:00.000Z',
   priceMinor = 19995,
-  productUrl = 'https://example.com/lego-43300',
+  productUrl,
   seedId = 'seed-goodbricks-43300',
   setId = '43300',
   validationStatus = 'valid',
@@ -38,6 +38,8 @@ function buildSeed({
   setId?: string;
   validationStatus?: CommerceRefreshSeed['offerSeed']['validationStatus'];
 } = {}): CommerceRefreshSeed {
+  const resolvedProductUrl = productUrl ?? `https://example.com/lego-${setId}`;
+
   return {
     merchant: {
       createdAt: '2026-05-01T00:00:00.000Z',
@@ -64,13 +66,13 @@ function buildSeed({
         observedAt,
         offerSeedId: seedId,
         priceMinor,
-        productUrl,
+        productUrl: resolvedProductUrl,
         setId,
         updatedAt: observedAt,
       },
       merchantId,
       notes,
-      productUrl,
+      productUrl: resolvedProductUrl,
       setId,
       updatedAt: '2026-05-01T00:00:00.000Z',
       validationStatus,
@@ -307,6 +309,64 @@ describe('commerce current-offer snapshots', () => {
     });
   });
 
+  test('keeps a cheap wrongly matched minifigure offer from becoming canonical best', () => {
+    const result = buildCommerceCurrentOfferSnapshots({
+      now,
+      syncSeeds: [
+        buildSeed({
+          merchantId: 'merchant-uniekebricks',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+          notes:
+            'Feed-driven Unieke Bricks import. Product title: LEGO Bernard Bear Costume Guy.',
+          priceMinor: 1299,
+          productUrl:
+            'https://uniekebricks.nl/lego-minifigures/lego-bernard-bear-costume-guy/',
+          seedId: 'seed-uniekebricks-bear-21358',
+          setId: '21358',
+        }),
+        buildSeed({
+          merchantId: 'merchant-uniekebricks',
+          merchantName: 'Unieke Bricks',
+          merchantSlug: 'uniekebricks',
+          notes:
+            'Feed-driven Unieke Bricks import. Exact matched by LEGO set number. Product title: LEGO 21358 Ideas Minifigurenautomaat.',
+          priceMinor: 16999,
+          productUrl:
+            'https://uniekebricks.nl/lego-ideas/lego-21358-ideas-minifigurenautomaat/',
+          seedId: 'seed-uniekebricks-21358',
+          setId: '21358',
+        }),
+        buildSeed({
+          merchantId: 'merchant-misterbricks',
+          merchantName: 'MisterBricks',
+          merchantSlug: 'misterbricks',
+          priceMinor: 15900,
+          productUrl:
+            'https://misterbricks.nl/lego-ideas-21358-minifigurenautomaat.html',
+          seedId: 'seed-misterbricks-21358',
+          setId: '21358',
+        }),
+      ],
+    });
+
+    expect(result.snapshots[0]).toMatchObject({
+      bestMerchantSlug: 'misterbricks',
+      bestPriceMinor: 15900,
+      comparableOfferCount: 2,
+      nextBestPriceMinor: 16999,
+      setId: '21358',
+    });
+    expect(result.snapshots[0]?.offers).toContainEqual(
+      expect.objectContaining({
+        commercialUnitType: 'unknown',
+        merchantSlug: 'uniekebricks',
+        offerSeedId: 'seed-uniekebricks-bear-21358',
+        priceMinor: 1299,
+      }),
+    );
+  });
+
   test('reports best-offer parity mismatches against live summaries', () => {
     const liveSummaries: CatalogCurrentOfferSummaryRecord[] = [
       {
@@ -459,21 +519,23 @@ describe('commerce current-offer snapshots', () => {
       ],
     });
 
-    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(2);
+    expect(result.summary.snapshotMissingLiveSummaryCount).toBe(1);
     expect(result.summary.missingLiveSummaryReasonCounts).toEqual({
       missing_live_due_to_set_scope: 1,
-      missing_live_due_to_unit: 1,
     });
     expect(result.summary.missingLiveSummarySample).toEqual([
       expect.objectContaining({
         reason: 'missing_live_due_to_set_scope',
         setId: '10280',
       }),
-      expect.objectContaining({
-        reason: 'missing_live_due_to_unit',
-        setId: '76454',
-      }),
     ]);
+    expect(result.summary.snapshotMissingBestOfferSample).toContainEqual(
+      expect.objectContaining({
+        reason: 'snapshot_missing_best_offer',
+        setId: '76454',
+        snapshotOfferCount: 1,
+      }),
+    );
   });
 
   test('upserts snapshots using the composite snapshot key', async () => {

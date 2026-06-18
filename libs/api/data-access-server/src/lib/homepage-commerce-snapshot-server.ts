@@ -148,9 +148,19 @@ function getCatalogSetImageUrl(catalogSet: CatalogCanonicalSet): string {
   return catalogSet.imageUrl ?? catalogSet.cardImageUrl ?? '';
 }
 
-function toHomepageCardFromDeal(
-  card: DealPageSnapshotCard,
-): HomepageCommerceCard {
+function toHomepageCardFromDeal({
+  card,
+  currentOfferBySetId,
+}: {
+  card: DealPageSnapshotCard;
+  currentOfferBySetId: ReadonlyMap<string, HomepageCurrentOfferSnapshotRow>;
+}): HomepageCommerceCard | undefined {
+  const offer = currentOfferBySetId.get(card.id);
+
+  if (!isActionableCurrentOffer(offer)) {
+    return undefined;
+  }
+
   return {
     setId: card.id,
     slug: card.slug,
@@ -164,16 +174,18 @@ function toHomepageCardFromDeal(
     theme: card.publicTheme?.name ?? card.theme,
     releaseYear: card.releaseYear,
     pieces: card.pieces,
-    currentPriceMinor: card.bestPriceMinor,
+    currentPriceMinor: offer.best_price_minor,
     dealLabel:
       card.priceContext.decisionLabel ?? card.priceContext.pricePositionLabel,
-    confidenceLabel: card.priceContext.coverageLabel,
-    ctaUrl: card.priceContext.primaryActionHref,
-    merchantName:
-      card.priceContext.merchantName ??
-      card.priceContext.merchantLabel.replace(/^Laagst bij\s+/u, ''),
-    ...(card.priceContext.merchantSlug
-      ? { merchantSlug: card.priceContext.merchantSlug }
+    confidenceLabel: offer.offer_count
+      ? `${offer.offer_count} vergeleken winkel${
+          offer.offer_count === 1 ? '' : 's'
+        }`
+      : card.priceContext.coverageLabel,
+    ctaUrl: offer.best_product_url,
+    merchantName: offer.best_merchant_name,
+    ...(offer.best_merchant_slug
+      ? { merchantSlug: offer.best_merchant_slug }
       : {}),
   };
 }
@@ -181,6 +193,7 @@ function toHomepageCardFromDeal(
 function isActionableCurrentOffer(
   row: HomepageCurrentOfferSnapshotRow | undefined,
 ): row is HomepageCurrentOfferSnapshotRow & {
+  best_merchant_name: string;
   best_price_minor: number;
   best_product_url: string;
 } {
@@ -188,6 +201,8 @@ function isActionableCurrentOffer(
     row !== undefined &&
     typeof row.best_price_minor === 'number' &&
     row.best_price_minor > 0 &&
+    typeof row.best_merchant_name === 'string' &&
+    row.best_merchant_name.trim().length > 0 &&
     typeof row.best_product_url === 'string' &&
     row.best_product_url.trim().length > 0 &&
     (row.best_availability === 'in_stock' ||
@@ -293,11 +308,10 @@ function toHomepageCardFromCollection({
 }): HomepageCommerceCard {
   const offer = currentOfferBySetId.get(card.id);
   const currentPriceMinor =
-    typeof card.bestPriceMinor === 'number' && card.bestPriceMinor > 0
-      ? card.bestPriceMinor
-      : typeof offer?.best_price_minor === 'number' &&
-          offer.best_price_minor > 0
-        ? offer.best_price_minor
+    typeof offer?.best_price_minor === 'number' && offer.best_price_minor > 0
+      ? offer.best_price_minor
+      : typeof card.bestPriceMinor === 'number' && card.bestPriceMinor > 0
+        ? card.bestPriceMinor
         : undefined;
 
   return {
@@ -906,9 +920,14 @@ export async function buildHomepageCommerceSnapshot({
   );
   const historyRowsBySetId = groupHistoryRowsBySetId(resolvedPriceHistoryRows);
   const bestDeals = uniqueCardsBySetId(
-    (selectDealSnapshot(resolvedDealSnapshots)?.items ?? []).map(
-      toHomepageCardFromDeal,
-    ),
+    (selectDealSnapshot(resolvedDealSnapshots)?.items ?? []).flatMap((card) => {
+      const homepageCard = toHomepageCardFromDeal({
+        card,
+        currentOfferBySetId,
+      });
+
+      return homepageCard ? [homepageCard] : [];
+    }),
     tabLimit,
   );
   const popularThisWeek = buildPopularThisWeekCards({

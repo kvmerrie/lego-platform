@@ -8,7 +8,10 @@ import { listCommerceMerchants as listCommerceMerchantsServer } from '@lego-plat
 import {
   getAllowedPartnerWidgetRequestOrigin,
   getCommerceMerchantPartnerWidgetConfig,
+  getCommercePartnerWidgetRequestOrigin,
   getCommercePartnerWidgetRanking,
+  isCommercePartnerWidgetDevPreviewRequested,
+  isCommercePartnerWidgetInternalRuntime,
   isAllowedCommercePartnerWidgetMode,
   isAllowedPartnerWidgetRequest,
   isCommercePartnerWidgetMode,
@@ -32,6 +35,7 @@ const partnerWidgetSuccessCacheControl =
 const partnerWidgetShortCacheControl =
   'public, max-age=60, s-maxage=300, stale-while-revalidate=300';
 const partnerWidgetVaryHeader = 'Origin, Referer';
+const partnerWidgetDevPreviewHeader = 'x-brickhunt-dev-widget-preview';
 
 export interface PublicPartnerWidgetResponse {
   brickhuntUrl: string;
@@ -55,6 +59,7 @@ export interface PublicPartnerWidgetRouteDependencies {
   ) => Promise<
     Pick<CatalogCanonicalSet, 'name' | 'setId' | 'slug'> | undefined
   >;
+  isDevPreviewRuntime?: () => boolean;
   getPartnerWidgetConfig?: (
     merchantSlug: string,
   ) => CommerceMerchantPartnerWidgetConfig | undefined;
@@ -77,6 +82,11 @@ function setPartnerWidgetCorsHeaders(
   allowedRequestOrigin: string,
 ) {
   reply.header('access-control-allow-origin', allowedRequestOrigin);
+  reply.header('access-control-expose-headers', partnerWidgetDevPreviewHeader);
+}
+
+function setPartnerWidgetDevPreviewHeaders(reply: FastifyReply) {
+  reply.header(partnerWidgetDevPreviewHeader, '1');
 }
 
 function buildBrickhuntSetUrl(slug: string): string {
@@ -91,6 +101,61 @@ function parsePartnerWidgetMode(
   return isCommercePartnerWidgetMode(normalizedMode)
     ? normalizedMode
     : undefined;
+}
+
+type PartnerWidgetMockStatus =
+  | PublicPartnerWidgetResponse['status']
+  | 'forbidden'
+  | 'no-data';
+
+function parsePartnerWidgetMockStatus(
+  status?: string,
+): PartnerWidgetMockStatus | undefined {
+  const normalizedStatus = status?.trim();
+
+  if (
+    normalizedStatus === 'winner' ||
+    normalizedStatus === 'top3' ||
+    normalizedStatus === 'checked' ||
+    normalizedStatus === 'no-data' ||
+    normalizedStatus === 'forbidden'
+  ) {
+    return normalizedStatus;
+  }
+
+  return undefined;
+}
+
+function buildMockPartnerWidgetResponse({
+  merchantSlug,
+  setId,
+  status,
+}: {
+  merchantSlug: string;
+  setId: string;
+  status: PublicPartnerWidgetResponse['status'];
+}): PublicPartnerWidgetResponse {
+  const rank = status === 'winner' ? 1 : status === 'top3' ? 2 : 4;
+  const merchantPrice =
+    status === 'winner' ? 32999 : status === 'top3' ? 34999 : 42999;
+
+  return {
+    setId,
+    setTitle: `Mock LEGO set ${setId}`,
+    merchantSlug,
+    merchantName: merchantSlug || 'Mock merchant',
+    merchantPrice,
+    lowestPrice: status === 'winner' ? merchantPrice : 29999,
+    rank,
+    totalMerchantsCompared: 5,
+    isCheapest: status === 'winner',
+    isTop3: status === 'winner' || status === 'top3',
+    status,
+    brickhuntUrl: `${publicWebBaseUrls.production}${buildSetDetailPath(
+      `mock-lego-set-${setId}`,
+    )}`,
+    lastUpdated: '2026-06-18T10:00:00.000Z',
+  };
 }
 
 function toPartnerWidgetMerchant({
@@ -114,6 +179,8 @@ function toPartnerWidgetMerchant({
 
 export function createPublicPartnerWidgetRoutes({
   getCatalogSetById = (setId) => getCanonicalCatalogSetByIdServer({ setId }),
+  isDevPreviewRuntime = () =>
+    isCommercePartnerWidgetInternalRuntime(process.env),
   getPartnerWidgetConfig = getCommerceMerchantPartnerWidgetConfig,
   listCatalogCurrentOfferSummariesBySetIds = (setIds) =>
     listCatalogCurrentOfferSummariesBySetIdsServer({ setIds }),
@@ -125,6 +192,7 @@ export function createPublicPartnerWidgetRoutes({
         merchantSlug?: string;
         mode?: string;
         setId?: string;
+        status?: string;
       };
     }>(partnerWidgetApiPath, async function (request, reply) {
       setPartnerWidgetCacheHeaders(reply);
@@ -134,11 +202,54 @@ export function createPublicPartnerWidgetRoutes({
         request.query.merchantSlug ?? '',
       );
       const mode = parsePartnerWidgetMode(request.query.mode);
+      const allowDevPreview = isDevPreviewRuntime();
+      const devPreviewAllowed =
+        allowDevPreview && isCommercePartnerWidgetDevPreviewRequested(request);
+      const mockStatus = parsePartnerWidgetMockStatus(request.query.status);
 
       if (!setId || !merchantSlug || !mode) {
         return reply.status(400).send({
           message:
             'partner widget requires setId, merchantSlug and a valid mode.',
+        });
+      }
+
+      if (devPreviewAllowed) {
+        setPartnerWidgetDevPreviewHeaders(reply);
+      }
+
+      if (mockStatus && devPreviewAllowed) {
+        const requestOrigin = getCommercePartnerWidgetRequestOrigin(request);
+
+        if (requestOrigin) {
+          setPartnerWidgetCorsHeaders(reply, requestOrigin);
+        }
+
+        if (mockStatus === 'forbidden') {
+          return reply.status(403).send({
+            message: 'Mock partner widget forbidden response.',
+          });
+        }
+
+        if (mockStatus === 'no-data') {
+          return reply.status(204).send();
+        }
+
+        if (
+          !shouldRenderCommercePartnerWidgetMode({
+            mode,
+            status: mockStatus,
+          })
+        ) {
+          return reply.status(204).send();
+        }
+
+        setPartnerWidgetCacheHeaders(reply, partnerWidgetSuccessCacheControl);
+
+        return buildMockPartnerWidgetResponse({
+          merchantSlug,
+          setId,
+          status: mockStatus,
         });
       }
 
@@ -171,7 +282,11 @@ export function createPublicPartnerWidgetRoutes({
         });
       }
 
-      if (!isAllowedPartnerWidgetRequest(request, partnerWidgetMerchant)) {
+      if (
+        !isAllowedPartnerWidgetRequest(request, partnerWidgetMerchant, {
+          allowDevPreview,
+        })
+      ) {
         return reply.status(403).send({
           message: 'Partner widget origin is not allowed.',
         });
@@ -180,15 +295,20 @@ export function createPublicPartnerWidgetRoutes({
       const allowedRequestOrigin = getAllowedPartnerWidgetRequestOrigin(
         request,
         partnerWidgetMerchant,
+        {
+          allowDevPreview,
+        },
       );
 
-      if (!allowedRequestOrigin) {
+      if (!allowedRequestOrigin && !devPreviewAllowed) {
         return reply.status(403).send({
           message: 'Partner widget origin is not allowed.',
         });
       }
 
-      setPartnerWidgetCorsHeaders(reply, allowedRequestOrigin);
+      if (allowedRequestOrigin) {
+        setPartnerWidgetCorsHeaders(reply, allowedRequestOrigin);
+      }
 
       const catalogSet = await getCatalogSetById(setId);
 

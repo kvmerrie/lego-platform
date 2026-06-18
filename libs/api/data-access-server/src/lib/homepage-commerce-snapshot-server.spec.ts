@@ -64,6 +64,7 @@ function dealCard(id: string, url = `https://merchant.example/${id}`) {
 function currentOffer(
   setId: string,
   priceMinor = 7999,
+  patch: Partial<HomepageCurrentOfferSnapshotRow> = {},
 ): HomepageCurrentOfferSnapshotRow {
   return {
     best_availability: 'in_stock',
@@ -77,6 +78,7 @@ function currentOffer(
     offer_count: 3,
     set_id: setId,
     trusted_offer_count: 2,
+    ...patch,
   };
 }
 
@@ -164,7 +166,9 @@ function buildFixtures() {
     currentOffer('2001', 11999),
     currentOffer('2002', 7999),
     currentOffer('2003', 15000),
-    currentOffer('1001', 7999),
+    currentOffer('1001', 7999, {
+      best_product_url: 'https://canonical.example/best-deal',
+    }),
   ];
   const priceHistoryRows = [
     historyRow({
@@ -308,6 +312,89 @@ describe('homepage commerce snapshot builder', () => {
       setId: '1001',
       ctaUrl: 'https://canonical.example/best-deal',
       currentPriceMinor: 7999,
+    });
+  });
+
+  test('rebases best deal cards onto the current canonical offer row', async () => {
+    const result = await buildHomepageCommerceSnapshot({
+      catalogSets: [
+        catalogSet('21358', {
+          name: 'Minifigurenautomaat',
+          pieceCount: 1343,
+          primaryTheme: 'Ideas',
+          slug: 'minifigure-vending-machine-21358',
+        }),
+      ],
+      collectionSnapshots: [],
+      currentOfferRows: [
+        currentOffer('21358', 15900, {
+          best_merchant_name: 'MisterBricks',
+          best_merchant_slug: 'misterbricks',
+          best_product_url:
+            'https://misterbricks.nl/lego-ideas-21358-minifigurenautomaat.html',
+          offer_count: 5,
+        }),
+      ],
+      dealSnapshots: [
+        {
+          generatedAt,
+          items: [
+            {
+              ...dealCard(
+                '21358',
+                'https://uniekebricks.nl/lego-minifigures/lego-bernard-bear-costume-guy/',
+              ),
+              bestPriceMinor: 1299,
+              name: 'Minifigurenautomaat',
+              priceContext: {
+                coverageLabel: '5 vergeleken winkels',
+                currentPrice: 'Vanaf EUR 12,99',
+                decisionLabel: 'Topdeal',
+                merchantLabel: 'Laagst bij Unieke Bricks',
+                merchantName: 'Unieke Bricks',
+                merchantSlug: 'uniekebricks',
+                primaryActionHref:
+                  'https://uniekebricks.nl/lego-minifigures/lego-bernard-bear-costume-guy/',
+                reviewedLabel: 'Snapshot bijgewerkt',
+              },
+              pieces: 1343,
+              setNumber: '21358-1',
+              slug: 'minifigure-vending-machine-21358',
+              theme: 'Ideas',
+            },
+          ],
+          page: 1,
+          pageSize: 40,
+          sortKey: 'recommended',
+          sourceVersion: generatedAt,
+          stats: {
+            activeDealCount: 1,
+          },
+          totalCount: 1,
+        },
+      ],
+      now: new Date(generatedAt),
+      popularitySnapshot: {
+        generatedAt,
+        windows: {
+          day: [],
+          week: [],
+        },
+      },
+      priceHistoryRows: [],
+    });
+
+    expect(result.snapshot.buyRail.bestDeals[0]).toMatchObject({
+      ctaUrl:
+        'https://misterbricks.nl/lego-ideas-21358-minifigurenautomaat.html',
+      currentPriceMinor: 15900,
+      merchantName: 'MisterBricks',
+      merchantSlug: 'misterbricks',
+      setId: '21358',
+    });
+    expect(result.snapshot.buyRail.bestDeals[0]).not.toMatchObject({
+      currentPriceMinor: 1299,
+      merchantSlug: 'uniekebricks',
     });
   });
 

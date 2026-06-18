@@ -49,7 +49,7 @@ import {
   type HomepageTabbedCommerceRailTabId,
 } from './lib/homepage-tabbed-commerce-rail';
 
-export const revalidate = false;
+export const revalidate = 900;
 
 const HOMEPAGE_BUY_SECTION_ID = 'best-current-deals';
 const HOMEPAGE_FOLLOW_SECTION_ID = 'price-smart-follow';

@@ -3,6 +3,8 @@ import type { CatalogCanonicalSet } from '@lego-platform/catalog/util';
 import {
   buildCollectionPageSnapshots,
   syncCollectionPageSnapshots,
+  upsertCollectionPageSnapshots,
+  type CollectionPageSnapshot,
 } from './collection-page-snapshot-server';
 
 const { listCanonicalCatalogSetsMock } = vi.hoisted(() => ({
@@ -50,6 +52,7 @@ function createSupabaseClient({
   sourceMetadata?: readonly Record<string, unknown>[];
 }) {
   const upserts: Record<string, unknown>[][] = [];
+  const upsertOptions: unknown[] = [];
 
   return {
     client: {
@@ -77,8 +80,9 @@ function createSupabaseClient({
           select() {
             return this;
           },
-          upsert(rows: Record<string, unknown>[]) {
+          upsert(rows: Record<string, unknown>[], options?: unknown) {
             upserts.push(rows);
+            upsertOptions.push(options);
 
             return Promise.resolve({
               error: null,
@@ -88,7 +92,26 @@ function createSupabaseClient({
       },
       rpc: vi.fn(),
     },
+    upsertOptions,
     upserts,
+  };
+}
+
+function createSnapshot(
+  overrides: Partial<CollectionPageSnapshot> = {},
+): CollectionPageSnapshot {
+  return {
+    bricksetMetadataUsedCount: 0,
+    collectionSlug: 'nieuwe-lego-sets',
+    generatedAt: '2026-06-18T08:00:00.000Z',
+    items: [],
+    missingPriceSnapshotCount: 0,
+    page: 1,
+    pageSize: 40,
+    sortKey: 'newest',
+    sourceVersion: '2026-06-18T08:00:00.000Z',
+    totalCount: 0,
+    ...overrides,
   };
 }
 
@@ -826,5 +849,170 @@ describe('collection page snapshots', () => {
         }),
       ]),
     );
+  });
+
+  test('upserts collection snapshots with the canonical conflict key', async () => {
+    const upsert = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn().mockReturnValue({ upsert });
+
+    const result = await upsertCollectionPageSnapshots({
+      snapshots: [
+        createSnapshot({
+          collectionSlug: 'lego-sets-onder-50-euro',
+          page: 2,
+          sortKey: 'price-asc',
+          totalCount: 41,
+        }),
+      ],
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toBe(1);
+    expect(from).toHaveBeenCalledWith('collection_page_snapshots');
+    expect(upsert).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          collection_slug: 'lego-sets-onder-50-euro',
+          page: 2,
+          page_size: 40,
+          sort_key: 'price-asc',
+          total_count: 41,
+        }),
+      ],
+      {
+        onConflict: 'collection_slug,sort_key,page,page_size',
+      },
+    );
+  });
+
+  test('dedupes duplicate collection page keys before upsert', async () => {
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const upsert = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn().mockReturnValue({ upsert });
+
+    const result = await upsertCollectionPageSnapshots({
+      snapshots: [
+        createSnapshot({
+          totalCount: 1,
+        }),
+        createSnapshot({
+          totalCount: 2,
+        }),
+      ],
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toBe(1);
+    expect(upsert).toHaveBeenCalledTimes(1);
+    expect(upsert.mock.calls[0]?.[0]).toEqual([
+      expect.objectContaining({
+        collection_slug: 'nieuwe-lego-sets',
+        page: 1,
+        page_size: 40,
+        sort_key: 'newest',
+        total_count: 2,
+      }),
+    ]);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[collection-page-snapshots] duplicate_keys_deduped',
+      expect.objectContaining({
+        duplicateKeyCount: 1,
+        event: 'collection_page_snapshot_duplicate_keys_deduped',
+        onConflict: 'collection_slug,sort_key,page,page_size',
+        tableName: 'collection_page_snapshots',
+      }),
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  test('logs Supabase details when collection snapshot upsert fails', async () => {
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const upsertError = {
+      code: '23502',
+      details: 'Null value in column "items_json"',
+      hint: 'Check collection_page_snapshots payload shape.',
+      message: 'insert failed',
+    };
+    const upsert = vi.fn().mockResolvedValue({ error: upsertError });
+    const from = vi.fn().mockReturnValue({ upsert });
+
+    await expect(
+      upsertCollectionPageSnapshots({
+        snapshots: [
+          createSnapshot({
+            collectionSlug: 'retiring-lego-sets',
+            page: 3,
+            sortKey: 'recommended',
+          }),
+        ],
+        supabaseClient: { from } as never,
+      }),
+    ).rejects.toThrow(/23502/u);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[collection-page-snapshots] upsert_failed',
+      expect.objectContaining({
+        affectedCollectionSlug: 'retiring-lego-sets',
+        affectedPageKey: expect.objectContaining({
+          collectionSlug: 'retiring-lego-sets',
+          page: 3,
+          pageSize: 40,
+          sortKey: 'recommended',
+        }),
+        code: '23502',
+        details: 'Null value in column "items_json"',
+        event: 'collection_page_snapshot_upsert_failed',
+        hint: 'Check collection_page_snapshots payload shape.',
+        message: 'insert failed',
+        onConflict: 'collection_slug,sort_key,page,page_size',
+        tableName: 'collection_page_snapshots',
+      }),
+    );
+
+    errorSpy.mockRestore();
+  });
+
+  test('rejects invalid collection snapshot payloads before upsert', async () => {
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const upsert = vi.fn().mockResolvedValue({ error: null });
+    const from = vi.fn().mockReturnValue({ upsert });
+
+    await expect(
+      upsertCollectionPageSnapshots({
+        snapshots: [
+          {
+            ...createSnapshot(),
+            page: 0,
+          },
+        ],
+        supabaseClient: { from } as never,
+      }),
+    ).rejects.toThrow(/Invalid collection page snapshot payload/u);
+
+    expect(upsert).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[collection-page-snapshots] invalid_payload',
+      expect.objectContaining({
+        event: 'collection_page_snapshot_invalid_payload',
+        invalidRowCount: 1,
+        issues: [
+          expect.objectContaining({
+            errors: ['page must be a positive integer'],
+            rowIndex: 0,
+          }),
+        ],
+        onConflict: 'collection_slug,sort_key,page,page_size',
+        tableName: 'collection_page_snapshots',
+      }),
+    );
+
+    errorSpy.mockRestore();
   });
 });

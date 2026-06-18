@@ -36,11 +36,44 @@ const fullSetPattern = /\b(full set|complete set|bouwset|construction set)\b/i;
 const legoSetNumberPattern = /\b\d{4,7}(?:-1)?\b/;
 const collectibleMinifigureSeriesPattern = /^710\d{2}(?:-1)?$/;
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function normalizeCommercialUnitText(value?: string | null): string {
   return (value ?? '')
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+}
+
+function getNormalizedSetNumber(value?: string | null): string | undefined {
+  const normalizedValue = normalizeCommercialUnitText(value)
+    .trim()
+    .replace(/-1$/u, '');
+
+  return normalizedValue || undefined;
+}
+
+function hasExactSetNumberEvidence({
+  setId,
+  text,
+}: {
+  setId?: string | null;
+  text: string;
+}): boolean {
+  const normalizedSetId = getNormalizedSetNumber(setId);
+
+  if (!normalizedSetId) {
+    return legoSetNumberPattern.test(text);
+  }
+
+  const setNumberPattern = new RegExp(
+    `(?<!\\d)${escapeRegExp(normalizedSetId)}(?:-1)?(?!\\d)`,
+    'u',
+  );
+
+  return setNumberPattern.test(text);
 }
 
 export function classifyCommerceCommercialUnitType({
@@ -77,14 +110,17 @@ export function classifyCommerceCommercialUnitType({
     return 'blind_bag';
   }
 
-  const normalizedSetId = normalizeCommercialUnitText(setId).trim();
+  const normalizedSetId = getNormalizedSetNumber(setId);
 
   if (
     normalizedSetId &&
     !collectibleMinifigureSeriesPattern.test(normalizedSetId) &&
-    (legoSetNumberPattern.test(normalizedSetId) ||
-      legoSetNumberPattern.test(text))
+    hasExactSetNumberEvidence({ setId: normalizedSetId, text })
   ) {
+    return 'full_set';
+  }
+
+  if (!normalizedSetId && hasExactSetNumberEvidence({ text })) {
     return 'full_set';
   }
 

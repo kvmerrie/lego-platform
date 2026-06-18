@@ -100,7 +100,7 @@ async function main() {
   }
 
   console.log(
-    `[collection-page-snapshot-sync] summary dry_run=${result.dryRun} snapshots_built=${result.snapshots.length} snapshots_upserted=${result.upsertedCount}`,
+    `[collection-page-snapshot-sync] summary dry_run=${result.dryRun} snapshots_built=${result.snapshots.length} snapshots_upserted=${result.upsertedCount} upsert_error=${result.upsertError ?? 'none'}`,
   );
   console.log(
     `[collection-page-snapshot-sync] end status=${write ? 'upserted' : 'dry-run'} duration_ms=${Date.now() - startedAt}`,

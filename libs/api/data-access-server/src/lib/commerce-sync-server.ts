@@ -982,6 +982,7 @@ export async function runCommerceSync({
       ? await syncCollectionPageSnapshotsFn({
           collectionSlugs: commerceSyncCollectionSnapshotSlugs,
           dryRun: false,
+          failOnUpsertError: false,
           pageSize: 40,
         })
       : {
@@ -1078,8 +1079,11 @@ export async function runCommerceSync({
 
       console.info('[commerce-sync] collection_page_snapshots', {
         collection_slug: collectionSlug,
+        non_critical_upsert_error: collectionPageSnapshotResult.upsertError,
         snapshots_built: snapshotsBuilt,
-        snapshots_upserted: snapshotsBuilt,
+        snapshots_upserted: collectionPageSnapshotResult.upsertError
+          ? 0
+          : snapshotsBuilt,
         summary:
           collectionPageSnapshotResult.summaryByCollectionSlug[collectionSlug],
       });

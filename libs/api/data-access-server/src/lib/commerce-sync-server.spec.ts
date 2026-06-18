@@ -396,6 +396,7 @@ describe('commerce sync server', () => {
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
       collectionSlugs: expectedCollectionSnapshotSlugs,
       dryRun: false,
+      failOnUpsertError: false,
       pageSize: 40,
     });
     expect(
@@ -552,6 +553,7 @@ describe('commerce sync server', () => {
         }),
       },
       mode: 'write',
+      now: new Date('2026-05-12T10:00:00.000Z'),
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 
@@ -701,6 +703,7 @@ describe('commerce sync server', () => {
         revalidatePublicCatalogPathsFn,
       },
       mode: 'check',
+      now: new Date('2026-05-12T10:00:00.000Z'),
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 
@@ -919,6 +922,7 @@ describe('commerce sync server', () => {
         }),
       },
       mode: 'write',
+      now: new Date('2026-05-12T10:00:00.000Z'),
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 
@@ -953,12 +957,13 @@ describe('commerce sync server', () => {
     expect(syncCollectionPageSnapshotsFn).toHaveBeenCalledWith({
       collectionSlugs: expectedCollectionSnapshotSlugs,
       dryRun: false,
+      failOnUpsertError: false,
       pageSize: 40,
     });
     expect(syncHomepageCommerceSnapshotFn).toHaveBeenCalledWith({
       collectionSnapshots: [],
       dryRun: false,
-      now: undefined,
+      now: new Date('2026-05-12T10:00:00.000Z'),
       tabLimit: 20,
     });
     expect(
@@ -966,7 +971,7 @@ describe('commerce sync server', () => {
     ).toBeLessThan(syncHomepageCommerceSnapshotFn.mock.invocationCallOrder[0]);
     expect(syncThemeCommerceSnapshotsFn).toHaveBeenCalledWith({
       dryRun: false,
-      now: undefined,
+      now: new Date('2026-05-12T10:00:00.000Z'),
     });
     expect(
       upsertCommerceCurrentOfferSnapshotsFn.mock.invocationCallOrder[0],
@@ -1367,6 +1372,7 @@ describe('commerce sync server', () => {
         upsertCommerceCurrentOfferSnapshotsFn,
       },
       mode: 'check',
+      now: new Date('2026-05-12T10:00:00.000Z'),
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 
@@ -1424,6 +1430,7 @@ describe('commerce sync server', () => {
         ),
       },
       mode: 'check',
+      now: new Date('2026-05-12T10:00:00.000Z'),
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 

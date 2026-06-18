@@ -40,6 +40,16 @@ describe('commerce commercial unit config', () => {
     ).toBe('full_set');
   });
 
+  test('does not treat the assigned set id alone as full-set evidence', () => {
+    expect(
+      classifyCommerceCommercialUnitType({
+        productUrl:
+          'https://uniekebricks.nl/lego-minifigures/lego-bernard-bear-costume-guy/',
+        setId: '21358',
+      }),
+    ).toBe('unknown');
+  });
+
   test('keeps collectible minifigure series unknown without explicit unit wording', () => {
     expect(
       classifyCommerceCommercialUnitType({

@@ -14,6 +14,10 @@ import {
   getCommerceMerchantPartnerWidgetConfig,
   getCommerceMerchantReliabilityTier,
   getCommerceMerchantSupportTier,
+  isAllowedPartnerWidgetRequest,
+  isCommercePartnerWidgetDevPreviewAllowed,
+  isCommercePartnerWidgetDevPreviewRequested,
+  isCommercePartnerWidgetInternalRuntime,
   includeCatalogSetInDefaultCommerceCoverage,
   normalizeCommerceSlug,
   normalizeCommerceLegoSetNumber,
@@ -230,6 +234,77 @@ describe('commerce util', () => {
     expect(
       getCommerceMerchantPartnerWidgetConfig('goodbricks'),
     ).toBeUndefined();
+  });
+
+  test('keeps the partner badge playground and dev preview out of production', () => {
+    expect(
+      isCommercePartnerWidgetInternalRuntime({
+        NODE_ENV: 'production',
+      }),
+    ).toBe(false);
+    expect(
+      isCommercePartnerWidgetInternalRuntime({
+        NODE_ENV: 'production',
+        VERCEL_ENV: 'production',
+      }),
+    ).toBe(false);
+    expect(
+      isCommercePartnerWidgetInternalRuntime({
+        NODE_ENV: 'production',
+        VERCEL_ENV: 'preview',
+      }),
+    ).toBe(true);
+    expect(
+      isCommercePartnerWidgetInternalRuntime({
+        BRICKHUNT_DEPLOY_ENV: 'staging',
+        NODE_ENV: 'production',
+      }),
+    ).toBe(true);
+    expect(
+      isCommercePartnerWidgetInternalRuntime({
+        NODE_ENV: 'development',
+      }),
+    ).toBe(true);
+  });
+
+  test('allows partner widget dev preview only with an explicit preview marker', () => {
+    const merchant = {
+      slug: 'uniekebricks',
+      partnerWidget: {
+        enabled: true,
+        allowedOrigins: ['https://www.uniekebricks.nl'],
+      },
+    };
+    const previewRequest = {
+      headers: {
+        'x-brickhunt-dev-widget-preview': '1',
+      },
+      query: {
+        devPreview: '1',
+      },
+    };
+
+    expect(isCommercePartnerWidgetDevPreviewRequested(previewRequest)).toBe(
+      true,
+    );
+    expect(
+      isCommercePartnerWidgetDevPreviewAllowed({
+        environment: { NODE_ENV: 'development' },
+        request: previewRequest,
+      }),
+    ).toBe(true);
+    expect(
+      isCommercePartnerWidgetDevPreviewAllowed({
+        environment: { NODE_ENV: 'production' },
+        request: previewRequest,
+      }),
+    ).toBe(false);
+    expect(
+      isAllowedPartnerWidgetRequest(previewRequest, merchant, {
+        allowDevPreview: true,
+      }),
+    ).toBe(true);
+    expect(isAllowedPartnerWidgetRequest(previewRequest, merchant)).toBe(false);
   });
 
   test('marks retired catalog sets as non-actionable in the default coverage queue', () => {
