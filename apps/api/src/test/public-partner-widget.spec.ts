@@ -13,6 +13,7 @@ import {
 
 const allowedOrigin = 'https://www.uniekebricks.nl';
 const allowedReferer = 'https://www.uniekebricks.nl/lego/rivendell/';
+const playgroundOrigin = 'https://playground.wordpress.net';
 const partnerWidgetConfig = {
   enabled: true,
   allowedOrigins: [allowedOrigin, 'https://uniekebricks.nl'],
@@ -86,6 +87,8 @@ async function createPartnerWidgetServer({
   ),
   isDevPreviewRuntime = vi.fn(() => false),
   getPartnerWidgetConfig = vi.fn(() => partnerWidgetConfig),
+  isPlaygroundBypassRuntime,
+  shouldExposePlaygroundBypass,
   listCatalogCurrentOfferSummariesBySetIds = vi.fn(async () => [
     createCurrentOfferSummary([
       createOffer({
@@ -126,8 +129,10 @@ async function createPartnerWidgetServer({
       getCatalogSetById,
       isDevPreviewRuntime,
       getPartnerWidgetConfig,
+      isPlaygroundBypassRuntime,
       listCatalogCurrentOfferSummariesBySetIds,
       listCommerceMerchants,
+      shouldExposePlaygroundBypass,
     }),
   );
 
@@ -202,10 +207,11 @@ describe('public partner widget endpoint', () => {
         origin: allowedOrigin,
       },
     });
+    const payload = response.json();
 
     expect(response.statusCode).toBe(200);
     expect(response.headers['access-control-allow-origin']).toBe(allowedOrigin);
-    expect(response.json()).toMatchObject({
+    expect(payload).toMatchObject({
       setId: '10316',
       setTitle: 'Rivendell',
       merchantSlug: 'uniekebricks',
@@ -221,6 +227,7 @@ describe('public partner widget endpoint', () => {
         'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
       lastUpdated: checkedAt,
     });
+    expect(payload.playgroundBypass).toBeUndefined();
 
     await server.close();
   });
@@ -267,6 +274,101 @@ describe('public partner widget endpoint', () => {
     });
 
     expect(response.statusCode).toBe(403);
+
+    await server.close();
+  });
+
+  test('rejects WordPress Playground origin in production without the env bypass', async () => {
+    const server = await createPartnerWidgetServer({
+      isPlaygroundBypassRuntime: vi.fn(() => false),
+      shouldExposePlaygroundBypass: vi.fn(() => false),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl(),
+      headers: {
+        origin: playgroundOrigin,
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
+
+    await server.close();
+  });
+
+  test('allows WordPress Playground origin in production when the env bypass is enabled', async () => {
+    const server = await createPartnerWidgetServer({
+      isPlaygroundBypassRuntime: vi.fn(() => true),
+      shouldExposePlaygroundBypass: vi.fn(() => false),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl(),
+      headers: {
+        origin: playgroundOrigin,
+      },
+    });
+    const payload = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toBe(
+      playgroundOrigin,
+    );
+    expect(payload).toMatchObject({
+      merchantSlug: 'uniekebricks',
+      status: 'winner',
+    });
+    expect(payload.playgroundBypass).toBeUndefined();
+
+    await server.close();
+  });
+
+  test('allows WordPress Playground origin in non-production with debug response metadata', async () => {
+    const server = await createPartnerWidgetServer({
+      isPlaygroundBypassRuntime: vi.fn(() => true),
+      shouldExposePlaygroundBypass: vi.fn(() => true),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl(),
+      headers: {
+        origin: playgroundOrigin,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['access-control-allow-origin']).toBe(
+      playgroundOrigin,
+    );
+    expect(response.json()).toMatchObject({
+      merchantSlug: 'uniekebricks',
+      playgroundBypass: true,
+      status: 'winner',
+    });
+
+    await server.close();
+  });
+
+  test('keeps other origins rejected when the WordPress Playground bypass is enabled', async () => {
+    const server = await createPartnerWidgetServer({
+      isPlaygroundBypassRuntime: vi.fn(() => true),
+      shouldExposePlaygroundBypass: vi.fn(() => true),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: widgetUrl(),
+      headers: {
+        origin: 'https://shop.example.test',
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.headers['access-control-allow-origin']).toBeUndefined();
 
     await server.close();
   });

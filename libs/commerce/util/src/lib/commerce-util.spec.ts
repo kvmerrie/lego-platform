@@ -7,6 +7,7 @@ import {
   buildCommerceMerchantSearchUrl,
   buildCommercePrimaryCoverageSummary,
   canCommerceMerchantDriveDealConfidence,
+  commercePartnerWidgetPlaygroundOrigin,
   compareCommerceMerchantsByOperationalPriority,
   filterCommerceCoverageQueueRows,
   getCommerceCoverageEligibilityStatus,
@@ -18,6 +19,8 @@ import {
   isCommercePartnerWidgetDevPreviewAllowed,
   isCommercePartnerWidgetDevPreviewRequested,
   isCommercePartnerWidgetInternalRuntime,
+  isCommercePartnerWidgetPlaygroundOriginBypassAllowed,
+  shouldExposeCommercePartnerWidgetPlaygroundBypass,
   includeCatalogSetInDefaultCommerceCoverage,
   normalizeCommerceSlug,
   normalizeCommerceLegoSetNumber,
@@ -305,6 +308,67 @@ describe('commerce util', () => {
       }),
     ).toBe(true);
     expect(isAllowedPartnerWidgetRequest(previewRequest, merchant)).toBe(false);
+  });
+
+  test('allows WordPress Playground origin only for explicit test runtimes', () => {
+    const merchant = {
+      slug: 'uniekebricks',
+      partnerWidget: {
+        enabled: true,
+        allowedOrigins: ['https://www.uniekebricks.nl'],
+      },
+    };
+    const playgroundRequest = {
+      headers: {
+        origin: commercePartnerWidgetPlaygroundOrigin,
+      },
+    };
+    const playgroundRefererRequest = {
+      headers: {
+        referer: `${commercePartnerWidgetPlaygroundOrigin}/`,
+      },
+    };
+
+    expect(
+      isCommercePartnerWidgetPlaygroundOriginBypassAllowed({
+        NODE_ENV: 'production',
+      }),
+    ).toBe(false);
+    expect(
+      isCommercePartnerWidgetPlaygroundOriginBypassAllowed({
+        NODE_ENV: 'production',
+        PARTNER_WIDGET_ALLOW_PLAYGROUND: 'true',
+      }),
+    ).toBe(true);
+    expect(
+      isCommercePartnerWidgetPlaygroundOriginBypassAllowed({
+        NODE_ENV: 'test',
+      }),
+    ).toBe(true);
+    expect(
+      shouldExposeCommercePartnerWidgetPlaygroundBypass({
+        NODE_ENV: 'production',
+        PARTNER_WIDGET_ALLOW_PLAYGROUND: 'true',
+      }),
+    ).toBe(false);
+    expect(
+      shouldExposeCommercePartnerWidgetPlaygroundBypass({
+        NODE_ENV: 'test',
+      }),
+    ).toBe(true);
+    expect(
+      isAllowedPartnerWidgetRequest(playgroundRequest, merchant, {
+        allowPlaygroundOrigin: true,
+      }),
+    ).toBe(true);
+    expect(isAllowedPartnerWidgetRequest(playgroundRequest, merchant)).toBe(
+      false,
+    );
+    expect(
+      isAllowedPartnerWidgetRequest(playgroundRefererRequest, merchant, {
+        allowPlaygroundOrigin: true,
+      }),
+    ).toBe(false);
   });
 
   test('marks retired catalog sets as non-actionable in the default coverage queue', () => {

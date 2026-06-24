@@ -366,9 +366,12 @@ function bhpb_render_settings_page()
         ],
         'https://www.brickhunt.nl/'
     );
+    $brickhunt_shops_url = 'https://www.brickhunt.nl/winkels';
+    $contact_email = 'hello@brickhunt.nl';
     ?>
     <div class="wrap">
         <h1><?php echo esc_html__('Brickhunt Price Badge', 'brickhunt-price-badge'); ?></h1>
+        <?php settings_errors(); ?>
         <p>
             <?php echo esc_html__('De badge toont wanneer Brickhunt de prijs van dit product heeft gecontroleerd of gevalideerd.', 'brickhunt-price-badge'); ?>
         </p>
@@ -394,6 +397,17 @@ function bhpb_render_settings_page()
         </p>
         <p>
             <?php echo esc_html__('Het merchantdomein moet in Brickhunt op de whitelist staan. De badge rendert alleen als Brickhunt prijsdata voor deze set en merchant heeft.', 'brickhunt-price-badge'); ?>
+        </p>
+        <p>
+            <?php echo esc_html__('Weet je je merchant slug niet? Zoek je winkel op Brickhunt of mail ons.', 'brickhunt-price-badge'); ?>
+        </p>
+        <p>
+            <strong><?php echo esc_html__('Contact:', 'brickhunt-price-badge'); ?></strong>
+            <a href="<?php echo esc_url('mailto:' . $contact_email); ?>"><?php echo esc_html($contact_email); ?></a>
+            <br>
+            <a href="<?php echo esc_url($brickhunt_shops_url); ?>" target="_blank" rel="noopener noreferrer">
+                <?php echo esc_html($brickhunt_shops_url); ?>
+            </a>
         </p>
         <p>
             <a href="<?php echo esc_url($brickhunt_home_url); ?>" target="_blank" rel="noopener noreferrer">
@@ -436,10 +450,10 @@ function bhpb_render_merchant_slug_field()
         name="<?php echo esc_attr(BHPB_OPTION_NAME); ?>[merchant_slug]"
         type="text"
         value="<?php echo esc_attr($options['merchant_slug']); ?>"
-        placeholder="uniekebricks"
+        placeholder="jouw-webshop-slug"
     >
     <p class="description">
-        <?php echo esc_html__('Lowercase Brickhunt merchant slug, for example uniekebricks or brickspoint.', 'brickhunt-price-badge'); ?>
+        <?php echo esc_html__('Je Brickhunt merchant slug vind je op https://www.brickhunt.nl/winkels of vraag hem op via hello@brickhunt.nl.', 'brickhunt-price-badge'); ?>
     </p>
     <?php
 }

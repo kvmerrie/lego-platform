@@ -86,7 +86,9 @@ Controleer:
 
 ### 403 door domein whitelist
 
-De Brickhunt API geeft `403` als het merchantdomein niet op de allowed origins staat. Voeg het productie- of stagingdomein toe aan de Brickhunt merchant-config.
+De Brickhunt API geeft `403` als het merchantdomein niet op de allowed origins staat. CORS-fouten betekenen meestal hetzelfde: de browser-origin is niet gewhitelist.
+
+Voeg het productie- of stagingdomein toe aan de Brickhunt merchant-config. Voor tests in WordPress Playground moet `https://playground.wordpress.net` tijdelijk op de Brickhunt `partnerWidget.allowedOrigins` staan.
 
 ### 204 door geen prijsdata of mode mismatch
 

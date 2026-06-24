@@ -12,10 +12,13 @@ import {
   getCommercePartnerWidgetRanking,
   isCommercePartnerWidgetDevPreviewRequested,
   isCommercePartnerWidgetInternalRuntime,
+  isCommercePartnerWidgetPlaygroundOriginBypassAllowed,
+  isCommercePartnerWidgetPlaygroundOriginRequest,
   isAllowedCommercePartnerWidgetMode,
   isAllowedPartnerWidgetRequest,
   isCommercePartnerWidgetMode,
   normalizeCommerceSlug,
+  shouldExposeCommercePartnerWidgetPlaygroundBypass,
   shouldRenderCommercePartnerWidgetMode,
   type CommerceMerchant,
   type CommerceMerchantPartnerWidgetConfig,
@@ -46,6 +49,7 @@ export interface PublicPartnerWidgetResponse {
   merchantName: string;
   merchantPrice: number;
   merchantSlug: string;
+  playgroundBypass?: true;
   rank: number;
   setId: string;
   setTitle: string;
@@ -63,6 +67,8 @@ export interface PublicPartnerWidgetRouteDependencies {
   getPartnerWidgetConfig?: (
     merchantSlug: string,
   ) => CommerceMerchantPartnerWidgetConfig | undefined;
+  isPlaygroundBypassRuntime?: () => boolean;
+  shouldExposePlaygroundBypass?: () => boolean;
   listCatalogCurrentOfferSummariesBySetIds?: (
     setIds: readonly string[],
   ) => Promise<CatalogCurrentOfferSummaryRecord[]>;
@@ -182,6 +188,10 @@ export function createPublicPartnerWidgetRoutes({
   isDevPreviewRuntime = () =>
     isCommercePartnerWidgetInternalRuntime(process.env),
   getPartnerWidgetConfig = getCommerceMerchantPartnerWidgetConfig,
+  isPlaygroundBypassRuntime = () =>
+    isCommercePartnerWidgetPlaygroundOriginBypassAllowed(process.env),
+  shouldExposePlaygroundBypass = () =>
+    shouldExposeCommercePartnerWidgetPlaygroundBypass(process.env),
   listCatalogCurrentOfferSummariesBySetIds = (setIds) =>
     listCatalogCurrentOfferSummariesBySetIdsServer({ setIds }),
   listCommerceMerchants = () => listCommerceMerchantsServer(),
@@ -205,6 +215,10 @@ export function createPublicPartnerWidgetRoutes({
       const allowDevPreview = isDevPreviewRuntime();
       const devPreviewAllowed =
         allowDevPreview && isCommercePartnerWidgetDevPreviewRequested(request);
+      const allowPlaygroundOrigin = isPlaygroundBypassRuntime();
+      const playgroundBypassActive =
+        allowPlaygroundOrigin &&
+        isCommercePartnerWidgetPlaygroundOriginRequest(request);
       const mockStatus = parsePartnerWidgetMockStatus(request.query.status);
 
       if (!setId || !merchantSlug || !mode) {
@@ -285,6 +299,7 @@ export function createPublicPartnerWidgetRoutes({
       if (
         !isAllowedPartnerWidgetRequest(request, partnerWidgetMerchant, {
           allowDevPreview,
+          allowPlaygroundOrigin,
         })
       ) {
         return reply.status(403).send({
@@ -297,6 +312,7 @@ export function createPublicPartnerWidgetRoutes({
         partnerWidgetMerchant,
         {
           allowDevPreview,
+          allowPlaygroundOrigin,
         },
       );
 
@@ -308,6 +324,12 @@ export function createPublicPartnerWidgetRoutes({
 
       if (allowedRequestOrigin) {
         setPartnerWidgetCorsHeaders(reply, allowedRequestOrigin);
+      }
+
+      if (playgroundBypassActive) {
+        request.log.debug(
+          `[partner-widget]\nPlayground origin bypass active\norigin=${allowedRequestOrigin}\nmerchantSlug=${merchantSlug}`,
+        );
       }
 
       const catalogSet = await getCatalogSetById(setId);
@@ -340,7 +362,7 @@ export function createPublicPartnerWidgetRoutes({
 
       setPartnerWidgetCacheHeaders(reply, partnerWidgetSuccessCacheControl);
 
-      return {
+      const response: PublicPartnerWidgetResponse = {
         setId: catalogSet.setId,
         setTitle: catalogSet.name,
         merchantSlug: partnerWidgetMerchant.slug,
@@ -354,7 +376,16 @@ export function createPublicPartnerWidgetRoutes({
         status: ranking.status,
         brickhuntUrl: buildBrickhuntSetUrl(catalogSet.slug),
         lastUpdated: ranking.merchantOffer.checkedAt,
-      } satisfies PublicPartnerWidgetResponse;
+      };
+
+      if (playgroundBypassActive && shouldExposePlaygroundBypass()) {
+        return {
+          ...response,
+          playgroundBypass: true,
+        } satisfies PublicPartnerWidgetResponse;
+      }
+
+      return response;
     });
   };
 }

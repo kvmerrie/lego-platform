@@ -47,6 +47,8 @@ export type CommerceMerchantReliabilityTier =
   | 'strategic_manual';
 
 export const commercePartnerWidgetModes = ['all', 'top3', 'winner'] as const;
+export const commercePartnerWidgetPlaygroundOrigin =
+  'https://playground.wordpress.net';
 
 export type CommercePartnerWidgetMode =
   (typeof commercePartnerWidgetModes)[number];
@@ -102,11 +104,13 @@ export interface CommercePartnerWidgetRuntimeEnvironment {
   BRICKHUNT_DEPLOY_ENV?: string;
   BRICKHUNT_ENV?: string;
   NODE_ENV?: string;
+  PARTNER_WIDGET_ALLOW_PLAYGROUND?: string;
   VERCEL_ENV?: string;
 }
 
 export interface CommercePartnerWidgetRequestOptions {
   allowDevPreview?: boolean;
+  allowPlaygroundOrigin?: boolean;
 }
 
 export interface CommercePartnerWidgetOffer {
@@ -873,6 +877,34 @@ export function isCommercePartnerWidgetDevPreviewAllowed({
   );
 }
 
+export function isCommercePartnerWidgetPlaygroundOriginBypassAllowed(
+  environment: CommercePartnerWidgetRuntimeEnvironment,
+): boolean {
+  if (
+    normalizeCommercePartnerWidgetRuntimeValue(
+      environment.PARTNER_WIDGET_ALLOW_PLAYGROUND,
+    ) === 'true'
+  ) {
+    return true;
+  }
+
+  const nodeEnvironment = normalizeCommercePartnerWidgetRuntimeValue(
+    environment.NODE_ENV,
+  );
+
+  return Boolean(nodeEnvironment && nodeEnvironment !== 'production');
+}
+
+export function shouldExposeCommercePartnerWidgetPlaygroundBypass(
+  environment: CommercePartnerWidgetRuntimeEnvironment,
+): boolean {
+  const nodeEnvironment = normalizeCommercePartnerWidgetRuntimeValue(
+    environment.NODE_ENV,
+  );
+
+  return Boolean(nodeEnvironment && nodeEnvironment !== 'production');
+}
+
 export function normalizeCommercePartnerWidgetOrigin(
   value?: string | null,
 ): string | undefined {
@@ -910,6 +942,16 @@ export function getCommercePartnerWidgetRequestOrigin(
   );
 }
 
+export function isCommercePartnerWidgetPlaygroundOriginRequest(
+  request: CommercePartnerWidgetRequestLike,
+): boolean {
+  return (
+    normalizeCommercePartnerWidgetOrigin(
+      getCommercePartnerWidgetHeaderValue(request, 'origin'),
+    ) === commercePartnerWidgetPlaygroundOrigin
+  );
+}
+
 export function isAllowedCommercePartnerWidgetMode({
   merchant,
   mode,
@@ -938,6 +980,13 @@ export function getAllowedPartnerWidgetRequestOrigin(
   }
 
   if (
+    options.allowPlaygroundOrigin &&
+    isCommercePartnerWidgetPlaygroundOriginRequest(request)
+  ) {
+    return requestOrigin;
+  }
+
+  if (
     options.allowDevPreview &&
     isCommercePartnerWidgetDevPreviewRequested(request)
   ) {
@@ -958,6 +1007,13 @@ export function isAllowedPartnerWidgetRequest(
 ): boolean {
   if (merchant.partnerWidget?.enabled !== true) {
     return false;
+  }
+
+  if (
+    options.allowPlaygroundOrigin &&
+    isCommercePartnerWidgetPlaygroundOriginRequest(request)
+  ) {
+    return true;
   }
 
   if (
