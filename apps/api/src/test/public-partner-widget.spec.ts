@@ -681,6 +681,7 @@ function flushPartnerBadgePromises() {
 async function runPartnerBadgeScript({
   attributes = '',
   response,
+  targetHtml = '',
 }: {
   attributes?: string;
   response: {
@@ -691,9 +692,10 @@ async function runPartnerBadgeScript({
     ok: boolean;
     status: number;
   };
+  targetHtml?: string;
 }) {
   const dom = new JSDOM(
-    `<!doctype html><html><body><main><script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="10316" data-merchant-slug="uniekebricks" data-mode="all" ${attributes}></script></main></body></html>`,
+    `<!doctype html><html><body><main>${targetHtml}<script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="10316" data-merchant-slug="uniekebricks" data-mode="all" ${attributes}></script></main></body></html>`,
     {
       runScripts: 'outside-only',
       url: 'https://www.uniekebricks.nl/lego/rivendell/',
@@ -759,6 +761,7 @@ describe('partner badge embed script', () => {
         }),
       },
     });
+    const script = dom.window.document.querySelector('script');
     const badge = dom.window.document.querySelector('brickhunt-partner-badge');
     const link = badge?.shadowRoot?.querySelector('.cta');
     const poweredLink = badge?.shadowRoot?.querySelector('.powered a');
@@ -777,6 +780,7 @@ describe('partner badge embed script', () => {
     expect(fetchUrl.searchParams.get('merchantSlug')).toBe('uniekebricks');
     expect(fetchUrl.searchParams.get('devPreview')).toBeNull();
     expect(fetchOptions?.headers).toBeUndefined();
+    expect(script?.nextElementSibling).toBe(badge);
     expect(section?.className).toContain('winner');
     expect(section?.className).toContain('compact');
     expect(section?.textContent).toContain(
@@ -844,6 +848,223 @@ describe('partner badge embed script', () => {
     expect(section?.textContent).toContain(
       '\u20ac\u00a0349,99 bij Unieke Bricks',
     );
+  });
+
+  test('renders into a configured target container', async () => {
+    const { dom } = await runPartnerBadgeScript({
+      attributes: 'data-target-id="brickhunt-badge-1"',
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          status: 'checked',
+        }),
+      },
+      targetHtml: '<div id="brickhunt-badge-1"></div>',
+    });
+    const target = dom.window.document.getElementById('brickhunt-badge-1');
+    const badge = target?.querySelector('brickhunt-partner-badge');
+
+    expect(badge).not.toBeNull();
+    expect(
+      dom.window.document
+        .querySelector('script')
+        ?.getAttribute('data-brickhunt-processed'),
+    ).toBe('true');
+    expect(
+      dom.window.document.querySelector('script + brickhunt-partner-badge'),
+    ).toBeNull();
+    expect(badge?.shadowRoot?.querySelector('section')?.className).toContain(
+      'checked',
+    );
+  });
+
+  test('renders nothing when a configured target container is missing', async () => {
+    const { dom, fetchMock } = await runPartnerBadgeScript({
+      attributes: 'data-target-id="missing-brickhunt-badge"',
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          status: 'winner',
+        }),
+      },
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(
+      dom.window.document.querySelector('brickhunt-partner-badge'),
+    ).toBeNull();
+    expect(
+      dom.window.document
+        .querySelector('script')
+        ?.getAttribute('data-brickhunt-processed'),
+    ).toBeNull();
+  });
+
+  test('renders nothing when data-target-id exists but is empty', async () => {
+    const { dom, fetchMock } = await runPartnerBadgeScript({
+      attributes: 'data-target-id=""',
+      response: {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          status: 'winner',
+        }),
+      },
+    });
+    const script = dom.window.document.querySelector('script');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(script?.hasAttribute('data-target-id')).toBe(true);
+    expect(script?.nextElementSibling).toBeNull();
+    expect(
+      dom.window.document.querySelector('brickhunt-partner-badge'),
+    ).toBeNull();
+    expect(script?.getAttribute('data-brickhunt-processed')).toBeNull();
+  });
+
+  test('renders a WordPress enqueued target script into the earlier placeholder only', async () => {
+    const dom = new JSDOM(
+      '<!doctype html><html><body>' +
+        '<main><div id="brickhunt-badge-1" class="brickhunt-badge-placeholder"></div></main>' +
+        '<footer>' +
+        '<script data-layout="compact" data-merchant-slug="uniekebricks" data-mode="all" data-set-id="75371" data-target-id="brickhunt-badge-1" id="brickhunt-for-woocommerce-widget-1-js" src="https://www.brickhunt.nl/widgets/partner-badge.js?ver=0.1.0"></script>' +
+        '</footer>' +
+        '</body></html>',
+      {
+        runScripts: 'outside-only',
+        url: 'https://www.uniekebricks.nl/lego/millennium-falcon/',
+      },
+    );
+    const script = dom.window.document.getElementById(
+      'brickhunt-for-woocommerce-widget-1-js',
+    );
+    const fetchMock = vi.fn(async () => ({
+      json: async () => ({
+        brickhuntUrl:
+          'https://www.brickhunt.nl/sets/star-wars-millennium-falcon-75371',
+        status: 'winner',
+      }),
+      ok: true,
+      status: 200,
+    }));
+
+    if (!script) {
+      throw new Error('Expected WordPress widget script element.');
+    }
+
+    Object.defineProperty(dom.window.document, 'currentScript', {
+      configurable: true,
+      get: () => script,
+    });
+    Object.defineProperty(dom.window, 'fetch', {
+      configurable: true,
+      value: fetchMock,
+    });
+
+    dom.window.eval(readPartnerBadgeScript());
+    await flushPartnerBadgePromises();
+
+    const target = dom.window.document.getElementById('brickhunt-badge-1');
+    const targetBadge = target?.querySelector('brickhunt-partner-badge');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(targetBadge).not.toBeNull();
+    expect(
+      targetBadge?.shadowRoot?.querySelector('section')?.className,
+    ).toContain('winner');
+    expect(script.nextElementSibling).toBeNull();
+    expect(script.getAttribute('data-brickhunt-processed')).toBe('true');
+    expect(
+      dom.window.document.body.querySelectorAll('brickhunt-partner-badge'),
+    ).toHaveLength(1);
+  });
+
+  test('renders multiple target-id badges independently', async () => {
+    const dom = new JSDOM(
+      '<!doctype html><html><body><main>' +
+        '<div id="brickhunt-badge-1"></div>' +
+        '<script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="10316" data-merchant-slug="uniekebricks" data-mode="all" data-target-id="brickhunt-badge-1"></script>' +
+        '<div id="brickhunt-badge-2"></div>' +
+        '<script src="https://www.brickhunt.nl/widgets/partner-badge.js" data-set-id="75313" data-merchant-slug="uniekebricks" data-mode="all" data-target-id="brickhunt-badge-2"></script>' +
+        '</main></body></html>',
+      {
+        runScripts: 'outside-only',
+        url: 'https://www.uniekebricks.nl/lego/rivendell/',
+      },
+    );
+    const scripts = Array.from(dom.window.document.querySelectorAll('script'));
+    const statuses = ['winner', 'top3'];
+    let activeScript = scripts[0];
+    let responseIndex = 0;
+    const fetchMock = vi.fn(async () => {
+      const status = statuses[responseIndex] ?? 'checked';
+
+      responseIndex += 1;
+
+      return {
+        json: async () => ({
+          brickhuntUrl:
+            'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
+          status,
+        }),
+        ok: true,
+        status: 200,
+      };
+    });
+
+    Object.defineProperty(dom.window.document, 'currentScript', {
+      configurable: true,
+      get: () => activeScript,
+    });
+    Object.defineProperty(dom.window, 'fetch', {
+      configurable: true,
+      value: fetchMock,
+    });
+
+    const scriptSource = readPartnerBadgeScript();
+
+    activeScript = scripts[0];
+    dom.window.eval(scriptSource);
+    activeScript = scripts[1];
+    dom.window.eval(scriptSource);
+    await flushPartnerBadgePromises();
+    await flushPartnerBadgePromises();
+
+    const targetOne = dom.window.document.getElementById('brickhunt-badge-1');
+    const targetTwo = dom.window.document.getElementById('brickhunt-badge-2');
+    const targetOneBadges = targetOne?.querySelectorAll(
+      'brickhunt-partner-badge',
+    );
+    const targetTwoBadges = targetTwo?.querySelectorAll(
+      'brickhunt-partner-badge',
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(targetOneBadges).toHaveLength(1);
+    expect(targetTwoBadges).toHaveLength(1);
+    expect(
+      targetOneBadges?.[0].shadowRoot?.querySelector('section')?.className,
+    ).toContain('winner');
+    expect(
+      targetTwoBadges?.[0].shadowRoot?.querySelector('section')?.className,
+    ).toContain('top3');
+    expect(
+      scripts.some(
+        (script) =>
+          script.nextElementSibling?.tagName === 'BRICKHUNT-PARTNER-BADGE',
+      ),
+    ).toBe(false);
+    expect(
+      dom.window.document.querySelectorAll('brickhunt-partner-badge'),
+    ).toHaveLength(2);
   });
 
   test.each([

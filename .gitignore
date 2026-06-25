@@ -70,3 +70,6 @@ __screenshots__/
 
 
 storybook-static
+
+# WooCommerce plugin packages
+plugins/woocommerce/*.zip

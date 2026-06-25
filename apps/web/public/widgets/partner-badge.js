@@ -5,20 +5,60 @@
     return;
   }
 
-  const setId = (script.getAttribute('data-set-id') || '').trim();
-  const merchantSlug = (script.getAttribute('data-merchant-slug') || '').trim();
-  const mode = (script.getAttribute('data-mode') || 'all').trim() || 'all';
-  const apiBaseUrl = (script.getAttribute('data-api-base-url') || '').trim();
-  const devPreview = isTruthy(script.getAttribute('data-dev-preview'));
-  const debug = isTruthy(script.getAttribute('data-debug'));
-  const mockStatus = (script.getAttribute('data-mock-status') || '').trim();
+  if (isScriptProcessed()) {
+    return;
+  }
+
+  const setId = readScriptAttribute('setId', 'data-set-id');
+  const merchantSlug = readScriptAttribute(
+    'merchantSlug',
+    'data-merchant-slug',
+  );
+  const mode = readScriptAttribute('mode', 'data-mode') || 'all';
+  const apiBaseUrl = readScriptAttribute('apiBaseUrl', 'data-api-base-url');
+  const devPreview = isTruthy(
+    readScriptAttribute('devPreview', 'data-dev-preview'),
+  );
+  const debug = isTruthy(readScriptAttribute('debug', 'data-debug'));
+  const mockStatus = readScriptAttribute('mockStatus', 'data-mock-status');
+  const hasTargetId = hasScriptAttribute('targetId', 'data-target-id');
+  const targetId = readScriptAttribute('targetId', 'data-target-id');
   const layout =
-    (script.getAttribute('data-layout') || '').trim() === 'card'
+    readScriptAttribute('layout', 'data-layout') === 'card'
       ? 'card'
       : 'compact';
 
   if (!setId || !merchantSlug) {
     return;
+  }
+
+  function readScriptAttribute(datasetKey, attributeName) {
+    const datasetValue =
+      script.dataset && typeof script.dataset[datasetKey] === 'string'
+        ? script.dataset[datasetKey]
+        : '';
+    const attributeValue = script.getAttribute(attributeName) || '';
+
+    return (datasetValue || attributeValue || '').trim();
+  }
+
+  function hasScriptAttribute(datasetKey, attributeName) {
+    return Boolean(
+      (script.dataset &&
+        Object.prototype.hasOwnProperty.call(script.dataset, datasetKey)) ||
+        script.hasAttribute(attributeName),
+    );
+  }
+
+  function isScriptProcessed() {
+    return (
+      readScriptAttribute('brickhuntProcessed', 'data-brickhunt-processed') ===
+      'true'
+    );
+  }
+
+  function markScriptProcessed() {
+    script.setAttribute('data-brickhunt-processed', 'true');
   }
 
   function isTruthy(value) {
@@ -152,9 +192,40 @@
   function insertAfterScript(element) {
     if (script.parentNode) {
       script.parentNode.insertBefore(element, script.nextSibling);
+      return true;
     } else if (document.body) {
       document.body.appendChild(element);
+      return true;
     }
+
+    return false;
+  }
+
+  function renderWidgetElement(element) {
+    if (hasTargetId) {
+      if (!targetId) {
+        return false;
+      }
+
+      const target = document.getElementById(targetId);
+
+      if (!target) {
+        return false;
+      }
+
+      target.replaceChildren(element);
+      markScriptProcessed();
+
+      return true;
+    }
+
+    if (insertAfterScript(element)) {
+      markScriptProcessed();
+
+      return true;
+    }
+
+    return false;
   }
 
   function createShadowHost(tagName) {
@@ -187,7 +258,7 @@
 
     root.appendChild(style);
     root.appendChild(pre);
-    insertAfterScript(host);
+    renderWidgetElement(host);
   }
 
   function formatPrice(priceCents) {
@@ -288,7 +359,7 @@
       root.appendChild(pre);
     }
 
-    insertAfterScript(host);
+    renderWidgetElement(host);
   }
 
   const apiUrl = buildApiUrl();
