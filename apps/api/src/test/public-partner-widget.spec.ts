@@ -1000,9 +1000,24 @@ describe('partner badge embed script', () => {
         url: 'https://www.uniekebricks.nl/lego/rivendell/',
       },
     );
-    const scripts = Array.from(dom.window.document.querySelectorAll('script'));
+    const scripts: HTMLScriptElement[] = Array.from(
+      dom.window.document.querySelectorAll('script[src*="partner-badge.js"]'),
+      (script): HTMLScriptElement => {
+        if (!(script instanceof dom.window.HTMLScriptElement)) {
+          throw new Error('Expected partner widget script element.');
+        }
+
+        return script as HTMLScriptElement;
+      },
+    );
+    const [firstScript, secondScript] = scripts;
+
+    if (!firstScript || !secondScript) {
+      throw new Error('Expected two partner widget script elements.');
+    }
+
     const statuses = ['winner', 'top3'];
-    let activeScript = scripts[0];
+    let activeScript = firstScript;
     let responseIndex = 0;
     const fetchMock = vi.fn(async () => {
       const status = statuses[responseIndex] ?? 'checked';
@@ -1031,9 +1046,9 @@ describe('partner badge embed script', () => {
 
     const scriptSource = readPartnerBadgeScript();
 
-    activeScript = scripts[0];
+    activeScript = firstScript;
     dom.window.eval(scriptSource);
-    activeScript = scripts[1];
+    activeScript = secondScript;
     dom.window.eval(scriptSource);
     await flushPartnerBadgePromises();
     await flushPartnerBadgePromises();
