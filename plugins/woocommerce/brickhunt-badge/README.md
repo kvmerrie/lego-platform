@@ -1,124 +1,277 @@
-# Brickhunt Price Badge
+# Brickhunt for WooCommerce
 
-Standalone WordPress/WooCommerce plugin voor de Brickhunt partner badge.
+**Independent LEGO price validation for WooCommerce stores.**
 
-Fase 1 is bedoeld voor pilots met merchants zoals Unieke Bricks en Brickspoint. De plugin doet geen remote calls vanuit PHP. De productpagina rendert alleen de bestaande Brickhunt widget script tag.
+Brickhunt for WooCommerce helps LEGO retailers build trust by automatically displaying independent Brickhunt price validation badges on WooCommerce product pages.
 
-## Installatie
+Depending on the current market position, Brickhunt can show whether a product price has been:
 
-1. Kopieer deze map naar `wp-content/plugins/brickhunt-badge`.
-2. Activeer `Brickhunt Price Badge` in WordPress.
-3. Zorg dat WooCommerce actief is. Zonder WooCommerce toont de plugin alleen een admin notice.
-4. Ga naar `WooCommerce -> Brickhunt Badge`.
-5. Vul de instellingen in en zet `Enable Brickhunt badge` aan.
+- ✅ Checked
+- 🏆 Validated as a Top Offer
+- 🥇 Validated as the Best Price
 
-## Instellingen
+The plugin is lightweight, requires minimal configuration and loads the existing Brickhunt widget through WordPress script enqueueing without performing remote API requests from PHP.
 
-- `Enable Brickhunt badge`: zet automatische rendering op productpagina's aan of uit.
-- `Merchant slug`: de Brickhunt merchant slug, bijvoorbeeld `uniekebricks` of `brickspoint`.
-- `Badge mode`: `all`, `top3` of `winner`.
-- `Layout`: `compact` of `card`.
-- `Position`: `after_price`, `after_add_to_cart` of `product_meta`.
-- `Brickhunt base URL`: standaard `https://www.brickhunt.nl`.
+---
 
-Het merchantdomein moet in Brickhunt op de whitelist staan. Anders geeft de Brickhunt API een `403` en rendert de widget niets.
+## Features
 
-## SKU mapping
+- Independent LEGO price validation
+- Automatic WooCommerce integration
+- Automatic SKU-to-LEGO-set mapping
+- Product-level Brickhunt Set ID Override
+- Compact and Card layouts
+- Configurable display modes (`all`, `top3`, `winner`)
+- Shortcode support
+- Secure merchant domain validation
+- WordPress-conform script enqueueing
+- No remote API calls from PHP
+- HPOS / Custom Order Tables compatible
 
-Fase 1 gebruikt de WooCommerce SKU als LEGO-setnummer.
+---
 
-Voorbeelden:
+## Installation
 
-- SKU `10316` -> `data-set-id="10316"`
-- SKU `10316-1` -> `data-set-id="10316"`
+1. Copy this plugin to:
 
-Als de SKU leeg is of geen setnummer lijkt, rendert de badge niets.
+   ```
+   wp-content/plugins/brickhunt-badge
+   ```
 
-## Product override
+2. Activate **Brickhunt for WooCommerce**.
 
-Op de product edit page staat een optioneel veld:
+3. Make sure WooCommerce is installed and activated.
 
-`Brickhunt set ID override`
+4. Navigate to:
 
-Als dit veld gevuld is, gebruikt de plugin deze waarde boven de SKU. Dit is handig als de WooCommerce SKU intern anders is opgebouwd.
+   ```
+   WooCommerce → Brickhunt
+   ```
+
+5. Configure:
+   - Enable badge
+   - Merchant slug
+   - Badge mode
+   - Layout
+   - Position
+
+6. Save your settings.
+
+---
+
+## Settings
+
+### Enable badge
+
+Enables automatic rendering of Brickhunt badges on WooCommerce product pages.
+
+### Merchant slug
+
+Enter your Brickhunt merchant slug.
+
+Examples:
+
+- `uniekebricks`
+- `brickspoint`
+
+If you don't know your merchant slug, visit:
+
+https://www.brickhunt.nl/winkels
+
+or contact:
+
+hello@brickhunt.nl
+
+### Badge mode
+
+Available modes:
+
+- `all`
+- `top3`
+- `winner`
+
+### Layout
+
+Choose between:
+
+- Compact
+- Card
+
+### Position
+
+Available positions:
+
+- After price
+- After Add to Cart
+- Product meta
+
+---
+
+## SKU Mapping
+
+By default, the plugin uses the WooCommerce SKU as the LEGO set number.
+
+Examples:
+
+| WooCommerce SKU | Brickhunt Set ID |
+| --------------- | ---------------- |
+| 10316           | 10316            |
+| 10316-1         | 10316            |
+| 75313           | 75313            |
+
+If the SKU is empty or does not contain a valid LEGO set number, no badge will be rendered.
+
+---
+
+## Product Override
+
+Each WooCommerce product includes an optional field:
+
+**Brickhunt Set ID Override**
+
+When configured, this value takes precedence over the WooCommerce SKU.
+
+This is useful when internal SKUs differ from official LEGO set numbers.
+
+---
 
 ## Shortcode
 
-Gebruik de shortcode als je de badge handmatig in een template, producttekst of page builder wilt plaatsen.
+The badge can also be rendered manually.
+
+Examples:
 
 ```text
 [brickhunt_badge]
+
 [brickhunt_badge set_id="10316"]
-[brickhunt_badge set_id="10316" merchant="uniekebricks" mode="winner" layout="card"]
+
+[brickhunt_badge
+    set_id="10316"
+    merchant="uniekebricks"
+    mode="winner"
+    layout="card"]
 ```
 
-Zonder `set_id` gebruikt de shortcode de huidige WooCommerce product override of SKU. Zonder `merchant`, `mode` of `layout` gebruikt de shortcode de globale plugin settings.
+Without a `set_id`, the shortcode automatically uses the current product's override or SKU.
+
+Without `merchant`, `mode` or `layout`, the global plugin settings are used.
+
+The shortcode uses the same WordPress-enqueued Brickhunt widget script as the automatic product-page integration.
+
+---
 
 ## Packaging
 
-Vanaf de repo-root:
+Create a release ZIP by running:
 
 ```sh
-cd plugins/woocommerce
-zip -r brickhunt-price-badge.zip brickhunt-badge -x "*/.DS_Store"
-```
-
-Of vanuit deze plugin-map:
-
-```sh
+cd plugins/woocommerce/brickhunt-badge
 sh package.sh
 ```
 
-De output heet `brickhunt-price-badge.zip`.
+The generated ZIP is intended for WordPress.org plugin submission. It contains the runtime plugin files and documentation, but excludes `package.sh` and WordPress.org directory assets such as icons, banners and screenshots.
+
+Keep the files in `assets/` in the repository. After approval, upload icons, banners and screenshots separately through the WordPress.org SVN assets flow.
+
+---
 
 ## Troubleshooting
 
-### Badge verschijnt niet
+### The badge does not appear
 
-Controleer:
+Check the following:
 
-- `Enable Brickhunt badge` staat aan.
-- `Merchant slug` is ingevuld.
-- Het product heeft een SKU of Brickhunt set ID override.
-- De SKU lijkt op `10316` of `10316-1`.
-- De gekozen positie bestaat in het actieve WooCommerce theme.
-- Brickhunt heeft prijsdata voor deze set en merchant.
+- The plugin is enabled.
+- A merchant slug has been configured.
+- The product has a valid SKU or Brickhunt Set ID Override.
+- The selected WooCommerce hook exists in your theme.
+- Brickhunt has price data available for this merchant and LEGO set.
 
-### 403 door domein whitelist
+---
 
-De Brickhunt API geeft `403` als het merchantdomein niet op de allowed origins staat. CORS-fouten betekenen meestal hetzelfde: de browser-origin is niet gewhitelist.
+### 403 Forbidden
 
-Voeg het productie- of stagingdomein toe aan de Brickhunt merchant-config. Voor tests in WordPress Playground moet `https://playground.wordpress.net` tijdelijk op de Brickhunt `partnerWidget.allowedOrigins` staan.
+A **403** response usually means the current domain has not yet been approved in the Brickhunt partner configuration.
 
-### 204 door geen prijsdata of mode mismatch
+This also results in a browser CORS error.
 
-De widget rendert niets bij `204`. Dat kan kloppen wanneer:
+For local or staging environments, add the corresponding domain to the Brickhunt merchant allowlist.
 
-- Brickhunt geen actuele prijs voor de merchant heeft.
-- `mode="winner"` is gekozen, maar de merchant niet de laagste prijs heeft.
-- `mode="top3"` is gekozen, maar de merchant buiten de top 3 valt.
+For WordPress Playground testing, temporarily allow:
 
-### WooCommerce niet actief
+```
+https://playground.wordpress.net
+```
 
-De plugin activeert zonder fatal error, maar toont een admin notice. Activeer WooCommerce om settings, shortcode en product rendering te gebruiken.
+---
 
-## Handmatige testcases
+### 204 No Content
 
-- Plugin activeert zonder fatal error.
-- WooCommerce ontbreekt -> admin notice.
-- `enabled=false` -> geen output op productpagina.
-- Merchant slug leeg -> geen output.
-- SKU leeg -> geen output.
-- SKU `10316` -> script bevat `data-set-id="10316"`.
-- SKU `10316-1` -> script bevat `data-set-id="10316"`.
-- Mode en layout instellingen komen terug in de script tag.
-- Shortcode rendert met `set_id`, `merchant`, `mode` en `layout` overrides.
-- Product set ID override wint van SKU.
+A **204** response is expected when:
 
-## Pilotnotitie
+- Brickhunt has no price data for this merchant.
+- `winner` mode is selected but the merchant is not the lowest-priced offer.
+- `top3` mode is selected but the merchant is not ranked within the top three.
 
-Voor Unieke Bricks en Brickspoint:
+In these cases the widget intentionally renders nothing.
 
-- Zet de SKU op het LEGO-setnummer, of vul het product override veld.
-- Gebruik meestal `mode="all"` en `layout="compact"` naast de prijs of add-to-cart.
-- Test altijd op een echte productpagina met een gewhitelist domein.
+---
+
+### WooCommerce is not installed
+
+The plugin activates without fatal errors but displays an admin notice.
+
+Activate WooCommerce before using the plugin.
+
+---
+
+## Manual Test Checklist
+
+- Plugin activates successfully.
+- WooCommerce missing → admin notice.
+- Enable badge = disabled → no output.
+- Merchant slug empty → no output.
+- Empty SKU → no output.
+- SKU `10316` → renders `data-set-id="10316"`.
+- SKU `10316-1` → renders `data-set-id="10316"`.
+- Badge mode and layout are correctly reflected in the widget.
+- Shortcode overrides work correctly.
+- Product-level Set ID Override takes precedence over the SKU.
+- HPOS compatibility warning is not shown.
+
+---
+
+## Merchant Onboarding
+
+Recommended configuration for pilot merchants:
+
+- Badge mode: **all**
+- Layout: **compact**
+- Position: **After price**
+
+Before going live:
+
+- Ensure your store domain has been approved by Brickhunt.
+- Verify that WooCommerce SKUs match official LEGO set numbers.
+- Test on a real product page.
+
+---
+
+## Support
+
+Website
+
+https://www.brickhunt.nl
+
+Merchant directory
+
+https://www.brickhunt.nl/winkels
+
+Email
+
+hello@brickhunt.nl
+
+---
+
+LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this plugin or Brickhunt.
