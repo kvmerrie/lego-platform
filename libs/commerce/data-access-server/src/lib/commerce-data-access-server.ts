@@ -221,11 +221,49 @@ export interface CommerceRefreshSeed {
   offerSeed: CommerceOfferSeed;
 }
 
+export interface CommerceMerchantImportReadModel {
+  merchant?: CommerceMerchant;
+  offerSeeds: CommerceOfferSeed[];
+}
+
 interface CommerceSupabaseLikeError {
   code?: string;
   details?: string;
   hint?: string;
   message?: string;
+}
+
+export interface CommerceSupabaseQueryErrorDiagnostics {
+  attempt: number;
+  code: string | null;
+  details: string | null;
+  elapsedMs: number;
+  hint: string | null;
+  maxAttempts: number;
+  message: string;
+  operation: string;
+  query: string;
+  retryDelayMs: number | null;
+  table: string;
+  willRetry: boolean;
+}
+
+export class CommerceSupabaseQueryError extends Error {
+  readonly diagnostics: CommerceSupabaseQueryErrorDiagnostics;
+  readonly supabaseError: unknown;
+
+  constructor({
+    diagnostics,
+    supabaseError,
+  }: {
+    diagnostics: CommerceSupabaseQueryErrorDiagnostics;
+    supabaseError: unknown;
+  }) {
+    super(formatCommerceSupabaseQueryErrorMessage(diagnostics));
+    this.name = 'CommerceSupabaseQueryError';
+    this.diagnostics = diagnostics;
+    this.supabaseError = supabaseError;
+  }
 }
 
 function assertAllowedValue<TValue extends string>(
@@ -255,6 +293,316 @@ function formatCommerceSupabaseLikeError(
   ]
     .filter((value): value is string => Boolean(value))
     .join(' ');
+}
+
+function readCommerceSupabaseErrorField(
+  error: unknown,
+  field: keyof CommerceSupabaseLikeError,
+): string | null {
+  if (!error || typeof error !== 'object' || !(field in error)) {
+    return null;
+  }
+
+  const value = (error as Record<string, unknown>)[field];
+
+  return typeof value === 'string' && value.trim() ? value : null;
+}
+
+function readCommerceSupabaseErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return (
+    readCommerceSupabaseErrorField(error, 'message') ??
+    'Unknown Supabase query error.'
+  );
+}
+
+function formatCommerceSupabaseQueryErrorMessage(
+  diagnostics: CommerceSupabaseQueryErrorDiagnostics,
+): string {
+  return [
+    'Supabase commerce query failed.',
+    `operation=${JSON.stringify(diagnostics.operation)}`,
+    `table=${JSON.stringify(diagnostics.table)}`,
+    `query=${JSON.stringify(diagnostics.query)}`,
+    `code=${JSON.stringify(diagnostics.code)}`,
+    `message=${JSON.stringify(diagnostics.message)}`,
+    `details=${JSON.stringify(diagnostics.details)}`,
+    `hint=${JSON.stringify(diagnostics.hint)}`,
+    `elapsedMs=${diagnostics.elapsedMs}`,
+  ].join(' ');
+}
+
+function logCommerceSupabaseQueryError(
+  diagnostics: CommerceSupabaseQueryErrorDiagnostics,
+): void {
+  console.error('[commerce-data-access] supabase_query_error', {
+    attempt: diagnostics.attempt,
+    code: diagnostics.code,
+    details: diagnostics.details,
+    elapsedMs: diagnostics.elapsedMs,
+    hint: diagnostics.hint,
+    maxAttempts: diagnostics.maxAttempts,
+    message: diagnostics.message,
+    operation: diagnostics.operation,
+    query: diagnostics.query,
+    retryDelayMs: diagnostics.retryDelayMs,
+    table: diagnostics.table,
+    willRetry: diagnostics.willRetry,
+  });
+}
+
+function readPositiveIntegerEnv(key: string, fallbackValue: number): number {
+  const parsedValue = Number(process.env[key]);
+
+  return Number.isFinite(parsedValue) && parsedValue >= 0
+    ? Math.floor(parsedValue)
+    : fallbackValue;
+}
+
+function getCommerceSupabaseReadRetryConfig(): {
+  baseDelayMs: number;
+  maxAttempts: number;
+  maxDelayMs: number;
+} {
+  const maxAttempts = Math.max(
+    1,
+    readPositiveIntegerEnv('COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS', 3),
+  );
+  const baseDelayMs = readPositiveIntegerEnv(
+    'COMMERCE_SUPABASE_READ_RETRY_BASE_DELAY_MS',
+    250,
+  );
+  const maxDelayMs = readPositiveIntegerEnv(
+    'COMMERCE_SUPABASE_READ_RETRY_MAX_DELAY_MS',
+    2_000,
+  );
+
+  return {
+    baseDelayMs,
+    maxAttempts,
+    maxDelayMs,
+  };
+}
+
+function getCommerceSupabaseReadRetryDelayMs({
+  attempt,
+  baseDelayMs,
+  maxDelayMs,
+}: {
+  attempt: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+}): number {
+  if (baseDelayMs <= 0) {
+    return 0;
+  }
+
+  return Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs);
+}
+
+function waitForCommerceSupabaseRetry(delayMs: number): Promise<void> {
+  if (delayMs <= 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
+function isRetryableCommerceSupabaseQueryError(error: unknown): boolean {
+  const code = readCommerceSupabaseErrorField(error, 'code');
+  const normalizedMessage =
+    readCommerceSupabaseErrorMessage(error).toLowerCase();
+
+  if (
+    code &&
+    (code.startsWith('08') ||
+      [
+        '40001',
+        '40P01',
+        '53300',
+        '53400',
+        '57014',
+        '57P01',
+        '57P02',
+        '57P03',
+        '58000',
+        '58030',
+        'PGRST000',
+        'PGRST001',
+        'PGRST002',
+        'PGRST003',
+        'XX000',
+      ].includes(code))
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedMessage.includes('aborted') ||
+    normalizedMessage.includes(
+      'canceling statement due to statement timeout',
+    ) ||
+    normalizedMessage.includes('connection terminated') ||
+    normalizedMessage.includes('disk i/o') ||
+    normalizedMessage.includes('disk io') ||
+    normalizedMessage.includes('eai_again') ||
+    normalizedMessage.includes('econnreset') ||
+    normalizedMessage.includes('etimedout') ||
+    normalizedMessage.includes('fetch failed') ||
+    normalizedMessage.includes('network') ||
+    normalizedMessage.includes('remaining connection slots') ||
+    normalizedMessage.includes('server closed the connection') ||
+    normalizedMessage.includes('statement timeout') ||
+    normalizedMessage.includes('temporarily unavailable') ||
+    normalizedMessage.includes('timed out') ||
+    normalizedMessage.includes('timeout') ||
+    normalizedMessage.includes('too many connections') ||
+    error instanceof TypeError ||
+    (error instanceof Error &&
+      (error.name === 'AbortError' || error.name === 'TimeoutError'))
+  );
+}
+
+async function executeCommerceSupabaseRead<TData>({
+  operation,
+  query,
+  read,
+  table,
+}: {
+  operation: string;
+  query: string;
+  read: () => PromiseLike<{
+    data: TData | null;
+    error: unknown;
+  }>;
+  table: string;
+}): Promise<TData | null> {
+  const { baseDelayMs, maxAttempts, maxDelayMs } =
+    getCommerceSupabaseReadRetryConfig();
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const startedAt = Date.now();
+
+    try {
+      const { data, error } = await read();
+      const elapsedMs = Date.now() - startedAt;
+
+      if (!error) {
+        return data;
+      }
+
+      const retryDelayMs = getCommerceSupabaseReadRetryDelayMs({
+        attempt,
+        baseDelayMs,
+        maxDelayMs,
+      });
+      const willRetry =
+        attempt < maxAttempts && isRetryableCommerceSupabaseQueryError(error);
+      const diagnostics = buildCommerceSupabaseQueryDiagnostics({
+        attempt,
+        elapsedMs,
+        error,
+        maxAttempts,
+        operation,
+        query,
+        retryDelayMs: willRetry ? retryDelayMs : null,
+        table,
+        willRetry,
+      });
+
+      logCommerceSupabaseQueryError(diagnostics);
+
+      if (!willRetry) {
+        throw new CommerceSupabaseQueryError({
+          diagnostics,
+          supabaseError: error,
+        });
+      }
+
+      await waitForCommerceSupabaseRetry(retryDelayMs);
+    } catch (error) {
+      if (error instanceof CommerceSupabaseQueryError) {
+        throw error;
+      }
+
+      const elapsedMs = Date.now() - startedAt;
+      const retryDelayMs = getCommerceSupabaseReadRetryDelayMs({
+        attempt,
+        baseDelayMs,
+        maxDelayMs,
+      });
+      const willRetry =
+        attempt < maxAttempts && isRetryableCommerceSupabaseQueryError(error);
+      const diagnostics = buildCommerceSupabaseQueryDiagnostics({
+        attempt,
+        elapsedMs,
+        error,
+        maxAttempts,
+        operation,
+        query,
+        retryDelayMs: willRetry ? retryDelayMs : null,
+        table,
+        willRetry,
+      });
+
+      logCommerceSupabaseQueryError(diagnostics);
+
+      if (!willRetry) {
+        throw new CommerceSupabaseQueryError({
+          diagnostics,
+          supabaseError: error,
+        });
+      }
+
+      await waitForCommerceSupabaseRetry(retryDelayMs);
+    }
+  }
+
+  throw new Error(
+    `Supabase commerce query retry loop exhausted unexpectedly for ${operation}.`,
+  );
+}
+
+function buildCommerceSupabaseQueryDiagnostics({
+  attempt,
+  elapsedMs,
+  error,
+  maxAttempts,
+  operation,
+  query,
+  retryDelayMs,
+  table,
+  willRetry,
+}: {
+  attempt: number;
+  elapsedMs: number;
+  error: unknown;
+  maxAttempts: number;
+  operation: string;
+  query: string;
+  retryDelayMs: number | null;
+  table: string;
+  willRetry: boolean;
+}): CommerceSupabaseQueryErrorDiagnostics {
+  return {
+    attempt,
+    code: readCommerceSupabaseErrorField(error, 'code'),
+    details: readCommerceSupabaseErrorField(error, 'details'),
+    elapsedMs,
+    hint: readCommerceSupabaseErrorField(error, 'hint'),
+    maxAttempts,
+    message: readCommerceSupabaseErrorMessage(error),
+    operation,
+    query,
+    retryDelayMs,
+    table,
+    willRetry,
+  };
 }
 
 function formatAffiliateDiscoveredSetAttempt(input: {
@@ -805,22 +1153,23 @@ async function listCommerceOfferLatestRows({
 }: {
   supabaseClient: CommerceSupabaseClient;
 }): Promise<CommerceOfferLatestRow[]> {
+  const latestOfferSelectQuery =
+    'select id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at';
   const selectedQuery = supabaseClient
     .from(COMMERCE_OFFER_LATEST_TABLE)
-    .select(
-      'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at',
-    );
+    .select(latestOfferSelectQuery);
   const query =
     typeof selectedQuery.order === 'function'
       ? selectedQuery.order('offer_seed_id', { ascending: true })
       : selectedQuery;
 
   if (typeof query.range !== 'function') {
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error('Unable to load commerce latest offers.');
-    }
+    const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
+      operation: 'listCommerceOfferLatestRows',
+      query: `${latestOfferSelectQuery} order=offer_seed_id.asc`,
+      read: () => query,
+      table: COMMERCE_OFFER_LATEST_TABLE,
+    });
 
     return (data as CommerceOfferLatestRow[] | null) ?? [];
   }
@@ -829,11 +1178,16 @@ async function listCommerceOfferLatestRows({
 
   for (let from = 0; ; from += COMMERCE_SUPABASE_PAGE_SIZE) {
     const to = from + COMMERCE_SUPABASE_PAGE_SIZE - 1;
-    const { data, error } = await query.range(from, to);
-
-    if (error) {
-      throw new Error('Unable to load commerce latest offers.');
-    }
+    const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
+      operation: 'listCommerceOfferLatestRows',
+      query: `${latestOfferSelectQuery} order=offer_seed_id.asc range=${from}-${to}`,
+      read: () =>
+        query.range?.(from, to) as PromiseLike<{
+          data: CommerceOfferLatestRow[] | null;
+          error: unknown;
+        }>,
+      table: COMMERCE_OFFER_LATEST_TABLE,
+    });
 
     const pageRows = (data as CommerceOfferLatestRow[] | null) ?? [];
 
@@ -845,21 +1199,98 @@ async function listCommerceOfferLatestRows({
   }
 }
 
+async function listCommerceOfferLatestRowsBySeedIds({
+  offerSeedIds,
+  supabaseClient,
+}: {
+  offerSeedIds: readonly string[];
+  supabaseClient: CommerceSupabaseClient;
+}): Promise<CommerceOfferLatestRow[]> {
+  const normalizedOfferSeedIds = [
+    ...new Set(
+      offerSeedIds.map((offerSeedId) => offerSeedId.trim()).filter(Boolean),
+    ),
+  ];
+
+  if (!normalizedOfferSeedIds.length) {
+    return [];
+  }
+
+  const latestOfferSelectColumns =
+    'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at';
+  const latestOfferRows: CommerceOfferLatestRow[] = [];
+
+  for (const seedIdChunk of chunkCommerceRows(normalizedOfferSeedIds, 500)) {
+    const selectedQuery = supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(latestOfferSelectColumns)
+      .in('offer_seed_id', seedIdChunk);
+    const query =
+      typeof selectedQuery.order === 'function'
+        ? selectedQuery.order('offer_seed_id', { ascending: true })
+        : selectedQuery;
+    const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
+      operation: 'listCommerceOfferLatestRowsBySeedIds',
+      query: `select ${latestOfferSelectColumns} where offer_seed_id.in count=${seedIdChunk.length} order=offer_seed_id.asc`,
+      read: () => query,
+      table: COMMERCE_OFFER_LATEST_TABLE,
+    });
+
+    latestOfferRows.push(...((data as CommerceOfferLatestRow[] | null) ?? []));
+  }
+
+  return latestOfferRows;
+}
+
+export async function getCommerceMerchantBySlug({
+  merchantSlug,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  merchantSlug: string;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<CommerceMerchant | undefined> {
+  const normalizedMerchantSlug = merchantSlug.trim();
+
+  if (!normalizedMerchantSlug) {
+    throw new Error('Commerce merchant slug is required.');
+  }
+
+  const merchantSelectColumns =
+    'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at';
+  const data = await executeCommerceSupabaseRead<CommerceMerchantRow>({
+    operation: 'getCommerceMerchantBySlug',
+    query: `select ${merchantSelectColumns} where slug.eq`,
+    read: () =>
+      supabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select(merchantSelectColumns)
+        .eq('slug', normalizedMerchantSlug)
+        .maybeSingle(),
+    table: COMMERCE_MERCHANTS_TABLE,
+  });
+
+  return data ? toCommerceMerchant(data as CommerceMerchantRow) : undefined;
+}
+
 export async function listCommerceMerchants({
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceMerchant[]> {
-  const { data, error } = await supabaseClient
-    .from(COMMERCE_MERCHANTS_TABLE)
-    .select(
-      'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
-    )
-    .order('name', { ascending: true });
-
-  if (error) {
-    throw new Error('Unable to load commerce merchants.');
-  }
+  const merchantSelectQuery =
+    'select id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at order=name.asc';
+  const data = await executeCommerceSupabaseRead<CommerceMerchantRow[]>({
+    operation: 'listCommerceMerchants',
+    query: merchantSelectQuery,
+    read: () =>
+      supabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select(
+          'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
+        )
+        .order('name', { ascending: true }),
+    table: COMMERCE_MERCHANTS_TABLE,
+  });
 
   return ((data as CommerceMerchantRow[] | null) ?? []).map(toCommerceMerchant);
 }
@@ -896,13 +1327,16 @@ async function readCommerceOfferSeedRows(
       error: unknown;
     }>;
   },
+  queryDescription: string,
+  operation = 'readCommerceOfferSeedRows',
 ): Promise<CommerceOfferSeedRow[]> {
   if (typeof query.range !== 'function') {
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error('Unable to load commerce offer seeds.');
-    }
+    const data = await executeCommerceSupabaseRead<CommerceOfferSeedRow[]>({
+      operation,
+      query: queryDescription,
+      read: () => query,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
 
     return data ?? [];
   }
@@ -911,11 +1345,16 @@ async function readCommerceOfferSeedRows(
 
   for (let from = 0; ; from += COMMERCE_SUPABASE_PAGE_SIZE) {
     const to = from + COMMERCE_SUPABASE_PAGE_SIZE - 1;
-    const { data, error } = await query.range(from, to);
-
-    if (error) {
-      throw new Error('Unable to load commerce offer seeds.');
-    }
+    const data = await executeCommerceSupabaseRead<CommerceOfferSeedRow[]>({
+      operation,
+      query: `${queryDescription} range=${from}-${to}`,
+      read: () =>
+        query.range?.(from, to) as PromiseLike<{
+          data: CommerceOfferSeedRow[] | null;
+          error: unknown;
+        }>,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
 
     const pageRows = data ?? [];
 
@@ -1267,6 +1706,8 @@ export async function listCommerceOfferSeeds({
 }: {
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceOfferSeed[]> {
+  const offerSeedSelectQuery =
+    'select id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at order=updated_at.desc,id.asc';
   const offerSeedQueryByUpdatedAt = supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
@@ -1281,7 +1722,7 @@ export async function listCommerceOfferSeeds({
     [
       listCommerceMerchants({ supabaseClient }),
       listCommerceOfferLatestRows({ supabaseClient }),
-      readCommerceOfferSeedRows(offerSeedQuery),
+      readCommerceOfferSeedRows(offerSeedQuery, offerSeedSelectQuery),
     ],
   );
 
@@ -1302,6 +1743,69 @@ export async function listCommerceOfferSeeds({
       row,
     }),
   );
+}
+
+export async function loadCommerceMerchantImportReadModel({
+  includeOfferSeeds = true,
+  merchantSlug,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  includeOfferSeeds?: boolean;
+  merchantSlug: string;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<CommerceMerchantImportReadModel> {
+  const merchant = await getCommerceMerchantBySlug({
+    merchantSlug,
+    supabaseClient,
+  });
+
+  if (!merchant || !includeOfferSeeds) {
+    return {
+      merchant,
+      offerSeeds: [],
+    };
+  }
+
+  const offerSeedSelectQuery =
+    'select id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at where merchant_id.eq order=updated_at.desc,id.asc';
+  const offerSeedQueryByUpdatedAt = supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+    )
+    .eq('merchant_id', merchant.id)
+    .order('updated_at', { ascending: false });
+  const offerSeedQuery =
+    typeof offerSeedQueryByUpdatedAt.order === 'function'
+      ? offerSeedQueryByUpdatedAt.order('id', { ascending: true })
+      : offerSeedQueryByUpdatedAt;
+  const offerSeedRows = await readCommerceOfferSeedRows(
+    offerSeedQuery,
+    offerSeedSelectQuery,
+    'readCommerceOfferSeedRowsByMerchantId',
+  );
+  const latestOfferRows = await listCommerceOfferLatestRowsBySeedIds({
+    offerSeedIds: offerSeedRows.map((row) => row.id),
+    supabaseClient,
+  });
+  const merchantById = new Map([[merchant.id, merchant] as const]);
+  const latestOfferBySeedId = new Map(
+    latestOfferRows.map((latestOfferRow) => [
+      latestOfferRow.offer_seed_id,
+      latestOfferRow,
+    ]),
+  );
+
+  return {
+    merchant,
+    offerSeeds: offerSeedRows.map((row) =>
+      toCommerceOfferSeed({
+        latestOfferBySeedId,
+        merchantById,
+        row,
+      }),
+    ),
+  };
 }
 
 export async function createCommerceOfferSeed({

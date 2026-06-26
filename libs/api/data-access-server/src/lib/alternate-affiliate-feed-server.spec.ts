@@ -261,6 +261,91 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
+  test('uses the scoped commerce import read model for direct single-merchant imports', async () => {
+    const loadCommerceMerchantImportReadModelFn = vi.fn(async () => ({
+      merchant: {
+        id: 'merchant-coolblue',
+        slug: 'coolblue',
+        name: 'Coolblue',
+        isActive: true,
+        sourceType: 'affiliate' as const,
+        affiliateNetwork: 'Awin',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from Awin.',
+        createdAt: '2026-06-20T08:00:00.000Z',
+        updatedAt: '2026-06-20T08:00:00.000Z',
+      },
+      offerSeeds: [],
+    }));
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        listCanonicalCatalogSetsFn: vi.fn(async () => []),
+        loadCommerceMerchantImportReadModelFn,
+        updateCommerceMerchantFn: vi.fn(),
+      },
+      merchant: {
+        affiliateNetwork: 'Awin',
+        name: 'Coolblue',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from Awin.',
+        slug: 'coolblue',
+      },
+      rows: [],
+    });
+
+    expect(loadCommerceMerchantImportReadModelFn).toHaveBeenCalledWith({
+      includeOfferSeeds: true,
+      merchantSlug: 'coolblue',
+    });
+    expect(result).toMatchObject({
+      merchantCreated: false,
+      merchantSlug: 'coolblue',
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
+    });
+  });
+
+  test('uses the scoped commerce import read model for the Alternate feed wrapper', async () => {
+    const loadCommerceMerchantImportReadModelFn = vi.fn(async () => ({
+      merchant: {
+        id: 'merchant-alternate',
+        slug: 'alternate',
+        name: 'Alternate',
+        isActive: true,
+        sourceType: 'affiliate' as const,
+        affiliateNetwork: 'TradeTracker',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+        createdAt: '2026-06-20T08:00:00.000Z',
+        updatedAt: '2026-06-20T08:00:00.000Z',
+      },
+      offerSeeds: [],
+    }));
+
+    const result = await importAlternateAffiliateFeedRows({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        listCanonicalCatalogSetsFn: vi.fn(async () => []),
+        loadCommerceMerchantImportReadModelFn,
+        updateCommerceMerchantFn: vi.fn(),
+      },
+      rows: [],
+    });
+
+    expect(loadCommerceMerchantImportReadModelFn).toHaveBeenCalledWith({
+      includeOfferSeeds: true,
+      merchantSlug: 'alternate',
+    });
+    expect(result).toMatchObject({
+      merchantCreated: false,
+      merchantSlug: 'alternate',
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
+    });
+  });
+
   test('refreshes checked timestamps without reporting changed sets when feed content is unchanged', async () => {
     const markCommerceOfferLatestUnavailableFn = vi.fn();
     const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();

@@ -4,6 +4,7 @@ import {
   bulkUpsertCommerceOfferLatestRecords,
   bulkUpsertCommerceOfferSeedsByCompositeKey,
   createCommerceMerchant,
+  loadCommerceMerchantImportReadModel,
   listCommerceMerchants,
   listCommerceOfferSeeds,
   markCommerceOfferLatestUnavailable,
@@ -152,6 +153,7 @@ export interface AlternateAffiliateFeedImportDependencies {
   createCommerceMerchantFn?: typeof createCommerceMerchant;
   getNow?: () => Date;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  loadCommerceMerchantImportReadModelFn?: typeof loadCommerceMerchantImportReadModel;
   listCommerceMerchantsFn?: typeof listCommerceMerchants;
   listCommerceOfferSeedsFn?: typeof listCommerceOfferSeeds;
   markCommerceOfferLatestUnavailableFn?: typeof markCommerceOfferLatestUnavailable;
@@ -899,6 +901,32 @@ async function ensureAffiliateMerchant({
   const existingMerchant = (await listCommerceMerchantsFn()).find(
     (merchant) => merchant.slug === merchantConfig.slug,
   );
+
+  return ensureAffiliateMerchantFromExisting({
+    createCommerceMerchantFn,
+    dryRun,
+    existingMerchant,
+    merchantConfig,
+    updateCommerceMerchantFn,
+  });
+}
+
+async function ensureAffiliateMerchantFromExisting({
+  createCommerceMerchantFn,
+  dryRun,
+  existingMerchant,
+  merchantConfig,
+  updateCommerceMerchantFn,
+}: {
+  createCommerceMerchantFn: typeof createCommerceMerchant;
+  dryRun?: boolean;
+  existingMerchant?: CommerceMerchant;
+  merchantConfig: AffiliateFeedMerchantConfig;
+  updateCommerceMerchantFn: typeof updateCommerceMerchant;
+}): Promise<{
+  merchant: CommerceMerchant;
+  merchantCreated: boolean;
+}> {
   const sourceType = merchantConfig.sourceType ?? 'affiliate';
   const merchantInput: CommerceMerchantInput = {
     slug: merchantConfig.slug,
@@ -985,6 +1013,9 @@ export async function importAffiliateFeedRowsForMerchant({
     upsertDiscoveredAffiliateSetFn = upsertCommerceAffiliateDiscoveredSet,
     updateCommerceMerchantFn = updateCommerceMerchant,
   } = dependencies;
+  const loadCommerceMerchantImportReadModelFn =
+    dependencies.loadCommerceMerchantImportReadModelFn ??
+    loadCommerceMerchantImportReadModel;
   const resolvedBulkUpsertCommerceOfferSeedsByCompositeKeyFn =
     bulkUpsertCommerceOfferSeedsByCompositeKeyFn ??
     (dependencies.upsertCommerceOfferSeedByCompositeKeyFn
@@ -1030,20 +1061,44 @@ export async function importAffiliateFeedRowsForMerchant({
   const shouldPersistDiscoveredSets =
     !options?.dryRun &&
     Boolean(options?.persistDiscoveredSets ?? options?.discoverMissingSets);
-  const { merchant: resolvedMerchant, merchantCreated } =
-    await ensureAffiliateMerchant({
-      createCommerceMerchantFn,
-      dryRun: options?.dryRun,
-      listCommerceMerchantsFn,
-      merchantConfig: merchant,
-      updateCommerceMerchantFn,
-    });
+  const shouldLoadExistingOfferSeeds = !(
+    options?.dryRun && !options.collectStaleLatestDiagnostics
+  );
+  const useInjectedLegacyMerchantSeedLoaders =
+    Boolean(dependencies.listCommerceMerchantsFn) ||
+    Boolean(dependencies.listCommerceOfferSeedsFn);
+  const scopedImportReadModel = useInjectedLegacyMerchantSeedLoaders
+    ? undefined
+    : await loadCommerceMerchantImportReadModelFn({
+        includeOfferSeeds: shouldLoadExistingOfferSeeds,
+        merchantSlug: merchant.slug,
+      });
+  const { merchant: resolvedMerchant, merchantCreated } = scopedImportReadModel
+    ? await ensureAffiliateMerchantFromExisting({
+        createCommerceMerchantFn,
+        dryRun: options?.dryRun,
+        existingMerchant: scopedImportReadModel.merchant,
+        merchantConfig: merchant,
+        updateCommerceMerchantFn,
+      })
+    : await ensureAffiliateMerchant({
+        createCommerceMerchantFn,
+        dryRun: options?.dryRun,
+        listCommerceMerchantsFn,
+        merchantConfig: merchant,
+        updateCommerceMerchantFn,
+      });
+  const existingOfferSeedsPromise =
+    !shouldLoadExistingOfferSeeds || merchantCreated
+      ? Promise.resolve([])
+      : scopedImportReadModel
+        ? Promise.resolve(scopedImportReadModel.offerSeeds)
+        : dependencies.listCommerceOfferSeedsFn
+          ? listCommerceOfferSeedsFn()
+          : Promise.resolve([]);
   const [canonicalCatalogSets, existingOfferSeeds] = await Promise.all([
     listCanonicalCatalogSetsFn(),
-    (options?.dryRun && !options.collectStaleLatestDiagnostics) ||
-    merchantCreated
-      ? Promise.resolve([])
-      : listCommerceOfferSeedsFn(),
+    existingOfferSeedsPromise,
   ]);
   const catalogSetIdByIdentifier =
     buildCatalogSetIdLookup(canonicalCatalogSets);

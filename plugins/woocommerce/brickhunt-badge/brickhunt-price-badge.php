@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Brickhunt for WooCommerce
  * Description: Independent LEGO price validation.
- * Version: 0.1.0
+ * Version: 0.1.1
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('BHPB_VERSION', '0.1.0');
+define('BHPB_VERSION', '0.1.1');
 define('BHPB_BRICKHUNT_BASE_URL', 'https://www.brickhunt.nl');
 define('BHPB_OPTION_NAME', 'brickhunt_price_badge_options');
 define('BHPB_OPTION_GROUP', 'brickhunt_price_badge');

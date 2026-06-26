@@ -12,7 +12,9 @@ import {
   listCommerceAffiliateDiscoveredSets,
   listActiveCommerceRefreshSeeds,
   listCommerceBenchmarkSets,
+  listCommerceMerchants,
   listCommerceOfferSeeds,
+  loadCommerceMerchantImportReadModel,
   markCommerceOfferLatestUnavailable,
   upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferSeedByCompositeKey,
@@ -157,6 +159,141 @@ function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
 }
 
 describe('commerce data access server', () => {
+  test('logs structured Supabase diagnostics when merchant loading fails', async () => {
+    const previousMaxAttempts =
+      process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+    process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS = '1';
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const order = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        code: '57014',
+        message: 'canceling statement due to statement timeout',
+        details: 'Disk IO budget depleted while reading commerce_merchants.',
+        hint: 'Retry after IO recovers.',
+      },
+    });
+    const select = vi.fn(() => ({ order }));
+    const from = vi.fn(() => ({ select }));
+
+    try {
+      await expect(
+        listCommerceMerchants({
+          supabaseClient: { from } as never,
+        }),
+      ).rejects.toThrow(
+        'Supabase commerce query failed. operation="listCommerceMerchants"',
+      );
+
+      expect(consoleError).toHaveBeenCalledWith(
+        '[commerce-data-access] supabase_query_error',
+        expect.objectContaining({
+          code: '57014',
+          details: 'Disk IO budget depleted while reading commerce_merchants.',
+          hint: 'Retry after IO recovers.',
+          message: 'canceling statement due to statement timeout',
+          operation: 'listCommerceMerchants',
+          query:
+            'select id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at order=name.asc',
+          table: 'commerce_merchants',
+          willRetry: false,
+          elapsedMs: expect.any(Number),
+        }),
+      );
+    } finally {
+      if (typeof previousMaxAttempts === 'string') {
+        process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS =
+          previousMaxAttempts;
+      } else {
+        delete process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+      }
+      consoleError.mockRestore();
+    }
+  });
+
+  test('retries transient merchant loading failures before returning merchants', async () => {
+    const previousBaseDelay =
+      process.env.COMMERCE_SUPABASE_READ_RETRY_BASE_DELAY_MS;
+    const previousMaxAttempts =
+      process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+    process.env.COMMERCE_SUPABASE_READ_RETRY_BASE_DELAY_MS = '0';
+    process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS = '2';
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const order = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          code: '57014',
+          message: 'canceling statement due to statement timeout',
+          details: 'Temporary Postgres pressure.',
+          hint: 'Retry.',
+        },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'merchant-rakuten-lego-eu',
+            slug: 'rakuten-lego-eu',
+            name: 'LEGO.com via Rakuten',
+            is_active: true,
+            source_type: 'affiliate',
+            affiliate_network: 'Rakuten',
+            notes: 'Feed-driven merchant.',
+            created_at: '2026-06-26T00:00:00.000Z',
+            updated_at: '2026-06-26T00:00:00.000Z',
+          },
+        ],
+        error: null,
+      });
+    const select = vi.fn(() => ({ order }));
+    const from = vi.fn(() => ({ select }));
+
+    try {
+      const merchants = await listCommerceMerchants({
+        supabaseClient: { from } as never,
+      });
+
+      expect(order).toHaveBeenCalledTimes(2);
+      expect(merchants).toEqual([
+        expect.objectContaining({
+          id: 'merchant-rakuten-lego-eu',
+          slug: 'rakuten-lego-eu',
+        }),
+      ]);
+      expect(consoleError).toHaveBeenCalledWith(
+        '[commerce-data-access] supabase_query_error',
+        expect.objectContaining({
+          attempt: 1,
+          code: '57014',
+          operation: 'listCommerceMerchants',
+          retryDelayMs: 0,
+          table: 'commerce_merchants',
+          willRetry: true,
+        }),
+      );
+    } finally {
+      if (typeof previousBaseDelay === 'string') {
+        process.env.COMMERCE_SUPABASE_READ_RETRY_BASE_DELAY_MS =
+          previousBaseDelay;
+      } else {
+        delete process.env.COMMERCE_SUPABASE_READ_RETRY_BASE_DELAY_MS;
+      }
+
+      if (typeof previousMaxAttempts === 'string') {
+        process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS =
+          previousMaxAttempts;
+      } else {
+        delete process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+      }
+      consoleError.mockRestore();
+    }
+  });
+
   test('bulk upserts offer seeds by the set and merchant composite key', async () => {
     const select = vi.fn().mockResolvedValue({
       data: [
@@ -417,6 +554,126 @@ describe('commerce data access server', () => {
         }),
       }),
     ]);
+    expect(latestSelect).toHaveBeenCalledTimes(1);
+    expect(seedSelect).toHaveBeenCalledTimes(1);
+  });
+
+  test('loads merchant import seeds and latest rows through merchant-scoped reads', async () => {
+    const merchantMaybeSingle = vi.fn().mockResolvedValue({
+      data: {
+        id: 'merchant-rakuten-lego-eu',
+        slug: 'rakuten-lego-eu',
+        name: 'LEGO Store EU',
+        is_active: true,
+        source_type: 'affiliate',
+        affiliate_network: 'Rakuten',
+        notes: null,
+        created_at: '2026-06-20T08:00:00.000Z',
+        updated_at: '2026-06-20T08:00:00.000Z',
+      },
+      error: null,
+    });
+    const merchantEq = vi.fn(() => ({
+      maybeSingle: merchantMaybeSingle,
+    }));
+    const merchantSelect = vi.fn(() => ({
+      eq: merchantEq,
+    }));
+    const seedOrderById = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'seed-rakuten-10316',
+          set_id: '10316',
+          merchant_id: 'merchant-rakuten-lego-eu',
+          product_url: 'https://www.lego.com/rivendell',
+          is_active: true,
+          validation_status: 'valid',
+          last_verified_at: '2026-06-20T08:00:00.000Z',
+          notes: null,
+          created_at: '2026-06-20T08:00:00.000Z',
+          updated_at: '2026-06-20T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const seedOrderByUpdatedAt = vi.fn(() => ({
+      order: seedOrderById,
+    }));
+    const seedEq = vi.fn(() => ({
+      order: seedOrderByUpdatedAt,
+    }));
+    const seedSelect = vi.fn(() => ({
+      eq: seedEq,
+    }));
+    const latestOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'latest-rakuten-10316',
+          offer_seed_id: 'seed-rakuten-10316',
+          price_minor: 49999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-06-20T08:05:00.000Z',
+          fetched_at: '2026-06-20T08:05:00.000Z',
+          error_message: null,
+          created_at: '2026-06-20T08:05:00.000Z',
+          updated_at: '2026-06-20T08:05:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestIn = vi.fn(() => ({
+      order: latestOrder,
+    }));
+    const latestSelect = vi.fn(() => ({
+      in: latestIn,
+    }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return { select: merchantSelect };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return { select: seedSelect };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return { select: latestSelect };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await loadCommerceMerchantImportReadModel({
+      merchantSlug: 'rakuten-lego-eu',
+      supabaseClient: { from } as never,
+    });
+
+    expect(merchantEq).toHaveBeenCalledWith('slug', 'rakuten-lego-eu');
+    expect(seedEq).toHaveBeenCalledWith(
+      'merchant_id',
+      'merchant-rakuten-lego-eu',
+    );
+    expect(latestIn).toHaveBeenCalledWith('offer_seed_id', [
+      'seed-rakuten-10316',
+    ]);
+    expect(result).toEqual({
+      merchant: expect.objectContaining({
+        id: 'merchant-rakuten-lego-eu',
+        slug: 'rakuten-lego-eu',
+      }),
+      offerSeeds: [
+        expect.objectContaining({
+          id: 'seed-rakuten-10316',
+          merchantId: 'merchant-rakuten-lego-eu',
+          latestOffer: expect.objectContaining({
+            id: 'latest-rakuten-10316',
+            offerSeedId: 'seed-rakuten-10316',
+          }),
+        }),
+      ],
+    });
   });
 
   test('paginates latest offers and offer seeds beyond the Supabase default page size', async () => {
@@ -713,6 +970,12 @@ describe('commerce data access server', () => {
   });
 
   test('throws when a paginated latest-offer page fails', async () => {
+    const previousMaxAttempts =
+      process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+    process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS = '1';
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
     const merchantOrder = vi.fn().mockResolvedValue({
       data: [],
       error: null,
@@ -756,11 +1019,23 @@ describe('commerce data access server', () => {
       throw new Error(`Unexpected table ${table}`);
     });
 
-    await expect(
-      listActiveCommerceSyncSeeds({
-        supabaseClient: { from } as never,
-      }),
-    ).rejects.toThrow('Unable to load commerce latest offers.');
+    try {
+      await expect(
+        listActiveCommerceSyncSeeds({
+          supabaseClient: { from } as never,
+        }),
+      ).rejects.toThrow(
+        'Supabase commerce query failed. operation="listCommerceOfferLatestRows"',
+      );
+    } finally {
+      if (typeof previousMaxAttempts === 'string') {
+        process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS =
+          previousMaxAttempts;
+      } else {
+        delete process.env.COMMERCE_SUPABASE_READ_RETRY_MAX_ATTEMPTS;
+      }
+      consoleError.mockRestore();
+    }
   });
 
   test('uses deterministic ordering for paginated latest offers and offer seeds when supported', async () => {
