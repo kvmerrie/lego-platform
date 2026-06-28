@@ -39,8 +39,18 @@ export const COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE =
   'commerce_affiliate_discovered_sets';
 export const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
 const CATALOG_SETS_TABLE = 'catalog_sets';
+const COMMERCE_MERCHANT_SELECT_COLUMNS =
+  'id,slug,name,is_active,source_type,affiliate_network,notes,created_at,updated_at' as const;
+const COMMERCE_OFFER_LATEST_SELECT_COLUMNS =
+  'id,offer_seed_id,price_minor,currency_code,availability,fetch_status,observed_at,fetched_at,error_message,created_at,updated_at' as const;
+const COMMERCE_OFFER_SEED_SELECT_COLUMNS =
+  'id,set_id,merchant_id,product_url,is_active,validation_status,last_verified_at,notes,created_at,updated_at' as const;
 
 type CommerceSupabaseClient = Pick<SupabaseClient, 'from'>;
+type CommerceSupabaseReadResult<TData> = PromiseLike<{
+  data: TData | null;
+  error: unknown;
+}>;
 
 type CommerceTableCopyClient = Pick<SupabaseClient, 'from'>;
 
@@ -91,12 +101,9 @@ const COMMERCE_PRODUCTION_COPY_SELECT_COLUMNS: Record<
   [COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE]:
     'id, merchant_id, normalized_set_id, source_set_number, product_title, price_minor, currency_code, image_url, product_url, confidence, status, raw_payload, import_attempted_at, import_error, imported_set_id, first_seen_at, last_seen_at, created_at, updated_at',
   [COMMERCE_BENCHMARK_SETS_TABLE]: 'set_id, notes, created_at, updated_at',
-  [COMMERCE_MERCHANTS_TABLE]:
-    'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
-  [COMMERCE_OFFER_LATEST_TABLE]:
-    'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at',
-  [COMMERCE_OFFER_SEEDS_TABLE]:
-    'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+  [COMMERCE_MERCHANTS_TABLE]: COMMERCE_MERCHANT_SELECT_COLUMNS,
+  [COMMERCE_OFFER_LATEST_TABLE]: COMMERCE_OFFER_LATEST_SELECT_COLUMNS,
+  [COMMERCE_OFFER_SEEDS_TABLE]: COMMERCE_OFFER_SEED_SELECT_COLUMNS,
   [PRICING_DAILY_SET_HISTORY_TABLE]:
     'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on, created_at, updated_at',
 };
@@ -476,10 +483,7 @@ async function executeCommerceSupabaseRead<TData>({
 }: {
   operation: string;
   query: string;
-  read: () => PromiseLike<{
-    data: TData | null;
-    error: unknown;
-  }>;
+  read: () => CommerceSupabaseReadResult<TData>;
   table: string;
 }): Promise<TData | null> {
   const { baseDelayMs, maxAttempts, maxDelayMs } =
@@ -1153,21 +1157,20 @@ async function listCommerceOfferLatestRows({
 }: {
   supabaseClient: CommerceSupabaseClient;
 }): Promise<CommerceOfferLatestRow[]> {
-  const latestOfferSelectQuery =
-    'select id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at';
   const selectedQuery = supabaseClient
     .from(COMMERCE_OFFER_LATEST_TABLE)
-    .select(latestOfferSelectQuery);
+    .select(COMMERCE_OFFER_LATEST_SELECT_COLUMNS);
   const query =
     typeof selectedQuery.order === 'function'
       ? selectedQuery.order('offer_seed_id', { ascending: true })
       : selectedQuery;
+  const queryDescription = `select ${COMMERCE_OFFER_LATEST_SELECT_COLUMNS} order=offer_seed_id.asc`;
 
   if (typeof query.range !== 'function') {
     const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
       operation: 'listCommerceOfferLatestRows',
-      query: `${latestOfferSelectQuery} order=offer_seed_id.asc`,
-      read: () => query,
+      query: queryDescription,
+      read: () => query as CommerceSupabaseReadResult<CommerceOfferLatestRow[]>,
       table: COMMERCE_OFFER_LATEST_TABLE,
     });
 
@@ -1180,12 +1183,11 @@ async function listCommerceOfferLatestRows({
     const to = from + COMMERCE_SUPABASE_PAGE_SIZE - 1;
     const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
       operation: 'listCommerceOfferLatestRows',
-      query: `${latestOfferSelectQuery} order=offer_seed_id.asc range=${from}-${to}`,
+      query: `${queryDescription} range=${from}-${to}`,
       read: () =>
-        query.range?.(from, to) as PromiseLike<{
-          data: CommerceOfferLatestRow[] | null;
-          error: unknown;
-        }>,
+        query.range?.(from, to) as CommerceSupabaseReadResult<
+          CommerceOfferLatestRow[]
+        >,
       table: COMMERCE_OFFER_LATEST_TABLE,
     });
 
@@ -1216,14 +1218,12 @@ async function listCommerceOfferLatestRowsBySeedIds({
     return [];
   }
 
-  const latestOfferSelectColumns =
-    'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at';
   const latestOfferRows: CommerceOfferLatestRow[] = [];
 
   for (const seedIdChunk of chunkCommerceRows(normalizedOfferSeedIds, 500)) {
     const selectedQuery = supabaseClient
       .from(COMMERCE_OFFER_LATEST_TABLE)
-      .select(latestOfferSelectColumns)
+      .select(COMMERCE_OFFER_LATEST_SELECT_COLUMNS)
       .in('offer_seed_id', seedIdChunk);
     const query =
       typeof selectedQuery.order === 'function'
@@ -1231,8 +1231,8 @@ async function listCommerceOfferLatestRowsBySeedIds({
         : selectedQuery;
     const data = await executeCommerceSupabaseRead<CommerceOfferLatestRow[]>({
       operation: 'listCommerceOfferLatestRowsBySeedIds',
-      query: `select ${latestOfferSelectColumns} where offer_seed_id.in count=${seedIdChunk.length} order=offer_seed_id.asc`,
-      read: () => query,
+      query: `select ${COMMERCE_OFFER_LATEST_SELECT_COLUMNS} where offer_seed_id.in count=${seedIdChunk.length} order=offer_seed_id.asc`,
+      read: () => query as CommerceSupabaseReadResult<CommerceOfferLatestRow[]>,
       table: COMMERCE_OFFER_LATEST_TABLE,
     });
 
@@ -1255,17 +1255,15 @@ export async function getCommerceMerchantBySlug({
     throw new Error('Commerce merchant slug is required.');
   }
 
-  const merchantSelectColumns =
-    'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at';
   const data = await executeCommerceSupabaseRead<CommerceMerchantRow>({
     operation: 'getCommerceMerchantBySlug',
-    query: `select ${merchantSelectColumns} where slug.eq`,
+    query: `select ${COMMERCE_MERCHANT_SELECT_COLUMNS} where slug.eq`,
     read: () =>
       supabaseClient
         .from(COMMERCE_MERCHANTS_TABLE)
-        .select(merchantSelectColumns)
+        .select(COMMERCE_MERCHANT_SELECT_COLUMNS)
         .eq('slug', normalizedMerchantSlug)
-        .maybeSingle(),
+        .maybeSingle() as CommerceSupabaseReadResult<CommerceMerchantRow>,
     table: COMMERCE_MERCHANTS_TABLE,
   });
 
@@ -1277,18 +1275,17 @@ export async function listCommerceMerchants({
 }: {
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceMerchant[]> {
-  const merchantSelectQuery =
-    'select id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at order=name.asc';
+  const merchantSelectQuery = `select ${COMMERCE_MERCHANT_SELECT_COLUMNS} order=name.asc`;
   const data = await executeCommerceSupabaseRead<CommerceMerchantRow[]>({
     operation: 'listCommerceMerchants',
     query: merchantSelectQuery,
     read: () =>
       supabaseClient
         .from(COMMERCE_MERCHANTS_TABLE)
-        .select(
-          'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
-        )
-        .order('name', { ascending: true }),
+        .select(COMMERCE_MERCHANT_SELECT_COLUMNS)
+        .order('name', {
+          ascending: true,
+        }) as CommerceSupabaseReadResult<CommerceMerchantRow[]>,
     table: COMMERCE_MERCHANTS_TABLE,
   });
 
@@ -1315,17 +1312,11 @@ export async function listCommerceBenchmarkSets({
 }
 
 async function readCommerceOfferSeedRows(
-  query: PromiseLike<{
-    data: CommerceOfferSeedRow[] | null;
-    error: unknown;
-  }> & {
+  query: CommerceSupabaseReadResult<CommerceOfferSeedRow[]> & {
     range?: (
       from: number,
       to: number,
-    ) => PromiseLike<{
-      data: CommerceOfferSeedRow[] | null;
-      error: unknown;
-    }>;
+    ) => CommerceSupabaseReadResult<CommerceOfferSeedRow[]>;
   },
   queryDescription: string,
   operation = 'readCommerceOfferSeedRows',
@@ -1349,10 +1340,9 @@ async function readCommerceOfferSeedRows(
       operation,
       query: `${queryDescription} range=${from}-${to}`,
       read: () =>
-        query.range?.(from, to) as PromiseLike<{
-          data: CommerceOfferSeedRow[] | null;
-          error: unknown;
-        }>,
+        query.range?.(from, to) as CommerceSupabaseReadResult<
+          CommerceOfferSeedRow[]
+        >,
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
@@ -1706,13 +1696,10 @@ export async function listCommerceOfferSeeds({
 }: {
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceOfferSeed[]> {
-  const offerSeedSelectQuery =
-    'select id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at order=updated_at.desc,id.asc';
+  const offerSeedSelectQuery = `select ${COMMERCE_OFFER_SEED_SELECT_COLUMNS} order=updated_at.desc,id.asc`;
   const offerSeedQueryByUpdatedAt = supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
-    .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
-    )
+    .select(COMMERCE_OFFER_SEED_SELECT_COLUMNS)
     .order('updated_at', { ascending: false });
   const offerSeedQuery =
     typeof offerSeedQueryByUpdatedAt.order === 'function'
@@ -1766,13 +1753,10 @@ export async function loadCommerceMerchantImportReadModel({
     };
   }
 
-  const offerSeedSelectQuery =
-    'select id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at where merchant_id.eq order=updated_at.desc,id.asc';
+  const offerSeedSelectQuery = `select ${COMMERCE_OFFER_SEED_SELECT_COLUMNS} where merchant_id.eq order=updated_at.desc,id.asc`;
   const offerSeedQueryByUpdatedAt = supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
-    .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
-    )
+    .select(COMMERCE_OFFER_SEED_SELECT_COLUMNS)
     .eq('merchant_id', merchant.id)
     .order('updated_at', { ascending: false });
   const offerSeedQuery =
